@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, User, Mail, Phone, Globe, MapPin, DollarSign } from 'lucide-react';
+import { Building2, User, Mail, Phone, Globe, MapPin, DollarSign, Eye } from 'lucide-react';
 
 interface Deal {
   id: string;
@@ -23,7 +23,7 @@ interface Deal {
 
 interface DealCardProps {
   deal: Deal;
-  onEdit?: (deal: Deal) => void;
+  onViewDetails?: (deal: Deal) => void;
 }
 
 const formatCurrency = (amount: number | null) => {
@@ -33,7 +33,7 @@ const formatCurrency = (amount: number | null) => {
     currency: 'USD',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(amount / 100); // Convert from cents
 };
 
 const getStageColor = (stage: string) => {
@@ -49,7 +49,7 @@ const getStageColor = (stage: string) => {
   return colors[stage as keyof typeof colors] || 'bg-gray-100 text-gray-800';
 };
 
-export function DealCard({ deal, onEdit }: DealCardProps) {
+export function DealCard({ deal, onViewDetails }: DealCardProps) {
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
@@ -70,9 +70,10 @@ export function DealCard({ deal, onEdit }: DealCardProps) {
               )}
             </div>
           </div>
-          {onEdit && (
-            <Button variant="ghost" size="sm" onClick={() => onEdit(deal)}>
-              Edit
+          {onViewDetails && (
+            <Button variant="ghost" size="sm" onClick={() => onViewDetails(deal)}>
+              <Eye className="h-4 w-4 mr-2" />
+              View
             </Button>
           )}
         </div>

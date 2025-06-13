@@ -1,13 +1,43 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AddDealDialog } from '@/components/deals/AddDealDialog';
 import { DealCard } from '@/components/deals/DealCard';
+import { DealDetailDialog } from '@/components/deals/DealDetailDialog';
 import { useDeals } from '@/hooks/useDeals';
 import { Skeleton } from '@/components/ui/skeleton';
 
+interface Deal {
+  id: string;
+  company_name: string;
+  contact_name: string | null;
+  contact_email: string | null;
+  contact_phone: string | null;
+  website: string | null;
+  location: string | null;
+  pipeline_stage: string;
+  round_stage: string | null;
+  round_size: number | null;
+  post_money_valuation: number | null;
+  revenue: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export default function Deals() {
   const { deals, loading, refetch } = useDeals();
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+
+  const handleViewDetails = (deal: Deal) => {
+    setSelectedDeal(deal);
+    setDetailDialogOpen(true);
+  };
+
+  const handleCloseDetail = () => {
+    setDetailDialogOpen(false);
+    setSelectedDeal(null);
+  };
 
   if (loading) {
     return (
@@ -101,10 +131,26 @@ export default function Deals() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {deals.map((deal) => (
-              <DealCard key={deal.id} deal={deal} />
+              <DealCard 
+                key={deal.id} 
+                deal={deal} 
+                onViewDetails={handleViewDetails}
+              />
             ))}
           </div>
         </div>
+      )}
+
+      {selectedDeal && (
+        <DealDetailDialog
+          deal={selectedDeal}
+          open={detailDialogOpen}
+          onOpenChange={handleCloseDetail}
+          onDealUpdated={() => {
+            refetch();
+            handleCloseDetail();
+          }}
+        />
       )}
     </div>
   );
