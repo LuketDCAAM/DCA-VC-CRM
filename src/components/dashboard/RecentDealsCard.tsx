@@ -22,13 +22,13 @@ export function RecentDealsCard({ deals }: RecentDealsCardProps) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <div>
           <CardTitle>Recent Deals</CardTitle>
           <CardDescription>Latest updates in your pipeline</CardDescription>
         </div>
-        <Button variant="outline" size="sm" onClick={() => navigate('/deals')}>
-          <Eye className="h-4 w-4 mr-2" />
+        <Button variant="outline" size="sm" onClick={() => navigate('/deals')} className="flex items-center gap-2">
+          <Eye className="h-4 w-4" />
           View All
         </Button>
       </CardHeader>
@@ -51,7 +51,9 @@ export function RecentDealsCard({ deals }: RecentDealsCardProps) {
             ))}
           </div>
         ) : (
-          <p className="text-gray-500">No deals yet. Start by adding your first deal!</p>
+          <div className="text-center py-8">
+            <p className="text-gray-500">No deals yet. Start by adding your first deal!</p>
+          </div>
         )}
       </CardContent>
     </Card>

@@ -23,13 +23,13 @@ export function RecentPortfolioCard({ companies, onViewDetails }: RecentPortfoli
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <div>
           <CardTitle>Recent Portfolio Updates</CardTitle>
           <CardDescription>Latest portfolio company activity</CardDescription>
         </div>
-        <Button variant="outline" size="sm" onClick={() => navigate('/portfolio')}>
-          <Eye className="h-4 w-4 mr-2" />
+        <Button variant="outline" size="sm" onClick={() => navigate('/portfolio')} className="flex items-center gap-2">
+          <Eye className="h-4 w-4" />
           View All
         </Button>
       </CardHeader>
@@ -60,7 +60,9 @@ export function RecentPortfolioCard({ companies, onViewDetails }: RecentPortfoli
             ))}
           </div>
         ) : (
-          <p className="text-gray-500">No portfolio companies yet.</p>
+          <div className="text-center py-8">
+            <p className="text-gray-500">No portfolio companies yet.</p>
+          </div>
         )}
       </CardContent>
     </Card>
