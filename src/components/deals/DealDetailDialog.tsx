@@ -11,6 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Building2, User, Mail, Phone, Globe, MapPin, DollarSign, Calendar, Edit, Save, X } from 'lucide-react';
+import { Database } from '@/integrations/supabase/types';
+
+type PipelineStage = Database['public']['Enums']['pipeline_stage'];
+type RoundStage = Database['public']['Enums']['round_stage'];
 
 interface Deal {
   id: string;
@@ -20,8 +24,8 @@ interface Deal {
   contact_phone: string | null;
   website: string | null;
   location: string | null;
-  pipeline_stage: string;
-  round_stage: string | null;
+  pipeline_stage: PipelineStage;
+  round_stage: RoundStage | null;
   round_size: number | null;
   post_money_valuation: number | null;
   revenue: number | null;
@@ -69,8 +73,8 @@ export function DealDetailDialog({ deal, open, onOpenChange, onDealUpdated }: De
     contact_phone: deal.contact_phone || '',
     website: deal.website || '',
     location: deal.location || '',
-    pipeline_stage: deal.pipeline_stage,
-    round_stage: deal.round_stage || '',
+    pipeline_stage: deal.pipeline_stage as PipelineStage,
+    round_stage: deal.round_stage || '' as RoundStage | '',
     round_size: formatCurrency(deal.round_size),
     post_money_valuation: formatCurrency(deal.post_money_valuation),
     revenue: formatCurrency(deal.revenue),
@@ -190,7 +194,7 @@ export function DealDetailDialog({ deal, open, onOpenChange, onDealUpdated }: De
               <div>
                 <Label>Pipeline Stage</Label>
                 {isEditing ? (
-                  <Select value={formData.pipeline_stage} onValueChange={(value) => handleInputChange('pipeline_stage', value)}>
+                  <Select value={formData.pipeline_stage} onValueChange={(value: PipelineStage) => handleInputChange('pipeline_stage', value)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -216,7 +220,7 @@ export function DealDetailDialog({ deal, open, onOpenChange, onDealUpdated }: De
               <div>
                 <Label>Round Stage</Label>
                 {isEditing ? (
-                  <Select value={formData.round_stage} onValueChange={(value) => handleInputChange('round_stage', value)}>
+                  <Select value={formData.round_stage} onValueChange={(value: RoundStage) => handleInputChange('round_stage', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select round stage" />
                     </SelectTrigger>

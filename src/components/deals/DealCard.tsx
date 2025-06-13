@@ -1,9 +1,12 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Building2, User, Mail, Phone, Globe, MapPin, DollarSign, Eye } from 'lucide-react';
+import { Database } from '@/integrations/supabase/types';
+
+type PipelineStage = Database['public']['Enums']['pipeline_stage'];
+type RoundStage = Database['public']['Enums']['round_stage'];
 
 interface Deal {
   id: string;
@@ -13,8 +16,8 @@ interface Deal {
   contact_phone: string | null;
   website: string | null;
   location: string | null;
-  pipeline_stage: string;
-  round_stage: string | null;
+  pipeline_stage: PipelineStage;
+  round_stage: RoundStage | null;
   round_size: number | null;
   post_money_valuation: number | null;
   revenue: number | null;

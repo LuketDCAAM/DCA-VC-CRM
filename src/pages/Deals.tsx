@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AddDealDialog } from '@/components/deals/AddDealDialog';
@@ -6,6 +5,10 @@ import { DealCard } from '@/components/deals/DealCard';
 import { DealDetailDialog } from '@/components/deals/DealDetailDialog';
 import { useDeals } from '@/hooks/useDeals';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Database } from '@/integrations/supabase/types';
+
+type PipelineStage = Database['public']['Enums']['pipeline_stage'];
+type RoundStage = Database['public']['Enums']['round_stage'];
 
 interface Deal {
   id: string;
@@ -15,8 +18,8 @@ interface Deal {
   contact_phone: string | null;
   website: string | null;
   location: string | null;
-  pipeline_stage: string;
-  round_stage: string | null;
+  pipeline_stage: PipelineStage;
+  round_stage: RoundStage | null;
   round_size: number | null;
   post_money_valuation: number | null;
   revenue: number | null;

@@ -3,6 +3,10 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { Database } from '@/integrations/supabase/types';
+
+type PipelineStage = Database['public']['Enums']['pipeline_stage'];
+type RoundStage = Database['public']['Enums']['round_stage'];
 
 interface Deal {
   id: string;
@@ -12,8 +16,8 @@ interface Deal {
   contact_phone: string | null;
   website: string | null;
   location: string | null;
-  pipeline_stage: string;
-  round_stage: string | null;
+  pipeline_stage: PipelineStage;
+  round_stage: RoundStage | null;
   round_size: number | null;
   post_money_valuation: number | null;
   revenue: number | null;
