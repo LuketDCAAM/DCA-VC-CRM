@@ -46,9 +46,10 @@ const roundStages = [
 
 interface AddDealDialogProps {
   onDealAdded: () => void;
+  children?: React.ReactNode;
 }
 
-export function AddDealDialog({ onDealAdded }: AddDealDialogProps) {
+export function AddDealDialog({ onDealAdded, children }: AddDealDialogProps) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
@@ -133,10 +134,12 @@ export function AddDealDialog({ onDealAdded }: AddDealDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Deal
-        </Button>
+        {children || (
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Deal
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
