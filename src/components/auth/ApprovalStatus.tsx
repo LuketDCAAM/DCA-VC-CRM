@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { Clock, CheckCircle, XCircle, LogOut } from 'lucide-react';
 
-export function ApprovalStatus() {
+export default function ApprovalStatus() {
   const { approvalStatus, isPending, isRejected, loading } = useUserRoles();
 
   const handleSignOut = async () => {
