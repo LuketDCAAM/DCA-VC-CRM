@@ -39,54 +39,66 @@ export default function Dashboard() {
 
   if (dealsLoading || companiesLoading) {
     return (
-      <div className="p-6">
-        <div className="text-center">Loading dashboard...</div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-gray-600">Overview of your VC deal flow and portfolio</p>
-      </div>
+    <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Overview of your VC deal flow and portfolio
+          </p>
+        </div>
 
-      <DashboardMetrics
-        activeDeals={activeDeals}
-        portfolioCount={companies.length}
-        totalDeals={deals.length}
-        totalInvested={totalInvested}
-      />
+        {/* Metrics */}
+        <DashboardMetrics
+          activeDeals={activeDeals}
+          portfolioCount={companies.length}
+          totalDeals={deals.length}
+          totalInvested={totalInvested}
+        />
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <RecentDealsCard deals={recentDeals} />
-            <RecentPortfolioCard 
-              companies={recentCompanies}
-              onViewDetails={handleViewCompanyDetails}
-            />
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+          {/* Left Column - Takes 3/4 width on xl screens */}
+          <div className="xl:col-span-3 space-y-6">
+            {/* Recent Activity Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <RecentDealsCard deals={recentDeals} />
+              <RecentPortfolioCard 
+                companies={recentCompanies}
+                onViewDetails={handleViewCompanyDetails}
+              />
+            </div>
+            
+            {/* Quick Actions */}
+            <DashboardQuickActions />
+          </div>
+
+          {/* Right Column - Takes 1/4 width on xl screens */}
+          <div className="xl:col-span-1">
+            <RemindersWidget />
           </div>
         </div>
 
-        {/* Reminders Widget */}
-        <div>
-          <RemindersWidget />
-        </div>
+        <PortfolioDetailDialog
+          company={selectedCompany}
+          open={detailDialogOpen}
+          onOpenChange={setDetailDialogOpen}
+          onCompanyUpdated={() => {
+            // Refetch companies if needed
+          }}
+        />
       </div>
-
-      {/* Quick Actions */}
-      <DashboardQuickActions />
-
-      <PortfolioDetailDialog
-        company={selectedCompany}
-        open={detailDialogOpen}
-        onOpenChange={setDetailDialogOpen}
-        onCompanyUpdated={() => {
-          // Refetch companies if needed
-        }}
-      />
     </div>
   );
 }

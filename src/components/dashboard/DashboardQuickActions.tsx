@@ -2,11 +2,38 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, DollarSign, Users } from 'lucide-react';
+import { Building2, DollarSign, Users, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function DashboardQuickActions() {
   const navigate = useNavigate();
+
+  const actions = [
+    {
+      title: "Add New Deal",
+      icon: DollarSign,
+      onClick: () => navigate('/deals'),
+      variant: "default" as const,
+    },
+    {
+      title: "Add Portfolio Company",
+      icon: Building2,
+      onClick: () => navigate('/portfolio'),
+      variant: "outline" as const,
+    },
+    {
+      title: "Add Investor",
+      icon: Users,
+      onClick: () => navigate('/investors'),
+      variant: "outline" as const,
+    },
+    {
+      title: "Add Contact",
+      icon: UserPlus,
+      onClick: () => navigate('/contacts'),
+      variant: "outline" as const,
+    },
+  ];
 
   return (
     <Card>
@@ -16,22 +43,19 @@ export function DashboardQuickActions() {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Button onClick={() => navigate('/deals')} className="flex items-center justify-center gap-2 h-12">
-            <DollarSign className="h-4 w-4" />
-            Add New Deal
-          </Button>
-          <Button onClick={() => navigate('/portfolio')} variant="outline" className="flex items-center justify-center gap-2 h-12">
-            <Building2 className="h-4 w-4" />
-            Add Portfolio Company
-          </Button>
-          <Button onClick={() => navigate('/investors')} variant="outline" className="flex items-center justify-center gap-2 h-12">
-            <Users className="h-4 w-4" />
-            Add Investor
-          </Button>
-          <Button onClick={() => navigate('/contacts')} variant="outline" className="flex items-center justify-center gap-2 h-12">
-            <Users className="h-4 w-4" />
-            Add Contact
-          </Button>
+          {actions.map((action) => (
+            <Button
+              key={action.title}
+              onClick={action.onClick}
+              variant={action.variant}
+              className="h-14 flex flex-col items-center justify-center gap-2 p-4"
+            >
+              <action.icon className="h-5 w-5" />
+              <span className="text-sm font-medium text-center leading-tight">
+                {action.title}
+              </span>
+            </Button>
+          ))}
         </div>
       </CardContent>
     </Card>
