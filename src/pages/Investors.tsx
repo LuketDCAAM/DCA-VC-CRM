@@ -267,9 +267,7 @@ export default function Investors() {
                 new Intl.NumberFormat('en-US', {
                   style: 'currency',
                   currency: 'USD',
-                  minimum
-
-FractionDigits: 0,
+                  minimumFractionDigits: 0,
                 }).format(
                   investors.filter(i => i.average_check_size).reduce((sum, i) => sum + (i.average_check_size || 0), 0) / 
                   (investors.filter(i => i.average_check_size).length * 100)
