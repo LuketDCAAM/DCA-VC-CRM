@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 
-type InvestmentStage = Database['public']['Enums']['round_stage'];
+type InvestmentStage = Database['public']['Enums']['investment_stage'];
 
 interface Investor {
   id: string;
