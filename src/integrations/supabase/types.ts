@@ -9,7 +9,481 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      call_notes: {
+        Row: {
+          call_date: string
+          content: string | null
+          created_at: string
+          created_by: string
+          deal_id: string | null
+          id: string
+          investor_id: string | null
+          portfolio_company_id: string | null
+          title: string
+        }
+        Insert: {
+          call_date: string
+          content?: string | null
+          created_at?: string
+          created_by: string
+          deal_id?: string | null
+          id?: string
+          investor_id?: string | null
+          portfolio_company_id?: string | null
+          title: string
+        }
+        Update: {
+          call_date?: string
+          content?: string | null
+          created_at?: string
+          created_by?: string
+          deal_id?: string | null
+          id?: string
+          investor_id?: string | null
+          portfolio_company_id?: string | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "call_notes_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_notes_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "call_notes_portfolio_company_id_fkey"
+            columns: ["portfolio_company_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contacts: {
+        Row: {
+          company_or_firm: string | null
+          created_at: string
+          created_by: string
+          deal_id: string | null
+          email: string | null
+          id: string
+          investor_id: string | null
+          name: string
+          phone: string | null
+          relationship_owner: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_or_firm?: string | null
+          created_at?: string
+          created_by: string
+          deal_id?: string | null
+          email?: string | null
+          id?: string
+          investor_id?: string | null
+          name: string
+          phone?: string | null
+          relationship_owner?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_or_firm?: string | null
+          created_at?: string
+          created_by?: string
+          deal_id?: string | null
+          email?: string | null
+          id?: string
+          investor_id?: string | null
+          name?: string
+          phone?: string | null
+          relationship_owner?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contacts_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      current_valuations: {
+        Row: {
+          current_ownership_percentage: number | null
+          id: string
+          last_round_post_money_valuation: number | null
+          last_round_price_per_share: number | null
+          portfolio_company_id: string
+          updated_at: string
+        }
+        Insert: {
+          current_ownership_percentage?: number | null
+          id?: string
+          last_round_post_money_valuation?: number | null
+          last_round_price_per_share?: number | null
+          portfolio_company_id: string
+          updated_at?: string
+        }
+        Update: {
+          current_ownership_percentage?: number | null
+          id?: string
+          last_round_post_money_valuation?: number | null
+          last_round_price_per_share?: number | null
+          portfolio_company_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "current_valuations_portfolio_company_id_fkey"
+            columns: ["portfolio_company_id"]
+            isOneToOne: true
+            referencedRelation: "portfolio_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deals: {
+        Row: {
+          company_name: string
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          created_by: string
+          id: string
+          last_call_date: string | null
+          location: string | null
+          pipeline_stage: Database["public"]["Enums"]["pipeline_stage"]
+          post_money_valuation: number | null
+          relationship_owner: string | null
+          revenue: number | null
+          round_size: number | null
+          round_stage: Database["public"]["Enums"]["round_stage"] | null
+          tags: string[] | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          company_name: string
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          last_call_date?: string | null
+          location?: string | null
+          pipeline_stage?: Database["public"]["Enums"]["pipeline_stage"]
+          post_money_valuation?: number | null
+          relationship_owner?: string | null
+          revenue?: number | null
+          round_size?: number | null
+          round_stage?: Database["public"]["Enums"]["round_stage"] | null
+          tags?: string[] | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          company_name?: string
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          last_call_date?: string | null
+          location?: string | null
+          pipeline_stage?: Database["public"]["Enums"]["pipeline_stage"]
+          post_money_valuation?: number | null
+          relationship_owner?: string | null
+          revenue?: number | null
+          round_size?: number | null
+          round_stage?: Database["public"]["Enums"]["round_stage"] | null
+          tags?: string[] | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      file_attachments: {
+        Row: {
+          created_at: string
+          deal_id: string | null
+          file_name: string
+          file_size: number | null
+          file_type: string | null
+          file_url: string
+          id: string
+          investor_id: string | null
+          portfolio_company_id: string | null
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          deal_id?: string | null
+          file_name: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url: string
+          id?: string
+          investor_id?: string | null
+          portfolio_company_id?: string | null
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          deal_id?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          investor_id?: string | null
+          portfolio_company_id?: string | null
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_attachments_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "file_attachments_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "file_attachments_portfolio_company_id_fkey"
+            columns: ["portfolio_company_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investments: {
+        Row: {
+          amount_invested: number
+          created_at: string
+          id: string
+          investment_date: string
+          ownership_percentage: number | null
+          portfolio_company_id: string
+          post_money_valuation: number | null
+          price_per_share: number | null
+          revenue_at_investment: number | null
+        }
+        Insert: {
+          amount_invested: number
+          created_at?: string
+          id?: string
+          investment_date: string
+          ownership_percentage?: number | null
+          portfolio_company_id: string
+          post_money_valuation?: number | null
+          price_per_share?: number | null
+          revenue_at_investment?: number | null
+        }
+        Update: {
+          amount_invested?: number
+          created_at?: string
+          id?: string
+          investment_date?: string
+          ownership_percentage?: number | null
+          portfolio_company_id?: string
+          post_money_valuation?: number | null
+          price_per_share?: number | null
+          revenue_at_investment?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investments_portfolio_company_id_fkey"
+            columns: ["portfolio_company_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investors: {
+        Row: {
+          average_check_size: number | null
+          contact_email: string | null
+          contact_name: string
+          contact_phone: string | null
+          created_at: string
+          created_by: string
+          firm_name: string | null
+          firm_website: string | null
+          id: string
+          location: string | null
+          preferred_investment_stage:
+            | Database["public"]["Enums"]["investment_stage"]
+            | null
+          preferred_sectors: string[] | null
+          relationship_owner: string | null
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          average_check_size?: number | null
+          contact_email?: string | null
+          contact_name: string
+          contact_phone?: string | null
+          created_at?: string
+          created_by: string
+          firm_name?: string | null
+          firm_website?: string | null
+          id?: string
+          location?: string | null
+          preferred_investment_stage?:
+            | Database["public"]["Enums"]["investment_stage"]
+            | null
+          preferred_sectors?: string[] | null
+          relationship_owner?: string | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          average_check_size?: number | null
+          contact_email?: string | null
+          contact_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string
+          firm_name?: string | null
+          firm_website?: string | null
+          id?: string
+          location?: string | null
+          preferred_investment_stage?:
+            | Database["public"]["Enums"]["investment_stage"]
+            | null
+          preferred_sectors?: string[] | null
+          relationship_owner?: string | null
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      portfolio_companies: {
+        Row: {
+          company_name: string
+          created_at: string
+          created_by: string
+          id: string
+          relationship_owner: string | null
+          status: Database["public"]["Enums"]["company_status"]
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          company_name: string
+          created_at?: string
+          created_by: string
+          id?: string
+          relationship_owner?: string | null
+          status?: Database["public"]["Enums"]["company_status"]
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          relationship_owner?: string | null
+          status?: Database["public"]["Enums"]["company_status"]
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reminders: {
+        Row: {
+          created_at: string
+          created_by: string
+          deal_id: string | null
+          description: string | null
+          id: string
+          investor_id: string | null
+          is_completed: boolean
+          portfolio_company_id: string | null
+          reminder_date: string
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          deal_id?: string | null
+          description?: string | null
+          id?: string
+          investor_id?: string | null
+          is_completed?: boolean
+          portfolio_company_id?: string | null
+          reminder_date: string
+          title: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          deal_id?: string | null
+          description?: string | null
+          id?: string
+          investor_id?: string | null
+          is_completed?: boolean
+          portfolio_company_id?: string | null
+          reminder_date?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reminders_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminders_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reminders_portfolio_company_id_fkey"
+            columns: ["portfolio_company_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +492,31 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      company_status: "Active" | "Exited" | "Dissolved"
+      investment_stage:
+        | "Pre-Seed"
+        | "Seed"
+        | "Series A"
+        | "Series B"
+        | "Series C"
+        | "Growth"
+        | "Late Stage"
+      pipeline_stage:
+        | "Initial Contact"
+        | "First Meeting"
+        | "Due Diligence"
+        | "Term Sheet"
+        | "Legal Review"
+        | "Invested"
+        | "Passed"
+      round_stage:
+        | "Pre-Seed"
+        | "Seed"
+        | "Series A"
+        | "Series B"
+        | "Series C"
+        | "Bridge"
+        | "Growth"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +631,35 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      company_status: ["Active", "Exited", "Dissolved"],
+      investment_stage: [
+        "Pre-Seed",
+        "Seed",
+        "Series A",
+        "Series B",
+        "Series C",
+        "Growth",
+        "Late Stage",
+      ],
+      pipeline_stage: [
+        "Initial Contact",
+        "First Meeting",
+        "Due Diligence",
+        "Term Sheet",
+        "Legal Review",
+        "Invested",
+        "Passed",
+      ],
+      round_stage: [
+        "Pre-Seed",
+        "Seed",
+        "Series A",
+        "Series B",
+        "Series C",
+        "Bridge",
+        "Growth",
+      ],
+    },
   },
 } as const
