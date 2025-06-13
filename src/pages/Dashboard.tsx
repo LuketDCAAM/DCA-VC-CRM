@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Building2, Users, DollarSign, TrendingUp, Calendar, Eye } from 'lucide-react';
 import { useDeals } from '@/hooks/useDeals';
 import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
 import { PortfolioDetailDialog } from '@/components/portfolio/PortfolioDetailDialog';
+import { RemindersWidget } from '@/components/reminders/RemindersWidget';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -110,84 +110,93 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Recent Deals</CardTitle>
-              <CardDescription>Latest updates in your pipeline</CardDescription>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => navigate('/deals')}>
-              <Eye className="h-4 w-4 mr-2" />
-              View All
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {recentDeals.length > 0 ? (
-              <div className="space-y-4">
-                {recentDeals.map((deal) => (
-                  <div key={deal.id} className="border rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-medium">{deal.company_name}</h4>
-                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                        {deal.pipeline_stage}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      {deal.round_stage && `${deal.round_stage} • `}
-                      Updated {new Date(deal.updated_at).toLocaleDateString()}
-                    </p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="lg:col-span-2 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Recent Deals</CardTitle>
+                  <CardDescription>Latest updates in your pipeline</CardDescription>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => navigate('/deals')}>
+                  <Eye className="h-4 w-4 mr-2" />
+                  View All
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {recentDeals.length > 0 ? (
+                  <div className="space-y-4">
+                    {recentDeals.map((deal) => (
+                      <div key={deal.id} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-medium">{deal.company_name}</h4>
+                          <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                            {deal.pipeline_stage}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          {deal.round_stage && `${deal.round_stage} • `}
+                          Updated {new Date(deal.updated_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500">No deals yet. Start by adding your first deal!</p>
-            )}
-          </CardContent>
-        </Card>
+                ) : (
+                  <p className="text-gray-500">No deals yet. Start by adding your first deal!</p>
+                )}
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Recent Portfolio Updates</CardTitle>
-              <CardDescription>Latest portfolio company activity</CardDescription>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => navigate('/portfolio')}>
-              <Eye className="h-4 w-4 mr-2" />
-              View All
-            </Button>
-          </CardHeader>
-          <CardContent>
-            {recentCompanies.length > 0 ? (
-              <div className="space-y-4">
-                {recentCompanies.map((company) => (
-                  <div 
-                    key={company.id} 
-                    className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-                    onClick={() => handleViewCompanyDetails(company)}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-medium">{company.company_name}</h4>
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        company.status === 'Active' ? 'bg-green-100 text-green-800' :
-                        company.status === 'Exited' ? 'bg-blue-100 text-blue-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
-                        {company.status}
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      {company.investments.length} investment{company.investments.length !== 1 ? 's' : ''} • 
-                      Updated {new Date(company.updated_at).toLocaleDateString()}
-                    </p>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Recent Portfolio Updates</CardTitle>
+                  <CardDescription>Latest portfolio company activity</CardDescription>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => navigate('/portfolio')}>
+                  <Eye className="h-4 w-4 mr-2" />
+                  View All
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {recentCompanies.length > 0 ? (
+                  <div className="space-y-4">
+                    {recentCompanies.map((company) => (
+                      <div 
+                        key={company.id} 
+                        className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                        onClick={() => handleViewCompanyDetails(company)}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-medium">{company.company_name}</h4>
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            company.status === 'Active' ? 'bg-green-100 text-green-800' :
+                            company.status === 'Exited' ? 'bg-blue-100 text-blue-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {company.status}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600">
+                          {company.investments.length} investment{company.investments.length !== 1 ? 's' : ''} • 
+                          Updated {new Date(company.updated_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500">No portfolio companies yet.</p>
-            )}
-          </CardContent>
-        </Card>
+                ) : (
+                  <p className="text-gray-500">No portfolio companies yet.</p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Reminders Widget */}
+        <div>
+          <RemindersWidget />
+        </div>
       </div>
 
       {/* Quick Actions */}
