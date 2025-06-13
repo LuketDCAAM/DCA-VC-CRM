@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus, Search, Filter } from 'lucide-react';
 import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
 import { PortfolioCard } from '@/components/portfolio/PortfolioCard';
+import { PortfolioDetailDialog } from '@/components/portfolio/PortfolioDetailDialog';
 import AddPortfolioDialog from '@/components/portfolio/AddPortfolioDialog';
 import { useState } from 'react';
 
@@ -14,6 +15,8 @@ export default function Portfolio() {
   const { companies, loading, refetch } = usePortfolioCompanies();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [selectedCompany, setSelectedCompany] = useState<any>(null);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
 
   const filteredCompanies = companies.filter(company => {
     const matchesSearch = company.company_name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -27,6 +30,11 @@ export default function Portfolio() {
 
   const activeCompanies = companies.filter(c => c.status === 'Active').length;
   const exitedCompanies = companies.filter(c => c.status === 'Exited').length;
+
+  const handleViewDetails = (company: any) => {
+    setSelectedCompany(company);
+    setDetailDialogOpen(true);
+  };
 
   if (loading) {
     return (
@@ -147,14 +155,18 @@ export default function Portfolio() {
             <PortfolioCard 
               key={company.id} 
               company={company}
-              onViewDetails={(company) => {
-                // TODO: Implement detailed view
-                console.log('View details for:', company.company_name);
-              }}
+              onViewDetails={handleViewDetails}
             />
           ))}
         </div>
       )}
+
+      <PortfolioDetailDialog
+        company={selectedCompany}
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        onCompanyUpdated={refetch}
+      />
     </div>
   );
 }

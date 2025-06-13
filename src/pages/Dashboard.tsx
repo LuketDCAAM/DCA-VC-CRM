@@ -4,15 +4,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Building2, Users, DollarSign, TrendingUp, Calendar, Eye } from 'lucide-react';
 import { useDeals } from '@/hooks/useDeals';
 import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
-import { DealCard } from '@/components/deals/DealCard';
-import { PortfolioCard } from '@/components/portfolio/PortfolioCard';
+import { PortfolioDetailDialog } from '@/components/portfolio/PortfolioDetailDialog';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 export default function Dashboard() {
   const { deals, loading: dealsLoading } = useDeals();
   const { companies, loading: companiesLoading } = usePortfolioCompanies();
   const navigate = useNavigate();
+  const [selectedCompany, setSelectedCompany] = useState<any>(null);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
 
   // Calculate metrics
   const activeDeals = deals.filter(deal => 
@@ -38,6 +40,11 @@ export default function Dashboard() {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount / 100);
+  };
+
+  const handleViewCompanyDetails = (company: any) => {
+    setSelectedCompany(company);
+    setDetailDialogOpen(true);
   };
 
   if (dealsLoading || companiesLoading) {
@@ -154,7 +161,11 @@ export default function Dashboard() {
             {recentCompanies.length > 0 ? (
               <div className="space-y-4">
                 {recentCompanies.map((company) => (
-                  <div key={company.id} className="border rounded-lg p-4">
+                  <div 
+                    key={company.id} 
+                    className="border rounded-lg p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                    onClick={() => handleViewCompanyDetails(company)}
+                  >
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="font-medium">{company.company_name}</h4>
                       <span className={`text-xs px-2 py-1 rounded ${
@@ -206,6 +217,15 @@ export default function Dashboard() {
           </div>
         </CardContent>
       </Card>
+
+      <PortfolioDetailDialog
+        company={selectedCompany}
+        open={detailDialogOpen}
+        onOpenChange={setDetailDialogOpen}
+        onCompanyUpdated={() => {
+          // Refetch companies if needed
+        }}
+      />
     </div>
   );
 }
