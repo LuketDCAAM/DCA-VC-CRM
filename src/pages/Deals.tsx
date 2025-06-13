@@ -2,35 +2,179 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Search, Filter, LayoutGrid, List } from 'lucide-react';
+import { Plus, LayoutGrid, List, Trash2, Edit, Archive } from 'lucide-react';
 import { useDeals } from '@/hooks/useDeals';
 import { DealCard } from '@/components/deals/DealCard';
 import { DealDetailDialog } from '@/components/deals/DealDetailDialog';
 import { AddDealDialog } from '@/components/deals/AddDealDialog';
 import { DealPipelineBoard } from '@/components/deals/DealPipelineBoard';
+import { SearchAndFilter, FilterOption } from '@/components/common/SearchAndFilter';
+import { BulkActions, BulkAction } from '@/components/common/BulkActions';
+import { ExportData } from '@/components/common/ExportData';
 
 export default function Deals() {
   const { deals, loading, refetch } = useDeals();
   const [searchTerm, setSearchTerm] = useState('');
-  const [stageFilter, setStageFilter] = useState('all');
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [viewMode, setViewMode] = useState('board');
+  const [selectedDeals, setSelectedDeals] = useState<string[]>([]);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+
+  // Filter options for deals
+  const filterOptions: FilterOption[] = [
+    {
+      key: 'pipeline_stage',
+      label: 'Pipeline Stage',
+      value: 'pipeline_stage',
+      type: 'select',
+      options: [
+        { label: 'Initial Contact', value: 'Initial Contact' },
+        { label: 'First Meeting', value: 'First Meeting' },
+        { label: 'Due Diligence', value: 'Due Diligence' },
+        { label: 'Term Sheet', value: 'Term Sheet' },
+        { label: 'Legal Review', value: 'Legal Review' },
+        { label: 'Invested', value: 'Invested' },
+        { label: 'Passed', value: 'Passed' },
+      ]
+    },
+    {
+      key: 'round_stage',
+      label: 'Round Stage',
+      value: 'round_stage',
+      type: 'select',
+      options: [
+        { label: 'Pre-Seed', value: 'Pre-Seed' },
+        { label: 'Seed', value: 'Seed' },
+        { label: 'Series A', value: 'Series A' },
+        { label: 'Series B', value: 'Series B' },
+        { label: 'Series C', value: 'Series C' },
+        { label: 'Growth', value: 'Growth' },
+      ]
+    },
+    {
+      key: 'location',
+      label: 'Location',
+      value: 'location',
+      type: 'select',
+      options: [
+        { label: 'San Francisco', value: 'San Francisco' },
+        { label: 'New York', value: 'New York' },
+        { label: 'Los Angeles', value: 'Los Angeles' },
+        { label: 'Austin', value: 'Austin' },
+        { label: 'Remote', value: 'Remote' },
+      ]
+    },
+    {
+      key: 'round_size',
+      label: 'Round Size',
+      value: 'round_size',
+      type: 'range'
+    },
+    {
+      key: 'created_at',
+      label: 'Date Added',
+      value: 'created_at',
+      type: 'date'
+    }
+  ];
+
+  // Bulk actions for deals
+  const bulkActions: BulkAction[] = [
+    {
+      id: 'move-to-stage',
+      label: 'Move to Stage',
+      icon: Edit,
+      variant: 'default'
+    },
+    {
+      id: 'archive',
+      label: 'Archive',
+      icon: Archive,
+      variant: 'secondary'
+    },
+    {
+      id: 'delete',
+      label: 'Delete',
+      icon: Trash2,
+      variant: 'destructive',
+      requiresConfirmation: true
+    }
+  ];
+
+  // Export columns for deals
+  const exportColumns = [
+    { key: 'company_name', label: 'Company Name' },
+    { key: 'contact_name', label: 'Contact Name' },
+    { key: 'contact_email', label: 'Contact Email' },
+    { key: 'pipeline_stage', label: 'Pipeline Stage' },
+    { key: 'round_stage', label: 'Round Stage' },
+    { key: 'location', label: 'Location' },
+    { key: 'website', label: 'Website' },
+    { key: 'created_at', label: 'Date Added' },
+  ];
 
   const filteredDeals = deals.filter(deal => {
-    const matchesSearch = deal.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         deal.contact_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         deal.location?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStage = stageFilter === 'all' || deal.pipeline_stage === stageFilter;
-    return matchesSearch && matchesStage;
+    // Search filter
+    const matchesSearch = searchTerm === '' || 
+      deal.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      deal.contact_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      deal.location?.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Active filters
+    const matchesFilters = Object.entries(activeFilters).every(([key, value]) => {
+      if (!value || value === 'all' || value === '') return true;
+      
+      if (key === 'created_at') {
+        const dealDate = new Date(deal.created_at).toISOString().split('T')[0];
+        return dealDate >= value;
+      }
+      
+      if (key === 'round_size_min') {
+        return !deal.round_size || deal.round_size >= parseInt(value) * 100;
+      }
+      
+      if (key === 'round_size_max') {
+        return !deal.round_size || deal.round_size <= parseInt(value) * 100;
+      }
+      
+      return deal[key as keyof typeof deal] === value;
+    });
+
+    return matchesSearch && matchesFilters;
   });
 
   const handleViewDetails = (deal) => {
     setSelectedDeal(deal);
     setShowDetailDialog(true);
+  };
+
+  const handleFilterChange = (key: string, value: any) => {
+    setActiveFilters(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const handleClearFilters = () => {
+    setActiveFilters({});
+    setSearchTerm('');
+  };
+
+  const handleBulkAction = (actionId: string, selectedIds: string[]) => {
+    console.log(`Bulk action ${actionId} on deals:`, selectedIds);
+    // TODO: Implement actual bulk actions
+    setSelectedDeals([]);
+  };
+
+  const handleSelectAll = () => {
+    setSelectedDeals(filteredDeals.map(deal => deal.id));
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedDeals([]);
   };
 
   const activeDeals = deals.filter(deal => !['Invested', 'Passed'].includes(deal.pipeline_stage)).length;
@@ -52,12 +196,20 @@ export default function Deals() {
           <h1 className="text-3xl font-bold">Deal Flow</h1>
           <p className="text-gray-600">Manage your investment pipeline</p>
         </div>
-        <AddDealDialog onDealAdded={refetch}>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Deal
-          </Button>
-        </AddDealDialog>
+        <div className="flex items-center gap-2">
+          <ExportData
+            data={filteredDeals}
+            filename="deals"
+            columns={exportColumns}
+            loading={loading}
+          />
+          <AddDealDialog onDealAdded={refetch}>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Deal
+            </Button>
+          </AddDealDialog>
+        </div>
       </div>
 
       {/* Stats Overview */}
@@ -96,55 +248,49 @@ export default function Deals() {
         </Card>
       </div>
 
-      {/* View Toggle and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
+      {/* Search and Filters */}
+      <SearchAndFilter
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        filters={filterOptions}
+        activeFilters={activeFilters}
+        onFilterChange={handleFilterChange}
+        onClearFilters={handleClearFilters}
+        placeholder="Search deals by company, contact, or location..."
+        showAdvanced={showAdvancedFilters}
+        onToggleAdvanced={() => setShowAdvancedFilters(!showAdvancedFilters)}
+      />
+
+      {/* Bulk Actions */}
+      <BulkActions
+        selectedItems={selectedDeals}
+        totalItems={filteredDeals.length}
+        onSelectAll={handleSelectAll}
+        onDeselectAll={handleDeselectAll}
+        actions={bulkActions}
+        onAction={handleBulkAction}
+        isAllSelected={selectedDeals.length === filteredDeals.length && filteredDeals.length > 0}
+      />
+
+      {/* View Toggle and Content */}
+      <div className="mt-6">
         <Tabs value={viewMode} onValueChange={setViewMode} className="w-full">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <TabsList>
-              <TabsTrigger value="board" className="flex items-center gap-2">
-                <LayoutGrid className="h-4 w-4" />
-                Pipeline Board
-              </TabsTrigger>
-              <TabsTrigger value="list" className="flex items-center gap-2">
-                <List className="h-4 w-4" />
-                List View
-              </TabsTrigger>
-            </TabsList>
+          <TabsList className="mb-6">
+            <TabsTrigger value="board" className="flex items-center gap-2">
+              <LayoutGrid className="h-4 w-4" />
+              Pipeline Board
+            </TabsTrigger>
+            <TabsTrigger value="list" className="flex items-center gap-2">
+              <List className="h-4 w-4" />
+              List View
+            </TabsTrigger>
+          </TabsList>
 
-            <div className="flex gap-4 w-full sm:w-auto">
-              <div className="flex-1 sm:w-64 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search deals..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Select value={stageFilter} onValueChange={setStageFilter}>
-                <SelectTrigger className="w-48">
-                  <Filter className="h-4 w-4 mr-2" />
-                  <SelectValue placeholder="Filter by stage" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Stages</SelectItem>
-                  <SelectItem value="Initial Contact">Initial Contact</SelectItem>
-                  <SelectItem value="First Meeting">First Meeting</SelectItem>
-                  <SelectItem value="Due Diligence">Due Diligence</SelectItem>
-                  <SelectItem value="Term Sheet">Term Sheet</SelectItem>
-                  <SelectItem value="Legal Review">Legal Review</SelectItem>
-                  <SelectItem value="Invested">Invested</SelectItem>
-                  <SelectItem value="Passed">Passed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <TabsContent value="board" className="mt-6">
+          <TabsContent value="board">
             <DealPipelineBoard deals={filteredDeals} onViewDetails={handleViewDetails} />
           </TabsContent>
 
-          <TabsContent value="list" className="mt-6">
+          <TabsContent value="list">
             {filteredDeals.length === 0 ? (
               <Card>
                 <CardHeader>

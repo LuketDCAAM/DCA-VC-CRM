@@ -1,13 +1,14 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Filter } from 'lucide-react';
+import { Trash2, Edit, Archive } from 'lucide-react';
 import { AddContactDialog } from '@/components/contacts/AddContactDialog';
 import { ContactCard } from '@/components/contacts/ContactCard';
 import { useContacts } from '@/hooks/useContacts';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SearchAndFilter, FilterOption } from '@/components/common/SearchAndFilter';
+import { BulkActions, BulkAction } from '@/components/common/BulkActions';
+import { ExportData } from '@/components/common/ExportData';
 
 interface Contact {
   id: string;
@@ -26,21 +27,121 @@ interface Contact {
 export default function Contacts() {
   const { contacts, loading, deleteContact, refetch } = useContacts();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all');
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+
+  // Filter options for contacts
+  const filterOptions: FilterOption[] = [
+    {
+      key: 'contact_type',
+      label: 'Contact Type',
+      value: 'contact_type',
+      type: 'select',
+      options: [
+        { label: 'Deal Contacts', value: 'deal' },
+        { label: 'Investor Contacts', value: 'investor' },
+        { label: 'General Contacts', value: 'general' },
+      ]
+    },
+    {
+      key: 'has_email',
+      label: 'Has Email',
+      value: 'has_email',
+      type: 'select',
+      options: [
+        { label: 'Yes', value: 'yes' },
+        { label: 'No', value: 'no' },
+      ]
+    },
+    {
+      key: 'has_phone',
+      label: 'Has Phone',
+      value: 'has_phone',
+      type: 'select',
+      options: [
+        { label: 'Yes', value: 'yes' },
+        { label: 'No', value: 'no' },
+      ]
+    },
+    {
+      key: 'created_at',
+      label: 'Date Added',
+      value: 'created_at',
+      type: 'date'
+    }
+  ];
+
+  // Bulk actions for contacts
+  const bulkActions: BulkAction[] = [
+    {
+      id: 'export-selected',
+      label: 'Export Selected',
+      icon: Edit,
+      variant: 'default'
+    },
+    {
+      id: 'archive',
+      label: 'Archive',
+      icon: Archive,
+      variant: 'secondary'
+    },
+    {
+      id: 'delete',
+      label: 'Delete',
+      icon: Trash2,
+      variant: 'destructive',
+      requiresConfirmation: true
+    }
+  ];
+
+  // Export columns for contacts
+  const exportColumns = [
+    { key: 'name', label: 'Name' },
+    { key: 'title', label: 'Title' },
+    { key: 'company_or_firm', label: 'Company/Firm' },
+    { key: 'email', label: 'Email' },
+    { key: 'phone', label: 'Phone' },
+    { key: 'contact_type', label: 'Contact Type' },
+    { key: 'created_at', label: 'Date Added' },
+  ];
 
   const filteredContacts = contacts.filter(contact => {
-    const matchesSearch = contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         contact.company_or_firm?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         contact.email?.toLowerCase().includes(searchTerm.toLowerCase());
+    // Search filter
+    const matchesSearch = searchTerm === '' ||
+      contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.company_or_firm?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.email?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesFilter = filterType === 'all' ||
-                         (filterType === 'deal' && contact.deal_id) ||
-                         (filterType === 'investor' && contact.investor_id) ||
-                         (filterType === 'general' && !contact.deal_id && !contact.investor_id);
+    // Active filters
+    const matchesFilters = Object.entries(activeFilters).every(([key, value]) => {
+      if (!value || value === 'all' || value === '') return true;
+      
+      if (key === 'contact_type') {
+        if (value === 'deal') return contact.deal_id !== null;
+        if (value === 'investor') return contact.investor_id !== null;
+        if (value === 'general') return !contact.deal_id && !contact.investor_id;
+      }
+      
+      if (key === 'has_email') {
+        return value === 'yes' ? contact.email !== null : contact.email === null;
+      }
+      
+      if (key === 'has_phone') {
+        return value === 'yes' ? contact.phone !== null : contact.phone === null;
+      }
+      
+      if (key === 'created_at') {
+        const contactDate = new Date(contact.created_at).toISOString().split('T')[0];
+        return contactDate >= value;
+      }
+      
+      return true;
+    });
 
-    return matchesSearch && matchesFilter;
+    return matchesSearch && matchesFilters;
   });
 
   const handleEditContact = (contact: Contact) => {
@@ -59,6 +160,39 @@ export default function Contacts() {
     setSelectedContact(null);
     refetch();
   };
+
+  const handleFilterChange = (key: string, value: any) => {
+    setActiveFilters(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const handleClearFilters = () => {
+    setActiveFilters({});
+    setSearchTerm('');
+  };
+
+  const handleBulkAction = (actionId: string, selectedIds: string[]) => {
+    console.log(`Bulk action ${actionId} on contacts:`, selectedIds);
+    // TODO: Implement actual bulk actions
+    setSelectedContacts([]);
+  };
+
+  const handleSelectAll = () => {
+    setSelectedContacts(filteredContacts.map(contact => contact.id));
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedContacts([]);
+  };
+
+  // Prepare export data with calculated fields
+  const exportData = filteredContacts.map(contact => ({
+    ...contact,
+    contact_type: contact.deal_id ? 'Deal Contact' : 
+                  contact.investor_id ? 'Investor Contact' : 'General Contact',
+  }));
 
   if (loading) {
     return (
@@ -98,7 +232,15 @@ export default function Contacts() {
           <h1 className="text-3xl font-bold">Contacts</h1>
           <p className="text-gray-600">Unified contact directory</p>
         </div>
-        <AddContactDialog onContactSaved={refetch} />
+        <div className="flex items-center gap-2">
+          <ExportData
+            data={exportData}
+            filename="contacts"
+            columns={exportColumns}
+            loading={loading}
+          />
+          <AddContactDialog onContactSaved={refetch} />
+        </div>
       </div>
 
       {contacts.length === 0 ? (
@@ -157,32 +299,29 @@ export default function Contacts() {
             </Card>
           </div>
 
-          {/* Search and Filter */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search contacts..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-gray-400" />
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Contacts</SelectItem>
-                  <SelectItem value="deal">Deal Contacts</SelectItem>
-                  <SelectItem value="investor">Investor Contacts</SelectItem>
-                  <SelectItem value="general">General Contacts</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          {/* Search and Filters */}
+          <SearchAndFilter
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            filters={filterOptions}
+            activeFilters={activeFilters}
+            onFilterChange={handleFilterChange}
+            onClearFilters={handleClearFilters}
+            placeholder="Search contacts by name, company, or email..."
+            showAdvanced={showAdvancedFilters}
+            onToggleAdvanced={() => setShowAdvancedFilters(!showAdvancedFilters)}
+          />
+
+          {/* Bulk Actions */}
+          <BulkActions
+            selectedItems={selectedContacts}
+            totalItems={filteredContacts.length}
+            onSelectAll={handleSelectAll}
+            onDeselectAll={handleDeselectAll}
+            actions={bulkActions}
+            onAction={handleBulkAction}
+            isAllSelected={selectedContacts.length === filteredContacts.length && filteredContacts.length > 0}
+          />
 
           {/* Contacts Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

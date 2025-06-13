@@ -1,27 +1,113 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Filter } from 'lucide-react';
+import { Plus, Trash2, Edit, Archive } from 'lucide-react';
 import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
 import { PortfolioCard } from '@/components/portfolio/PortfolioCard';
 import { PortfolioDetailDialog } from '@/components/portfolio/PortfolioDetailDialog';
 import AddPortfolioDialog from '@/components/portfolio/AddPortfolioDialog';
-import { useState } from 'react';
+import { SearchAndFilter, FilterOption } from '@/components/common/SearchAndFilter';
+import { BulkActions, BulkAction } from '@/components/common/BulkActions';
+import { ExportData } from '@/components/common/ExportData';
 
 export default function Portfolio() {
   const { companies, loading, refetch } = usePortfolioCompanies();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
   const [selectedCompany, setSelectedCompany] = useState<any>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+
+  // Filter options for portfolio companies
+  const filterOptions: FilterOption[] = [
+    {
+      key: 'status',
+      label: 'Status',
+      value: 'status',
+      type: 'select',
+      options: [
+        { label: 'Active', value: 'Active' },
+        { label: 'Exited', value: 'Exited' },
+        { label: 'Dissolved', value: 'Dissolved' },
+      ]
+    },
+    {
+      key: 'investment_amount',
+      label: 'Investment Amount',
+      value: 'investment_amount',
+      type: 'range'
+    },
+    {
+      key: 'created_at',
+      label: 'Date Added',
+      value: 'created_at',
+      type: 'date'
+    }
+  ];
+
+  // Bulk actions for portfolio companies
+  const bulkActions: BulkAction[] = [
+    {
+      id: 'update-status',
+      label: 'Update Status',
+      icon: Edit,
+      variant: 'default'
+    },
+    {
+      id: 'archive',
+      label: 'Archive',
+      icon: Archive,
+      variant: 'secondary'
+    },
+    {
+      id: 'delete',
+      label: 'Delete',
+      icon: Trash2,
+      variant: 'destructive',
+      requiresConfirmation: true
+    }
+  ];
+
+  // Export columns for portfolio companies
+  const exportColumns = [
+    { key: 'company_name', label: 'Company Name' },
+    { key: 'status', label: 'Status' },
+    { key: 'total_invested', label: 'Total Invested' },
+    { key: 'investment_count', label: 'Number of Investments' },
+    { key: 'created_at', label: 'Date Added' },
+    { key: 'updated_at', label: 'Last Updated' },
+  ];
 
   const filteredCompanies = companies.filter(company => {
-    const matchesSearch = company.company_name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || company.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    // Search filter
+    const matchesSearch = searchTerm === '' || 
+      company.company_name.toLowerCase().includes(searchTerm.toLowerCase());
+
+    // Active filters
+    const matchesFilters = Object.entries(activeFilters).every(([key, value]) => {
+      if (!value || value === 'all' || value === '') return true;
+      
+      if (key === 'created_at') {
+        const companyDate = new Date(company.created_at).toISOString().split('T')[0];
+        return companyDate >= value;
+      }
+      
+      if (key === 'investment_amount_min') {
+        const totalInvested = company.investments.reduce((sum, inv) => sum + inv.amount_invested, 0);
+        return totalInvested >= parseInt(value) * 100;
+      }
+      
+      if (key === 'investment_amount_max') {
+        const totalInvested = company.investments.reduce((sum, inv) => sum + inv.amount_invested, 0);
+        return totalInvested <= parseInt(value) * 100;
+      }
+      
+      return company[key as keyof typeof company] === value;
+    });
+
+    return matchesSearch && matchesFilters;
   });
 
   const totalInvested = companies.reduce((sum, company) => 
@@ -35,6 +121,39 @@ export default function Portfolio() {
     setSelectedCompany(company);
     setDetailDialogOpen(true);
   };
+
+  const handleFilterChange = (key: string, value: any) => {
+    setActiveFilters(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
+
+  const handleClearFilters = () => {
+    setActiveFilters({});
+    setSearchTerm('');
+  };
+
+  const handleBulkAction = (actionId: string, selectedIds: string[]) => {
+    console.log(`Bulk action ${actionId} on portfolio companies:`, selectedIds);
+    // TODO: Implement actual bulk actions
+    setSelectedCompanies([]);
+  };
+
+  const handleSelectAll = () => {
+    setSelectedCompanies(filteredCompanies.map(company => company.id));
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedCompanies([]);
+  };
+
+  // Prepare export data with calculated fields
+  const exportData = filteredCompanies.map(company => ({
+    ...company,
+    total_invested: company.investments.reduce((sum, inv) => sum + inv.amount_invested, 0) / 100,
+    investment_count: company.investments.length,
+  }));
 
   if (loading) {
     return (
@@ -51,12 +170,20 @@ export default function Portfolio() {
           <h1 className="text-3xl font-bold">Portfolio Companies</h1>
           <p className="text-gray-600">Track your invested companies</p>
         </div>
-        <AddPortfolioDialog onSuccess={refetch}>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Company
-          </Button>
-        </AddPortfolioDialog>
+        <div className="flex items-center gap-2">
+          <ExportData
+            data={exportData}
+            filename="portfolio-companies"
+            columns={exportColumns}
+            loading={loading}
+          />
+          <AddPortfolioDialog onSuccess={refetch}>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Company
+            </Button>
+          </AddPortfolioDialog>
+        </div>
       </div>
 
       {/* Stats Overview */}
@@ -94,29 +221,28 @@ export default function Portfolio() {
       </div>
 
       {/* Search and Filters */}
-      <div className="flex gap-4 mb-6">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Search companies..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-48">
-            <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Filter by status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="Active">Active</SelectItem>
-            <SelectItem value="Exited">Exited</SelectItem>
-            <SelectItem value="Dissolved">Dissolved</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <SearchAndFilter
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+        filters={filterOptions}
+        activeFilters={activeFilters}
+        onFilterChange={handleFilterChange}
+        onClearFilters={handleClearFilters}
+        placeholder="Search companies..."
+        showAdvanced={showAdvancedFilters}
+        onToggleAdvanced={() => setShowAdvancedFilters(!showAdvancedFilters)}
+      />
+
+      {/* Bulk Actions */}
+      <BulkActions
+        selectedItems={selectedCompanies}
+        totalItems={filteredCompanies.length}
+        onSelectAll={handleSelectAll}
+        onDeselectAll={handleDeselectAll}
+        actions={bulkActions}
+        onAction={handleBulkAction}
+        isAllSelected={selectedCompanies.length === filteredCompanies.length && filteredCompanies.length > 0}
+      />
 
       {/* Portfolio Companies Grid */}
       {filteredCompanies.length === 0 ? (
