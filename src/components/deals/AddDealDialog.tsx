@@ -32,7 +32,7 @@ const pipelineStages = [
   'Legal Review',
   'Invested',
   'Passed'
-];
+] as const;
 
 const roundStages = [
   'Pre-Seed',
@@ -42,7 +42,7 @@ const roundStages = [
   'Series C',
   'Bridge',
   'Growth'
-];
+] as const;
 
 interface AddDealDialogProps {
   onDealAdded: () => void;
@@ -61,7 +61,7 @@ export function AddDealDialog({ onDealAdded }: AddDealDialogProps) {
     contact_phone: '',
     website: '',
     location: '',
-    pipeline_stage: 'Initial Contact',
+    pipeline_stage: 'Initial Contact' as typeof pipelineStages[number],
     round_stage: '',
     round_size: '',
     post_money_valuation: '',
@@ -75,17 +75,23 @@ export function AddDealDialog({ onDealAdded }: AddDealDialogProps) {
     setLoading(true);
     try {
       const dealData = {
-        ...formData,
+        company_name: formData.company_name,
+        contact_name: formData.contact_name || null,
+        contact_email: formData.contact_email || null,
+        contact_phone: formData.contact_phone || null,
+        website: formData.website || null,
+        location: formData.location || null,
+        pipeline_stage: formData.pipeline_stage,
+        round_stage: formData.round_stage || null,
         round_size: formData.round_size ? parseInt(formData.round_size) : null,
         post_money_valuation: formData.post_money_valuation ? parseInt(formData.post_money_valuation) : null,
         revenue: formData.revenue ? parseInt(formData.revenue) : null,
-        round_stage: formData.round_stage || null,
         created_by: user.id,
       };
 
       const { error } = await supabase
         .from('deals')
-        .insert([dealData]);
+        .insert(dealData);
 
       if (error) throw error;
 
