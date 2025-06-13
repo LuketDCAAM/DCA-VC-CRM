@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, Edit, Archive } from 'lucide-react';
+import { Plus, Trash2, Edit, Archive, Upload } from 'lucide-react';
 import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
 import { PortfolioCard } from '@/components/portfolio/PortfolioCard';
 import { PortfolioDetailDialog } from '@/components/portfolio/PortfolioDetailDialog';
@@ -10,15 +9,34 @@ import AddPortfolioDialog from '@/components/portfolio/AddPortfolioDialog';
 import { SearchAndFilter, FilterOption } from '@/components/common/SearchAndFilter';
 import { BulkActions, BulkAction } from '@/components/common/BulkActions';
 import { ExportData } from '@/components/common/ExportData';
+import { CSVImport } from '@/components/common/CSVImport';
+import { useCSVImport } from '@/hooks/useCSVImport';
 
 export default function Portfolio() {
   const { companies, loading, refetch } = usePortfolioCompanies();
+  const { importPortfolioCompanies } = useCSVImport();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCompany, setSelectedCompany] = useState<any>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+
+  // CSV template columns for portfolio companies
+  const csvTemplateColumns = [
+    { key: 'company_name', label: 'Company Name', required: true },
+    { key: 'status', label: 'Status' },
+    { key: 'tags', label: 'Tags (separated by ;)' },
+    { key: 'relationship_owner', label: 'Relationship Owner' },
+  ];
+
+  const handleCSVImport = async (data: any[]) => {
+    const result = await importPortfolioCompanies(data);
+    if (result.success) {
+      refetch();
+    }
+    return result;
+  };
 
   // Filter options for portfolio companies
   const filterOptions: FilterOption[] = [
@@ -177,6 +195,17 @@ export default function Portfolio() {
             columns={exportColumns}
             loading={loading}
           />
+          <CSVImport
+            title="Import Portfolio Companies"
+            description="Upload a CSV file to import multiple portfolio companies at once"
+            templateColumns={csvTemplateColumns}
+            onImport={handleCSVImport}
+          >
+            <Button variant="outline" size="sm">
+              <Upload className="h-4 w-4 mr-2" />
+              Import CSV
+            </Button>
+          </CSVImport>
           <AddPortfolioDialog onSuccess={refetch}>
             <Button>
               <Plus className="h-4 w-4 mr-2" />

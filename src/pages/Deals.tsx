@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, LayoutGrid, List, Trash2, Edit, Archive } from 'lucide-react';
+import { Plus, LayoutGrid, List, Trash2, Edit, Archive, Upload } from 'lucide-react';
 import { useDeals } from '@/hooks/useDeals';
 import { DealCard } from '@/components/deals/DealCard';
 import { DealDetailDialog } from '@/components/deals/DealDetailDialog';
@@ -12,9 +11,12 @@ import { DealPipelineBoard } from '@/components/deals/DealPipelineBoard';
 import { SearchAndFilter, FilterOption } from '@/components/common/SearchAndFilter';
 import { BulkActions, BulkAction } from '@/components/common/BulkActions';
 import { ExportData } from '@/components/common/ExportData';
+import { CSVImport } from '@/components/common/CSVImport';
+import { useCSVImport } from '@/hooks/useCSVImport';
 
 export default function Deals() {
   const { deals, loading, refetch } = useDeals();
+  const { importDeals } = useCSVImport();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -22,6 +24,29 @@ export default function Deals() {
   const [selectedDeals, setSelectedDeals] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+
+  // CSV template columns for deals
+  const csvTemplateColumns = [
+    { key: 'company_name', label: 'Company Name', required: true },
+    { key: 'contact_name', label: 'Contact Name' },
+    { key: 'contact_email', label: 'Contact Email' },
+    { key: 'contact_phone', label: 'Contact Phone' },
+    { key: 'website', label: 'Website' },
+    { key: 'location', label: 'Location' },
+    { key: 'pipeline_stage', label: 'Pipeline Stage' },
+    { key: 'round_stage', label: 'Round Stage' },
+    { key: 'round_size', label: 'Round Size ($)' },
+    { key: 'post_money_valuation', label: 'Post Money Valuation ($)' },
+    { key: 'revenue', label: 'Revenue ($)' },
+  ];
+
+  const handleCSVImport = async (data: any[]) => {
+    const result = await importDeals(data);
+    if (result.success) {
+      refetch();
+    }
+    return result;
+  };
 
   // Filter options for deals
   const filterOptions: FilterOption[] = [
@@ -203,6 +228,17 @@ export default function Deals() {
             columns={exportColumns}
             loading={loading}
           />
+          <CSVImport
+            title="Import Deals"
+            description="Upload a CSV file to import multiple deals at once"
+            templateColumns={csvTemplateColumns}
+            onImport={handleCSVImport}
+          >
+            <Button variant="outline" size="sm">
+              <Upload className="h-4 w-4 mr-2" />
+              Import CSV
+            </Button>
+          </CSVImport>
           <AddDealDialog onDealAdded={refetch}>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
