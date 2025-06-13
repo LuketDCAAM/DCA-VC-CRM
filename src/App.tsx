@@ -6,7 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from './hooks/useAuth';
+import { useUserRoles } from './hooks/useUserRoles';
 import AuthForm from './components/auth/AuthForm';
+import ApprovalStatus from './components/auth/ApprovalStatus';
 import Sidebar from './components/layout/Sidebar';
 import Dashboard from './pages/Dashboard';
 import Deals from './pages/Deals';
@@ -19,9 +21,10 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function AppContent() {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { isApproved, loading: rolesLoading } = useUserRoles();
 
-  if (loading) {
+  if (authLoading || rolesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-lg">Loading...</div>
@@ -31,6 +34,11 @@ function AppContent() {
 
   if (!user) {
     return <AuthForm />;
+  }
+
+  // If user is logged in but not approved, show approval status
+  if (!isApproved) {
+    return <ApprovalStatus />;
   }
 
   return (

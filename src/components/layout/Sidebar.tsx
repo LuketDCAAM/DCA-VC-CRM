@@ -1,11 +1,14 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Building2, Users, DollarSign, Contact, BarChart3, LogOut } from 'lucide-react';
+import { Building2, Users, DollarSign, Contact, BarChart3, LogOut, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useUserRoles } from '@/hooks/useUserRoles';
+import { UserApprovalsDialog } from '@/components/admin/UserApprovalsDialog';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
@@ -18,6 +21,7 @@ const navigation = [
 export default function Sidebar() {
   const location = useLocation();
   const { toast } = useToast();
+  const { isAdmin } = useUserRoles();
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -56,6 +60,18 @@ export default function Sidebar() {
             );
           })}
         </nav>
+        
+        {/* Admin Controls */}
+        {isAdmin && (
+          <div className="px-4 py-2 border-t border-gray-700">
+            <div className="flex items-center mb-2">
+              <Shield className="h-4 w-4 text-green-400 mr-2" />
+              <span className="text-sm text-green-400 font-medium">Admin</span>
+            </div>
+            <UserApprovalsDialog />
+          </div>
+        )}
+        
         <div className="p-4">
           <Button
             onClick={handleSignOut}
