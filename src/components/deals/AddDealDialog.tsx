@@ -74,6 +74,13 @@ export function AddDealDialog({ onDealAdded, children }: AddDealDialogProps) {
     if (!user) return;
 
     setLoading(true);
+
+    const parseAndScaleCurrency = (value: string) => {
+      if (!value) return null;
+      const num = parseFloat(value);
+      return isNaN(num) ? null : Math.round(num * 100);
+    }
+
     try {
       const dealData = {
         company_name: formData.company_name,
@@ -84,9 +91,9 @@ export function AddDealDialog({ onDealAdded, children }: AddDealDialogProps) {
         location: formData.location || null,
         pipeline_stage: formData.pipeline_stage,
         round_stage: formData.round_stage ? formData.round_stage as typeof roundStages[number] : null,
-        round_size: formData.round_size ? parseInt(formData.round_size) : null,
-        post_money_valuation: formData.post_money_valuation ? parseInt(formData.post_money_valuation) : null,
-        revenue: formData.revenue ? parseInt(formData.revenue) : null,
+        round_size: parseAndScaleCurrency(formData.round_size),
+        post_money_valuation: parseAndScaleCurrency(formData.post_money_valuation),
+        revenue: parseAndScaleCurrency(formData.revenue),
         created_by: user.id,
       };
 

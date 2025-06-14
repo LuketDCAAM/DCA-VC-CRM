@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,10 +14,12 @@ import { BulkActions, BulkAction } from '@/components/common/BulkActions';
 import { ExportData } from '@/components/common/ExportData';
 import { CSVImport } from '@/components/common/CSVImport';
 import { useCSVImport } from '@/hooks/useCSVImport';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Deals() {
   const { deals, loading, refetch } = useDeals();
   const { importDeals } = useCSVImport();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDeal, setSelectedDeal] = useState(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -46,7 +49,43 @@ export default function Deals() {
   ];
 
   const handleCSVImport = async (data: any[]) => {
-    const result = await importDeals(data);
+    if (!user) {
+      return { success: false, error: 'You must be logged in to import deals.' };
+    }
+
+    const parseCurrency = (value: string | number | null) => {
+      if (value === null || value === undefined || value === '') return null;
+      const num = parseFloat(String(value).replace(/[^0-9.-]+/g,""));
+      return isNaN(num) ? null : Math.round(num * 100);
+    };
+
+    const processedData = data
+      .filter(row => row.company_name) // Ensure required field is present
+      .map(row => ({
+        company_name: row.company_name,
+        description: row.description || null,
+        contact_name: row.contact_name || null,
+        contact_email: row.contact_email || null,
+        contact_phone: row.contact_phone || null,
+        website: row.website || null,
+        location: row.location || null,
+        pipeline_stage: row.pipeline_stage || 'Initial Contact',
+        round_stage: row.round_stage || null,
+        round_size: parseCurrency(row.round_size),
+        post_money_valuation: parseCurrency(row.post_money_valuation),
+        revenue: parseCurrency(row.revenue),
+        deal_score: row.deal_score ? parseInt(String(row.deal_score).replace(/[^0-9]/g, ''), 10) : null,
+        deal_lead: row.deal_lead || null,
+        deal_source: row.deal_source || null,
+        source_date: row.source_date || null,
+        created_by: user.id,
+      }));
+
+    if (processedData.length === 0) {
+      return { success: false, error: 'No valid deals to import. Make sure "Company Name" is provided for each row.' };
+    }
+      
+    const result = await importDeals(processedData);
     if (result.success) {
       refetch();
     }
