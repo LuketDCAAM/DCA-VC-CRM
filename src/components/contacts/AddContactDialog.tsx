@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus } from 'lucide-react';
 import { useContacts } from '@/hooks/useContacts';
 import { useDeals } from '@/hooks/useDeals';
 import { useInvestors } from '@/hooks/useInvestors';
 import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
 import { type Investor } from '@/types/investor';
+import { ContactForm, contactFormSchema, type ContactFormValues } from './ContactForm';
+import { Form } from '@/components/ui/form';
 
 interface PartialDeal {
   id: string;
@@ -41,23 +43,20 @@ interface AddContactDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-export function AddContactDialog({ contact, onContactSaved, trigger, preselectedInvestor, preselectedDeal, open: controlledOpen, onOpenChange: setControlledOpen }: AddContactDialogProps) {
+export function AddContactDialog({ 
+  contact, 
+  onContactSaved, 
+  trigger, 
+  preselectedInvestor, 
+  preselectedDeal, 
+  open: controlledOpen, 
+  onOpenChange: setControlledOpen 
+}: AddContactDialogProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
-
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : uncontrolledOpen;
   const setOpen = isControlled ? setControlledOpen! : setUncontrolledOpen;
 
-  const [formData, setFormData] = useState({
-    name: '',
-    title: '',
-    company_or_firm: '',
-    email: '',
-    phone: '',
-    deal_id: '',
-    investor_id: '',
-    portfolio_company_id: '',
-  });
   const [loading, setLoading] = useState(false);
   
   const { addContact, updateContact } = useContacts();
@@ -65,9 +64,9 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
   const { investors } = useInvestors();
   const { companies: portfolioCompanies } = usePortfolioCompanies();
 
-  useEffect(() => {
+  const defaultValues = useMemo(() => {
     if (contact) {
-      setFormData({
+      return {
         name: contact.name || '',
         title: contact.title || '',
         company_or_firm: contact.company_or_firm || '',
@@ -76,9 +75,10 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
         deal_id: contact.deal_id || '',
         investor_id: contact.investor_id || '',
         portfolio_company_id: contact.portfolio_company_id || '',
-      });
-    } else if (preselectedInvestor) {
-      setFormData({
+      };
+    } 
+    if (preselectedInvestor) {
+      return {
         name: '',
         title: '',
         company_or_firm: preselectedInvestor.firm_name || '',
@@ -87,9 +87,10 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
         deal_id: '',
         investor_id: preselectedInvestor.id,
         portfolio_company_id: '',
-      });
-    } else if (preselectedDeal) {
-      setFormData({
+      };
+    } 
+    if (preselectedDeal) {
+      return {
         name: '',
         title: '',
         company_or_firm: preselectedDeal.company_name || '',
@@ -98,9 +99,9 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
         deal_id: preselectedDeal.id,
         investor_id: '',
         portfolio_company_id: '',
-      });
-    } else {
-      setFormData({
+      };
+    }
+    return {
         name: '',
         title: '',
         company_or_firm: '',
@@ -109,25 +110,32 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
         deal_id: '',
         investor_id: '',
         portfolio_company_id: '',
-      });
+      };
+  }, [contact, preselectedInvestor, preselectedDeal]);
+
+  const form = useForm<ContactFormValues>({
+    resolver: zodResolver(contactFormSchema),
+    defaultValues,
+  });
+
+  useEffect(() => {
+    if (open) {
+      form.reset(defaultValues);
     }
-  }, [contact, open, preselectedInvestor, preselectedDeal]);
+  }, [open, defaultValues, form]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name.trim()) return;
-
+  const handleSubmit = async (values: ContactFormValues) => {
     setLoading(true);
     try {
       const contactData = {
-        name: formData.name,
-        title: formData.title || null,
-        company_or_firm: formData.company_or_firm || null,
-        email: formData.email || null,
-        phone: formData.phone || null,
-        deal_id: formData.deal_id || null,
-        investor_id: formData.investor_id || null,
-        portfolio_company_id: formData.portfolio_company_id || null,
+        name: values.name,
+        title: values.title || null,
+        company_or_firm: values.company_or_firm || null,
+        email: values.email || null,
+        phone: values.phone || null,
+        deal_id: values.deal_id || null,
+        investor_id: values.investor_id || null,
+        portfolio_company_id: values.portfolio_company_id || null,
         relationship_owner: null,
       };
 
@@ -160,9 +168,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
       )}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>
-            {contact ? 'Edit Contact' : 'Add New Contact'}
-          </DialogTitle>
+          <DialogTitle>{contact ? 'Edit Contact' : 'Add New Contact'}</DialogTitle>
           <DialogDescription>
             {contact ? 'Update contact information.' : 'Add a new contact to your directory.'}
           </DialogDescription>
@@ -183,132 +189,26 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
           </div>
         )}
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Name *</Label>
-            <Input
-              id="name"
-              value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-              placeholder="Contact name"
-              required
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} id="contact-form">
+            <ContactForm 
+              deals={deals}
+              investors={investors}
+              portfolioCompanies={portfolioCompanies}
+              preselectedDeal={preselectedDeal}
+              preselectedInvestor={preselectedInvestor}
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="Job title"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="company">Company/Firm</Label>
-            <Input
-              id="company"
-              value={formData.company_or_firm}
-              onChange={(e) => setFormData(prev => ({ ...prev, company_or_firm: e.target.value }))}
-              placeholder="Company or firm name"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-              placeholder="email@example.com"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
-            <Input
-              id="phone"
-              value={formData.phone}
-              onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-              placeholder="+1 (555) 123-4567"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="deal">Associated Deal</Label>
-            <Select 
-              value={formData.deal_id || ''} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, deal_id: value === '_clear_' ? '' : value, investor_id: '', portfolio_company_id: '' }))}
-              disabled={!!preselectedInvestor || !!preselectedDeal}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a deal (optional)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="_clear_">No associated deal</SelectItem>
-                {deals.map((deal) => (
-                  <SelectItem key={deal.id} value={deal.id}>
-                    {deal.company_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="investor">Associated Investor</Label>
-            <Select
-              value={formData.investor_id || ''}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, investor_id: value === '_clear_' ? '' : value, deal_id: '', portfolio_company_id: '' }))}
-              disabled={!!preselectedInvestor || !!preselectedDeal}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select an investor (optional)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="_clear_">No associated investor</SelectItem>
-                {investors.map((investor) => (
-                  <SelectItem key={investor.id} value={investor.id}>
-                    {investor.contact_name}{' '}
-                    {investor.firm_name && `(${investor.firm_name})`}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="portfolio_company">Associated Portfolio Company</Label>
-            <Select
-              value={formData.portfolio_company_id || ''}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, portfolio_company_id: value === '_clear_' ? '' : value, deal_id: '', investor_id: '' }))}
-              disabled={!!preselectedInvestor || !!preselectedDeal}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a portfolio company (optional)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="_clear_">No associated portfolio company</SelectItem>
-                {portfolioCompanies.map((company) => (
-                  <SelectItem key={company.id} value={company.id}>
-                    {company.company_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Saving...' : (contact ? 'Update Contact' : 'Add Contact')}
-            </Button>
-          </DialogFooter>
-        </form>
+          </form>
+        </Form>
+        
+        <DialogFooter>
+          <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button type="submit" form="contact-form" disabled={loading}>
+            {loading ? 'Saving...' : (contact ? 'Update Contact' : 'Add Contact')}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
