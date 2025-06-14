@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -216,15 +215,15 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
           <div className="space-y-2">
             <Label htmlFor="deal">Associated Deal</Label>
             <Select 
-              value={formData.deal_id} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, deal_id: value, investor_id: '', portfolio_company_id: '' }))}
+              value={formData.deal_id || ''} 
+              onValueChange={(value) => setFormData(prev => ({ ...prev, deal_id: value === '_clear_' ? '' : value, investor_id: '', portfolio_company_id: '' }))}
               disabled={!!preselectedInvestor}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a deal (optional)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No associated deal</SelectItem>
+                <SelectItem value="_clear_">No associated deal</SelectItem>
                 {deals.map((deal) => (
                   <SelectItem key={deal.id} value={deal.id}>
                     {deal.company_name}
@@ -237,15 +236,15 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
           <div className="space-y-2">
             <Label htmlFor="investor">Associated Investor</Label>
             <Select
-              value={formData.investor_id}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, investor_id: value, deal_id: '', portfolio_company_id: '' }))}
+              value={formData.investor_id || ''}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, investor_id: value === '_clear_' ? '' : value, deal_id: '', portfolio_company_id: '' }))}
               disabled={!!preselectedInvestor}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select an investor (optional)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No associated investor</SelectItem>
+                <SelectItem value="_clear_">No associated investor</SelectItem>
                 {investors.map((investor) => (
                   <SelectItem key={investor.id} value={investor.id}>
                     {investor.contact_name}{' '}
@@ -259,15 +258,15 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
           <div className="space-y-2">
             <Label htmlFor="portfolio_company">Associated Portfolio Company</Label>
             <Select
-              value={formData.portfolio_company_id}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, portfolio_company_id: value, deal_id: '', investor_id: '' }))}
+              value={formData.portfolio_company_id || ''}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, portfolio_company_id: value === '_clear_' ? '' : value, deal_id: '', investor_id: '' }))}
               disabled={!!preselectedInvestor}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a portfolio company (optional)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No associated portfolio company</SelectItem>
+                <SelectItem value="_clear_">No associated portfolio company</SelectItem>
                 {portfolioCompanies.map((company) => (
                   <SelectItem key={company.id} value={company.id}>
                     {company.company_name}
