@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Deal } from '@/types/deal';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useId } from 'react';
 
 async function fetchDeals(userId: string): Promise<Deal[]> {
   const { data, error } = await supabase
@@ -22,6 +22,7 @@ async function fetchDeals(userId: string): Promise<Deal[]> {
 export function useDeals() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const id = useId(); // Create a unique ID for this hook instance
 
   const queryKey = useMemo(() => ['deals', user?.id], [user?.id]);
 
@@ -41,8 +42,9 @@ export function useDeals() {
   useEffect(() => {
     if (!user?.id) return;
 
+    const channelName = `custom-deals-channel-${id}`;
     const dealsChannel = supabase
-      .channel('custom-deals-channel')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -61,7 +63,7 @@ export function useDeals() {
     return () => {
       supabase.removeChannel(dealsChannel);
     };
-  }, [user?.id, queryClient, queryKey]);
+  }, [user?.id, queryClient, queryKey, id]);
 
   return {
     deals,
