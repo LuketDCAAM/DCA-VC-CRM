@@ -216,7 +216,9 @@ export type Database = {
           contact_phone: string | null
           created_at: string
           created_by: string
+          deal_lead: string | null
           deal_score: number | null
+          deal_source: string | null
           description: string | null
           id: string
           last_call_date: string | null
@@ -227,6 +229,7 @@ export type Database = {
           revenue: number | null
           round_size: number | null
           round_stage: Database["public"]["Enums"]["round_stage"] | null
+          source_date: string | null
           tags: string[] | null
           updated_at: string
           website: string | null
@@ -238,7 +241,9 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           created_by: string
+          deal_lead?: string | null
           deal_score?: number | null
+          deal_source?: string | null
           description?: string | null
           id?: string
           last_call_date?: string | null
@@ -249,6 +254,7 @@ export type Database = {
           revenue?: number | null
           round_size?: number | null
           round_stage?: Database["public"]["Enums"]["round_stage"] | null
+          source_date?: string | null
           tags?: string[] | null
           updated_at?: string
           website?: string | null
@@ -260,7 +266,9 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           created_by?: string
+          deal_lead?: string | null
           deal_score?: number | null
+          deal_source?: string | null
           description?: string | null
           id?: string
           last_call_date?: string | null
@@ -271,6 +279,7 @@ export type Database = {
           revenue?: number | null
           round_size?: number | null
           round_stage?: Database["public"]["Enums"]["round_stage"] | null
+          source_date?: string | null
           tags?: string[] | null
           updated_at?: string
           website?: string | null

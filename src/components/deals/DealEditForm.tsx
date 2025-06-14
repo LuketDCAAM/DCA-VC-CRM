@@ -30,6 +30,9 @@ interface Deal {
   created_at: string;
   updated_at: string;
   deal_score: number | null;
+  source_date: string | null;
+  deal_source: string | null;
+  deal_lead: string | null;
 }
 
 interface DealEditFormProps {
@@ -64,6 +67,9 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
     revenue: formatCurrency(deal.revenue),
     description: deal.description || '',
     deal_score: deal.deal_score?.toString() || '',
+    source_date: deal.source_date || '',
+    deal_source: deal.deal_source || '',
+    deal_lead: deal.deal_lead || '',
   });
   const { toast } = useToast();
 
@@ -88,6 +94,9 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
         revenue: parseCurrency(formData.revenue),
         description: formData.description || null,
         deal_score: formData.deal_score ? parseInt(formData.deal_score, 10) : null,
+        source_date: formData.source_date || null,
+        deal_source: formData.deal_source || null,
+        deal_lead: formData.deal_lead || null,
         updated_at: new Date().toISOString(),
       };
 
@@ -267,6 +276,33 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
                 value={formData.deal_score}
                 onChange={(e) => handleInputChange('deal_score', e.target.value)}
                 placeholder="Enter a score from 0 to 100"
+              />
+            </div>
+            <div>
+              <Label htmlFor="deal_lead">Deal Lead</Label>
+              <Input
+                id="deal_lead"
+                value={formData.deal_lead}
+                onChange={(e) => handleInputChange('deal_lead', e.target.value)}
+                placeholder="Name of the deal lead"
+              />
+            </div>
+            <div>
+              <Label htmlFor="deal_source">Deal Source</Label>
+              <Input
+                id="deal_source"
+                value={formData.deal_source}
+                onChange={(e) => handleInputChange('deal_source', e.target.value)}
+                placeholder="e.g. Referral, Conference, Cold Outreach"
+              />
+            </div>
+            <div>
+              <Label htmlFor="source_date">Source Date</Label>
+              <Input
+                id="source_date"
+                type="date"
+                value={formData.source_date.split('T')[0]}
+                onChange={(e) => handleInputChange('source_date', e.target.value)}
               />
             </div>
           </CardContent>

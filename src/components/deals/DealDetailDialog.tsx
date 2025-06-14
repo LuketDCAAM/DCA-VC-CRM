@@ -30,6 +30,9 @@ interface Deal {
   created_at: string;
   updated_at: string;
   deal_score: number | null;
+  source_date: string | null;
+  deal_source: string | null;
+  deal_lead: string | null;
 }
 
 interface DealDetailDialogProps {

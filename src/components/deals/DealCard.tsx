@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, User, Mail, Phone, Globe, MapPin, DollarSign, Eye, Star } from 'lucide-react';
+import { Building2, User, Mail, Phone, Globe, MapPin, DollarSign, Eye, Star, ClipboardList } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 
 type PipelineStage = Database['public']['Enums']['pipeline_stage'];
@@ -24,6 +24,9 @@ interface Deal {
   revenue: number | null;
   created_at: string;
   deal_score: number | null;
+  source_date: string | null;
+  deal_source: string | null;
+  deal_lead: string | null;
 }
 
 interface DealCardProps {
@@ -124,6 +127,20 @@ export function DealCard({ deal, onViewDetails }: DealCardProps) {
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <MapPin className="h-4 w-4" />
             {deal.location}
+          </div>
+        )}
+
+        {deal.deal_lead && (
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <User className="h-4 w-4" />
+            <span>Lead: {deal.deal_lead}</span>
+          </div>
+        )}
+        
+        {deal.deal_source && (
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <ClipboardList className="h-4 w-4" />
+            <span>Source: {deal.deal_source}</span>
           </div>
         )}
 

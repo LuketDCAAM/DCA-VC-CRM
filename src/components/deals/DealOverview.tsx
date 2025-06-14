@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Building2, Calendar, DollarSign, TrendingUp, MapPin, Globe, User, Mail, Phone } from 'lucide-react';
+import { Building2, Calendar, DollarSign, TrendingUp, MapPin, Globe, User, Mail, Phone, ClipboardList } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 
 type PipelineStage = Database['public']['Enums']['pipeline_stage'];
@@ -23,6 +22,10 @@ interface Deal {
   revenue: number | null;
   created_at: string;
   updated_at: string;
+  deal_score: number | null;
+  source_date: string | null;
+  deal_source: string | null;
+  deal_lead: string | null;
 }
 
 interface DealOverviewProps {
@@ -189,6 +192,36 @@ export function DealOverview({ deal }: DealOverviewProps) {
                 <div className="font-medium">
                   {((deal.round_size / deal.post_money_valuation) * 100).toFixed(2)}%
                 </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Source Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <ClipboardList className="h-5 w-5" />
+              Source Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {deal.deal_lead && (
+              <div>
+                <div className="text-sm text-gray-500 mb-1">Deal Lead</div>
+                <div className="font-medium">{deal.deal_lead}</div>
+              </div>
+            )}
+            {deal.deal_source && (
+              <div>
+                <div className="text-sm text-gray-500 mb-1">Deal Source</div>
+                <div className="font-medium">{deal.deal_source}</div>
+              </div>
+            )}
+            {deal.source_date && (
+              <div>
+                <div className="text-sm text-gray-500 mb-1">Source Date</div>
+                <div className="font-medium">{new Date(deal.source_date).toLocaleDateString(undefined, { timeZone: 'UTC' })}</div>
               </div>
             )}
           </CardContent>

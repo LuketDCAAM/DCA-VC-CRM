@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,6 +40,9 @@ export default function Deals() {
     { key: 'post_money_valuation', label: 'Post Money Valuation ($)' },
     { key: 'revenue', label: 'Revenue ($)' },
     { key: 'deal_score', label: 'Deal Score (0-100)' },
+    { key: 'deal_lead', label: 'Deal Lead' },
+    { key: 'deal_source', label: 'Deal Source' },
+    { key: 'source_date', label: 'Source Date (YYYY-MM-DD)' },
   ];
 
   const handleCSVImport = async (data: any[]) => {
@@ -114,6 +116,25 @@ export default function Deals() {
       label: 'Date Added',
       value: 'created_at',
       type: 'date'
+    },
+    {
+      key: 'deal_source',
+      label: 'Deal Source',
+      value: 'deal_source',
+      type: 'select',
+      options: [
+        { label: 'Referral', value: 'Referral' },
+        { label: 'Conference', value: 'Conference' },
+        { label: 'Cold Outreach', value: 'Cold Outreach' },
+        { label: 'Inbound', value: 'Inbound' },
+        { label: 'Network', value: 'Network' },
+      ]
+    },
+    {
+      key: 'source_date',
+      label: 'Source Date',
+      value: 'source_date',
+      type: 'date'
     }
   ];
 
@@ -152,15 +173,20 @@ export default function Deals() {
     { key: 'location', label: 'Location' },
     { key: 'website', label: 'Website' },
     { key: 'created_at', label: 'Date Added' },
+    { key: 'deal_lead', label: 'Deal Lead' },
+    { key: 'deal_source', label: 'Deal Source' },
+    { key: 'source_date', label: 'Source Date' },
   ];
 
   const filteredDeals = deals.filter(deal => {
     // Search filter
     const matchesSearch = searchTerm === '' || 
       deal.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deal.contact_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deal.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deal.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      (deal.contact_name && deal.contact_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (deal.location && deal.location.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (deal.description && deal.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (deal.deal_lead && deal.deal_lead.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (deal.deal_source && deal.deal_source.toLowerCase().includes(searchTerm.toLowerCase()));
 
     // Active filters
     const matchesFilters = Object.entries(activeFilters).every(([key, value]) => {
@@ -168,6 +194,12 @@ export default function Deals() {
       
       if (key === 'created_at') {
         const dealDate = new Date(deal.created_at).toISOString().split('T')[0];
+        return dealDate >= value;
+      }
+
+      if (key === 'source_date') {
+        if (!deal.source_date) return false;
+        const dealDate = new Date(deal.source_date).toISOString().split('T')[0];
         return dealDate >= value;
       }
       
