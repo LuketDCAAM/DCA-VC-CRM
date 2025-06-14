@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Building2, Mail, Phone, MapPin, DollarSign, Target } from 'lucide-react';
+import { Building2, Mail, Phone, MapPin, DollarSign, Target, UserPlus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface InvestorCardProps {
   investor: {
@@ -20,9 +20,10 @@ interface InvestorCardProps {
     relationship_owner: string | null;
   };
   onViewDetails?: (investor: any) => void;
+  onAddContact?: (investor: any) => void;
 }
 
-export function InvestorCard({ investor, onViewDetails }: InvestorCardProps) {
+export function InvestorCard({ investor, onViewDetails, onAddContact }: InvestorCardProps) {
   return (
     <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => onViewDetails?.(investor)}>
       <CardHeader className="pb-3">
@@ -36,11 +37,27 @@ export function InvestorCard({ investor, onViewDetails }: InvestorCardProps) {
               </div>
             )}
           </div>
-          {investor.preferred_investment_stage && (
-            <Badge variant="secondary" className="text-xs">
-              {investor.preferred_investment_stage}
-            </Badge>
-          )}
+          <div className="flex items-center gap-1">
+            {onAddContact && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddContact?.(investor);
+                }}
+                title="Add contact for this investor"
+              >
+                <UserPlus className="h-4 w-4" />
+              </Button>
+            )}
+            {investor.preferred_investment_stage && (
+              <Badge variant="secondary" className="text-xs">
+                {investor.preferred_investment_stage}
+              </Badge>
+            )}
+          </div>
         </div>
       </CardHeader>
       

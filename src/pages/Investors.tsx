@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,6 +8,7 @@ import { SearchAndFilter, FilterOption } from '@/components/common/SearchAndFilt
 import { BulkActions, BulkAction } from '@/components/common/BulkActions';
 import { useCSVImport } from '@/hooks/useCSVImport';
 import { AddInvestorDialog } from '@/components/investors/AddInvestorDialog';
+import { AddContactDialog } from '@/components/contacts/AddContactDialog';
 import { InvestorListView } from '@/components/investors/InvestorListView';
 import { InvestorsPageHeader } from '@/components/investors/InvestorsPageHeader';
 import { InvestorStats } from '@/components/investors/InvestorStats';
@@ -25,6 +25,8 @@ export default function Investors() {
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
+  const [investorForNewContact, setInvestorForNewContact] = useState<Investor | null>(null);
 
   // CSV template columns for investors
   const csvTemplateColumns = [
@@ -166,6 +168,11 @@ export default function Investors() {
     setIsDialogOpen(true);
   };
 
+  const handleAddContactForInvestor = (investor: Investor) => {
+    setInvestorForNewContact(investor);
+    setIsContactDialogOpen(true);
+  };
+
   const handleDelete = async (investorId: string) => {
     if (window.confirm('Are you sure you want to delete this investor?')) {
       await deleteInvestor(investorId);
@@ -276,6 +283,7 @@ export default function Investors() {
                 key={investor.id} 
                 investor={investor}
                 onViewDetails={handleViewDetails}
+                onAddContact={handleAddContactForInvestor}
               />
             ))}
           </div>
@@ -297,6 +305,20 @@ export default function Investors() {
         onOpenChange={setIsDialogOpen}
         investor={selectedInvestor}
         onSuccess={handleDialogSuccess}
+      />
+      <AddContactDialog
+        open={isContactDialogOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            setInvestorForNewContact(null);
+          }
+          setIsContactDialogOpen(open);
+        }}
+        preselectedInvestor={investorForNewContact}
+        onContactSaved={() => {
+          setIsContactDialogOpen(false);
+          setInvestorForNewContact(null);
+        }}
       />
     </div>
   );

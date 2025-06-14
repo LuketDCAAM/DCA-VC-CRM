@@ -9,6 +9,7 @@ import { useContacts } from '@/hooks/useContacts';
 import { useDeals } from '@/hooks/useDeals';
 import { useInvestors } from '@/hooks/useInvestors';
 import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
+import { type Investor } from '@/types/investor';
 
 interface Contact {
   id: string;
@@ -29,9 +30,10 @@ interface AddContactDialogProps {
   contact?: Contact;
   onContactSaved?: () => void;
   trigger?: React.ReactNode;
+  preselectedInvestor?: Investor;
 }
 
-export function AddContactDialog({ contact, onContactSaved, trigger }: AddContactDialogProps) {
+export function AddContactDialog({ contact, onContactSaved, trigger, preselectedInvestor }: AddContactDialogProps) {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -62,6 +64,17 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
         investor_id: contact.investor_id || '',
         portfolio_company_id: contact.portfolio_company_id || '',
       });
+    } else if (preselectedInvestor) {
+      setFormData({
+        name: '',
+        title: '',
+        company_or_firm: preselectedInvestor.firm_name || '',
+        email: '',
+        phone: '',
+        deal_id: '',
+        investor_id: preselectedInvestor.id,
+        portfolio_company_id: '',
+      });
     } else {
       setFormData({
         name: '',
@@ -74,7 +87,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
         portfolio_company_id: '',
       });
     }
-  }, [contact, open]);
+  }, [contact, open, preselectedInvestor]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,6 +141,14 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
             {contact ? 'Update contact information.' : 'Add a new contact to your directory.'}
           </DialogDescription>
         </DialogHeader>
+
+        {preselectedInvestor && (
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-800">
+            Associating with investor:{' '}
+            <span className="font-semibold">{preselectedInvestor.contact_name}{' '}
+            {preselectedInvestor.firm_name && `(${preselectedInvestor.firm_name})`}</span>
+          </div>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -187,6 +208,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
             <Select 
               value={formData.deal_id} 
               onValueChange={(value) => setFormData(prev => ({ ...prev, deal_id: value, investor_id: '', portfolio_company_id: '' }))}
+              disabled={!!preselectedInvestor}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a deal (optional)" />
@@ -207,6 +229,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
             <Select
               value={formData.investor_id}
               onValueChange={(value) => setFormData(prev => ({ ...prev, investor_id: value, deal_id: '', portfolio_company_id: '' }))}
+              disabled={!!preselectedInvestor}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select an investor (optional)" />
@@ -228,6 +251,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
             <Select
               value={formData.portfolio_company_id}
               onValueChange={(value) => setFormData(prev => ({ ...prev, portfolio_company_id: value, deal_id: '', investor_id: '' }))}
+              disabled={!!preselectedInvestor}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a portfolio company (optional)" />
