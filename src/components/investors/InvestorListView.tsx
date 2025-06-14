@@ -18,7 +18,7 @@ interface InvestorListViewProps {
   investors: Investor[];
   onEdit: (investor: Investor) => void;
   onDelete: (investorId: string) => void;
-  selectedInvestors: string[];
+  selectedInvestors?: string[];
   onToggleInvestorSelection: (investorId: string) => void;
   onSelectAll: () => void;
   onDeselectAll: () => void;
@@ -29,7 +29,7 @@ export function InvestorListView({
   investors,
   onEdit,
   onDelete,
-  selectedInvestors,
+  selectedInvestors = [],
   onToggleInvestorSelection,
   onSelectAll,
   onDeselectAll,
@@ -84,7 +84,7 @@ export function InvestorListView({
             <TableCell>{investor.location || '-'}</TableCell>
             <TableCell>
                 <div className="flex flex-wrap gap-1">
-                    {investor.tags?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                    {(investor.tags || []).map(tag => tag && <Badge key={tag} variant="secondary">{tag}</Badge>)}
                 </div>
             </TableCell>
             <TableCell className="text-right">
