@@ -29,6 +29,7 @@ interface Deal {
   revenue: number | null;
   created_at: string;
   updated_at: string;
+  deal_score: number | null;
 }
 
 interface DealEditFormProps {
@@ -62,6 +63,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
     post_money_valuation: formatCurrency(deal.post_money_valuation),
     revenue: formatCurrency(deal.revenue),
     description: deal.description || '',
+    deal_score: deal.deal_score?.toString() || '',
   });
   const { toast } = useToast();
 
@@ -85,6 +87,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
         post_money_valuation: parseCurrency(formData.post_money_valuation),
         revenue: parseCurrency(formData.revenue),
         description: formData.description || null,
+        deal_score: formData.deal_score ? parseInt(formData.deal_score, 10) : null,
         updated_at: new Date().toISOString(),
       };
 
@@ -225,6 +228,8 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="Seen Not Reviewed">Seen Not Reviewed</SelectItem>
+                  <SelectItem value="Initial Review">Initial Review</SelectItem>
                   <SelectItem value="Initial Contact">Initial Contact</SelectItem>
                   <SelectItem value="First Meeting">First Meeting</SelectItem>
                   <SelectItem value="Due Diligence">Due Diligence</SelectItem>
@@ -251,6 +256,18 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
                   <SelectItem value="Growth">Growth</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label htmlFor="deal_score">Deal Score (0-100)</Label>
+              <Input
+                id="deal_score"
+                type="number"
+                min="0"
+                max="100"
+                value={formData.deal_score}
+                onChange={(e) => handleInputChange('deal_score', e.target.value)}
+                placeholder="Enter a score from 0 to 100"
+              />
             </div>
           </CardContent>
         </Card>

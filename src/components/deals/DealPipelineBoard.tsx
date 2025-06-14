@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, DollarSign, Eye, Calendar } from 'lucide-react';
+import { Building2, DollarSign, Eye, Calendar, Star } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 
 type PipelineStage = Database['public']['Enums']['pipeline_stage'];
@@ -25,6 +25,7 @@ interface Deal {
   revenue: number | null;
   created_at: string;
   updated_at: string;
+  deal_score: number | null;
 }
 
 interface DealPipelineBoardProps {
@@ -91,11 +92,19 @@ export function DealPipelineBoard({ deals, onViewDetails }: DealPipelineBoardPro
         </div>
       </CardHeader>
       <CardContent className="px-3 pb-3 space-y-2">
-        {deal.round_stage && (
-          <Badge variant="outline" className="text-xs">
-            {deal.round_stage}
-          </Badge>
-        )}
+        <div className="flex items-center justify-between">
+            {deal.round_stage && (
+              <Badge variant="outline" className="text-xs">
+                {deal.round_stage}
+              </Badge>
+            )}
+           {typeof deal.deal_score === 'number' && (
+             <div className="flex items-center gap-1 text-xs text-gray-600 font-medium">
+               <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+               {deal.deal_score}
+             </div>
+           )}
+        </div>
         
         {deal.round_size && (
           <div className="flex items-center gap-1 text-xs text-gray-600">

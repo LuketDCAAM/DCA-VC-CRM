@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,6 +40,7 @@ export default function Deals() {
     { key: 'round_size', label: 'Round Size ($)' },
     { key: 'post_money_valuation', label: 'Post Money Valuation ($)' },
     { key: 'revenue', label: 'Revenue ($)' },
+    { key: 'deal_score', label: 'Deal Score (0-100)' },
   ];
 
   const handleCSVImport = async (data: any[]) => {
@@ -102,6 +104,12 @@ export default function Deals() {
       type: 'range'
     },
     {
+      key: 'deal_score',
+      label: 'Deal Score',
+      value: 'deal_score',
+      type: 'range',
+    },
+    {
       key: 'created_at',
       label: 'Date Added',
       value: 'created_at',
@@ -140,6 +148,7 @@ export default function Deals() {
     { key: 'contact_email', label: 'Contact Email' },
     { key: 'pipeline_stage', label: 'Pipeline Stage' },
     { key: 'round_stage', label: 'Round Stage' },
+    { key: 'deal_score', label: 'Deal Score' },
     { key: 'location', label: 'Location' },
     { key: 'website', label: 'Website' },
     { key: 'created_at', label: 'Date Added' },
@@ -168,6 +177,14 @@ export default function Deals() {
       
       if (key === 'round_size_max') {
         return !deal.round_size || deal.round_size <= parseInt(value) * 100;
+      }
+
+      if (key === 'deal_score_min') {
+        return typeof deal.deal_score !== 'number' || deal.deal_score >= parseInt(value);
+      }
+      
+      if (key === 'deal_score_max') {
+        return typeof deal.deal_score !== 'number' || deal.deal_score <= parseInt(value);
       }
       
       return deal[key as keyof typeof deal] === value;

@@ -170,6 +170,7 @@ export type Database = {
           contact_phone: string | null
           created_at: string
           created_by: string
+          deal_score: number | null
           description: string | null
           id: string
           last_call_date: string | null
@@ -191,6 +192,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           created_by: string
+          deal_score?: number | null
           description?: string | null
           id?: string
           last_call_date?: string | null
@@ -212,6 +214,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           created_by?: string
+          deal_score?: number | null
           description?: string | null
           id?: string
           last_call_date?: string | null

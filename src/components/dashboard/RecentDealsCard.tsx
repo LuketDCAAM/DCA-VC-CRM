@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +12,7 @@ interface Deal {
   pipeline_stage: string;
   round_stage: string | null;
   updated_at: string;
+  deal_score: number | null;
 }
 
 interface RecentDealsCardProps {

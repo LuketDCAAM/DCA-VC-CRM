@@ -24,6 +24,7 @@ interface Deal {
   revenue: number | null;
   created_at: string;
   updated_at: string;
+  deal_score: number | null;
 }
 
 export function useDeals() {

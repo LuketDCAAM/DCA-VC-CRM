@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, User, Mail, Phone, Globe, MapPin, DollarSign, Eye } from 'lucide-react';
+import { Building2, User, Mail, Phone, Globe, MapPin, DollarSign, Eye, Star } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 
 type PipelineStage = Database['public']['Enums']['pipeline_stage'];
@@ -23,6 +23,7 @@ interface Deal {
   post_money_valuation: number | null;
   revenue: number | null;
   created_at: string;
+  deal_score: number | null;
 }
 
 interface DealCardProps {
@@ -126,7 +127,7 @@ export function DealCard({ deal, onViewDetails }: DealCardProps) {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4 pt-2 border-t">
+        <div className="grid grid-cols-3 gap-4 pt-2 border-t">
           <div>
             <p className="text-xs text-gray-500 mb-1">Round Size</p>
             <p className="text-sm font-medium">{formatCurrency(deal.round_size)}</p>
@@ -134,6 +135,13 @@ export function DealCard({ deal, onViewDetails }: DealCardProps) {
           <div>
             <p className="text-xs text-gray-500 mb-1">Valuation</p>
             <p className="text-sm font-medium">{formatCurrency(deal.post_money_valuation)}</p>
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 mb-1">Deal Score</p>
+            <div className="flex items-center text-sm font-medium">
+              <Star className={`h-4 w-4 mr-1 ${deal.deal_score && deal.deal_score > 50 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`} />
+              {deal.deal_score ?? 'N/A'}
+            </div>
           </div>
         </div>
 
