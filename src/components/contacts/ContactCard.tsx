@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { User, Mail, Phone, Building2, Briefcase, Edit, Trash2 } from 'lucide-react';
+import { User, Mail, Phone, Building2, Edit, Trash2 } from 'lucide-react';
 
 interface Contact {
   id: string;
@@ -14,6 +14,7 @@ interface Contact {
   phone: string | null;
   deal_id: string | null;
   investor_id: string | null;
+  portfolio_company_id: string | null;
   relationship_owner: string | null;
   created_at: string;
   updated_at: string;
@@ -29,12 +30,14 @@ export function ContactCard({ contact, onEdit, onDelete }: ContactCardProps) {
   const getContactType = () => {
     if (contact.deal_id) return 'Deal Contact';
     if (contact.investor_id) return 'Investor Contact';
+    if (contact.portfolio_company_id) return 'Portfolio Contact';
     return 'General Contact';
   };
 
   const getContactTypeColor = () => {
     if (contact.deal_id) return 'bg-blue-100 text-blue-800';
     if (contact.investor_id) return 'bg-green-100 text-green-800';
+    if (contact.portfolio_company_id) return 'bg-teal-100 text-teal-800';
     return 'bg-gray-100 text-gray-800';
   };
 
