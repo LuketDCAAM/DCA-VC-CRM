@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, Edit, Archive, Upload } from 'lucide-react';
+import { Plus, Trash2, Edit, Archive, Upload, LayoutGrid, List } from 'lucide-react';
 import { useInvestors } from '@/hooks/useInvestors';
 import { InvestorCard } from '@/components/investors/InvestorCard';
 import { SearchAndFilter, FilterOption } from '@/components/common/SearchAndFilter';
@@ -10,15 +9,19 @@ import { BulkActions, BulkAction } from '@/components/common/BulkActions';
 import { ExportData } from '@/components/common/ExportData';
 import { CSVImport } from '@/components/common/CSVImport';
 import { useCSVImport } from '@/hooks/useCSVImport';
+import { AddInvestorDialog } from '@/components/investors/AddInvestorDialog';
+import { InvestorListView } from '@/components/investors/InvestorListView';
 
 export default function Investors() {
-  const { investors, loading, refetch } = useInvestors();
+  const { investors, loading, refetch, deleteInvestor } = useInvestors();
   const { importInvestors } = useCSVImport();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedInvestor, setSelectedInvestor] = useState<any>(null);
   const [selectedInvestors, setSelectedInvestors] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // CSV template columns for investors
   const csvTemplateColumns = [
@@ -152,7 +155,22 @@ export default function Investors() {
 
   const handleViewDetails = (investor: any) => {
     setSelectedInvestor(investor);
-    // TODO: Implement investor detail dialog
+    setIsDialogOpen(true);
+  };
+
+  const handleAddNew = () => {
+    setSelectedInvestor(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = async (investorId: string) => {
+    if (window.confirm('Are you sure you want to delete this investor?')) {
+      await deleteInvestor(investorId);
+    }
+  };
+
+  const handleDialogSuccess = () => {
+    refetch();
   };
 
   const handleFilterChange = (key: string, value: any) => {
@@ -220,7 +238,7 @@ export default function Investors() {
               Import CSV
             </Button>
           </CSVImport>
-          <Button>
+          <Button onClick={handleAddNew}>
             <Plus className="h-4 w-4 mr-2" />
             Add Investor
           </Button>
@@ -279,17 +297,29 @@ export default function Investors() {
       </div>
 
       {/* Search and Filters */}
-      <SearchAndFilter
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        filters={filterOptions}
-        activeFilters={activeFilters}
-        onFilterChange={handleFilterChange}
-        onClearFilters={handleClearFilters}
-        placeholder="Search investors by name, firm, or location..."
-        showAdvanced={showAdvancedFilters}
-        onToggleAdvanced={() => setShowAdvancedFilters(!showAdvancedFilters)}
-      />
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-grow">
+          <SearchAndFilter
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            filters={filterOptions}
+            activeFilters={activeFilters}
+            onFilterChange={handleFilterChange}
+            onClearFilters={handleClearFilters}
+            placeholder="Search investors by name, firm, or location..."
+            showAdvanced={showAdvancedFilters}
+            onToggleAdvanced={() => setShowAdvancedFilters(!showAdvancedFilters)}
+          />
+        </div>
+        <div className="flex items-center gap-1">
+            <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} size="icon" onClick={() => setViewMode('grid')}>
+                <LayoutGrid className="h-5 w-5" />
+            </Button>
+            <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} size="icon" onClick={() => setViewMode('list')}>
+                <List className="h-5 w-5" />
+            </Button>
+        </div>
+      </div>
 
       {/* Bulk Actions */}
       <BulkActions
@@ -302,46 +332,65 @@ export default function Investors() {
         isAllSelected={selectedInvestors.length === filteredInvestors.length && filteredInvestors.length > 0}
       />
 
-      {/* Investors Grid */}
-      {filteredInvestors.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>No Investors Found</CardTitle>
-            <CardDescription>
-              {investors.length === 0 
-                ? "You haven't added any investors yet."
-                : "No investors match your current filters."
-              }
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8">
-              <p className="text-gray-500 mb-4">
+      {/* Investors Grid/List */}
+      <div className="mt-6">
+        {filteredInvestors.length === 0 ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>No Investors Found</CardTitle>
+              <CardDescription>
                 {investors.length === 0 
-                  ? "Start by adding your first investor to track relationships."
-                  : "Try adjusting your search or filter criteria."
+                  ? "You haven't added any investors yet."
+                  : "No investors match your current filters."
                 }
-              </p>
-              {investors.length === 0 && (
-                <Button variant="outline">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add your first investor
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredInvestors.map((investor) => (
-            <InvestorCard 
-              key={investor.id} 
-              investor={investor}
-              onViewDetails={handleViewDetails}
-            />
-          ))}
-        </div>
-      )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <p className="text-gray-500 mb-4">
+                  {investors.length === 0 
+                    ? "Start by adding your first investor to track relationships."
+                    : "Try adjusting your search or filter criteria."
+                  }
+                </p>
+                {investors.length === 0 && (
+                  <Button variant="outline" onClick={handleAddNew}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add your first investor
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ) : viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredInvestors.map((investor) => (
+              <InvestorCard 
+                key={investor.id} 
+                investor={investor}
+                onViewDetails={handleViewDetails}
+              />
+            ))}
+          </div>
+        ) : (
+            <Card>
+                <CardContent>
+                    <InvestorListView 
+                        investors={filteredInvestors}
+                        onEdit={handleViewDetails}
+                        onDelete={handleDelete}
+                    />
+                </CardContent>
+            </Card>
+        )}
+      </div>
+
+      <AddInvestorDialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        investor={selectedInvestor}
+        onSuccess={handleDialogSuccess}
+      />
     </div>
   );
 }
