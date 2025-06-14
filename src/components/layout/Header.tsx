@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Building2, Users, DollarSign, Contact, BarChart3, LogOut, Menu } from 'lucide-react';
@@ -47,9 +46,8 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 flex h-16 w-full items-center justify-between border-b bg-white px-4 md:px-6">
       <div className="flex items-center gap-6">
-        <Link to="/dashboard" className="flex items-center gap-2 text-foreground">
-          <Building2 className="h-6 w-6 text-primary" />
-          <h1 className="text-lg font-semibold">DCA VC CRM</h1>
+        <Link to="/dashboard" className="flex items-center">
+          <img src="/lovable-uploads/c1b92e43-b852-475a-aa30-04db2ade1108.png" alt="DCA logo" className="h-8" />
         </Link>
         <nav className="hidden items-center gap-1 md:flex">
           {navigation.map((item) => (
@@ -92,9 +90,8 @@ export default function Header() {
               </SheetTrigger>
               <SheetContent side="left" className="flex flex-col">
                 <nav className="grid gap-2 text-lg font-medium">
-                  <Link to="/dashboard" onClick={() => setOpen(false)} className="flex items-center gap-2 text-foreground mb-4">
-                    <Building2 className="h-6 w-6 text-primary" />
-                    <span className="text-lg font-semibold">DCA VC CRM</span>
+                  <Link to="/dashboard" onClick={() => setOpen(false)} className="flex items-center mb-4">
+                     <img src="/lovable-uploads/c1b92e43-b852-475a-aa30-04db2ade1108.png" alt="DCA logo" className="h-8" />
                   </Link>
                   {navigation.map((item) => (
                     <Link
