@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Building2, DollarSign, TrendingUp, Calendar, Eye } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
+import { PortfolioCompany } from '@/hooks/usePortfolioCompanies';
 
 type CompanyStatus = Database['public']['Enums']['company_status'];
 
@@ -16,20 +16,6 @@ interface Investment {
   price_per_share: number | null;
   revenue_at_investment: number | null;
   ownership_percentage: number | null;
-}
-
-interface PortfolioCompany {
-  id: string;
-  company_name: string;
-  status: CompanyStatus;
-  tags: string[] | null;
-  created_at: string;
-  investments: Investment[];
-  current_valuation: {
-    last_round_post_money_valuation: number | null;
-    last_round_price_per_share: number | null;
-    current_ownership_percentage: number | null;
-  } | null;
 }
 
 interface PortfolioCardProps {

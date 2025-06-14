@@ -1,19 +1,16 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, Edit, Archive, Upload, RefreshCw } from 'lucide-react';
-import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
-import { PortfolioCard } from '@/components/portfolio/PortfolioCard';
+import { Edit, Archive, Trash2, RefreshCw, Upload, Plus } from 'lucide-react';
+import { usePortfolioCompanies, PortfolioCompany } from '@/hooks/usePortfolioCompanies';
 import { PortfolioDetailDialog } from '@/components/portfolio/PortfolioDetailDialog';
-import AddPortfolioDialog from '@/components/portfolio/AddPortfolioDialog';
 import { SearchAndFilter, FilterOption } from '@/components/common/SearchAndFilter';
 import { BulkActions, BulkAction } from '@/components/common/BulkActions';
-import { ExportData } from '@/components/common/ExportData';
-import { CSVImport } from '@/components/common/CSVImport';
 import { useCSVImport } from '@/hooks/useCSVImport';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { PortfolioHeader } from '@/components/portfolio/PortfolioHeader';
+import { PortfolioStats } from '@/components/portfolio/PortfolioStats';
+import { PortfolioGrid } from '@/components/portfolio/PortfolioGrid';
 
 export default function Portfolio() {
   const { companies, loading, refetch } = usePortfolioCompanies();
@@ -21,7 +18,7 @@ export default function Portfolio() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCompany, setSelectedCompany] = useState<any>(null);
+  const [selectedCompany, setSelectedCompany] = useState<PortfolioCompany | null>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -186,9 +183,8 @@ export default function Portfolio() {
   );
 
   const activeCompanies = companies.filter(c => c.status === 'Active').length;
-  const exitedCompanies = companies.filter(c => c.status === 'Exited').length;
 
-  const handleViewDetails = (company: any) => {
+  const handleViewDetails = (company: PortfolioCompany) => {
     setSelectedCompany(company);
     setDetailDialogOpen(true);
   };
@@ -236,77 +232,22 @@ export default function Portfolio() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Portfolio Companies</h1>
-          <p className="text-gray-600">Track your invested companies</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ExportData
-            data={exportData}
-            filename="portfolio-companies"
-            columns={exportColumns}
-            loading={loading}
-          />
-          <CSVImport
-            title="Import Portfolio Companies"
-            description="Upload a CSV file to import multiple portfolio companies at once"
-            templateColumns={csvTemplateColumns}
-            onImport={handleCSVImport}
-          >
-            <Button variant="outline" size="sm">
-              <Upload className="h-4 w-4 mr-2" />
-              Import CSV
-            </Button>
-          </CSVImport>
-          <Button variant="outline" size="sm" onClick={handleSyncInvestedDeals}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Sync Invested Deals
-          </Button>
-          <AddPortfolioDialog onSuccess={refetch}>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Company
-            </Button>
-          </AddPortfolioDialog>
-        </div>
-      </div>
+      <PortfolioHeader
+        exportData={exportData}
+        exportColumns={exportColumns}
+        loading={loading}
+        csvTemplateColumns={csvTemplateColumns}
+        onImport={handleCSVImport}
+        onSync={handleSyncInvestedDeals}
+        onSuccess={refetch}
+      />
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Companies</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{companies.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Active Companies</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{activeCompanies}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Invested</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                minimumFractionDigits: 0,
-              }).format(totalInvested / 100)}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <PortfolioStats
+        totalCompanies={companies.length}
+        activeCompanies={activeCompanies}
+        totalInvested={totalInvested}
+      />
 
-      {/* Search and Filters */}
       <SearchAndFilter
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -319,7 +260,6 @@ export default function Portfolio() {
         onToggleAdvanced={() => setShowAdvancedFilters(!showAdvancedFilters)}
       />
 
-      {/* Bulk Actions */}
       <BulkActions
         selectedItems={selectedCompanies}
         totalItems={filteredCompanies.length}
@@ -330,48 +270,12 @@ export default function Portfolio() {
         isAllSelected={selectedCompanies.length === filteredCompanies.length && filteredCompanies.length > 0}
       />
 
-      {/* Portfolio Companies Grid */}
-      {filteredCompanies.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>No Portfolio Companies</CardTitle>
-            <CardDescription>
-              {companies.length === 0 
-                ? "You haven't added any portfolio companies yet."
-                : "No companies match your current filters."
-              }
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8">
-              <p className="text-gray-500 mb-4">
-                {companies.length === 0 
-                  ? "Start by adding your first portfolio company or mark a deal as 'Invested' to automatically create one."
-                  : "Try adjusting your search or filter criteria."
-                }
-              </p>
-              {companies.length === 0 && (
-                <AddPortfolioDialog onSuccess={refetch}>
-                  <Button variant="outline">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add your first portfolio company
-                  </Button>
-                </AddPortfolioDialog>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredCompanies.map((company) => (
-            <PortfolioCard 
-              key={company.id} 
-              company={company}
-              onViewDetails={handleViewDetails}
-            />
-          ))}
-        </div>
-      )}
+      <PortfolioGrid
+        companies={companies}
+        filteredCompanies={filteredCompanies}
+        onViewDetails={handleViewDetails}
+        onSuccess={refetch}
+      />
 
       <PortfolioDetailDialog
         company={selectedCompany}

@@ -1,3 +1,4 @@
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -6,7 +7,7 @@ import { useEffect, useMemo } from 'react';
 
 type CompanyStatus = Database['public']['Enums']['company_status'];
 
-interface PortfolioCompany {
+export interface PortfolioCompany {
   id: string;
   company_name: string;
   description: string | null;
