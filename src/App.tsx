@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -9,8 +8,7 @@ import { useAuth } from './hooks/useAuth';
 import { useUserRoles } from './hooks/useUserRoles';
 import AuthForm from './components/auth/AuthForm';
 import ApprovalStatus from './components/auth/ApprovalStatus';
-import Sidebar from './components/layout/Sidebar';
-import ProfileButton from './components/profile/ProfileButton';
+import Header from './components/layout/Header';
 import Dashboard from './pages/Dashboard';
 import Deals from './pages/Deals';
 import Portfolio from './pages/Portfolio';
@@ -44,12 +42,9 @@ function AppContent() {
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      <Sidebar />
+    <div className="flex flex-col h-screen bg-background">
+      <Header />
       <main className="flex-1 overflow-auto">
-        <div className="bg-white border-b px-6 py-3 flex justify-end">
-          <ProfileButton />
-        </div>
         <div className="p-6">
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
