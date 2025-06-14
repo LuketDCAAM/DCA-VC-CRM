@@ -28,6 +28,7 @@ export default function Deals() {
   // CSV template columns for deals
   const csvTemplateColumns = [
     { key: 'company_name', label: 'Company Name', required: true },
+    { key: 'description', label: 'Description' },
     { key: 'contact_name', label: 'Contact Name' },
     { key: 'contact_email', label: 'Contact Email' },
     { key: 'contact_phone', label: 'Contact Phone' },
@@ -132,6 +133,7 @@ export default function Deals() {
   // Export columns for deals
   const exportColumns = [
     { key: 'company_name', label: 'Company Name' },
+    { key: 'description', label: 'Description' },
     { key: 'contact_name', label: 'Contact Name' },
     { key: 'contact_email', label: 'Contact Email' },
     { key: 'pipeline_stage', label: 'Pipeline Stage' },
@@ -146,7 +148,8 @@ export default function Deals() {
     const matchesSearch = searchTerm === '' || 
       deal.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       deal.contact_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      deal.location?.toLowerCase().includes(searchTerm.toLowerCase());
+      deal.location?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      deal.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
     // Active filters
     const matchesFilters = Object.entries(activeFilters).every(([key, value]) => {
@@ -292,7 +295,7 @@ export default function Deals() {
         activeFilters={activeFilters}
         onFilterChange={handleFilterChange}
         onClearFilters={handleClearFilters}
-        placeholder="Search deals by company, contact, or location..."
+        placeholder="Search by company, contact, location, or description..."
         showAdvanced={showAdvancedFilters}
         onToggleAdvanced={() => setShowAdvancedFilters(!showAdvancedFilters)}
       />

@@ -597,6 +597,7 @@ export type Database = {
         | "Growth"
         | "Late Stage"
       pipeline_stage:
+        | "Seen Not Reviewed"
         | "Initial Contact"
         | "First Meeting"
         | "Due Diligence"
@@ -740,6 +741,7 @@ export const Constants = {
         "Late Stage",
       ],
       pipeline_stage: [
+        "Seen Not Reviewed",
         "Initial Contact",
         "First Meeting",
         "Due Diligence",
