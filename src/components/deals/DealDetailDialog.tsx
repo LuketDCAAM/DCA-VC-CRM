@@ -1,11 +1,12 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Edit } from 'lucide-react';
 import { DealOverview } from './DealOverview';
 import { DealEditForm } from './DealEditForm';
 import { Database } from '@/integrations/supabase/types';
+import { Separator } from '@/components/ui/separator';
+import { DealInvestorsManager } from './DealInvestorsManager';
 
 type PipelineStage = Database['public']['Enums']['pipeline_stage'];
 type RoundStage = Database['public']['Enums']['round_stage'];
@@ -38,6 +39,12 @@ interface DealDetailDialogProps {
 
 export function DealDetailDialog({ deal, open, onOpenChange, onDealUpdated }: DealDetailDialogProps) {
   const [isEditing, setIsEditing] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setIsEditing(false);
+    }
+  }, [open]);
 
   const handleSave = () => {
     setIsEditing(false);
@@ -76,6 +83,12 @@ export function DealDetailDialog({ deal, open, onOpenChange, onDealUpdated }: De
             <DealOverview deal={deal} />
           )}
         </div>
+
+        <div className="my-6">
+          <Separator />
+        </div>
+
+        <DealInvestorsManager deal={deal} />
       </DialogContent>
     </Dialog>
   );
