@@ -1,27 +1,25 @@
-
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, LayoutGrid, List, Trash2, Edit, Archive, Upload } from 'lucide-react';
+import { Plus, LayoutGrid, List, Trash2, Edit, Archive } from 'lucide-react';
 import { useDeals } from '@/hooks/useDeals';
-import { DealCard } from '@/components/deals/DealCard';
 import { DealDetailDialog } from '@/components/deals/DealDetailDialog';
-import { AddDealDialog } from '@/components/deals/AddDealDialog';
 import { DealPipelineBoard } from '@/components/deals/DealPipelineBoard';
 import { SearchAndFilter, FilterOption } from '@/components/common/SearchAndFilter';
 import { BulkActions, BulkAction } from '@/components/common/BulkActions';
-import { ExportData } from '@/components/common/ExportData';
-import { CSVImport } from '@/components/common/CSVImport';
 import { useCSVImport } from '@/hooks/useCSVImport';
 import { useAuth } from '@/hooks/useAuth';
+import { Deal } from '@/types/deal';
+import { DealsHeader } from '@/components/deals/DealsHeader';
+import { DealsStats } from '@/components/deals/DealsStats';
+import { useFilteredDeals } from '@/hooks/useFilteredDeals';
+import { DealListView } from '@/components/deals/DealListView';
 
 export default function Deals() {
   const { deals, loading, refetch } = useDeals();
   const { importDeals } = useCSVImport();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDeal, setSelectedDeal] = useState(null);
+  const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [viewMode, setViewMode] = useState('board');
   const [selectedDeals, setSelectedDeals] = useState<string[]>([]);
@@ -217,54 +215,9 @@ export default function Deals() {
     { key: 'source_date', label: 'Source Date' },
   ];
 
-  const filteredDeals = deals.filter(deal => {
-    // Search filter
-    const matchesSearch = searchTerm === '' || 
-      deal.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (deal.contact_name && deal.contact_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (deal.location && deal.location.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (deal.description && deal.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (deal.deal_lead && deal.deal_lead.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (deal.deal_source && deal.deal_source.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredDeals = useFilteredDeals(deals, searchTerm, activeFilters);
 
-    // Active filters
-    const matchesFilters = Object.entries(activeFilters).every(([key, value]) => {
-      if (!value || value === 'all' || value === '') return true;
-      
-      if (key === 'created_at') {
-        const dealDate = new Date(deal.created_at).toISOString().split('T')[0];
-        return dealDate >= value;
-      }
-
-      if (key === 'source_date') {
-        if (!deal.source_date) return false;
-        const dealDate = new Date(deal.source_date).toISOString().split('T')[0];
-        return dealDate >= value;
-      }
-      
-      if (key === 'round_size_min') {
-        return !deal.round_size || deal.round_size >= parseInt(value) * 100;
-      }
-      
-      if (key === 'round_size_max') {
-        return !deal.round_size || deal.round_size <= parseInt(value) * 100;
-      }
-
-      if (key === 'deal_score_min') {
-        return typeof deal.deal_score !== 'number' || deal.deal_score >= parseInt(value);
-      }
-      
-      if (key === 'deal_score_max') {
-        return typeof deal.deal_score !== 'number' || deal.deal_score <= parseInt(value);
-      }
-      
-      return deal[key as keyof typeof deal] === value;
-    });
-
-    return matchesSearch && matchesFilters;
-  });
-
-  const handleViewDetails = (deal) => {
+  const handleViewDetails = (deal: Deal) => {
     setSelectedDeal(deal);
     setShowDetailDialog(true);
   };
@@ -295,9 +248,9 @@ export default function Deals() {
     setSelectedDeals([]);
   };
 
-  const activeDeals = deals.filter(deal => !['Invested', 'Passed'].includes(deal.pipeline_stage)).length;
-  const investedDeals = deals.filter(deal => deal.pipeline_stage === 'Invested').length;
-  const passedDeals = deals.filter(deal => deal.pipeline_stage === 'Passed').length;
+  const activeDeals = useMemo(() => deals.filter(deal => !['Invested', 'Passed'].includes(deal.pipeline_stage)).length, [deals]);
+  const investedDeals = useMemo(() => deals.filter(deal => deal.pipeline_stage === 'Invested').length, [deals]);
+  const passedDeals = useMemo(() => deals.filter(deal => deal.pipeline_stage === 'Passed').length, [deals]);
 
   if (loading) {
     return (
@@ -309,75 +262,22 @@ export default function Deals() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Deal Flow</h1>
-          <p className="text-gray-600">Manage your investment pipeline</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ExportData
-            data={filteredDeals}
-            filename="deals"
-            columns={exportColumns}
-            loading={loading}
-          />
-          <CSVImport
-            title="Import Deals"
-            description="Upload a CSV file to import multiple deals at once"
-            templateColumns={csvTemplateColumns}
-            onImport={handleCSVImport}
-          >
-            <Button variant="outline" size="sm">
-              <Upload className="h-4 w-4 mr-2" />
-              Import CSV
-            </Button>
-          </CSVImport>
-          <AddDealDialog onDealAdded={refetch}>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Deal
-            </Button>
-          </AddDealDialog>
-        </div>
-      </div>
+      <DealsHeader
+        filteredDeals={filteredDeals}
+        exportColumns={exportColumns}
+        loading={loading}
+        csvTemplateColumns={csvTemplateColumns}
+        onCSVImport={handleCSVImport}
+        onDealAdded={refetch}
+      />
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Deals</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{deals.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Active Pipeline</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{activeDeals}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Invested</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{investedDeals}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Passed</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{passedDeals}</div>
-          </CardContent>
-        </Card>
-      </div>
+      <DealsStats
+        totalDeals={deals.length}
+        activeDeals={activeDeals}
+        investedDeals={investedDeals}
+        passedDeals={passedDeals}
+      />
 
-      {/* Search and Filters */}
       <SearchAndFilter
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
@@ -390,7 +290,6 @@ export default function Deals() {
         onToggleAdvanced={() => setShowAdvancedFilters(!showAdvancedFilters)}
       />
 
-      {/* Bulk Actions */}
       <BulkActions
         selectedItems={selectedDeals}
         totalItems={filteredDeals.length}
@@ -401,7 +300,6 @@ export default function Deals() {
         isAllSelected={selectedDeals.length === filteredDeals.length && filteredDeals.length > 0}
       />
 
-      {/* View Toggle and Content */}
       <div className="mt-6">
         <Tabs value={viewMode} onValueChange={setViewMode} className="w-full">
           <TabsList className="mb-6">
@@ -420,52 +318,16 @@ export default function Deals() {
           </TabsContent>
 
           <TabsContent value="list">
-            {filteredDeals.length === 0 ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle>No Deals Found</CardTitle>
-                  <CardDescription>
-                    {deals.length === 0 
-                      ? "You haven't added any deals yet."
-                      : "No deals match your current filters."
-                    }
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">
-                      {deals.length === 0 
-                        ? "Start by adding your first deal to track in your pipeline."
-                        : "Try adjusting your search or filter criteria."
-                      }
-                    </p>
-                    {deals.length === 0 && (
-                      <AddDealDialog onDealAdded={refetch}>
-                        <Button variant="outline">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Add your first deal
-                        </Button>
-                      </AddDealDialog>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredDeals.map((deal) => (
-                  <DealCard 
-                    key={deal.id} 
-                    deal={deal}
-                    onViewDetails={handleViewDetails}
-                  />
-                ))}
-              </div>
-            )}
+            <DealListView
+              deals={deals}
+              filteredDeals={filteredDeals}
+              onViewDetails={handleViewDetails}
+              onDealAdded={refetch}
+            />
           </TabsContent>
         </Tabs>
       </div>
 
-      {/* Deal Detail Dialog */}
       {selectedDeal && (
         <DealDetailDialog
           deal={selectedDeal}
@@ -474,6 +336,7 @@ export default function Deals() {
           onDealUpdated={() => {
             refetch();
             setShowDetailDialog(false);
+            setSelectedDeal(null);
           }}
         />
       )}
