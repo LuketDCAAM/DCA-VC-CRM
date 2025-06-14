@@ -7,12 +7,13 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Save, X } from 'lucide-react';
-import { Deal, PipelineStage, RoundStage } from '@/types/deal';
+import { Deal } from '@/types/deal';
 import { Form } from '@/components/ui/form';
 import { DealCompanyForm } from './form/DealCompanyForm';
 import { DealContactForm } from './form/DealContactForm';
 import { DealStatusForm } from './form/DealStatusForm';
 import { DealFinancialForm } from './form/DealFinancialForm';
+import { Constants } from '@/integrations/supabase/types';
 
 interface DealEditFormProps {
   deal: Deal;
@@ -39,8 +40,8 @@ const dealFormSchema = z.object({
   contact_name: z.string().nullable(),
   contact_email: z.string().email({ message: "Invalid email address." }).or(z.literal('')).nullable(),
   contact_phone: z.string().nullable(),
-  pipeline_stage: z.nativeEnum(PipelineStage),
-  round_stage: z.nativeEnum(RoundStage).nullable(),
+  pipeline_stage: z.enum(Constants.public.Enums.pipeline_stage),
+  round_stage: z.enum(Constants.public.Enums.round_stage).nullable(),
   deal_score: z.number().min(0).max(100).nullable(),
   deal_lead: z.string().nullable(),
   deal_source: z.string().nullable(),
