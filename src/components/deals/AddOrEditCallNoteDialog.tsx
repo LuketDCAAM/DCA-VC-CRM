@@ -101,7 +101,8 @@ export function AddOrEditCallNoteDialog({
         if (noteToEdit) {
             await updateCallNote({
                 id: noteToEdit.id,
-                ...values,
+                title: values.title,
+                content: values.content,
                 call_date: formattedDate,
             });
             toast({ title: 'Success', description: 'Call note updated.' });
@@ -109,7 +110,8 @@ export function AddOrEditCallNoteDialog({
             await addCallNote({
                 deal_id: dealId,
                 created_by: user.id,
-                ...values,
+                title: values.title,
+                content: values.content,
                 call_date: formattedDate,
             });
             toast({ title: 'Success', description: 'Call note added.' });
