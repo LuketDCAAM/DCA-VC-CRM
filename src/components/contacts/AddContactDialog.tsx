@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -31,10 +32,17 @@ interface AddContactDialogProps {
   onContactSaved?: () => void;
   trigger?: React.ReactNode;
   preselectedInvestor?: Investor;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function AddContactDialog({ contact, onContactSaved, trigger, preselectedInvestor }: AddContactDialogProps) {
-  const [open, setOpen] = useState(false);
+export function AddContactDialog({ contact, onContactSaved, trigger, preselectedInvestor, open: controlledOpen, onOpenChange: setControlledOpen }: AddContactDialogProps) {
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+
+  const isControlled = controlledOpen !== undefined;
+  const open = isControlled ? controlledOpen : uncontrolledOpen;
+  const setOpen = isControlled ? setControlledOpen! : setUncontrolledOpen;
+
   const [formData, setFormData] = useState({
     name: '',
     title: '',
@@ -124,14 +132,16 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || (
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Contact
-          </Button>
-        )}
-      </DialogTrigger>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          {trigger || (
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Contact
+            </Button>
+          )}
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>
