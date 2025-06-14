@@ -46,9 +46,9 @@ const dealFormSchema = z.object({
   deal_lead: z.string().nullable(),
   deal_source: z.string().nullable(),
   source_date: z.string().nullable(),
-  round_size: z.string().nullable().transform(val => parseCurrency(val || '')),
-  post_money_valuation: z.string().nullable().transform(val => parseCurrency(val || '')),
-  revenue: z.string().nullable().transform(val => parseCurrency(val || '')),
+  round_size: z.string().nullable(),
+  post_money_valuation: z.string().nullable(),
+  revenue: z.string().nullable(),
 });
 
 type DealFormValues = z.infer<typeof dealFormSchema>;
@@ -83,6 +83,9 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
     try {
       const updateData = {
         ...values,
+        round_size: parseCurrency(values.round_size || ''),
+        post_money_valuation: parseCurrency(values.post_money_valuation || ''),
+        revenue: parseCurrency(values.revenue || ''),
         updated_at: new Date().toISOString(),
       };
 
