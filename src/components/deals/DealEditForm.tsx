@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Save, X } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
+import { Textarea } from '@/components/ui/textarea';
 
 type PipelineStage = Database['public']['Enums']['pipeline_stage'];
 type RoundStage = Database['public']['Enums']['round_stage'];
@@ -21,6 +21,7 @@ interface Deal {
   contact_phone: string | null;
   website: string | null;
   location: string | null;
+  description: string | null;
   pipeline_stage: PipelineStage;
   round_stage: RoundStage | null;
   round_size: number | null;
@@ -60,6 +61,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
     round_size: formatCurrency(deal.round_size),
     post_money_valuation: formatCurrency(deal.post_money_valuation),
     revenue: formatCurrency(deal.revenue),
+    description: deal.description || '',
   });
   const { toast } = useToast();
 
@@ -82,6 +84,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
         round_size: parseCurrency(formData.round_size),
         post_money_valuation: parseCurrency(formData.post_money_valuation),
         revenue: parseCurrency(formData.revenue),
+        description: formData.description || null,
         updated_at: new Date().toISOString(),
       };
 
@@ -157,6 +160,16 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
                 value={formData.location}
                 onChange={(e) => handleInputChange('location', e.target.value)}
                 placeholder="City, State/Country"
+              />
+            </div>
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                placeholder="Enter a description for the company..."
+                className="min-h-[100px]"
               />
             </div>
           </CardContent>

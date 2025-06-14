@@ -18,6 +18,7 @@ interface Deal {
   contact_phone: string | null;
   website: string | null;
   location: string | null;
+  description: string | null;
   pipeline_stage: PipelineStage;
   round_stage: RoundStage | null;
   round_size: number | null;

@@ -170,6 +170,7 @@ export type Database = {
           contact_phone: string | null
           created_at: string
           created_by: string
+          description: string | null
           id: string
           last_call_date: string | null
           location: string | null
@@ -190,6 +191,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           created_by: string
+          description?: string | null
           id?: string
           last_call_date?: string | null
           location?: string | null
@@ -210,6 +212,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           created_by?: string
+          description?: string | null
           id?: string
           last_call_date?: string | null
           location?: string | null
@@ -395,6 +398,7 @@ export type Database = {
           company_name: string
           created_at: string
           created_by: string
+          description: string | null
           id: string
           relationship_owner: string | null
           status: Database["public"]["Enums"]["company_status"]
@@ -405,6 +409,7 @@ export type Database = {
           company_name: string
           created_at?: string
           created_by: string
+          description?: string | null
           id?: string
           relationship_owner?: string | null
           status?: Database["public"]["Enums"]["company_status"]
@@ -415,6 +420,7 @@ export type Database = {
           company_name?: string
           created_at?: string
           created_by?: string
+          description?: string | null
           id?: string
           relationship_owner?: string | null
           status?: Database["public"]["Enums"]["company_status"]

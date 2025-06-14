@@ -10,6 +10,7 @@ type CompanyStatus = Database['public']['Enums']['company_status'];
 interface PortfolioCompany {
   id: string;
   company_name: string;
+  description: string | null;
   status: CompanyStatus;
   tags: string[] | null;
   relationship_owner: string | null;
