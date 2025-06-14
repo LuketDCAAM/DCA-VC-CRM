@@ -47,6 +47,7 @@ export function ContactForm({
 }: ContactFormProps) {
   const { control, setValue } = useFormContext<ContactFormValues>();
   const associationDisabled = !!preselectedDeal || !!preselectedInvestor;
+  const EMPTY_VALUE = '_EMPTY_';
 
   return (
     <div className="space-y-4">
@@ -124,11 +125,14 @@ export function ContactForm({
             <FormLabel>Associated Deal</FormLabel>
             <Select 
               onValueChange={(value) => {
-                field.onChange(value);
-                setValue('investor_id', '');
-                setValue('portfolio_company_id', '');
+                const finalValue = value === EMPTY_VALUE ? '' : value;
+                field.onChange(finalValue);
+                if (finalValue) {
+                  setValue('investor_id', '');
+                  setValue('portfolio_company_id', '');
+                }
               }}
-              value={field.value || ''}
+              value={field.value || EMPTY_VALUE}
               disabled={associationDisabled}
             >
               <FormControl>
@@ -137,7 +141,7 @@ export function ContactForm({
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="">No associated deal</SelectItem>
+                <SelectItem value={EMPTY_VALUE}>No associated deal</SelectItem>
                 {deals.map((deal) => (
                   <SelectItem key={deal.id} value={deal.id}>
                     {deal.company_name}
@@ -158,11 +162,14 @@ export function ContactForm({
             <FormLabel>Associated Investor</FormLabel>
             <Select
               onValueChange={(value) => {
-                field.onChange(value);
-                setValue('deal_id', '');
-                setValue('portfolio_company_id', '');
+                const finalValue = value === EMPTY_VALUE ? '' : value;
+                field.onChange(finalValue);
+                if (finalValue) {
+                  setValue('deal_id', '');
+                  setValue('portfolio_company_id', '');
+                }
               }}
-              value={field.value || ''}
+              value={field.value || EMPTY_VALUE}
               disabled={associationDisabled}
             >
               <FormControl>
@@ -171,7 +178,7 @@ export function ContactForm({
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="">No associated investor</SelectItem>
+                <SelectItem value={EMPTY_VALUE}>No associated investor</SelectItem>
                 {investors.map((investor) => (
                   <SelectItem key={investor.id} value={investor.id}>
                     {investor.contact_name}{' '}
@@ -193,11 +200,14 @@ export function ContactForm({
             <FormLabel>Associated Portfolio Company</FormLabel>
             <Select
               onValueChange={(value) => {
-                field.onChange(value);
-                setValue('deal_id', '');
-                setValue('investor_id', '');
+                const finalValue = value === EMPTY_VALUE ? '' : value;
+                field.onChange(finalValue);
+                if (finalValue) {
+                  setValue('deal_id', '');
+                  setValue('investor_id', '');
+                }
               }}
-              value={field.value || ''}
+              value={field.value || EMPTY_VALUE}
               disabled={associationDisabled}
             >
               <FormControl>
@@ -206,7 +216,7 @@ export function ContactForm({
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="">No associated portfolio company</SelectItem>
+                <SelectItem value={EMPTY_VALUE}>No associated portfolio company</SelectItem>
                 {portfolioCompanies.map((company) => (
                   <SelectItem key={company.id} value={company.id}>
                     {company.company_name}
