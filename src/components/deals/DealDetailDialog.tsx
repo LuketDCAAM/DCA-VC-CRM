@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { DealEditForm } from './DealEditForm';
 import { Separator } from '@/components/ui/separator';
 import { DealInvestorsManager } from './DealInvestorsManager';
 import { DealContactsManager } from './DealContactsManager';
+import { CallNotesManager } from './CallNotesManager';
 import { Deal } from '@/types/deal';
 
 interface DealDetailDialogProps {
@@ -62,6 +64,12 @@ export function DealDetailDialog({ deal, open, onOpenChange, onDealUpdated }: De
             <DealOverview deal={deal} />
           )}
         </div>
+
+        <div className="my-6">
+          <Separator />
+        </div>
+
+        <CallNotesManager dealId={deal.id} />
 
         <div className="my-6">
           <Separator />
