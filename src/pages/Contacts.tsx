@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Trash2, Edit, Archive } from 'lucide-react';
@@ -19,6 +18,7 @@ interface Contact {
   phone: string | null;
   deal_id: string | null;
   investor_id: string | null;
+  portfolio_company_id: string | null;
   relationship_owner: string | null;
   created_at: string;
   updated_at: string;
@@ -43,6 +43,7 @@ export default function Contacts() {
       options: [
         { label: 'Deal Contacts', value: 'deal' },
         { label: 'Investor Contacts', value: 'investor' },
+        { label: 'Portfolio Contacts', value: 'portfolio' },
         { label: 'General Contacts', value: 'general' },
       ]
     },
@@ -122,7 +123,8 @@ export default function Contacts() {
       if (key === 'contact_type') {
         if (value === 'deal') return contact.deal_id !== null;
         if (value === 'investor') return contact.investor_id !== null;
-        if (value === 'general') return !contact.deal_id && !contact.investor_id;
+        if (value === 'portfolio') return contact.portfolio_company_id !== null;
+        if (value === 'general') return !contact.deal_id && !contact.investor_id && !contact.portfolio_company_id;
       }
       
       if (key === 'has_email') {
@@ -191,7 +193,8 @@ export default function Contacts() {
   const exportData = filteredContacts.map(contact => ({
     ...contact,
     contact_type: contact.deal_id ? 'Deal Contact' : 
-                  contact.investor_id ? 'Investor Contact' : 'General Contact',
+                  contact.investor_id ? 'Investor Contact' : 
+                  contact.portfolio_company_id ? 'Portfolio Contact' : 'General Contact',
   }));
 
   if (loading) {
@@ -266,7 +269,7 @@ export default function Contacts() {
       ) : (
         <div className="space-y-6">
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <Card>
               <CardContent className="p-4">
                 <div className="text-2xl font-bold text-blue-600">{contacts.length}</div>
@@ -291,8 +294,16 @@ export default function Contacts() {
             </Card>
             <Card>
               <CardContent className="p-4">
+                <div className="text-2xl font-bold text-teal-600">
+                  {contacts.filter(c => c.portfolio_company_id).length}
+                </div>
+                <p className="text-sm text-gray-600">Portfolio Contacts</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
                 <div className="text-2xl font-bold text-orange-600">
-                  {contacts.filter(c => !c.deal_id && !c.investor_id).length}
+                  {contacts.filter(c => !c.deal_id && !c.investor_id && !c.portfolio_company_id).length}
                 </div>
                 <p className="text-sm text-gray-600">General Contacts</p>
               </CardContent>

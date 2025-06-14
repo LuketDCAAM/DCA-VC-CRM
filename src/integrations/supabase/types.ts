@@ -78,6 +78,7 @@ export type Database = {
           investor_id: string | null
           name: string
           phone: string | null
+          portfolio_company_id: string | null
           relationship_owner: string | null
           title: string | null
           updated_at: string
@@ -92,6 +93,7 @@ export type Database = {
           investor_id?: string | null
           name: string
           phone?: string | null
+          portfolio_company_id?: string | null
           relationship_owner?: string | null
           title?: string | null
           updated_at?: string
@@ -106,6 +108,7 @@ export type Database = {
           investor_id?: string | null
           name?: string
           phone?: string | null
+          portfolio_company_id?: string | null
           relationship_owner?: string | null
           title?: string | null
           updated_at?: string
@@ -123,6 +126,13 @@ export type Database = {
             columns: ["investor_id"]
             isOneToOne: false
             referencedRelation: "investors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contacts_portfolio_company_id_fkey"
+            columns: ["portfolio_company_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_companies"
             referencedColumns: ["id"]
           },
         ]

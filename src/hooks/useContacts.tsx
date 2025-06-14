@@ -14,6 +14,7 @@ interface Contact {
   phone: string | null;
   deal_id: string | null;
   investor_id: string | null;
+  portfolio_company_id: string | null;
   relationship_owner: string | null;
   created_at: string;
   updated_at: string;

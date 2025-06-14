@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { Plus } from 'lucide-react';
 import { useContacts } from '@/hooks/useContacts';
 import { useDeals } from '@/hooks/useDeals';
 import { useInvestors } from '@/hooks/useInvestors';
+import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
 
 interface Contact {
   id: string;
@@ -19,6 +19,7 @@ interface Contact {
   phone: string | null;
   deal_id: string | null;
   investor_id: string | null;
+  portfolio_company_id: string | null;
   relationship_owner: string | null;
   created_at: string;
   updated_at: string;
@@ -40,12 +41,14 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
     phone: '',
     deal_id: '',
     investor_id: '',
+    portfolio_company_id: '',
   });
   const [loading, setLoading] = useState(false);
   
   const { addContact, updateContact } = useContacts();
   const { deals } = useDeals();
   const { investors } = useInvestors();
+  const { portfolioCompanies } = usePortfolioCompanies();
 
   useEffect(() => {
     if (contact) {
@@ -57,6 +60,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
         phone: contact.phone || '',
         deal_id: contact.deal_id || '',
         investor_id: contact.investor_id || '',
+        portfolio_company_id: contact.portfolio_company_id || '',
       });
     } else {
       setFormData({
@@ -67,6 +71,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
         phone: '',
         deal_id: '',
         investor_id: '',
+        portfolio_company_id: '',
       });
     }
   }, [contact, open]);
@@ -85,6 +90,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
         phone: formData.phone || null,
         deal_id: formData.deal_id || null,
         investor_id: formData.investor_id || null,
+        portfolio_company_id: formData.portfolio_company_id || null,
         relationship_owner: null,
       };
 
@@ -180,7 +186,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
             <Label htmlFor="deal">Associated Deal</Label>
             <Select 
               value={formData.deal_id} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, deal_id: value, investor_id: '' }))}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, deal_id: value, investor_id: '', portfolio_company_id: '' }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a deal (optional)" />
@@ -200,7 +206,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
             <Label htmlFor="investor">Associated Investor</Label>
             <Select
               value={formData.investor_id}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, investor_id: value, deal_id: '' }))}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, investor_id: value, deal_id: '', portfolio_company_id: '' }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select an investor (optional)" />
@@ -211,6 +217,26 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
                   <SelectItem key={investor.id} value={investor.id}>
                     {investor.contact_name}{' '}
                     {investor.firm_name && `(${investor.firm_name})`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="portfolio_company">Associated Portfolio Company</Label>
+            <Select
+              value={formData.portfolio_company_id}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, portfolio_company_id: value, deal_id: '', investor_id: '' }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a portfolio company (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No associated portfolio company</SelectItem>
+                {portfolioCompanies.map((company) => (
+                  <SelectItem key={company.id} value={company.id}>
+                    {company.company_name}
                   </SelectItem>
                 ))}
               </SelectContent>
