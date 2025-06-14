@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -138,6 +137,32 @@ export function useContacts() {
     }
   };
 
+  const deleteMultipleContacts = async (ids: string[]) => {
+    if (!user || ids.length === 0) return;
+
+    try {
+      const { error } = await supabase
+        .from('contacts')
+        .delete()
+        .in('id', ids);
+
+      if (error) throw error;
+
+      setContacts(prev => prev.filter(contact => !ids.includes(contact.id)));
+      toast({
+        title: "Contacts deleted",
+        description: `${ids.length} contacts have been successfully deleted.`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error deleting contacts",
+        description: error.message,
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
+
   useEffect(() => {
     fetchContacts();
   }, [user]);
@@ -148,6 +173,7 @@ export function useContacts() {
     addContact,
     updateContact,
     deleteContact,
+    deleteMultipleContacts,
     refetch: fetchContacts,
   };
 }

@@ -25,7 +25,7 @@ interface Contact {
 }
 
 export default function Contacts() {
-  const { contacts, loading, deleteContact, refetch } = useContacts();
+  const { contacts, loading, deleteContact, deleteMultipleContacts, refetch } = useContacts();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -175,9 +175,15 @@ export default function Contacts() {
     setSearchTerm('');
   };
 
-  const handleBulkAction = (actionId: string, selectedIds: string[]) => {
-    console.log(`Bulk action ${actionId} on contacts:`, selectedIds);
-    // TODO: Implement actual bulk actions
+  const handleBulkAction = async (actionId: string, selectedIds: string[]) => {
+    if (actionId === 'delete') {
+      if (selectedIds.length > 0) {
+        await deleteMultipleContacts(selectedIds);
+      }
+    } else {
+      console.log(`Bulk action ${actionId} on contacts:`, selectedIds);
+      // TODO: Implement other bulk actions
+    }
     setSelectedContacts([]);
   };
 
