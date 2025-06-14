@@ -11,6 +11,11 @@ import { useInvestors } from '@/hooks/useInvestors';
 import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
 import { type Investor } from '@/types/investor';
 
+interface PartialDeal {
+  id: string;
+  company_name: string;
+}
+
 interface Contact {
   id: string;
   name: string;
@@ -31,11 +36,12 @@ interface AddContactDialogProps {
   onContactSaved?: () => void;
   trigger?: React.ReactNode;
   preselectedInvestor?: Investor;
+  preselectedDeal?: PartialDeal;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
 
-export function AddContactDialog({ contact, onContactSaved, trigger, preselectedInvestor, open: controlledOpen, onOpenChange: setControlledOpen }: AddContactDialogProps) {
+export function AddContactDialog({ contact, onContactSaved, trigger, preselectedInvestor, preselectedDeal, open: controlledOpen, onOpenChange: setControlledOpen }: AddContactDialogProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
 
   const isControlled = controlledOpen !== undefined;
@@ -82,6 +88,17 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
         investor_id: preselectedInvestor.id,
         portfolio_company_id: '',
       });
+    } else if (preselectedDeal) {
+      setFormData({
+        name: '',
+        title: '',
+        company_or_firm: preselectedDeal.company_name || '',
+        email: '',
+        phone: '',
+        deal_id: preselectedDeal.id,
+        investor_id: '',
+        portfolio_company_id: '',
+      });
     } else {
       setFormData({
         name: '',
@@ -94,7 +111,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
         portfolio_company_id: '',
       });
     }
-  }, [contact, open, preselectedInvestor]);
+  }, [contact, open, preselectedInvestor, preselectedDeal]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -158,6 +175,13 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
             {preselectedInvestor.firm_name && `(${preselectedInvestor.firm_name})`}</span>
           </div>
         )}
+
+        {preselectedDeal && (
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-sm text-blue-800">
+            Associating with deal:{' '}
+            <span className="font-semibold">{preselectedDeal.company_name}</span>
+          </div>
+        )}
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -217,7 +241,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
             <Select 
               value={formData.deal_id || ''} 
               onValueChange={(value) => setFormData(prev => ({ ...prev, deal_id: value === '_clear_' ? '' : value, investor_id: '', portfolio_company_id: '' }))}
-              disabled={!!preselectedInvestor}
+              disabled={!!preselectedInvestor || !!preselectedDeal}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a deal (optional)" />
@@ -238,7 +262,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
             <Select
               value={formData.investor_id || ''}
               onValueChange={(value) => setFormData(prev => ({ ...prev, investor_id: value === '_clear_' ? '' : value, deal_id: '', portfolio_company_id: '' }))}
-              disabled={!!preselectedInvestor}
+              disabled={!!preselectedInvestor || !!preselectedDeal}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select an investor (optional)" />
@@ -260,7 +284,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger, preselected
             <Select
               value={formData.portfolio_company_id || ''}
               onValueChange={(value) => setFormData(prev => ({ ...prev, portfolio_company_id: value === '_clear_' ? '' : value, deal_id: '', investor_id: '' }))}
-              disabled={!!preselectedInvestor}
+              disabled={!!preselectedInvestor || !!preselectedDeal}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a portfolio company (optional)" />

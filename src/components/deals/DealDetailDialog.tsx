@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { DealEditForm } from './DealEditForm';
 import { Database } from '@/integrations/supabase/types';
 import { Separator } from '@/components/ui/separator';
 import { DealInvestorsManager } from './DealInvestorsManager';
+import { DealContactsManager } from './DealContactsManager';
 
 type PipelineStage = Database['public']['Enums']['pipeline_stage'];
 type RoundStage = Database['public']['Enums']['round_stage'];
@@ -89,6 +91,12 @@ export function DealDetailDialog({ deal, open, onOpenChange, onDealUpdated }: De
         </div>
 
         <DealInvestorsManager deal={deal} />
+
+        <div className="my-6">
+          <Separator />
+        </div>
+
+        <DealContactsManager deal={deal} />
       </DialogContent>
     </Dialog>
   );
