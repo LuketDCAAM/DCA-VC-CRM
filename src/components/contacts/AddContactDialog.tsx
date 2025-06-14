@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plus } from 'lucide-react';
 import { useContacts } from '@/hooks/useContacts';
 import { useDeals } from '@/hooks/useDeals';
+import { useInvestors } from '@/hooks/useInvestors';
 
 interface Contact {
   id: string;
@@ -44,6 +45,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
   
   const { addContact, updateContact } = useContacts();
   const { deals } = useDeals();
+  const { investors } = useInvestors();
 
   useEffect(() => {
     if (contact) {
@@ -178,7 +180,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
             <Label htmlFor="deal">Associated Deal</Label>
             <Select 
               value={formData.deal_id} 
-              onValueChange={(value) => setFormData(prev => ({ ...prev, deal_id: value }))}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, deal_id: value, investor_id: '' }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a deal (optional)" />
@@ -188,6 +190,27 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
                 {deals.map((deal) => (
                   <SelectItem key={deal.id} value={deal.id}>
                     {deal.company_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="investor">Associated Investor</Label>
+            <Select
+              value={formData.investor_id}
+              onValueChange={(value) => setFormData(prev => ({ ...prev, investor_id: value, deal_id: '' }))}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select an investor (optional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No associated investor</SelectItem>
+                {investors.map((investor) => (
+                  <SelectItem key={investor.id} value={investor.id}>
+                    {investor.contact_name}{' '}
+                    {investor.firm_name && `(${investor.firm_name})`}
                   </SelectItem>
                 ))}
               </SelectContent>
