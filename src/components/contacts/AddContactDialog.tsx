@@ -48,7 +48,7 @@ export function AddContactDialog({ contact, onContactSaved, trigger }: AddContac
   const { addContact, updateContact } = useContacts();
   const { deals } = useDeals();
   const { investors } = useInvestors();
-  const { portfolioCompanies } = usePortfolioCompanies();
+  const { companies: portfolioCompanies } = usePortfolioCompanies();
 
   useEffect(() => {
     if (contact) {
