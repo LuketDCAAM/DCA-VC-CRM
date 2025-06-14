@@ -3,6 +3,7 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -55,6 +56,7 @@ type DealFormValues = z.infer<typeof dealFormSchema>;
 
 export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const form = useForm<DealFormValues>({
     resolver: zodResolver(dealFormSchema),
@@ -100,6 +102,11 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
         title: "Deal updated",
         description: "The deal has been successfully updated.",
       });
+
+      queryClient.invalidateQueries({ queryKey: ['deals'] });
+      if (values.pipeline_stage === 'Invested') {
+        queryClient.invalidateQueries({ queryKey: ['portfolioCompanies'] });
+      }
 
       onSave();
     } catch (error: any) {

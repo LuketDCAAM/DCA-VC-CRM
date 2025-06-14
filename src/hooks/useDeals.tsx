@@ -1,46 +1,42 @@
-import { useState, useEffect } from 'react';
+
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
 import { Deal } from '@/types/deal';
 
+async function fetchDeals(userId: string): Promise<Deal[]> {
+  const { data, error } = await supabase
+    .from('deals')
+    .select('*')
+    .eq('created_by', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error("Error fetching deals:", error);
+    throw new Error(error.message);
+  }
+  return data || [];
+}
+
 export function useDeals() {
-  const [deals, setDeals] = useState<Deal[]>([]);
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const { toast } = useToast();
 
-  const fetchDeals = async () => {
-    if (!user) return;
-
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('deals')
-        .select('*')
-        .eq('created_by', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setDeals(data || []);
-    } catch (error: any) {
-      toast({
-        title: "Error fetching deals",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchDeals();
-  }, [user]);
+  const {
+    data: deals = [],
+    isLoading: loading,
+    refetch,
+  } = useQuery({
+    queryKey: ['deals', user?.id],
+    queryFn: () => {
+      if (!user?.id) return [];
+      return fetchDeals(user.id);
+    },
+    enabled: !!user?.id,
+  });
 
   return {
     deals,
     loading,
-    refetch: fetchDeals,
+    refetch,
   };
 }
