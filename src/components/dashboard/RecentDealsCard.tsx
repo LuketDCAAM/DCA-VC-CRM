@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,12 +22,24 @@ export function RecentDealsCard({ deals }: RecentDealsCardProps) {
 
   const getStageColor = (stage: string) => {
     switch (stage.toLowerCase()) {
+      case 'seen not reviewed':
+        return 'bg-stone-100 text-stone-800';
+      case 'initial review':
+        return 'bg-gray-100 text-gray-800';
+      case 'initial contact':
+        return 'bg-sky-100 text-sky-800';
+      case 'first meeting':
+        return 'bg-blue-100 text-blue-800';
+      case 'due diligence':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'term sheet':
+        return 'bg-purple-100 text-purple-800';
+      case 'legal review':
+        return 'bg-orange-100 text-orange-800';
       case 'invested':
         return 'bg-green-100 text-green-800';
       case 'passed':
         return 'bg-red-100 text-red-800';
-      case 'due diligence':
-        return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }

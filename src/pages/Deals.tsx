@@ -57,6 +57,8 @@ export default function Deals() {
       value: 'pipeline_stage',
       type: 'select',
       options: [
+        { label: 'Seen Not Reviewed', value: 'Seen Not Reviewed' },
+        { label: 'Initial Review', value: 'Initial Review' },
         { label: 'Initial Contact', value: 'Initial Contact' },
         { label: 'First Meeting', value: 'First Meeting' },
         { label: 'Due Diligence', value: 'Due Diligence' },
