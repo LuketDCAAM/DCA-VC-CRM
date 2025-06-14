@@ -24,7 +24,7 @@ import {
 import { useInvestors } from '@/hooks/useInvestors';
 import { InvestmentStage, Investor } from '@/types/investor';
 
-const investmentStages: readonly InvestmentStage[] = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C', 'Growth'];
+const investmentStages = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C', 'Growth', 'Late Stage'] as const;
 
 const investorSchema = z.object({
   contact_name: z.string().min(1, 'Contact name is required'),
