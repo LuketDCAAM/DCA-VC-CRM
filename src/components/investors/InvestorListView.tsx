@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Table,
@@ -11,18 +12,40 @@ import { Button } from '@/components/ui/button';
 import { Edit, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Investor } from '@/types/investor';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface InvestorListViewProps {
   investors: Investor[];
   onEdit: (investor: Investor) => void;
   onDelete: (investorId: string) => void;
+  selectedInvestors: string[];
+  onToggleInvestorSelection: (investorId: string) => void;
+  onSelectAll: () => void;
+  onDeselectAll: () => void;
+  isAllSelected: boolean;
 }
 
-export function InvestorListView({ investors, onEdit, onDelete }: InvestorListViewProps) {
+export function InvestorListView({
+  investors,
+  onEdit,
+  onDelete,
+  selectedInvestors,
+  onToggleInvestorSelection,
+  onSelectAll,
+  onDeselectAll,
+  isAllSelected,
+}: InvestorListViewProps) {
   return (
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead className="w-12">
+            <Checkbox
+              checked={isAllSelected ? true : (selectedInvestors.length > 0 ? 'indeterminate' : false)}
+              onCheckedChange={() => isAllSelected ? onDeselectAll() : onSelectAll()}
+              aria-label="Select all"
+            />
+          </TableHead>
           <TableHead>Contact</TableHead>
           <TableHead>Firm</TableHead>
           <TableHead>Investment Stage</TableHead>
@@ -34,7 +57,14 @@ export function InvestorListView({ investors, onEdit, onDelete }: InvestorListVi
       </TableHeader>
       <TableBody>
         {investors.map((investor) => (
-          <TableRow key={investor.id}>
+          <TableRow key={investor.id} data-state={selectedInvestors.includes(investor.id) ? 'selected' : undefined}>
+            <TableCell>
+              <Checkbox
+                checked={selectedInvestors.includes(investor.id)}
+                onCheckedChange={() => onToggleInvestorSelection(investor.id)}
+                aria-label={`Select ${investor.contact_name}`}
+              />
+            </TableCell>
             <TableCell>
               <div className="font-medium">{investor.contact_name}</div>
               <div className="text-sm text-muted-foreground">{investor.contact_email}</div>

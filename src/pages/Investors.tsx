@@ -209,6 +209,14 @@ export default function Investors() {
     setSelectedInvestors([]);
   };
 
+  const handleToggleInvestorSelection = (investorId: string) => {
+    setSelectedInvestors(prevSelected =>
+      prevSelected.includes(investorId)
+        ? prevSelected.filter(id => id !== investorId)
+        : [...prevSelected, investorId]
+    );
+  };
+
   // Prepare export data with calculated fields
   const exportData = filteredInvestors.map(investor => ({
     ...investor,
@@ -294,6 +302,11 @@ export default function Investors() {
                         investors={filteredInvestors}
                         onEdit={handleViewDetails}
                         onDelete={handleDelete}
+                        selectedInvestors={selectedInvestors}
+                        onToggleInvestorSelection={handleToggleInvestorSelection}
+                        onSelectAll={handleSelectAll}
+                        onDeselectAll={handleDeselectAll}
+                        isAllSelected={selectedInvestors.length === filteredInvestors.length && filteredInvestors.length > 0}
                     />
                 </CardContent>
             </Card>
