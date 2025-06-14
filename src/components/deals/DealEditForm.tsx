@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -98,10 +97,17 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
 
       if (error) throw error;
 
-      toast({
-        title: "Deal updated",
-        description: "The deal has been successfully updated.",
-      });
+      if (values.pipeline_stage === 'Invested' && deal.pipeline_stage !== 'Invested') {
+        toast({
+          title: "Deal Invested!",
+          description: `"${values.company_name}" has been added to your portfolio.`,
+        });
+      } else {
+        toast({
+          title: "Deal updated",
+          description: "The deal has been successfully updated.",
+        });
+      }
 
       queryClient.invalidateQueries({ queryKey: ['deals'] });
       if (values.pipeline_stage === 'Invested') {

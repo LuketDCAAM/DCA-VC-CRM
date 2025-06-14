@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, Edit, Archive, Upload } from 'lucide-react';
+import { Plus, Trash2, Edit, Archive, Upload, RefreshCw } from 'lucide-react';
 import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
 import { PortfolioCard } from '@/components/portfolio/PortfolioCard';
 import { PortfolioDetailDialog } from '@/components/portfolio/PortfolioDetailDialog';
@@ -11,16 +11,69 @@ import { BulkActions, BulkAction } from '@/components/common/BulkActions';
 import { ExportData } from '@/components/common/ExportData';
 import { CSVImport } from '@/components/common/CSVImport';
 import { useCSVImport } from '@/hooks/useCSVImport';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Portfolio() {
   const { companies, loading, refetch } = usePortfolioCompanies();
   const { importPortfolioCompanies } = useCSVImport();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCompany, setSelectedCompany] = useState<any>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+
+  const handleSyncInvestedDeals = async () => {
+    if (!user) {
+      toast({ title: 'Authentication Error', description: 'You must be logged in to sync deals.', variant: 'destructive' });
+      return;
+    }
+
+    toast({ title: 'Syncing...', description: 'Fetching invested deals to sync with portfolio.' });
+
+    try {
+      const { data: investedDeals, error: dealsError } = await supabase
+        .from('deals')
+        .select('company_name, description, relationship_owner, created_by')
+        .eq('pipeline_stage', 'Invested')
+        .eq('created_by', user.id);
+
+      if (dealsError) throw dealsError;
+
+      if (!investedDeals || investedDeals.length === 0) {
+        toast({ title: 'Nothing to sync', description: 'All invested deals are already in your portfolio.' });
+        return;
+      }
+
+      const companiesToUpsert = investedDeals.map(deal => ({
+        company_name: deal.company_name,
+        description: deal.description,
+        relationship_owner: deal.relationship_owner,
+        created_by: deal.created_by,
+        status: 'Active' as const,
+      }));
+
+      const { error: upsertError } = await supabase
+        .from('portfolio_companies')
+        .upsert(companiesToUpsert, { onConflict: 'company_name, created_by' });
+
+      if (upsertError) throw upsertError;
+
+      toast({ title: 'Sync Complete', description: `${companiesToUpsert.length} companies synced successfully.` });
+      await refetch();
+
+    } catch (error: any) {
+      toast({
+        title: 'Sync Failed',
+        description: error.message || 'An unexpected error occurred.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   // CSV template columns for portfolio companies
   const csvTemplateColumns = [
@@ -206,6 +259,10 @@ export default function Portfolio() {
               Import CSV
             </Button>
           </CSVImport>
+          <Button variant="outline" size="sm" onClick={handleSyncInvestedDeals}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Sync Invested Deals
+          </Button>
           <AddPortfolioDialog onSuccess={refetch}>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
