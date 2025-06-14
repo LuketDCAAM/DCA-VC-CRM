@@ -22,8 +22,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useInvestors } from '@/hooks/useInvestors';
+import { InvestmentStage, Investor } from '@/types/investor';
 
-const investmentStages = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C', 'Growth'] as const;
+const investmentStages: readonly InvestmentStage[] = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C', 'Growth'];
 
 const investorSchema = z.object({
   contact_name: z.string().min(1, 'Contact name is required'),
@@ -41,7 +42,7 @@ const investorSchema = z.object({
 type InvestorFormData = z.infer<typeof investorSchema>;
 
 interface AddInvestorDialogProps {
-  investor?: any;
+  investor?: Investor;
   onSuccess: () => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;

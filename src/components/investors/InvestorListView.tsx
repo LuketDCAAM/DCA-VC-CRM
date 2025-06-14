@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Table,
@@ -11,20 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Edit, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Database } from '@/integrations/supabase/types';
-
-type InvestmentStage = Database['public']['Enums']['investment_stage'];
-
-interface Investor {
-  id: string;
-  contact_name: string;
-  contact_email: string | null;
-  firm_name: string | null;
-  preferred_investment_stage: InvestmentStage | null;
-  average_check_size: number | null;
-  location: string | null;
-  tags: string[] | null;
-}
+import { Investor } from '@/types/investor';
 
 interface InvestorListViewProps {
   investors: Investor[];

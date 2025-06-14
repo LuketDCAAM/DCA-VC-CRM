@@ -1,22 +1,25 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Trash2, Edit, Archive, Upload, LayoutGrid, List } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Plus, Trash2, Edit, Archive, LayoutGrid, List } from 'lucide-react';
 import { useInvestors } from '@/hooks/useInvestors';
 import { InvestorCard } from '@/components/investors/InvestorCard';
 import { SearchAndFilter, FilterOption } from '@/components/common/SearchAndFilter';
 import { BulkActions, BulkAction } from '@/components/common/BulkActions';
-import { ExportData } from '@/components/common/ExportData';
-import { CSVImport } from '@/components/common/CSVImport';
 import { useCSVImport } from '@/hooks/useCSVImport';
 import { AddInvestorDialog } from '@/components/investors/AddInvestorDialog';
 import { InvestorListView } from '@/components/investors/InvestorListView';
+import { InvestorsPageHeader } from '@/components/investors/InvestorsPageHeader';
+import { InvestorStats } from '@/components/investors/InvestorStats';
+import { NoInvestorsFound } from '@/components/investors/NoInvestorsFound';
+import { Investor } from '@/types/investor';
 
 export default function Investors() {
   const { investors, loading, refetch, deleteInvestor } = useInvestors();
   const { importInvestors } = useCSVImport();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedInvestor, setSelectedInvestor] = useState<any>(null);
+  const [selectedInvestor, setSelectedInvestor] = useState<Investor | null>(null);
   const [selectedInvestors, setSelectedInvestors] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
@@ -127,8 +130,8 @@ export default function Investors() {
     // Search filter
     const matchesSearch = searchTerm === '' || 
       investor.contact_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      investor.firm_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      investor.location?.toLowerCase().includes(searchTerm.toLowerCase());
+      (investor.firm_name && investor.firm_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (investor.location && investor.location.toLowerCase().includes(searchTerm.toLowerCase()));
 
     // Active filters
     const matchesFilters = Object.entries(activeFilters).every(([key, value]) => {
@@ -153,7 +156,7 @@ export default function Investors() {
     return matchesSearch && matchesFilters;
   });
 
-  const handleViewDetails = (investor: any) => {
+  const handleViewDetails = (investor: Investor) => {
     setSelectedInvestor(investor);
     setIsDialogOpen(true);
   };
@@ -215,86 +218,16 @@ export default function Investors() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">Investors</h1>
-          <p className="text-gray-600">Manage your investor relationships</p>
-        </div>
-        <div className="flex items-center gap-2">
-          <ExportData
-            data={exportData}
-            filename="investors"
-            columns={exportColumns}
-            loading={loading}
-          />
-          <CSVImport
-            title="Import Investors"
-            description="Upload a CSV file to import multiple investors at once"
-            templateColumns={csvTemplateColumns}
-            onImport={handleCSVImport}
-          >
-            <Button variant="outline" size="sm">
-              <Upload className="h-4 w-4 mr-2" />
-              Import CSV
-            </Button>
-          </CSVImport>
-          <Button onClick={handleAddNew}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Investor
-          </Button>
-        </div>
-      </div>
+      <InvestorsPageHeader
+        onAddNew={handleAddNew}
+        exportData={exportData}
+        exportColumns={exportColumns}
+        loading={loading}
+        csvTemplateColumns={csvTemplateColumns}
+        onCSVImport={handleCSVImport}
+      />
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Investors</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{investors.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">With Contact Info</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {investors.filter(i => i.contact_email || i.contact_phone).length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Firm Investors</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {investors.filter(i => i.firm_name).length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Avg Check Size</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-600">
-              {investors.filter(i => i.average_check_size).length > 0 ? 
-                new Intl.NumberFormat('en-US', {
-                  style: 'currency',
-                  currency: 'USD',
-                  minimumFractionDigits: 0,
-                }).format(
-                  investors.filter(i => i.average_check_size).reduce((sum, i) => sum + (i.average_check_size || 0), 0) / 
-                  (investors.filter(i => i.average_check_size).length * 100)
-                ) : '$0'
-              }
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <InvestorStats investors={investors} />
 
       {/* Search and Filters */}
       <div className="flex items-start justify-between gap-4">
@@ -335,33 +268,7 @@ export default function Investors() {
       {/* Investors Grid/List */}
       <div className="mt-6">
         {filteredInvestors.length === 0 ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>No Investors Found</CardTitle>
-              <CardDescription>
-                {investors.length === 0 
-                  ? "You haven't added any investors yet."
-                  : "No investors match your current filters."
-                }
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <p className="text-gray-500 mb-4">
-                  {investors.length === 0 
-                    ? "Start by adding your first investor to track relationships."
-                    : "Try adjusting your search or filter criteria."
-                  }
-                </p>
-                {investors.length === 0 && (
-                  <Button variant="outline" onClick={handleAddNew}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add your first investor
-                  </Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          <NoInvestorsFound hasInvestors={investors.length > 0} onAddNew={handleAddNew} />
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredInvestors.map((investor) => (
