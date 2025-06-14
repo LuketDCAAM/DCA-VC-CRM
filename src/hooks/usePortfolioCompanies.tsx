@@ -1,8 +1,8 @@
-
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Database } from '@/integrations/supabase/types';
+import { useEffect, useMemo } from 'react';
 
 type CompanyStatus = Database['public']['Enums']['company_status'];
 
@@ -59,19 +59,47 @@ async function fetchCompanies(userId: string): Promise<PortfolioCompany[]> {
 
 export function usePortfolioCompanies() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+
+  const queryKey = useMemo(() => ['portfolioCompanies', user?.id], [user?.id]);
 
   const {
     data: companies = [],
     isLoading: loading,
     refetch,
   } = useQuery({
-    queryKey: ['portfolioCompanies', user?.id],
+    queryKey,
     queryFn: () => {
       if (!user?.id) return [];
       return fetchCompanies(user.id);
     },
     enabled: !!user?.id,
   });
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const companiesChannel = supabase
+      .channel('custom-portfolio-channel')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'portfolio_companies',
+          filter: `created_by=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('Portfolio companies change received!', payload);
+          queryClient.invalidateQueries({ queryKey });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(companiesChannel);
+    };
+  }, [user?.id, queryClient, queryKey]);
 
   return {
     companies,
