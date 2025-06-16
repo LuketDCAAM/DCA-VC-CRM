@@ -6,8 +6,22 @@ import { Deal } from '@/types/deal';
 import { useEffect, useMemo, useId, useRef } from 'react';
 
 async function fetchDeals(userId: string): Promise<Deal[]> {
+  console.log('=== FETCH DEALS DEBUG ===');
   console.log('Fetching deals for user:', userId);
   
+  // First, let's check the total count in the database for this user
+  const { count: totalCount, error: countError } = await supabase
+    .from('deals')
+    .select('*', { count: 'exact', head: true })
+    .eq('created_by', userId);
+
+  if (countError) {
+    console.error("Error getting total count:", countError);
+  } else {
+    console.log('🔍 TOTAL DEALS IN DATABASE for user:', totalCount);
+  }
+
+  // Now fetch the actual data
   const { data, error } = await supabase
     .from('deals')
     .select('*')
@@ -19,11 +33,28 @@ async function fetchDeals(userId: string): Promise<Deal[]> {
     throw new Error(error.message);
   }
   
-  console.log('Raw deals data from database:', data?.length || 0, 'deals');
+  console.log('📊 FETCHED DEALS COUNT:', data?.length || 0);
+  console.log('📊 DATABASE TOTAL COUNT:', totalCount);
+  
+  if (data && totalCount && data.length !== totalCount) {
+    console.warn('⚠️ MISMATCH: Fetched', data.length, 'but database reports', totalCount, 'total');
+  }
+  
   console.log('Pipeline stage distribution:', data?.reduce((acc, deal) => {
     acc[deal.pipeline_stage] = (acc[deal.pipeline_stage] || 0) + 1;
     return acc;
   }, {} as Record<string, number>));
+  
+  // Let's also check if there are deals for other users to understand the total scope
+  const { count: globalCount, error: globalError } = await supabase
+    .from('deals')
+    .select('*', { count: 'exact', head: true });
+    
+  if (!globalError) {
+    console.log('🌍 TOTAL DEALS IN ENTIRE DATABASE:', globalCount);
+  }
+  
+  console.log('=== END FETCH DEALS DEBUG ===');
   
   return data || [];
 }
@@ -37,13 +68,11 @@ export const ACTIVE_PIPELINE_STAGES = [
   'Legal Review'
 ];
 
-// Define early screening stages that are not considered active pipeline
 export const SCREENING_STAGES = [
   'Seen Not Reviewed',
   'Initial Review'
 ];
 
-// Define final outcome stages
 export const FINAL_STAGES = {
   INVESTED: 'Invested',
   PASSED: 'Passed'
@@ -77,7 +106,6 @@ export function useDeals() {
     
     const totalDeals = deals.length;
     
-    // Count deals by category with detailed logging
     const activeDealsList = deals.filter(deal => 
       ACTIVE_PIPELINE_STAGES.includes(deal.pipeline_stage)
     );
@@ -102,7 +130,6 @@ export function useDeals() {
     console.log('Screening deals:', screeningDealsList.length, 'deals in stages:', SCREENING_STAGES);
     console.log('Screening deals list:', screeningDealsList.map(d => ({ name: d.company_name, stage: d.pipeline_stage })));
 
-    // Verify our counts add up correctly
     const categorizedCount = activeDealsList.length + investedDealsList.length + passedDealsList.length + screeningDealsList.length;
     console.log('Total categorized deals:', categorizedCount, 'vs total deals:', totalDeals);
     
@@ -135,7 +162,6 @@ export function useDeals() {
   useEffect(() => {
     if (!user?.id) return;
 
-    // Clean up any existing channel
     if (channelRef.current) {
       console.log('Cleaning up existing deals channel');
       supabase.removeChannel(channelRef.current);
