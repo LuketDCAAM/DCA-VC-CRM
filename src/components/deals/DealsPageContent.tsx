@@ -88,9 +88,9 @@ export function DealsPageContent({
       case 'virtualized':
         return <VirtualizedDealsTable {...commonProps} height={600} />;
       case 'list':
-        return <DealListView {...commonProps} onDealUpdated={onDealUpdated} />;
+        return <DealListView {...commonProps} />;
       case 'grid':
-        return <DealsGrid {...commonProps} onDealUpdated={onDealUpdated} />;
+        return <DealsGrid {...commonProps} />;
       case 'pipeline':
         return (
           <DealPipelineBoard
@@ -111,18 +111,15 @@ export function DealsPageContent({
         csvTemplateColumns={csvTemplateColumns}
         exportColumns={exportColumns}
         onCSVImport={onCSVImport}
-        selectedDeals={selectedDeals}
-        onBulkAction={onBulkAction}
         deals={filteredDeals}
       />
       
-      <DealsStats dealStats={dealStats} />
+      <DealsStats stats={dealStats} />
       
       <div className="space-y-4">
         <SearchAndFilter
           searchTerm={searchTerm}
           onSearchChange={onSearchChange}
-          showAdvancedFilters={showAdvancedFilters}
           onToggleAdvanced={onToggleAdvanced}
           placeholder="Search deals by company, contact, location, or description..."
         />

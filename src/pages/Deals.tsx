@@ -73,6 +73,14 @@ export default function Deals() {
 
   const isAllSelected = selectedDeals.length === filteredDeals.length && filteredDeals.length > 0;
 
+  // Wrap the bulk action handler to return a Promise
+  const handleBulkActionWrapper = async (action: string, dealIds: string[]) => {
+    return new Promise<void>((resolve) => {
+      handleBulkAction(action, dealIds);
+      resolve();
+    });
+  };
+
   if (loading) {
     return (
       <div className="p-6">
@@ -97,9 +105,9 @@ export default function Deals() {
         selectedDeals={selectedDeals}
         onSelectAll={handleSelectAll(filteredDeals)}
         onDeselectAll={handleDeselectAll}
-        onBulkAction={handleBulkAction}
+        onBulkAction={handleBulkActionWrapper}
         isAllSelected={isAllSelected}
-        viewMode={viewMode}
+        viewMode={viewMode as any}
         onViewModeChange={setViewMode}
         onViewDetails={handleViewDetails}
         onToggleDealSelection={handleToggleDealSelection}
