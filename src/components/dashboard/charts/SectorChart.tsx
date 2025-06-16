@@ -9,17 +9,22 @@ interface SectorChartProps {
 }
 
 export function SectorChart({ data }: SectorChartProps) {
+  console.log('=== SECTOR CHART DEBUG ===');
+  console.log('Received sector data:', data);
+
   // Define a color palette for the sectors
   const colors = [
     '#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00ff7f', 
     '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57'
   ];
 
-  // Add colors to the data
+  // Add colors to the data and limit to top 8
   const coloredData = data.slice(0, 8).map((item, index) => ({
     ...item,
     fill: colors[index % colors.length]
   }));
+
+  console.log('Colored data for chart:', coloredData);
 
   // Simple chart config for the container
   const chartConfig = {
@@ -49,7 +54,7 @@ export function SectorChart({ data }: SectorChartProps) {
     <Card>
       <CardHeader>
         <CardTitle>Top Sectors</CardTitle>
-        <CardDescription>Deal distribution by industry sector</CardDescription>
+        <CardDescription>Deal distribution by industry sector (Top {Math.min(data.length, 8)})</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px]">
