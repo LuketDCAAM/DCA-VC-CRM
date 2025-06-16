@@ -2,13 +2,13 @@
 import { useState, useMemo } from 'react';
 import { Deal } from '@/types/deal';
 
-export type ViewMode = 'list' | 'grid' | 'table' | 'pipeline' | 'configurable' | 'high-performance' | 'virtualized';
+export type ViewMode = 'grid' | 'configurable' | 'pipeline';
 
 export function useDealsPageState() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useState<ViewMode>('configurable');
   const [selectedDeals, setSelectedDeals] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});

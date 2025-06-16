@@ -6,15 +6,12 @@ import { DealsStats } from './DealsStats';
 import { SearchAndFilter } from '@/components/common/SearchAndFilter';
 import { DealsFilters } from './DealsFilters';
 import { DealsViewTabs } from './DealsViewTabs';
-import { DealListView } from './DealListView';
 import { DealsGrid } from './DealsGrid';
 import { DealPipelineBoard } from './DealPipelineBoard';
 import { ConfigurableDealsTable } from './ConfigurableDealsTable';
-import { HighPerformanceDealsTableView } from './HighPerformanceDealsTableView';
-import { VirtualizedDealsTable } from './VirtualizedDealsTable';
 import { DealStats } from '@/hooks/deals/dealStatsCalculator';
 
-export type ViewMode = 'list' | 'grid' | 'table' | 'pipeline' | 'configurable' | 'high-performance' | 'virtualized';
+export type ViewMode = 'grid' | 'configurable' | 'pipeline';
 
 interface DealsPageContentProps {
   filteredDeals: Deal[];
@@ -83,12 +80,6 @@ export function DealsPageContent({
     switch (viewMode) {
       case 'configurable':
         return <ConfigurableDealsTable {...commonProps} />;
-      case 'high-performance':
-        return <HighPerformanceDealsTableView {...commonProps} />;
-      case 'virtualized':
-        return <VirtualizedDealsTable {...commonProps} height={600} />;
-      case 'list':
-        return <DealListView {...commonProps} onDealUpdated={onDealUpdated} />;
       case 'grid':
         return <DealsGrid {...commonProps} onDealUpdated={onDealUpdated} />;
       case 'pipeline':
