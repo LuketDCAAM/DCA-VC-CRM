@@ -17,7 +17,7 @@ import {
   Droppable,
   Draggable,
   DropResult,
-} from '@hello-pangea/react-beautiful-dnd';
+} from '@hello-pangea/dnd';
 import { Settings, GripVertical, RotateCcw, Eye, EyeOff } from 'lucide-react';
 import { TableColumn, useTableColumns } from '@/hooks/deals/useTableColumns';
 
