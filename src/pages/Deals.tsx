@@ -1,12 +1,11 @@
-
 import React, { useState, useMemo } from 'react';
-import { useDeals } from '@/hooks/useDeals';
+import { useOptimizedDeals } from '@/hooks/useOptimizedDeals';
 import { DealDetailDialog } from '@/components/deals/DealDetailDialog';
 import { useCSVImport } from '@/hooks/useCSVImport';
 import { Deal } from '@/types/deal';
 import { DealsHeader } from '@/components/deals/DealsHeader';
 import { DealsStats } from '@/components/deals/DealsStats';
-import { useFilteredDeals } from '@/hooks/useFilteredDeals';
+import { useOptimizedFilteredDeals } from '@/hooks/useOptimizedFilteredDeals';
 import { DealFilters } from '@/hooks/usePaginatedDeals';
 import { DealsFilters } from '@/components/deals/DealsFilters';
 import { DealsBulkActions } from '@/components/deals/DealsBulkActions';
@@ -14,7 +13,7 @@ import { DealsViewTabs } from '@/components/deals/DealsViewTabs';
 import { useDealsCSVConfig } from '@/components/deals/DealsCSVConfig';
 
 export default function Deals() {
-  const { deals, loading, refetch, dealStats } = useDeals();
+  const { deals, loading, refetch, dealStats } = useOptimizedDeals();
   const { importDeals } = useCSVImport();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
@@ -59,8 +58,8 @@ export default function Deals() {
     };
   };
 
-  // Optimized filtered deals with memoization
-  const filteredDeals = useFilteredDeals(deals, searchTerm, activeFilters);
+  // Use optimized filtered deals hook
+  const filteredDeals = useOptimizedFilteredDeals(deals, searchTerm, activeFilters);
 
   // Memoized deal filters to prevent unnecessary recalculations
   const dealFilters: DealFilters = useMemo(() => {

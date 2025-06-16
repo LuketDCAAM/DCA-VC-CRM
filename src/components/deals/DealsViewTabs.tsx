@@ -1,10 +1,11 @@
+
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Grid, Table, BarChart3 } from "lucide-react";
 import { Deal } from '@/types/deal';
 import { DealFilters } from '@/hooks/usePaginatedDeals';
 import { DealListView } from './DealListView';
-import { HighPerformanceDealsTableView } from './HighPerformanceDealsTableView';
+import { VirtualizedDealsTable } from './VirtualizedDealsTable';
 import { DealPipelineBoard } from './DealPipelineBoard';
 
 interface DealsViewTabsProps {
@@ -69,7 +70,7 @@ export function DealsViewTabs({
       </TabsContent>
 
       <TabsContent value="table" className="space-y-4">
-        <HighPerformanceDealsTableView
+        <VirtualizedDealsTable
           deals={filteredDeals}
           onViewDetails={onViewDetails}
           selectedDeals={selectedDeals}
@@ -77,6 +78,7 @@ export function DealsViewTabs({
           onSelectAll={onSelectAll}
           onDeselectAll={onDeselectAll}
           isAllSelected={isAllSelected}
+          height={600}
         />
       </TabsContent>
 
