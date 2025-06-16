@@ -2,11 +2,13 @@
 import { useState, useMemo } from 'react';
 import { Deal } from '@/types/deal';
 
+export type ViewMode = 'list' | 'grid' | 'table' | 'pipeline' | 'configurable' | 'high-performance' | 'virtualized';
+
 export function useDealsPageState() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
-  const [viewMode, setViewMode] = useState('list');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [selectedDeals, setSelectedDeals] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
@@ -45,7 +47,7 @@ export function useDealsPageState() {
     setSelectedDeals([]);
   }, []);
 
-  const handleBulkAction = useMemo(() => (actionId: string, selectedIds: string[]) => {
+  const handleBulkAction = useMemo(() => async (actionId: string, selectedIds: string[]): Promise<void> => {
     console.log(`Bulk action ${actionId} on deals:`, selectedIds);
     setSelectedDeals([]);
   }, []);

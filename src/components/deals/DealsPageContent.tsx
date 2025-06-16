@@ -23,7 +23,7 @@ interface DealsPageContentProps {
   searchTerm: string;
   onSearchChange: (term: string) => void;
   activeFilters: Record<string, any>;
-  onFilterChange: (filters: Record<string, any>) => void;
+  onFilterChange: (key: string, value: any) => void;
   onClearFilters: () => void;
   showAdvancedFilters: boolean;
   onToggleAdvanced: () => void;
@@ -107,23 +107,26 @@ export function DealsPageContent({
   return (
     <div className="space-y-6">
       <DealsHeader 
-        onDealAdded={onDealAdded}
-        csvTemplateColumns={csvTemplateColumns}
+        filteredDeals={filteredDeals}
         exportColumns={exportColumns}
+        loading={loading}
+        csvTemplateColumns={csvTemplateColumns}
         onCSVImport={onCSVImport}
-        selectedDeals={selectedDeals}
-        onBulkAction={onBulkAction}
-        deals={filteredDeals}
+        onDealAdded={onDealAdded}
       />
       
-      <DealsStats dealStats={dealStats} />
+      <DealsStats 
+        totalDeals={dealStats.totalDeals}
+        activeDeals={dealStats.activeDeals}
+        investedDeals={dealStats.investedDeals}
+        passedDeals={dealStats.passedDeals}
+        screeningDeals={dealStats.screeningDeals}
+      />
       
       <div className="space-y-4">
         <SearchAndFilter
           searchTerm={searchTerm}
           onSearchChange={onSearchChange}
-          showAdvancedFilters={showAdvancedFilters}
-          onToggleAdvanced={onToggleAdvanced}
           placeholder="Search deals by company, contact, location, or description..."
         />
         
