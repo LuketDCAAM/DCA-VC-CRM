@@ -32,20 +32,21 @@ export function ConfigurableDealsTableHeader({
   const { visibleColumns } = useTableColumns();
 
   return (
-    <TableHeader className="sticky top-0 z-20 bg-muted/80 backdrop-blur-sm border-b">
-      <TableRow className="hover:bg-transparent h-10">
+    <TableHeader className="sticky top-0 z-20 bg-muted/95 backdrop-blur-sm border-b-2 border-border">
+      <TableRow className="hover:bg-transparent h-12 border-b border-border/50">
         <AdvancedSortableTableHead 
           sortKey="selection" 
           currentSort={null}
           sortPriority={null}
           onSort={() => {}}
           canSort={false}
-          className="w-12 sticky left-0 z-30 bg-muted/80 backdrop-blur-sm border-r py-2"
+          className="w-12 sticky left-0 z-30 bg-muted/95 backdrop-blur-sm border-r border-border/50 py-3 px-4"
         >
           <Checkbox
             checked={isAllSelected ? true : (hasSelection ? 'indeterminate' : false)}
             onCheckedChange={() => isAllSelected ? onDeselectAll() : onSelectAll()}
             aria-label="Select all"
+            className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
           />
         </AdvancedSortableTableHead>
         
@@ -59,13 +60,14 @@ export function ConfigurableDealsTableHeader({
             onRemoveSort={onRemoveSort}
             canSort={column.sortable}
             className={`
-              ${column.width} font-medium text-xs py-2
-              ${column.key === 'company_name' ? 'sticky left-12 z-30 bg-muted/80 backdrop-blur-sm border-r' : ''}
+              ${column.width} font-semibold text-xs text-foreground py-3 px-4
+              ${column.key === 'company_name' ? 'sticky left-12 z-30 bg-muted/95 backdrop-blur-sm border-r border-border/50' : ''}
+              hover:bg-muted/60 transition-colors
             `}
           >
-            <div className="flex items-center gap-1">
-              {column.icon && <column.icon className="h-3 w-3" />}
-              {column.label}
+            <div className="flex items-center gap-2">
+              {column.icon && <column.icon className="h-3.5 w-3.5 text-muted-foreground" />}
+              <span className="text-foreground">{column.label}</span>
             </div>
           </AdvancedSortableTableHead>
         ))}
@@ -76,7 +78,7 @@ export function ConfigurableDealsTableHeader({
           sortPriority={null}
           onSort={() => {}}
           canSort={false}
-          className="text-right min-w-[80px] font-medium text-xs py-2"
+          className="text-right min-w-[80px] font-semibold text-xs text-foreground py-3 px-4"
         >
           Actions
         </AdvancedSortableTableHead>

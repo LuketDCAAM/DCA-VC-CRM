@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Deal } from '@/types/deal';
 import { formatCurrency, formatDate, getPipelineStageColor, getDealScoreColor } from './tableUtils';
 import { useTableColumns } from '@/hooks/deals/useTableColumns';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ConfigurableDealsTableRowProps {
   deal: Deal;
@@ -32,161 +33,200 @@ const ConfigurableDealsTableRow = memo(({
     switch (columnKey) {
       case 'company_name':
         return (
-          <div className="space-y-0.5">
-            <div className="font-medium text-sm text-foreground">{deal.company_name}</div>
+          <div className="space-y-1 py-1">
+            <div className="font-semibold text-sm text-foreground leading-tight">{deal.company_name}</div>
             {deal.website && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Globe className="h-2.5 w-2.5" />
-                <span className="truncate max-w-[200px]">{deal.website}</span>
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary cursor-pointer transition-colors">
+                    <Globe className="h-3 w-3 flex-shrink-0" />
+                    <span className="truncate max-w-[180px]">{deal.website}</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" align="start">
+                  <p>{deal.website}</p>
+                </TooltipContent>
+              </Tooltip>
             )}
             {deal.description && (
-              <p className="text-xs text-muted-foreground line-clamp-1 max-w-[250px]">
-                {deal.description}
-              </p>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="text-xs text-muted-foreground line-clamp-1 max-w-[220px] cursor-help">
+                    {deal.description}
+                  </p>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" align="start" className="max-w-[300px]">
+                  <p className="whitespace-normal">{deal.description}</p>
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
         );
       
       case 'contact_name':
         return deal.contact_name ? (
-          <div className="space-y-0.5">
-            <div className="font-medium text-sm text-foreground">{deal.contact_name}</div>
+          <div className="space-y-1 py-1">
+            <div className="font-medium text-sm text-foreground leading-tight">{deal.contact_name}</div>
             {deal.contact_email && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Mail className="h-2.5 w-2.5" />
-                <span className="truncate max-w-[150px]">{deal.contact_email}</span>
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary cursor-pointer transition-colors">
+                    <Mail className="h-3 w-3 flex-shrink-0" />
+                    <span className="truncate max-w-[140px]">{deal.contact_email}</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" align="start">
+                  <p>{deal.contact_email}</p>
+                </TooltipContent>
+              </Tooltip>
             )}
             {deal.contact_phone && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Phone className="h-2.5 w-2.5" />
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Phone className="h-3 w-3 flex-shrink-0" />
                 <span>{deal.contact_phone}</span>
               </div>
             )}
           </div>
         ) : (
-          <span className="text-muted-foreground text-xs">-</span>
+          <span className="text-muted-foreground text-sm">-</span>
         );
       
       case 'pipeline_stage':
         return (
-          <Badge className={`text-xs ${getPipelineStageColor(deal.pipeline_stage)}`}>
+          <Badge className={`text-xs font-medium px-2.5 py-1 ${getPipelineStageColor(deal.pipeline_stage)}`}>
             {deal.pipeline_stage}
           </Badge>
         );
       
       case 'round_stage':
         return deal.round_stage ? (
-          <Badge variant="outline" className="font-medium text-xs">
+          <Badge variant="outline" className="font-medium text-xs px-2.5 py-1 border-muted-foreground/30">
             {deal.round_stage}
           </Badge>
         ) : (
-          <span className="text-muted-foreground text-xs">-</span>
+          <span className="text-muted-foreground text-sm">-</span>
         );
       
       case 'round_size':
         return (
-          <div>
-            <div className="font-medium text-sm text-foreground">
+          <div className="space-y-0.5">
+            <div className="font-semibold text-sm text-foreground flex items-center gap-1">
+              <DollarSign className="h-3 w-3 text-muted-foreground" />
               {formatCurrency(deal.round_size)}
             </div>
             {deal.post_money_valuation && (
-              <div className="text-xs text-muted-foreground">
-                Val: {formatCurrency(deal.post_money_valuation)}
-              </div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="text-xs text-muted-foreground cursor-help">
+                    Val: {formatCurrency(deal.post_money_valuation)}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Post-money valuation</p>
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
         );
       
       case 'post_money_valuation':
         return (
-          <div className="font-medium text-sm text-foreground">
+          <div className="font-semibold text-sm text-foreground flex items-center gap-1">
+            <DollarSign className="h-3 w-3 text-muted-foreground" />
             {formatCurrency(deal.post_money_valuation)}
           </div>
         );
       
       case 'revenue':
         return (
-          <div className="font-medium text-sm text-foreground">
+          <div className="font-semibold text-sm text-foreground flex items-center gap-1">
+            <DollarSign className="h-3 w-3 text-muted-foreground" />
             {formatCurrency(deal.revenue)}
           </div>
         );
       
       case 'location':
         return deal.location ? (
-          <div className="flex items-center gap-1">
-            <MapPin className="h-2.5 w-2.5 text-muted-foreground" />
-            <span className="text-foreground text-sm">{deal.location}</span>
+          <div className="flex items-center gap-1.5">
+            <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+            <span className="text-sm text-foreground">{deal.location}</span>
           </div>
         ) : (
-          <span className="text-muted-foreground text-xs">-</span>
+          <span className="text-muted-foreground text-sm">-</span>
         );
       
       case 'deal_score':
         return deal.deal_score ? (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
+            <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
             <span className={`font-bold text-base ${getDealScoreColor(deal.deal_score)}`}>
               {deal.deal_score}
             </span>
             <span className="text-xs text-muted-foreground">/100</span>
           </div>
         ) : (
-          <span className="text-muted-foreground text-xs">-</span>
+          <span className="text-muted-foreground text-sm">-</span>
         );
       
       case 'deal_source':
         return deal.deal_source ? (
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs font-medium px-2.5 py-1">
             {deal.deal_source}
           </Badge>
         ) : (
-          <span className="text-muted-foreground text-xs">-</span>
+          <span className="text-muted-foreground text-sm">-</span>
         );
       
       case 'deal_lead':
         return deal.deal_lead ? (
-          <span className="text-foreground text-sm">{deal.deal_lead}</span>
+          <span className="text-sm text-foreground font-medium">{deal.deal_lead}</span>
         ) : (
-          <span className="text-muted-foreground text-xs">-</span>
+          <span className="text-muted-foreground text-sm">-</span>
         );
       
       case 'sector':
         return deal.sector ? (
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs font-medium px-2.5 py-1 border-muted-foreground/30">
             {deal.sector}
           </Badge>
         ) : (
-          <span className="text-muted-foreground text-xs">-</span>
+          <span className="text-muted-foreground text-sm">-</span>
         );
       
       case 'created_at':
         return (
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground font-medium">
             {formatDate(deal.created_at)}
           </div>
         );
       
       case 'source_date':
         return deal.source_date ? (
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-muted-foreground font-medium">
             {formatDate(deal.source_date)}
           </div>
         ) : (
-          <span className="text-muted-foreground text-xs">-</span>
+          <span className="text-muted-foreground text-sm">-</span>
         );
       
       case 'description':
         return deal.description ? (
-          <p className="text-xs text-muted-foreground line-clamp-2 max-w-[200px]">
-            {deal.description}
-          </p>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <p className="text-xs text-muted-foreground line-clamp-2 max-w-[180px] cursor-help">
+                {deal.description}
+              </p>
+            </TooltipTrigger>
+            <TooltipContent className="max-w-[300px]">
+              <p className="whitespace-normal">{deal.description}</p>
+            </TooltipContent>
+          </Tooltip>
         ) : (
-          <span className="text-muted-foreground text-xs">-</span>
+          <span className="text-muted-foreground text-sm">-</span>
         );
       
       default:
-        return <span className="text-muted-foreground text-xs">-</span>;
+        return <span className="text-muted-foreground text-sm">-</span>;
     }
   };
 
@@ -194,17 +234,19 @@ const ConfigurableDealsTableRow = memo(({
     <TableRow 
       data-state={isSelected ? 'selected' : undefined}
       className={`
-        transition-colors duration-150 hover:bg-muted/50 border-b h-12
-        ${index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}
-        ${isSelected ? 'bg-primary/5 border-primary/20' : ''}
+        group transition-all duration-200 border-b border-border/40
+        ${index % 2 === 0 ? 'bg-background' : 'bg-muted/30'}
+        ${isSelected ? 'bg-primary/8 border-primary/30 shadow-sm' : 'hover:bg-muted/50'}
+        hover:shadow-sm
       `}
     >
       {/* Selection checkbox */}
-      <TableCell className="w-12 sticky left-0 z-10 bg-inherit py-2">
+      <TableCell className="w-12 sticky left-0 z-10 bg-inherit border-r border-border/30 py-3 px-4">
         <Checkbox
           checked={isSelected}
           onCheckedChange={handleCheckboxChange}
           aria-label={`Select ${deal.company_name}`}
+          className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
         />
       </TableCell>
       
@@ -213,8 +255,8 @@ const ConfigurableDealsTableRow = memo(({
         <TableCell 
           key={column.key}
           className={`
-            ${column.width} py-2
-            ${column.key === 'company_name' ? 'sticky left-12 z-10 bg-inherit border-r' : ''}
+            ${column.width} py-3 px-4 align-top
+            ${column.key === 'company_name' ? 'sticky left-12 z-10 bg-inherit border-r border-border/30' : ''}
           `}
         >
           {renderCellContent(column.key)}
@@ -222,15 +264,22 @@ const ConfigurableDealsTableRow = memo(({
       ))}
       
       {/* Actions */}
-      <TableCell className="text-right min-w-[80px] py-2">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={handleViewClick}
-          className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
-        >
-          <Eye className="h-3 w-3" />
-        </Button>
+      <TableCell className="text-right min-w-[80px] py-3 px-4">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleViewClick}
+              className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 opacity-70 group-hover:opacity-100"
+            >
+              <Eye className="h-3.5 w-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>View deal details</p>
+          </TooltipContent>
+        </Tooltip>
       </TableCell>
     </TableRow>
   );

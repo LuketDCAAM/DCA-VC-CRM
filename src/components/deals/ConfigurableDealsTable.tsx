@@ -39,24 +39,36 @@ export function ConfigurableDealsTable({
 
   if (deals.length === 0) {
     return (
-      <div className="text-center py-8">
-        <p className="text-gray-500">No deals found</p>
+      <div className="rounded-lg border border-border bg-card p-12 text-center">
+        <div className="mx-auto max-w-md">
+          <h3 className="text-lg font-semibold text-foreground mb-2">No deals found</h3>
+          <p className="text-sm text-muted-foreground">
+            No deals match your current filters. Try adjusting your search or filter criteria.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div className="text-sm text-muted-foreground">
-          {deals.length} deals • {selectedDeals.length} selected
+      <div className="flex justify-between items-center px-1">
+        <div className="flex items-center gap-4">
+          <div className="text-sm font-medium text-foreground">
+            {deals.length} deals
+          </div>
+          {selectedDeals.length > 0 && (
+            <div className="text-xs text-muted-foreground bg-primary/10 px-2 py-1 rounded-md">
+              {selectedDeals.length} selected
+            </div>
+          )}
         </div>
         <ColumnSelector />
       </div>
       
-      <div className="relative overflow-hidden rounded-lg border border-border bg-card">
-        <div className="overflow-auto max-h-[calc(100vh-300px)]">
-          <Table>
+      <div className="rounded-lg border border-border bg-card shadow-sm overflow-hidden">
+        <div className="overflow-auto max-h-[calc(100vh-280px)]">
+          <Table className="w-full">
             <ConfigurableDealsTableHeader
               isAllSelected={isAllSelected}
               hasSelection={selectedDeals.length > 0}
