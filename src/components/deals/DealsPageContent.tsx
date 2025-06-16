@@ -111,10 +111,11 @@ export function DealsPageContent({
         csvTemplateColumns={csvTemplateColumns}
         exportColumns={exportColumns}
         onCSVImport={onCSVImport}
-        deals={filteredDeals}
+        filteredDeals={filteredDeals}
+        loading={loading}
       />
       
-      <DealsStats stats={dealStats} />
+      <DealsStats dealStats={dealStats} />
       
       <div className="space-y-4">
         <SearchAndFilter
@@ -122,12 +123,18 @@ export function DealsPageContent({
           onSearchChange={onSearchChange}
           onToggleAdvanced={onToggleAdvanced}
           placeholder="Search deals by company, contact, location, or description..."
+          filters={[]}
+          activeFilters={activeFilters}
+          onFilterChange={onFilterChange}
+          onClearFilters={onClearFilters}
         />
         
         {showAdvancedFilters && (
           <DealsFilters
             activeFilters={activeFilters}
-            onFilterChange={onFilterChange}
+            onFilterChange={(key: string, value: any) => {
+              onFilterChange({ ...activeFilters, [key]: value });
+            }}
             onClearFilters={onClearFilters}
           />
         )}

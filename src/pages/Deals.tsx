@@ -81,6 +81,13 @@ export default function Deals() {
     });
   };
 
+  // Create a wrapper for filter changes that matches the expected signature
+  const handleFilterChangeWrapper = (filters: Record<string, any>) => {
+    Object.entries(filters).forEach(([key, value]) => {
+      handleFilterChange(key, value);
+    });
+  };
+
   if (loading) {
     return (
       <div className="p-6">
@@ -98,7 +105,7 @@ export default function Deals() {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         activeFilters={activeFilters}
-        onFilterChange={handleFilterChange}
+        onFilterChange={handleFilterChangeWrapper}
         onClearFilters={handleClearFilters}
         showAdvancedFilters={showAdvancedFilters}
         onToggleAdvanced={() => setShowAdvancedFilters(!showAdvancedFilters)}
