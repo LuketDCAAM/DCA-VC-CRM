@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, LayoutGrid, List, Trash2, Edit, Archive } from 'lucide-react';
+import { LayoutGrid, List } from 'lucide-react';
 import { useDeals } from '@/hooks/useDeals';
 import { DealDetailDialog } from '@/components/deals/DealDetailDialog';
 import { DealPipelineBoard } from '@/components/deals/DealPipelineBoard';
@@ -12,7 +12,8 @@ import { Deal } from '@/types/deal';
 import { DealsHeader } from '@/components/deals/DealsHeader';
 import { DealsStats } from '@/components/deals/DealsStats';
 import { useFilteredDeals } from '@/hooks/useFilteredDeals';
-import { DealListView } from '@/components/deals/DealListView';
+import { EnhancedDealListView } from '@/components/deals/EnhancedDealListView';
+import { DealFilters } from '@/hooks/usePaginatedDeals';
 
 export default function Deals() {
   const { deals, loading, refetch } = useDeals();
@@ -217,6 +218,29 @@ export default function Deals() {
 
   const filteredDeals = useFilteredDeals(deals, searchTerm, activeFilters);
 
+  // Convert activeFilters to DealFilters format for the paginated hook
+  const dealFilters: DealFilters = useMemo(() => {
+    const filters: DealFilters = {};
+    
+    if (searchTerm) filters.searchTerm = searchTerm;
+    if (activeFilters.pipeline_stage) filters.pipeline_stage = activeFilters.pipeline_stage;
+    if (activeFilters.round_stage) filters.round_stage = activeFilters.round_stage;
+    if (activeFilters.location) filters.location = activeFilters.location;
+    if (activeFilters.deal_source) filters.deal_source = activeFilters.deal_source;
+    
+    if (activeFilters.round_size?.min !== undefined) filters.round_size_min = activeFilters.round_size.min;
+    if (activeFilters.round_size?.max !== undefined) filters.round_size_max = activeFilters.round_size.max;
+    if (activeFilters.deal_score?.min !== undefined) filters.deal_score_min = activeFilters.deal_score.min;
+    if (activeFilters.deal_score?.max !== undefined) filters.deal_score_max = activeFilters.deal_score.max;
+    
+    if (activeFilters.created_at?.from) filters.created_at_from = activeFilters.created_at.from;
+    if (activeFilters.created_at?.to) filters.created_at_to = activeFilters.created_at.to;
+    if (activeFilters.source_date?.from) filters.source_date_from = activeFilters.source_date.from;
+    if (activeFilters.source_date?.to) filters.source_date_to = activeFilters.source_date.to;
+    
+    return filters;
+  }, [searchTerm, activeFilters]);
+
   const handleViewDetails = (deal: Deal) => {
     setSelectedDeal(deal);
     setShowDetailDialog(true);
@@ -309,7 +333,7 @@ export default function Deals() {
             </TabsTrigger>
             <TabsTrigger value="list" className="flex items-center gap-2">
               <List className="h-4 w-4" />
-              List View
+              Enhanced List
             </TabsTrigger>
           </TabsList>
 
@@ -318,11 +342,10 @@ export default function Deals() {
           </TabsContent>
 
           <TabsContent value="list">
-            <DealListView
-              deals={deals}
-              filteredDeals={filteredDeals}
+            <EnhancedDealListView
               onViewDetails={handleViewDetails}
               onDealAdded={refetch}
+              filters={dealFilters}
             />
           </TabsContent>
         </Tabs>
