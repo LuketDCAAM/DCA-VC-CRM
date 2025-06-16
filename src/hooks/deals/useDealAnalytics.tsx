@@ -1,3 +1,4 @@
+
 import { useMemo } from 'react';
 import { Deal } from '@/types/deal';
 import { PIPELINE_STAGES } from './dealStagesConfig';
@@ -80,15 +81,17 @@ export function useDealAnalytics(deals: Deal[]): DealAnalytics {
       }))
       .sort((a, b) => b.count - a.count);
 
-    // Monthly Trends (last 12 months)
+    // Monthly Trends (last 12 months) - Now using source_date instead of created_at
     const monthlyTrends = Array.from({ length: 12 }, (_, i) => {
       const date = new Date();
       date.setMonth(date.getMonth() - i);
       const monthKey = date.toISOString().slice(0, 7); // YYYY-MM format
       
-      const monthDeals = deals.filter(deal => 
-        deal.created_at.startsWith(monthKey)
-      );
+      // Filter deals by source_date instead of created_at
+      const monthDeals = deals.filter(deal => {
+        if (!deal.source_date) return false;
+        return deal.source_date.startsWith(monthKey);
+      });
       
       const investedDeals = monthDeals.filter(deal => 
         deal.pipeline_stage === 'Invested'

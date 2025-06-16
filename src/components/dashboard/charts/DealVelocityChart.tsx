@@ -11,7 +11,7 @@ interface DealVelocityChartProps {
 export function DealVelocityChart({ data }: DealVelocityChartProps) {
   const chartConfig = {
     deals: {
-      label: 'New Deals',
+      label: 'Deals Sourced',
       color: '#8884d8'
     },
     invested: {
@@ -28,8 +28,8 @@ export function DealVelocityChart({ data }: DealVelocityChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Deal Velocity</CardTitle>
-        <CardDescription>Deal flow and conversion trends over time</CardDescription>
+        <CardTitle>Deal Sourcing Velocity</CardTitle>
+        <CardDescription>Deal sourcing trends and conversion based on source dates</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-3 gap-4 mb-6">
@@ -37,7 +37,7 @@ export function DealVelocityChart({ data }: DealVelocityChartProps) {
             <p className="text-2xl font-bold text-primary">
               {totalDeals}
             </p>
-            <p className="text-sm text-muted-foreground">Total Deals</p>
+            <p className="text-sm text-muted-foreground">Deals Sourced</p>
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-primary">
@@ -72,7 +72,7 @@ export function DealVelocityChart({ data }: DealVelocityChartProps) {
                         <p className="font-medium">{label}</p>
                         {payload.map((entry, index) => (
                           <p key={index} className="text-sm" style={{ color: entry.color }}>
-                            {entry.name}: {entry.value}
+                            {entry.name === 'deals' ? 'Sourced' : entry.name}: {entry.value}
                           </p>
                         ))}
                       </div>

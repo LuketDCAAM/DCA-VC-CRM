@@ -23,8 +23,8 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Deal Flow Trends</CardTitle>
-        <CardDescription>Monthly deal activity over the last 12 months</CardDescription>
+        <CardTitle>Deal Sourcing Trends</CardTitle>
+        <CardDescription>Monthly deal sourcing activity based on source dates over the last 12 months</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px]">
@@ -46,7 +46,7 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
                 stroke="#8884d8" 
                 strokeWidth={2}
                 dot={{ r: 4 }}
-                name="New Deals"
+                name="Deals Sourced"
               />
               <Line 
                 type="monotone" 
