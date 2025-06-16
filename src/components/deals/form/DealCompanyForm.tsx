@@ -56,6 +56,19 @@ export function DealCompanyForm() {
         />
         <FormField
           control={control}
+          name="sector"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Sector</FormLabel>
+              <FormControl>
+                <Input {...field} value={field.value || ''} placeholder="e.g. FinTech, HealthTech, AI/ML" />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
           name="description"
           render={({ field }) => (
             <FormItem>

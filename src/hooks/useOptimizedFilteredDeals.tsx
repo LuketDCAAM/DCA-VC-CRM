@@ -12,7 +12,8 @@ const createSearchMatcher = (searchTerm: string) => {
     (deal.location?.toLowerCase().includes(lowerSearchTerm)) ||
     (deal.description?.toLowerCase().includes(lowerSearchTerm)) ||
     (deal.deal_lead?.toLowerCase().includes(lowerSearchTerm)) ||
-    (deal.deal_source?.toLowerCase().includes(lowerSearchTerm));
+    (deal.deal_source?.toLowerCase().includes(lowerSearchTerm)) ||
+    (deal.sector?.toLowerCase().includes(lowerSearchTerm));
 };
 
 const createFilterMatcher = (activeFilters: Record<string, any>) => {

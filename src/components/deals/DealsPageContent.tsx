@@ -71,6 +71,7 @@ export function DealsPageContent({
     if (activeFilters.round_stage) filters.round_stage = activeFilters.round_stage;
     if (activeFilters.location) filters.location = activeFilters.location;
     if (activeFilters.deal_source) filters.deal_source = activeFilters.deal_source;
+    if (activeFilters.sector) filters.sector = activeFilters.sector;
     
     if (activeFilters.round_size?.min !== undefined) filters.round_size_min = activeFilters.round_size.min;
     if (activeFilters.round_size?.max !== undefined) filters.round_size_max = activeFilters.round_size.max;

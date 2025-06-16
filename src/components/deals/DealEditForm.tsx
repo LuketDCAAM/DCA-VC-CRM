@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -37,6 +38,7 @@ const dealFormSchema = z.object({
   website: z.string().url({ message: "Invalid URL." }).or(z.literal('')).nullable(),
   location: z.string().nullable(),
   description: z.string().nullable(),
+  sector: z.string().nullable(),
   contact_name: z.string().nullable(),
   contact_email: z.string().email({ message: "Invalid email address." }).or(z.literal('')).nullable(),
   contact_phone: z.string().nullable(),
@@ -67,6 +69,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
       website: deal.website || '',
       location: deal.location || '',
       description: deal.description || '',
+      sector: deal.sector || '',
       round_stage: deal.round_stage,
       deal_score: deal.deal_score,
       source_date: deal.source_date ? deal.source_date.split('T')[0] : '',

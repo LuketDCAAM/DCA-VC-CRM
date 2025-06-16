@@ -24,4 +24,5 @@ export interface Deal {
   source_date: string | null;
   deal_source: string | null;
   deal_lead: string | null;
+  sector: string | null;
 }

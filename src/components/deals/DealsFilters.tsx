@@ -58,6 +58,24 @@ export function DealsFilters({
       ]
     },
     {
+      key: 'sector',
+      label: 'Sector',
+      value: 'sector',
+      type: 'select',
+      options: [
+        { label: 'FinTech', value: 'FinTech' },
+        { label: 'HealthTech', value: 'HealthTech' },
+        { label: 'AI/ML', value: 'AI/ML' },
+        { label: 'SaaS', value: 'SaaS' },
+        { label: 'E-commerce', value: 'E-commerce' },
+        { label: 'EdTech', value: 'EdTech' },
+        { label: 'CleanTech', value: 'CleanTech' },
+        { label: 'PropTech', value: 'PropTech' },
+        { label: 'Cybersecurity', value: 'Cybersecurity' },
+        { label: 'Hardware', value: 'Hardware' },
+      ]
+    },
+    {
       key: 'location',
       label: 'Location',
       value: 'location',

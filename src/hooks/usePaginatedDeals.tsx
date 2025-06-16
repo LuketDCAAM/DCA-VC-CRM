@@ -16,6 +16,7 @@ export interface DealFilters {
   round_stage?: string;
   location?: string;
   deal_source?: string;
+  sector?: string;
   round_size_min?: number;
   round_size_max?: number;
   deal_score_min?: number;
@@ -43,7 +44,7 @@ async function fetchPaginatedDeals(
 
   // Apply filters
   if (filters.searchTerm) {
-    query = query.or(`company_name.ilike.%${filters.searchTerm}%,contact_name.ilike.%${filters.searchTerm}%,location.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%`);
+    query = query.or(`company_name.ilike.%${filters.searchTerm}%,contact_name.ilike.%${filters.searchTerm}%,location.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%,sector.ilike.%${filters.searchTerm}%`);
   }
   
   if (filters.pipeline_stage) {
@@ -60,6 +61,10 @@ async function fetchPaginatedDeals(
   
   if (filters.deal_source) {
     query = query.eq('deal_source', filters.deal_source);
+  }
+  
+  if (filters.sector) {
+    query = query.eq('sector', filters.sector);
   }
   
   if (filters.round_size_min !== undefined) {
