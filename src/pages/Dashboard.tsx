@@ -2,15 +2,22 @@
 import React from 'react';
 import { useDeals } from '@/hooks/useDeals';
 import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
+import { useDealAnalytics } from '@/hooks/deals/useDealAnalytics';
 import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics';
 import { RecentDealsCard } from '@/components/dashboard/RecentDealsCard';
 import { RecentPortfolioCard } from '@/components/dashboard/RecentPortfolioCard';
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions';
 import { RemindersWidget } from '@/components/reminders/RemindersWidget';
+import { PipelineChart } from '@/components/dashboard/charts/PipelineChart';
+import { SectorChart } from '@/components/dashboard/charts/SectorChart';
+import { MonthlyTrendChart } from '@/components/dashboard/charts/MonthlyTrendChart';
+import { ValuationChart } from '@/components/dashboard/charts/ValuationChart';
+import { ConversionChart } from '@/components/dashboard/charts/ConversionChart';
 
 export default function Dashboard() {
   const { deals, loading: dealsLoading, dealStats } = useDeals();
   const { companies: portfolioCompanies, loading: portfolioLoading } = usePortfolioCompanies();
+  const analytics = useDealAnalytics(deals || []);
 
   // Calculate total invested from portfolio companies
   const totalInvested = portfolioCompanies
@@ -35,6 +42,7 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
       </div>
 
+      {/* Key Metrics */}
       <DashboardMetrics
         activeDeals={dealStats.activeDeals}
         portfolioCount={portfolioCompanies?.length || 0}
@@ -42,6 +50,22 @@ export default function Dashboard() {
         totalInvested={totalInvested}
       />
 
+      {/* Analytics Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <PipelineChart data={analytics.pipelineDistribution} />
+        <MonthlyTrendChart data={analytics.monthlyTrends} />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <SectorChart data={analytics.sectorDistribution} />
+        <ConversionChart data={analytics.conversionMetrics} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+        <ValuationChart data={analytics.valuationAnalysis} />
+      </div>
+
+      {/* Recent Activity & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <RecentDealsCard deals={deals?.slice(0, 5) || []} />
