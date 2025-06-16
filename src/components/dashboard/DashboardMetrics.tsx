@@ -16,7 +16,8 @@ export function DashboardMetrics({
   totalDeals, 
   totalInvested 
 }: DashboardMetricsProps) {
-  console.log('DashboardMetrics component received props:', {
+  console.log('=== DASHBOARD METRICS RENDER ===');
+  console.log('DashboardMetrics received props:', {
     activeDeals,
     portfolioCount,
     totalDeals,
@@ -36,7 +37,7 @@ export function DashboardMetrics({
     {
       title: "Active Pipeline",
       value: activeDeals,
-      description: "deals in active pipeline",
+      description: "deals in active stages",
       icon: DollarSign,
       color: "text-blue-600",
     },

@@ -19,20 +19,21 @@ export default function Deals() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
-  const [viewMode, setViewMode] = useState('list'); // Changed from 'board' to 'list'
+  const [viewMode, setViewMode] = useState('list');
   const [selectedDeals, setSelectedDeals] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
 
+  console.log('=== DEALS PAGE RENDER ===');
   console.log('Deals page - dealStats from hook:', dealStats);
   console.log('Deals page - total deals array length:', deals.length);
+  console.log('Deals page - loading state:', loading);
 
   const { csvTemplateColumns, exportColumns, handleCSVImport } = useDealsCSVConfig();
 
   const handleCSVImportWrapper = async (data: any[]) => {
     console.log('CSV Import wrapper called with', data.length, 'rows');
     
-    // Process the data through our configuration
     const processResult = await handleCSVImport(data);
     console.log('Process result:', processResult);
     
@@ -44,12 +45,10 @@ export default function Deals() {
       };
     }
     
-    // Import the processed data
     const result = await importDeals(processResult.data);
     console.log('Import result:', result);
     
     if (result.success) {
-      // Refresh the deals list after successful import
       await refetch();
     }
     
@@ -62,7 +61,6 @@ export default function Deals() {
 
   const filteredDeals = useFilteredDeals(deals, searchTerm, activeFilters);
 
-  // Convert activeFilters to DealFilters format for the paginated hook
   const dealFilters: DealFilters = useMemo(() => {
     const filters: DealFilters = {};
     
@@ -104,7 +102,6 @@ export default function Deals() {
 
   const handleBulkAction = (actionId: string, selectedIds: string[]) => {
     console.log(`Bulk action ${actionId} on deals:`, selectedIds);
-    // TODO: Implement actual bulk actions
     setSelectedDeals([]);
   };
 
@@ -140,6 +137,7 @@ export default function Deals() {
         activeDeals={dealStats.activeDeals}
         investedDeals={dealStats.investedDeals}
         passedDeals={dealStats.passedDeals}
+        screeningDeals={dealStats.screeningDeals}
       />
 
       <DealsFilters
