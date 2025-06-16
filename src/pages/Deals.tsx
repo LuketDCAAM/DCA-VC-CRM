@@ -24,6 +24,9 @@ export default function Deals() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
 
+  console.log('Deals page - dealStats from hook:', dealStats);
+  console.log('Deals page - total deals array length:', deals.length);
+
   const { csvTemplateColumns, exportColumns, handleCSVImport } = useDealsCSVConfig();
 
   const handleCSVImportWrapper = async (data: any[]) => {

@@ -16,6 +16,13 @@ export function DashboardMetrics({
   totalDeals, 
   totalInvested 
 }: DashboardMetricsProps) {
+  console.log('DashboardMetrics component received props:', {
+    activeDeals,
+    portfolioCount,
+    totalDeals,
+    totalInvested
+  });
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',

@@ -15,6 +15,13 @@ export function DealsStats({
   investedDeals,
   passedDeals,
 }: DealsStatsProps) {
+  console.log('DealsStats component received props:', {
+    totalDeals,
+    activeDeals,
+    investedDeals,
+    passedDeals
+  });
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
       <Card>
