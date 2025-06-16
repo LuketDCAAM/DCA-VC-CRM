@@ -1,6 +1,6 @@
 
 -- Create enum types for pipeline stages and round stages
-CREATE TYPE pipeline_stage AS ENUM ('Initial Contact', 'First Meeting', 'Due Diligence', 'Term Sheet', 'Legal Review', 'Invested', 'Passed');
+CREATE TYPE pipeline_stage AS ENUM ('Inactive','Initial Contact', 'First Meeting', 'Due Diligence', 'Term Sheet', 'Legal Review', 'Invested', 'Passed');
 CREATE TYPE round_stage AS ENUM ('Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C', 'Bridge', 'Growth');
 CREATE TYPE investment_stage AS ENUM ('Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C', 'Growth', 'Late Stage');
 CREATE TYPE company_status AS ENUM ('Active', 'Exited', 'Dissolved');
