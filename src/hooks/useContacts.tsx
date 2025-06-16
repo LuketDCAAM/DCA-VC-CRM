@@ -1,175 +1,66 @@
 
-import { useState, useEffect, useRef } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
-import { Database } from '@/integrations/supabase/types';
-
-interface Contact {
-  id: string;
-  name: string;
-  title: string | null;
-  company_or_firm: string | null;
-  email: string | null;
-  phone: string | null;
-  deal_id: string | null;
-  investor_id: string | null;
-  portfolio_company_id: string | null;
-  relationship_owner: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-// Global subscription state to prevent multiple subscriptions
-let globalChannel: any = null;
-let subscribers: Set<() => void> = new Set();
+import { Contact } from '@/types/contact';
+import { useContactsAPI } from '@/hooks/contacts/useContactsAPI';
+import { useContactsSubscription } from '@/hooks/contacts/useContactsSubscription';
 
 export function useContacts() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const { toast } = useToast();
-  const refetchRef = useRef<() => void>();
+  
+  const {
+    fetchContacts,
+    addContact: apiAddContact,
+    updateContact: apiUpdateContact,
+    deleteContact: apiDeleteContact,
+    deleteMultipleContacts: apiDeleteMultipleContacts,
+  } = useContactsAPI(user);
 
-  const fetchContacts = async () => {
+  const refetchContacts = async () => {
     if (!user) return;
 
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('contacts')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setContacts(data || []);
-    } catch (error: any) {
-      toast({
-        title: "Error fetching contacts",
-        description: error.message,
-        variant: "destructive",
-      });
+      const data = await fetchContacts();
+      setContacts(data);
     } finally {
       setLoading(false);
     }
   };
 
-  // Store the refetch function in ref so it can be called from subscription
-  refetchRef.current = fetchContacts;
+  // Set up realtime subscription
+  useContactsSubscription(user, refetchContacts);
 
-  const addContact = async (contactData: Omit<Contact, 'id' | 'created_at' | 'updated_at'>) => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('contacts')
-        .insert([{
-          ...contactData,
-          created_by: user.id,
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setContacts(prev => [data, ...prev]);
-      toast({
-        title: "Contact added",
-        description: "The contact has been successfully added.",
-      });
-
-      return data;
-    } catch (error: any) {
-      toast({
-        title: "Error adding contact",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
+  const addContact = async (contactData: Parameters<typeof apiAddContact>[0]) => {
+    const newContact = await apiAddContact(contactData);
+    if (newContact) {
+      setContacts(prev => [newContact, ...prev]);
     }
+    return newContact;
   };
 
-  const updateContact = async (id: string, updates: Partial<Contact>) => {
-    try {
-      const { data, error } = await supabase
-        .from('contacts')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
+  const updateContact = async (id: string, updates: Parameters<typeof apiUpdateContact>[1]) => {
+    const updatedContact = await apiUpdateContact(id, updates);
+    if (updatedContact) {
       setContacts(prev => 
         prev.map(contact => 
-          contact.id === id ? { ...contact, ...data } : contact
+          contact.id === id ? { ...contact, ...updatedContact } : contact
         )
       );
-
-      toast({
-        title: "Contact updated",
-        description: "The contact has been successfully updated.",
-      });
-
-      return data;
-    } catch (error: any) {
-      toast({
-        title: "Error updating contact",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
     }
+    return updatedContact;
   };
 
   const deleteContact = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('contacts')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
-      setContacts(prev => prev.filter(contact => contact.id !== id));
-      toast({
-        title: "Contact deleted",
-        description: "The contact has been successfully deleted.",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error deleting contact",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
+    await apiDeleteContact(id);
+    setContacts(prev => prev.filter(contact => contact.id !== id));
   };
 
   const deleteMultipleContacts = async (ids: string[]) => {
-    if (!user || ids.length === 0) return;
-
-    try {
-      const { error } = await supabase
-        .from('contacts')
-        .delete()
-        .in('id', ids);
-
-      if (error) throw error;
-
-      setContacts(prev => prev.filter(contact => !ids.includes(contact.id)));
-      toast({
-        title: "Contacts deleted",
-        description: `${ids.length} contacts have been successfully deleted.`,
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error deleting contacts",
-        description: error.message,
-        variant: "destructive",
-      });
-      throw error;
-    }
+    await apiDeleteMultipleContacts(ids);
+    setContacts(prev => prev.filter(contact => !ids.includes(contact.id)));
   };
 
   useEffect(() => {
@@ -179,49 +70,7 @@ export function useContacts() {
     }
 
     // Initial fetch
-    fetchContacts();
-
-    // Add this instance's refetch function to subscribers
-    const refetchFunction = () => {
-      if (refetchRef.current) {
-        refetchRef.current();
-      }
-    };
-    subscribers.add(refetchFunction);
-
-    // Set up global subscription only if it doesn't exist
-    if (!globalChannel && user) {
-      console.log('Setting up global contacts subscription');
-      const channelName = `contacts-global-${user.id}`;
-      
-      globalChannel = supabase
-        .channel(channelName)
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'contacts'
-          },
-          () => {
-            // Notify all subscribers to refetch
-            subscribers.forEach(subscriber => subscriber());
-          }
-        )
-        .subscribe();
-    }
-
-    // Cleanup function
-    return () => {
-      subscribers.delete(refetchFunction);
-      
-      // Only remove the global channel if no more subscribers
-      if (subscribers.size === 0 && globalChannel) {
-        console.log('Cleaning up global contacts subscription');
-        supabase.removeChannel(globalChannel);
-        globalChannel = null;
-      }
-    };
+    refetchContacts();
   }, [user?.id]);
 
   return {
@@ -231,6 +80,6 @@ export function useContacts() {
     updateContact,
     deleteContact,
     deleteMultipleContacts,
-    refetch: fetchContacts,
+    refetch: refetchContacts,
   };
 }
