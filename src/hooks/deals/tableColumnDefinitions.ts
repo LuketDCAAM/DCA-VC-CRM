@@ -1,5 +1,5 @@
 
-import { Globe, Mail, DollarSign, MapPin, Calendar, Star, Building, User, Tag, FileText } from 'lucide-react';
+import { Globe, Mail, DollarSign, MapPin, Calendar, Star, Building, User, FileText } from 'lucide-react';
 
 export interface TableColumn {
   key: string;

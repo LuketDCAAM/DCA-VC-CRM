@@ -69,7 +69,9 @@ export function ConfigurableDealsTableHeader({
               `}
             >
               <div className="flex items-center gap-2">
-                {IconComponent && <IconComponent className="h-3.5 w-3.5 text-muted-foreground" />}
+                {IconComponent && typeof IconComponent === 'function' && (
+                  <IconComponent className="h-3.5 w-3.5 text-muted-foreground" />
+                )}
                 <span className="text-foreground">{column.label}</span>
               </div>
             </AdvancedSortableTableHead>
