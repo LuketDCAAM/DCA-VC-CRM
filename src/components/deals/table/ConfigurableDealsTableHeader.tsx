@@ -50,27 +50,31 @@ export function ConfigurableDealsTableHeader({
           />
         </AdvancedSortableTableHead>
         
-        {visibleColumns.map((column, index) => (
-          <AdvancedSortableTableHead 
-            key={column.key}
-            sortKey={column.key} 
-            currentSort={getSortForColumn(column.key)}
-            sortPriority={getSortPriority(column.key)}
-            onSort={onSort}
-            onRemoveSort={onRemoveSort}
-            canSort={column.sortable}
-            className={`
-              ${column.width} font-semibold text-xs text-foreground py-3 px-4
-              ${column.key === 'company_name' ? 'sticky left-12 z-30 bg-muted/95 backdrop-blur-sm border-r border-border/50' : ''}
-              hover:bg-muted/60 transition-colors
-            `}
-          >
-            <div className="flex items-center gap-2">
-              {column.icon && <column.icon className="h-3.5 w-3.5 text-muted-foreground" />}
-              <span className="text-foreground">{column.label}</span>
-            </div>
-          </AdvancedSortableTableHead>
-        ))}
+        {visibleColumns.map((column, index) => {
+          const IconComponent = column.icon;
+          
+          return (
+            <AdvancedSortableTableHead 
+              key={column.key}
+              sortKey={column.key} 
+              currentSort={getSortForColumn(column.key)}
+              sortPriority={getSortPriority(column.key)}
+              onSort={onSort}
+              onRemoveSort={onRemoveSort}
+              canSort={column.sortable}
+              className={`
+                ${column.width} font-semibold text-xs text-foreground py-3 px-4
+                ${column.key === 'company_name' ? 'sticky left-12 z-30 bg-muted/95 backdrop-blur-sm border-r border-border/50' : ''}
+                hover:bg-muted/60 transition-colors
+              `}
+            >
+              <div className="flex items-center gap-2">
+                {IconComponent && <IconComponent className="h-3.5 w-3.5 text-muted-foreground" />}
+                <span className="text-foreground">{column.label}</span>
+              </div>
+            </AdvancedSortableTableHead>
+          );
+        })}
         
         <AdvancedSortableTableHead 
           sortKey="actions" 
