@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Building2, User, Mail, Phone, Globe, MapPin, DollarSign, Eye, Star, ClipboardList } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 
@@ -32,6 +33,9 @@ interface Deal {
 interface DealCardProps {
   deal: Deal;
   onViewDetails?: (deal: Deal) => void;
+  isSelected?: boolean;
+  onToggleSelection?: (dealId: string) => void;
+  showSelection?: boolean;
 }
 
 const formatCurrency = (amount: number | null) => {
@@ -59,29 +63,52 @@ const getStageColor = (stage: string) => {
   return colors[stage as keyof typeof colors] || 'bg-gray-100 text-gray-800';
 };
 
-export function DealCard({ deal, onViewDetails }: DealCardProps) {
+export function DealCard({ 
+  deal, 
+  onViewDetails, 
+  isSelected = false, 
+  onToggleSelection,
+  showSelection = false 
+}: DealCardProps) {
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className={`hover:shadow-md transition-all duration-200 ${isSelected ? 'ring-2 ring-primary ring-opacity-50 bg-primary/5' : ''}`}>
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
-          <div>
-            <CardTitle className="text-lg font-semibold flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              {deal.company_name}
-            </CardTitle>
-            <div className="flex gap-2 mt-2">
-              <Badge className={getStageColor(deal.pipeline_stage)}>
-                {deal.pipeline_stage}
-              </Badge>
-              {deal.round_stage && (
-                <Badge variant="outline">
-                  {deal.round_stage}
-                </Badge>
+          <div className="flex-1">
+            <div className="flex items-start gap-3">
+              {showSelection && onToggleSelection && (
+                <Checkbox
+                  checked={isSelected}
+                  onCheckedChange={() => onToggleSelection(deal.id)}
+                  className="mt-1"
+                  aria-label={`Select ${deal.company_name}`}
+                />
               )}
+              <div className="flex-1">
+                <CardTitle className="text-lg font-semibold flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  {deal.company_name}
+                </CardTitle>
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  <Badge className={getStageColor(deal.pipeline_stage)}>
+                    {deal.pipeline_stage}
+                  </Badge>
+                  {deal.round_stage && (
+                    <Badge variant="outline">
+                      {deal.round_stage}
+                    </Badge>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
           {onViewDetails && (
-            <Button variant="ghost" size="sm" onClick={() => onViewDetails(deal)}>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => onViewDetails(deal)}
+              className="hover:bg-primary/10 hover:text-primary transition-colors"
+            >
               <Eye className="h-4 w-4 mr-2" />
               View
             </Button>

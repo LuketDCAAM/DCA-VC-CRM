@@ -26,6 +26,8 @@ export function DealsGrid({
   onDeselectAll,
   isAllSelected
 }: DealsGridProps) {
+  const showSelection = !!onToggleDealSelection;
+
   if (deals.length === 0) {
     return (
       <Card>
@@ -53,6 +55,9 @@ export function DealsGrid({
           key={deal.id} 
           deal={deal}
           onViewDetails={onViewDetails}
+          isSelected={selectedDeals.includes(deal.id)}
+          onToggleSelection={onToggleDealSelection}
+          showSelection={showSelection}
         />
       ))}
     </div>

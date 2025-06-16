@@ -28,6 +28,8 @@ export function DealListView({
   isAllSelected,
   onDealAdded
 }: DealListViewProps) {
+  const showSelection = !!onToggleDealSelection;
+
   if (deals.length === 0) {
     return (
       <Card>
@@ -63,6 +65,9 @@ export function DealListView({
           key={deal.id} 
           deal={deal}
           onViewDetails={onViewDetails}
+          isSelected={selectedDeals.includes(deal.id)}
+          onToggleSelection={onToggleDealSelection}
+          showSelection={showSelection}
         />
       ))}
     </div>
