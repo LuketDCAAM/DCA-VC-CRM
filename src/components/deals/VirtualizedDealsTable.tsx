@@ -85,6 +85,7 @@ export function VirtualizedDealsTable({
       <div className="overflow-auto">
         <List
           height={height}
+          width="100%"
           itemCount={deals.length}
           itemSize={80} // Height of each row
           itemData={itemData}
