@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 
 interface SectorChartProps {
@@ -9,16 +9,41 @@ interface SectorChartProps {
 }
 
 export function SectorChart({ data }: SectorChartProps) {
-  const chartConfig = data.reduce((config, item, index) => {
-    const colors = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00ff00'];
-    config[item.sector] = {
-      label: item.sector,
-      color: colors[index % colors.length]
-    };
-    return config;
-  }, {} as any);
+  // Define a color palette for the sectors
+  const colors = [
+    '#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00ff7f', 
+    '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57'
+  ];
 
-  const topSectors = data.slice(0, 8); // Show top 8 sectors
+  // Add colors to the data
+  const coloredData = data.slice(0, 8).map((item, index) => ({
+    ...item,
+    fill: colors[index % colors.length]
+  }));
+
+  // Simple chart config for the container
+  const chartConfig = {
+    count: {
+      label: 'Deals',
+      color: '#8884d8'
+    }
+  };
+
+  if (!data.length) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Top Sectors</CardTitle>
+          <CardDescription>Deal distribution by industry sector</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center h-[300px] text-muted-foreground">
+            No sector data available
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
@@ -29,13 +54,15 @@ export function SectorChart({ data }: SectorChartProps) {
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={topSectors} layout="horizontal">
+            <BarChart data={coloredData} layout="horizontal" margin={{ left: 80, right: 20, top: 10, bottom: 10 }}>
               <XAxis type="number" />
               <YAxis 
                 type="category" 
                 dataKey="sector" 
-                width={100}
-                fontSize={12}
+                width={75}
+                fontSize={11}
+                interval={0}
+                tick={{ textAnchor: 'end' }}
               />
               <ChartTooltip 
                 content={({ active, payload }) => {
@@ -55,7 +82,6 @@ export function SectorChart({ data }: SectorChartProps) {
               />
               <Bar 
                 dataKey="count" 
-                fill="#8884d8"
                 radius={[0, 4, 4, 0]}
               />
             </BarChart>
