@@ -7,7 +7,7 @@ import { DealCard } from '@/components/deals/DealCard';
 import { AddDealDialog } from '@/components/deals/AddDealDialog';
 import { Deal } from '@/types/deal';
 
-interface DealListViewProps {
+interface DealsGridProps {
   deals: Deal[];
   onViewDetails: (deal: Deal) => void;
   selectedDeals?: string[];
@@ -15,19 +15,17 @@ interface DealListViewProps {
   onSelectAll?: () => void;
   onDeselectAll?: () => void;
   isAllSelected?: boolean;
-  onDealAdded?: () => void;
 }
 
-export function DealListView({ 
+export function DealsGrid({ 
   deals, 
-  onViewDetails, 
+  onViewDetails,
   selectedDeals = [],
   onToggleDealSelection,
   onSelectAll,
   onDeselectAll,
-  isAllSelected,
-  onDealAdded
-}: DealListViewProps) {
+  isAllSelected
+}: DealsGridProps) {
   if (deals.length === 0) {
     return (
       <Card>
@@ -42,14 +40,6 @@ export function DealListView({
             <p className="text-gray-500 mb-4">
               Try adjusting your search or filter criteria.
             </p>
-            {onDealAdded && (
-              <AddDealDialog onDealAdded={onDealAdded}>
-                <Button variant="outline">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add your first deal
-                </Button>
-              </AddDealDialog>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -57,7 +47,7 @@ export function DealListView({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {deals.map((deal) => (
         <DealCard 
           key={deal.id} 
