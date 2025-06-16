@@ -172,9 +172,12 @@ export function useContacts() {
 
     fetchContacts();
 
+    // Create a unique channel name to avoid subscription conflicts
+    const channelName = `contacts-changes-${user.id}-${Date.now()}`;
+    
     // Set up realtime subscription with proper cleanup
     const channel = supabase
-      .channel('contacts-changes')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
