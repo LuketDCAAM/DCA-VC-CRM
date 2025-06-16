@@ -1,9 +1,11 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Building2, DollarSign, Eye, Calendar, Star } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
+import { getPipelineStageClasses } from './pipelineStageColors';
 
 type PipelineStage = Database['public']['Enums']['pipeline_stage'];
 type RoundStage = Database['public']['Enums']['round_stage'];
@@ -58,19 +60,9 @@ const formatCurrency = (amount: number | null) => {
   }).format(amount / 100);
 };
 
+// Use centralized color system
 const getStageColor = (stage: string) => {
-  const colors = {
-    'Inactive': 'bg-stone-100 text-stone-800 border-stone-200',
-    'Initial Review': 'bg-gray-100 text-gray-800 border-gray-200',
-    'Initial Contact': 'bg-sky-100 text-sky-800 border-sky-200',
-    'First Meeting': 'bg-blue-100 text-blue-800 border-blue-200',
-    'Due Diligence': 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    'Term Sheet': 'bg-purple-100 text-purple-800 border-purple-200',
-    'Legal Review': 'bg-orange-100 text-orange-800 border-orange-200',
-    'Invested': 'bg-green-100 text-green-800 border-green-200',
-    'Passed': 'bg-red-100 text-red-800 border-red-200',
-  };
-  return colors[stage as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-200';
+  return getPipelineStageClasses(stage);
 };
 
 export function DealPipelineBoard({ deals, onViewDetails, onDealUpdated }: DealPipelineBoardProps) {

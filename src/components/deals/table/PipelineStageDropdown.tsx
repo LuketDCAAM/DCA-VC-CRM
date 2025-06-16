@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from '@/components/ui/badge';
 import { Deal, PipelineStage } from '@/types/deal';
-import { getPipelineStageColor } from './tableUtils';
+import { getPipelineStageColor } from '../pipelineStageColors';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Check } from 'lucide-react';

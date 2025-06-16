@@ -2,7 +2,7 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Deal } from '@/types/deal';
-import { getPipelineStageColor } from '../tableUtils';
+import { getPipelineStageColor, getPipelineStageClasses } from '../../pipelineStageColors';
 
 interface StatusCellContentProps {
   deal: Deal;
@@ -13,7 +13,10 @@ export function StatusCellContent({ deal, type }: StatusCellContentProps) {
   switch (type) {
     case 'pipeline_stage':
       return (
-        <Badge className={`text-xs font-medium px-2.5 py-1 ${getPipelineStageColor(deal.pipeline_stage)}`}>
+        <Badge 
+          variant={getPipelineStageColor(deal.pipeline_stage) as any}
+          className={`text-xs font-medium px-2.5 py-1 ${getPipelineStageClasses(deal.pipeline_stage)}`}
+        >
           {deal.pipeline_stage}
         </Badge>
       );

@@ -1,4 +1,6 @@
 
+import { getPipelineStageColor } from '../pipelineStageColors';
+
 export const formatCurrency = (amount: number | null) => {
   if (!amount) return '-';
   return new Intl.NumberFormat('en-US', {
@@ -18,20 +20,8 @@ export const formatDate = (dateString: string | null) => {
   }).format(new Date(dateString));
 };
 
-export const getPipelineStageColor = (stage: string) => {
-  const colors = {
-    'Inactive': 'secondary',
-    'Initial Review': 'secondary',
-    'Initial Contact': 'default',
-    'First Meeting': 'default',
-    'Due Diligence': 'default',
-    'Term Sheet': 'default',
-    'Legal Review': 'default',
-    'Invested': 'default',
-    'Passed': 'destructive',
-  };
-  return colors[stage as keyof typeof colors] || 'secondary';
-};
+// Use centralized color system
+export { getPipelineStageColor } from '../pipelineStageColors';
 
 export const getDealScoreColor = (score: number) => {
   if (score >= 80) return 'text-green-600 font-semibold';
