@@ -18,41 +18,57 @@ export async function fetchDeals(userId: string): Promise<Deal[]> {
     console.log('🔍 TOTAL DEALS IN DATABASE for user:', totalCount);
   }
 
-  // Now fetch the actual data with increased limit
-  const { data, error } = await supabase
-    .from('deals')
-    .select('*')
-    .eq('created_by', userId)
-    .order('created_at', { ascending: false })
-    .limit(10000); // Add limit to prevent hitting default 1000-row limit
+  // Fetch all data in batches to avoid any limits
+  let allDeals: Deal[] = [];
+  let hasMore = true;
+  let offset = 0;
+  const batchSize = 1000;
+  
+  while (hasMore) {
+    console.log(`Fetching batch starting at offset: ${offset}`);
+    
+    const { data: batchData, error } = await supabase
+      .from('deals')
+      .select('*')
+      .eq('created_by', userId)
+      .order('created_at', { ascending: false })
+      .range(offset, offset + batchSize - 1);
 
-  if (error) {
-    console.error("Error fetching deals:", error);
-    throw new Error(error.message);
+    if (error) {
+      console.error("Error fetching deals batch:", error);
+      throw new Error(error.message);
+    }
+    
+    if (batchData && batchData.length > 0) {
+      allDeals = [...allDeals, ...batchData];
+      console.log(`Fetched ${batchData.length} deals in this batch. Total so far: ${allDeals.length}`);
+      
+      // If we got less than the batch size, we've reached the end
+      if (batchData.length < batchSize) {
+        hasMore = false;
+      } else {
+        offset += batchSize;
+      }
+    } else {
+      hasMore = false;
+    }
   }
   
-  console.log('📊 FETCHED DEALS COUNT:', data?.length || 0);
+  console.log('📊 FINAL FETCHED DEALS COUNT:', allDeals.length);
   console.log('📊 DATABASE TOTAL COUNT:', totalCount);
   
-  if (data && totalCount && data.length !== totalCount) {
-    console.warn('⚠️ MISMATCH: Fetched', data.length, 'but database reports', totalCount, 'total');
+  if (totalCount && allDeals.length !== totalCount) {
+    console.warn('⚠️ MISMATCH: Fetched', allDeals.length, 'but database reports', totalCount, 'total');
+  } else {
+    console.log('✅ SUCCESS: Fetched count matches database count');
   }
   
-  console.log('Pipeline stage distribution:', data?.reduce((acc, deal) => {
+  console.log('Pipeline stage distribution:', allDeals.reduce((acc, deal) => {
     acc[deal.pipeline_stage] = (acc[deal.pipeline_stage] || 0) + 1;
     return acc;
   }, {} as Record<string, number>));
   
-  // Let's also check if there are deals for other users to understand the total scope
-  const { count: globalCount, error: globalError } = await supabase
-    .from('deals')
-    .select('*', { count: 'exact', head: true });
-    
-  if (!globalError) {
-    console.log('🌍 TOTAL DEALS IN ENTIRE DATABASE:', globalCount);
-  }
-  
   console.log('=== END FETCH DEALS DEBUG ===');
   
-  return data || [];
+  return allDeals;
 }
