@@ -19,7 +19,7 @@ export default function Deals() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
-  const [viewMode, setViewMode] = useState('board');
+  const [viewMode, setViewMode] = useState('list'); // Changed from 'board' to 'list'
   const [selectedDeals, setSelectedDeals] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
@@ -169,6 +169,14 @@ export default function Deals() {
         onViewDetails={handleViewDetails}
         onDealAdded={refetch}
         dealFilters={dealFilters}
+        selectedDeals={selectedDeals}
+        onToggleDealSelection={(dealId) => {
+          setSelectedDeals(prev => 
+            prev.includes(dealId) 
+              ? prev.filter(id => id !== dealId)
+              : [...prev, dealId]
+          );
+        }}
       />
 
       {selectedDeal && (
