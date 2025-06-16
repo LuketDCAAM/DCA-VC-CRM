@@ -99,14 +99,17 @@ export function PortfolioPerformanceChart({
               <ChartTooltip 
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
+                    const investmentValue = typeof payload[0]?.value === 'number' ? payload[0].value : 0;
+                    const companyValue = typeof payload[1]?.value === 'number' ? payload[1].value : 0;
+                    
                     return (
                       <div className="bg-background border rounded-lg p-3 shadow-lg">
                         <p className="font-medium">{label}</p>
                         <p className="text-sm text-blue-600">
-                          Invested: {formatCurrency(payload[0]?.value || 0)}
+                          Invested: {formatCurrency(investmentValue)}
                         </p>
                         <p className="text-sm text-green-600">
-                          Companies: {payload[1]?.value || 0}
+                          Companies: {companyValue}
                         </p>
                       </div>
                     );
