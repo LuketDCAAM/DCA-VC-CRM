@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
 const pipelineStages = [
+  'Inactive',
   'Initial Contact',
   'First Meeting', 
   'Due Diligence',
