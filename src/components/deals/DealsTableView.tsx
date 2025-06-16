@@ -8,7 +8,8 @@ import { Deal } from '@/types/deal';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { DealsTableHeader } from './table/DealsTableHeader';
 import { DealsTableRow } from './table/DealsTableRow';
-import { useTableSorting } from '@/hooks/deals/useTableSorting';
+import { SortControls } from './table/SortControls';
+import { useAdvancedTableSorting } from '@/hooks/deals/useAdvancedTableSorting';
 
 interface DealsTableViewProps {
   deals: Deal[];
@@ -29,34 +30,53 @@ export function DealsTableView({
   onDeselectAll,
   isAllSelected,
 }: DealsTableViewProps) {
-  const { sortedDeals, sortConfig, handleSort } = useTableSorting(deals);
+  const { 
+    sortedDeals, 
+    sortConfigs, 
+    handleSort, 
+    clearSort, 
+    removeSortColumn,
+    getSortForColumn,
+    getSortPriority
+  } = useAdvancedTableSorting(deals);
 
   return (
     <TooltipProvider>
-      <div className="relative overflow-hidden rounded-lg border border-border bg-card">
-        <div className="overflow-auto max-h-[calc(100vh-300px)]">
-          <Table>
-            <DealsTableHeader
-              isAllSelected={isAllSelected}
-              hasSelection={selectedDeals.length > 0}
-              onSelectAll={onSelectAll}
-              onDeselectAll={onDeselectAll}
-              sortConfig={sortConfig}
-              onSort={handleSort}
-            />
-            <TableBody>
-              {sortedDeals.map((deal, index) => (
-                <DealsTableRow
-                  key={deal.id}
-                  deal={deal}
-                  index={index}
-                  isSelected={selectedDeals.includes(deal.id)}
-                  onToggleSelection={onToggleDealSelection}
-                  onViewDetails={onViewDetails}
-                />
-              ))}
-            </TableBody>
-          </Table>
+      <div className="space-y-4">
+        <SortControls
+          sortConfigs={sortConfigs}
+          onRemoveSort={removeSortColumn}
+          onClearSort={clearSort}
+        />
+        
+        <div className="relative overflow-hidden rounded-lg border border-border bg-card">
+          <div className="overflow-auto max-h-[calc(100vh-300px)]">
+            <Table>
+              <DealsTableHeader
+                isAllSelected={isAllSelected}
+                hasSelection={selectedDeals.length > 0}
+                onSelectAll={onSelectAll}
+                onDeselectAll={onDeselectAll}
+                sortConfigs={sortConfigs}
+                onSort={handleSort}
+                onRemoveSort={removeSortColumn}
+                getSortForColumn={getSortForColumn}
+                getSortPriority={getSortPriority}
+              />
+              <TableBody>
+                {sortedDeals.map((deal, index) => (
+                  <DealsTableRow
+                    key={deal.id}
+                    deal={deal}
+                    index={index}
+                    isSelected={selectedDeals.includes(deal.id)}
+                    onToggleSelection={onToggleDealSelection}
+                    onViewDetails={onViewDetails}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </div>
       </div>
     </TooltipProvider>

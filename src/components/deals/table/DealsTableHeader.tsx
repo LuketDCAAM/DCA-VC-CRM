@@ -3,15 +3,19 @@ import React from 'react';
 import { TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Globe, Mail, DollarSign, MapPin, Calendar } from 'lucide-react';
-import { SortableTableHead, SortDirection } from './SortableTableHead';
+import { AdvancedSortableTableHead } from './AdvancedSortableTableHead';
+import { MultiSortConfig } from '@/hooks/deals/useAdvancedTableSorting';
 
 interface DealsTableHeaderProps {
   isAllSelected: boolean;
   hasSelection: boolean;
   onSelectAll: () => void;
   onDeselectAll: () => void;
-  sortConfig: { key: string; direction: SortDirection } | null;
-  onSort: (key: string) => void;
+  sortConfigs: MultiSortConfig;
+  onSort: (key: string, isMultiSort?: boolean) => void;
+  onRemoveSort: (key: string) => void;
+  getSortForColumn: (key: string) => { key: string; direction: 'asc' | 'desc' | null } | null;
+  getSortPriority: (key: string) => number | null;
 }
 
 export function DealsTableHeader({
@@ -19,16 +23,21 @@ export function DealsTableHeader({
   hasSelection,
   onSelectAll,
   onDeselectAll,
-  sortConfig,
+  sortConfigs,
   onSort,
+  onRemoveSort,
+  getSortForColumn,
+  getSortPriority,
 }: DealsTableHeaderProps) {
   return (
     <TableHeader className="sticky top-0 z-20 bg-muted/80 backdrop-blur-sm border-b">
       <TableRow className="hover:bg-transparent">
-        <SortableTableHead 
+        <AdvancedSortableTableHead 
           sortKey="id" 
-          currentSort={sortConfig} 
-          onSort={() => {}} 
+          currentSort={null}
+          sortPriority={null}
+          onSort={() => {}}
+          canSort={false}
           className="w-12 sticky left-0 z-30 bg-muted/80 backdrop-blur-sm border-r"
         >
           <Checkbox
@@ -36,112 +45,132 @@ export function DealsTableHeader({
             onCheckedChange={() => isAllSelected ? onDeselectAll() : onSelectAll()}
             aria-label="Select all"
           />
-        </SortableTableHead>
+        </AdvancedSortableTableHead>
         
-        <SortableTableHead 
+        <AdvancedSortableTableHead 
           sortKey="company_name" 
-          currentSort={sortConfig} 
+          currentSort={getSortForColumn('company_name')}
+          sortPriority={getSortPriority('company_name')}
           onSort={onSort}
+          onRemoveSort={onRemoveSort}
           className="min-w-[280px] sticky left-12 z-30 bg-muted/80 backdrop-blur-sm border-r font-semibold"
         >
           <div className="flex items-center gap-2">
             <Globe className="h-4 w-4" />
             Company
           </div>
-        </SortableTableHead>
+        </AdvancedSortableTableHead>
         
-        <SortableTableHead 
+        <AdvancedSortableTableHead 
           sortKey="contact_name" 
-          currentSort={sortConfig} 
+          currentSort={getSortForColumn('contact_name')}
+          sortPriority={getSortPriority('contact_name')}
           onSort={onSort}
+          onRemoveSort={onRemoveSort}
           className="min-w-[200px] font-semibold"
         >
           <div className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
             Contact
           </div>
-        </SortableTableHead>
+        </AdvancedSortableTableHead>
         
-        <SortableTableHead 
+        <AdvancedSortableTableHead 
           sortKey="pipeline_stage" 
-          currentSort={sortConfig} 
+          currentSort={getSortForColumn('pipeline_stage')}
+          sortPriority={getSortPriority('pipeline_stage')}
           onSort={onSort}
+          onRemoveSort={onRemoveSort}
           className="min-w-[150px] font-semibold"
         >
           Pipeline Stage
-        </SortableTableHead>
+        </AdvancedSortableTableHead>
         
-        <SortableTableHead 
+        <AdvancedSortableTableHead 
           sortKey="round_stage" 
-          currentSort={sortConfig} 
+          currentSort={getSortForColumn('round_stage')}
+          sortPriority={getSortPriority('round_stage')}
           onSort={onSort}
+          onRemoveSort={onRemoveSort}
           className="min-w-[130px] font-semibold"
         >
           Round Stage
-        </SortableTableHead>
+        </AdvancedSortableTableHead>
         
-        <SortableTableHead 
+        <AdvancedSortableTableHead 
           sortKey="round_size" 
-          currentSort={sortConfig} 
+          currentSort={getSortForColumn('round_size')}
+          sortPriority={getSortPriority('round_size')}
           onSort={onSort}
+          onRemoveSort={onRemoveSort}
           className="min-w-[120px] font-semibold"
         >
           <div className="flex items-center gap-2">
             <DollarSign className="h-4 w-4" />
             Round Size
           </div>
-        </SortableTableHead>
+        </AdvancedSortableTableHead>
         
-        <SortableTableHead 
+        <AdvancedSortableTableHead 
           sortKey="location" 
-          currentSort={sortConfig} 
+          currentSort={getSortForColumn('location')}
+          sortPriority={getSortPriority('location')}
           onSort={onSort}
+          onRemoveSort={onRemoveSort}
           className="min-w-[130px] font-semibold"
         >
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4" />
             Location
           </div>
-        </SortableTableHead>
+        </AdvancedSortableTableHead>
         
-        <SortableTableHead 
+        <AdvancedSortableTableHead 
           sortKey="deal_score" 
-          currentSort={sortConfig} 
+          currentSort={getSortForColumn('deal_score')}
+          sortPriority={getSortPriority('deal_score')}
           onSort={onSort}
+          onRemoveSort={onRemoveSort}
           className="min-w-[100px] font-semibold"
         >
           Deal Score
-        </SortableTableHead>
+        </AdvancedSortableTableHead>
         
-        <SortableTableHead 
+        <AdvancedSortableTableHead 
           sortKey="deal_source" 
-          currentSort={sortConfig} 
+          currentSort={getSortForColumn('deal_source')}
+          sortPriority={getSortPriority('deal_source')}
           onSort={onSort}
+          onRemoveSort={onRemoveSort}
           className="min-w-[120px] font-semibold"
         >
           Source
-        </SortableTableHead>
+        </AdvancedSortableTableHead>
         
-        <SortableTableHead 
+        <AdvancedSortableTableHead 
           sortKey="created_at" 
-          currentSort={sortConfig} 
+          currentSort={getSortForColumn('created_at')}
+          sortPriority={getSortPriority('created_at')}
           onSort={onSort}
+          onRemoveSort={onRemoveSort}
           className="min-w-[120px] font-semibold"
         >
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
             Date Added
           </div>
-        </SortableTableHead>
+        </AdvancedSortableTableHead>
         
-        <SortableTableHead 
+        <AdvancedSortableTableHead 
           sortKey="actions" 
-          currentSort={sortConfig} 
+          currentSort={null}
+          sortPriority={null}
           onSort={() => {}}
+          canSort={false}
           className="text-right min-w-[80px] font-semibold"
         >
           Actions
-        </SortableTableHead>
+        </AdvancedSortableTableHead>
       </TableRow>
     </TableHeader>
   );
