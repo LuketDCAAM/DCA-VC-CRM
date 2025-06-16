@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Building2, Calendar, DollarSign, TrendingUp, MapPin, Globe, User, Mail, Phone, ClipboardList } from 'lucide-react';
+import { Building2, Calendar, DollarSign, TrendingUp, MapPin, Globe, User, Mail, Phone, ClipboardList, Tag } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 
 type PipelineStage = Database['public']['Enums']['pipeline_stage'];
@@ -15,6 +16,7 @@ interface Deal {
   contact_phone: string | null;
   website: string | null;
   location: string | null;
+  description: string | null;
   pipeline_stage: PipelineStage;
   round_stage: RoundStage | null;
   round_size: number | null;
@@ -26,6 +28,7 @@ interface Deal {
   source_date: string | null;
   deal_source: string | null;
   deal_lead: string | null;
+  sector: string | null;
 }
 
 interface DealOverviewProps {
@@ -74,6 +77,12 @@ export function DealOverview({ deal }: DealOverviewProps) {
                 {deal.round_stage && (
                   <Badge variant="outline">
                     {deal.round_stage}
+                  </Badge>
+                )}
+                {deal.sector && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Tag className="h-3 w-3" />
+                    {deal.sector}
                   </Badge>
                 )}
               </div>
@@ -136,6 +145,33 @@ export function DealOverview({ deal }: DealOverviewProps) {
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-gray-500" />
                 <span>{deal.location}</span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Company Details */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Company Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {deal.sector && (
+              <div>
+                <div className="text-sm text-gray-500 mb-1">Sector</div>
+                <div className="font-medium flex items-center gap-1">
+                  <Tag className="h-4 w-4 text-gray-400" />
+                  {deal.sector}
+                </div>
+              </div>
+            )}
+            {deal.description && (
+              <div>
+                <div className="text-sm text-gray-500 mb-1">Description</div>
+                <div className="text-sm">{deal.description}</div>
               </div>
             )}
           </CardContent>
