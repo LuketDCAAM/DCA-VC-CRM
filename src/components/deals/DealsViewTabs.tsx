@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Grid, Table, BarChart3 } from "lucide-react";
@@ -6,7 +5,6 @@ import { Deal } from '@/types/deal';
 import { DealFilters } from '@/hooks/usePaginatedDeals';
 import { DealListView } from './DealListView';
 import { HighPerformanceDealsTableView } from './HighPerformanceDealsTableView';
-import { DealsTableView } from './DealsTableView';
 import { DealPipelineBoard } from './DealPipelineBoard';
 
 interface DealsViewTabsProps {
