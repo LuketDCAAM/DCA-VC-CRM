@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Deal } from '@/types/deal';
-import { useEffect, useMemo, useId } from 'react';
+import { useEffect, useMemo, useId, useRef } from 'react';
 
 async function fetchDeals(userId: string): Promise<Deal[]> {
   const { data, error } = await supabase
@@ -23,6 +23,7 @@ export function useDeals() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const id = useId(); // Create a unique ID for this hook instance
+  const channelRef = useRef<any>(null);
 
   const queryKey = useMemo(() => ['deals', user?.id], [user?.id]);
 
@@ -42,6 +43,12 @@ export function useDeals() {
   useEffect(() => {
     if (!user?.id) return;
 
+    // Clean up any existing channel
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+
     const channelName = `custom-deals-channel-${id}`;
     const dealsChannel = supabase
       .channel(channelName)
@@ -60,8 +67,13 @@ export function useDeals() {
       )
       .subscribe();
 
+    channelRef.current = dealsChannel;
+
     return () => {
-      supabase.removeChannel(dealsChannel);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
   }, [user?.id, queryClient, queryKey, id]);
 
