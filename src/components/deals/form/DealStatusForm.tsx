@@ -5,9 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useAddDeal } from '../hooks/useAddDeal';
 
 export function DealStatusForm() {
   const { control } = useFormContext();
+  const { pipelineStages, roundStages } = useAddDeal();
 
   return (
     <Card>
@@ -28,15 +30,11 @@ export function DealStatusForm() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="Seen Not Reviewed">Seen Not Reviewed</SelectItem>
-                  <SelectItem value="Initial Review">Initial Review</SelectItem>
-                  <SelectItem value="Initial Contact">Initial Contact</SelectItem>
-                  <SelectItem value="First Meeting">First Meeting</SelectItem>
-                  <SelectItem value="Due Diligence">Due Diligence</SelectItem>
-                  <SelectItem value="Term Sheet">Term Sheet</SelectItem>
-                  <SelectItem value="Legal Review">Legal Review</SelectItem>
-                  <SelectItem value="Invested">Invested</SelectItem>
-                  <SelectItem value="Passed">Passed</SelectItem>
+                  {pipelineStages.map((stage) => (
+                    <SelectItem key={stage} value={stage}>
+                      {stage}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -56,13 +54,11 @@ export function DealStatusForm() {
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="Pre-Seed">Pre-Seed</SelectItem>
-                  <SelectItem value="Seed">Seed</SelectItem>
-                  <SelectItem value="Series A">Series A</SelectItem>
-                  <SelectItem value="Series B">Series B</SelectItem>
-                  <SelectItem value="Series C">Series C</SelectItem>
-                  <SelectItem value="Bridge">Bridge</SelectItem>
-                  <SelectItem value="Growth">Growth</SelectItem>
+                  {roundStages.map((stage) => (
+                    <SelectItem key={stage} value={stage}>
+                      {stage}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <FormMessage />
