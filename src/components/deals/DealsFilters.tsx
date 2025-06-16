@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { SearchAndFilter, FilterOption } from '@/components/common/SearchAndFilter';
+import { useDebouncedSearch } from '@/hooks/useDebounce';
 
 interface DealsFiltersProps {
   searchTerm: string;
@@ -21,6 +22,9 @@ export function DealsFilters({
   showAdvancedFilters,
   onToggleAdvanced,
 }: DealsFiltersProps) {
+  // Use debounced search to improve performance
+  const debouncedSearchTerm = useDebouncedSearch(searchTerm, 300);
+
   const filterOptions: FilterOption[] = [
     {
       key: 'pipeline_stage',

@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { DealCard } from '@/components/deals/DealCard';
+import { MemoizedDealCard } from '@/components/deals/MemoizedDealCard';
 import { AddDealDialog } from '@/components/deals/AddDealDialog';
 import { Deal } from '@/types/deal';
 
@@ -61,7 +61,7 @@ export function DealListView({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {deals.map((deal) => (
-        <DealCard 
+        <MemoizedDealCard 
           key={deal.id} 
           deal={deal}
           onViewDetails={onViewDetails}

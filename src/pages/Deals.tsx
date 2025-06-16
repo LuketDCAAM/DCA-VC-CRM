@@ -59,8 +59,10 @@ export default function Deals() {
     };
   };
 
+  // Optimized filtered deals with memoization
   const filteredDeals = useFilteredDeals(deals, searchTerm, activeFilters);
 
+  // Memoized deal filters to prevent unnecessary recalculations
   const dealFilters: DealFilters = useMemo(() => {
     const filters: DealFilters = {};
     
@@ -83,39 +85,49 @@ export default function Deals() {
     return filters;
   }, [searchTerm, activeFilters]);
 
-  const handleViewDetails = (deal: Deal) => {
+  // Memoized event handlers to prevent unnecessary re-renders
+  const handleViewDetails = useMemo(() => (deal: Deal) => {
     setSelectedDeal(deal);
     setShowDetailDialog(true);
-  };
+  }, []);
 
-  const handleFilterChange = (key: string, value: any) => {
+  const handleFilterChange = useMemo(() => (key: string, value: any) => {
     setActiveFilters(prev => ({
       ...prev,
       [key]: value
     }));
-  };
+  }, []);
 
-  const handleClearFilters = () => {
+  const handleClearFilters = useMemo(() => () => {
     setActiveFilters({});
     setSearchTerm('');
-  };
+  }, []);
 
-  const handleBulkAction = (actionId: string, selectedIds: string[]) => {
+  const handleBulkAction = useMemo(() => (actionId: string, selectedIds: string[]) => {
     console.log(`Bulk action ${actionId} on deals:`, selectedIds);
     setSelectedDeals([]);
-  };
+  }, []);
 
-  const handleSelectAll = () => {
+  const handleSelectAll = useMemo(() => () => {
     setSelectedDeals(filteredDeals.map(deal => deal.id));
-  };
+  }, [filteredDeals]);
 
-  const handleDeselectAll = () => {
+  const handleDeselectAll = useMemo(() => () => {
     setSelectedDeals([]);
-  };
+  }, []);
 
-  const handleDealUpdated = () => {
+  const handleDealUpdated = useMemo(() => () => {
     refetch();
-  };
+  }, [refetch]);
+
+  // Memoized toggle deal selection to prevent unnecessary re-renders
+  const handleToggleDealSelection = useMemo(() => (dealId: string) => {
+    setSelectedDeals(prev => 
+      prev.includes(dealId) 
+        ? prev.filter(id => id !== dealId)
+        : [...prev, dealId]
+    );
+  }, []);
 
   if (loading) {
     return (
@@ -171,13 +183,7 @@ export default function Deals() {
         onDealAdded={refetch}
         dealFilters={dealFilters}
         selectedDeals={selectedDeals}
-        onToggleDealSelection={(dealId) => {
-          setSelectedDeals(prev => 
-            prev.includes(dealId) 
-              ? prev.filter(id => id !== dealId)
-              : [...prev, dealId]
-          );
-        }}
+        onToggleDealSelection={handleToggleDealSelection}
         onSelectAll={handleSelectAll}
         onDeselectAll={handleDeselectAll}
         isAllSelected={selectedDeals.length === filteredDeals.length && filteredDeals.length > 0}
