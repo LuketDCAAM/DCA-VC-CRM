@@ -73,21 +73,6 @@ export default function Deals() {
 
   const isAllSelected = selectedDeals.length === filteredDeals.length && filteredDeals.length > 0;
 
-  // Wrap the bulk action handler to return a Promise
-  const handleBulkActionWrapper = async (action: string, dealIds: string[]) => {
-    return new Promise<void>((resolve) => {
-      handleBulkAction(action, dealIds);
-      resolve();
-    });
-  };
-
-  // Create a wrapper for filter changes that matches the expected signature
-  const handleFilterChangeWrapper = (filters: Record<string, any>) => {
-    Object.entries(filters).forEach(([key, value]) => {
-      handleFilterChange(key, value);
-    });
-  };
-
   if (loading) {
     return (
       <div className="p-6">
@@ -105,16 +90,16 @@ export default function Deals() {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         activeFilters={activeFilters}
-        onFilterChange={handleFilterChangeWrapper}
+        onFilterChange={handleFilterChange}
         onClearFilters={handleClearFilters}
         showAdvancedFilters={showAdvancedFilters}
         onToggleAdvanced={() => setShowAdvancedFilters(!showAdvancedFilters)}
         selectedDeals={selectedDeals}
         onSelectAll={handleSelectAll(filteredDeals)}
         onDeselectAll={handleDeselectAll}
-        onBulkAction={handleBulkActionWrapper}
+        onBulkAction={handleBulkAction}
         isAllSelected={isAllSelected}
-        viewMode={viewMode as any}
+        viewMode={viewMode}
         onViewModeChange={setViewMode}
         onViewDetails={handleViewDetails}
         onToggleDealSelection={handleToggleDealSelection}

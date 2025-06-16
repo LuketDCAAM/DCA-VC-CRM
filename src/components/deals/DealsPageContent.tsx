@@ -88,9 +88,9 @@ export function DealsPageContent({
       case 'virtualized':
         return <VirtualizedDealsTable {...commonProps} height={600} />;
       case 'list':
-        return <DealListView {...commonProps} />;
+        return <DealListView {...commonProps} onDealUpdated={onDealUpdated} />;
       case 'grid':
-        return <DealsGrid {...commonProps} />;
+        return <DealsGrid {...commonProps} onDealUpdated={onDealUpdated} />;
       case 'pipeline':
         return (
           <DealPipelineBoard
@@ -111,8 +111,9 @@ export function DealsPageContent({
         csvTemplateColumns={csvTemplateColumns}
         exportColumns={exportColumns}
         onCSVImport={onCSVImport}
-        filteredDeals={filteredDeals}
-        loading={loading}
+        selectedDeals={selectedDeals}
+        onBulkAction={onBulkAction}
+        deals={filteredDeals}
       />
       
       <DealsStats dealStats={dealStats} />
@@ -121,20 +122,15 @@ export function DealsPageContent({
         <SearchAndFilter
           searchTerm={searchTerm}
           onSearchChange={onSearchChange}
+          showAdvancedFilters={showAdvancedFilters}
           onToggleAdvanced={onToggleAdvanced}
           placeholder="Search deals by company, contact, location, or description..."
-          filters={[]}
-          activeFilters={activeFilters}
-          onFilterChange={onFilterChange}
-          onClearFilters={onClearFilters}
         />
         
         {showAdvancedFilters && (
           <DealsFilters
             activeFilters={activeFilters}
-            onFilterChange={(key: string, value: any) => {
-              onFilterChange({ ...activeFilters, [key]: value });
-            }}
+            onFilterChange={onFilterChange}
             onClearFilters={onClearFilters}
           />
         )}
