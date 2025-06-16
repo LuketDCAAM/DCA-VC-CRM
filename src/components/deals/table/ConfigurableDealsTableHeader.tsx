@@ -33,14 +33,14 @@ export function ConfigurableDealsTableHeader({
 
   return (
     <TableHeader className="sticky top-0 z-20 bg-muted/80 backdrop-blur-sm border-b">
-      <TableRow className="hover:bg-transparent">
+      <TableRow className="hover:bg-transparent h-10">
         <AdvancedSortableTableHead 
           sortKey="selection" 
           currentSort={null}
           sortPriority={null}
           onSort={() => {}}
           canSort={false}
-          className="w-12 sticky left-0 z-30 bg-muted/80 backdrop-blur-sm border-r"
+          className="w-12 sticky left-0 z-30 bg-muted/80 backdrop-blur-sm border-r py-2"
         >
           <Checkbox
             checked={isAllSelected ? true : (hasSelection ? 'indeterminate' : false)}
@@ -59,12 +59,12 @@ export function ConfigurableDealsTableHeader({
             onRemoveSort={onRemoveSort}
             canSort={column.sortable}
             className={`
-              ${column.width} font-semibold
+              ${column.width} font-medium text-xs py-2
               ${column.key === 'company_name' ? 'sticky left-12 z-30 bg-muted/80 backdrop-blur-sm border-r' : ''}
             `}
           >
-            <div className="flex items-center gap-2">
-              {column.icon && <column.icon className="h-4 w-4" />}
+            <div className="flex items-center gap-1">
+              {column.icon && <column.icon className="h-3 w-3" />}
               {column.label}
             </div>
           </AdvancedSortableTableHead>
@@ -76,7 +76,7 @@ export function ConfigurableDealsTableHeader({
           sortPriority={null}
           onSort={() => {}}
           canSort={false}
-          className="text-right min-w-[80px] font-semibold"
+          className="text-right min-w-[80px] font-medium text-xs py-2"
         >
           Actions
         </AdvancedSortableTableHead>

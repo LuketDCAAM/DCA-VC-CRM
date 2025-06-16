@@ -87,7 +87,7 @@ export function VirtualizedDealsTable({
           height={height}
           width="100%"
           itemCount={deals.length}
-          itemSize={80} // Height of each row
+          itemSize={50} // Reduced height for each row to match smaller fonts
           itemData={itemData}
           overscanCount={5} // Render 5 extra items for smooth scrolling
         >
