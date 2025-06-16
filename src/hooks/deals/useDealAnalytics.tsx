@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react';
 import { Deal } from '@/types/deal';
 import { PIPELINE_STAGES } from './dealStagesConfig';
@@ -191,15 +190,24 @@ export function useDealAnalytics(deals: Deal[]): DealAnalytics {
 }
 
 function calculateStageConversion(deals: Deal[], fromStage: string, toStage: string): number {
-  const fromStageDeals = deals.filter(deal => 
-    deal.pipeline_stage === fromStage || 
-    PIPELINE_STAGES.indexOf(deal.pipeline_stage) > PIPELINE_STAGES.indexOf(fromStage)
-  );
+  // Find the index of stages safely by checking if they exist in PIPELINE_STAGES
+  const fromStageIndex = PIPELINE_STAGES.findIndex(stage => stage === fromStage);
+  const toStageIndex = PIPELINE_STAGES.findIndex(stage => stage === toStage);
   
-  const toStageDeals = deals.filter(deal => 
-    deal.pipeline_stage === toStage ||
-    PIPELINE_STAGES.indexOf(deal.pipeline_stage) > PIPELINE_STAGES.indexOf(toStage)
-  );
+  // If stages are not found, return 0
+  if (fromStageIndex === -1 || toStageIndex === -1) {
+    return 0;
+  }
+  
+  const fromStageDeals = deals.filter(deal => {
+    const dealStageIndex = PIPELINE_STAGES.findIndex(stage => stage === deal.pipeline_stage);
+    return dealStageIndex >= fromStageIndex;
+  });
+  
+  const toStageDeals = deals.filter(deal => {
+    const dealStageIndex = PIPELINE_STAGES.findIndex(stage => stage === deal.pipeline_stage);
+    return dealStageIndex >= toStageIndex;
+  });
 
   return fromStageDeals.length > 0 
     ? Math.round((toStageDeals.length / fromStageDeals.length) * 100)
