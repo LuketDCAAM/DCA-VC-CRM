@@ -12,6 +12,7 @@ interface DealsGridProps {
   onSelectAll?: () => void;
   onDeselectAll?: () => void;
   isAllSelected?: boolean;
+  onDealUpdated?: () => void;
 }
 
 export function DealsGrid({ 
@@ -21,7 +22,8 @@ export function DealsGrid({
   onToggleDealSelection,
   onSelectAll,
   onDeselectAll,
-  isAllSelected
+  isAllSelected,
+  onDealUpdated
 }: DealsGridProps) {
   const showSelection = !!onToggleDealSelection;
 

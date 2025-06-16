@@ -128,6 +128,10 @@ export function DealsPageContent({
           searchTerm={searchTerm}
           onSearchChange={onSearchChange}
           placeholder="Search deals by company, contact, location, or description..."
+          filters={[]}
+          activeFilters={activeFilters}
+          onFilterChange={onFilterChange}
+          onClearFilters={onClearFilters}
         />
         
         {showAdvancedFilters && (
@@ -135,6 +139,10 @@ export function DealsPageContent({
             activeFilters={activeFilters}
             onFilterChange={onFilterChange}
             onClearFilters={onClearFilters}
+            searchTerm={searchTerm}
+            onSearchChange={onSearchChange}
+            showAdvancedFilters={showAdvancedFilters}
+            onToggleAdvanced={onToggleAdvanced}
           />
         )}
       </div>

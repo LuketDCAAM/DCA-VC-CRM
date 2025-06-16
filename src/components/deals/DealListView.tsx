@@ -16,6 +16,7 @@ interface DealListViewProps {
   onDeselectAll?: () => void;
   isAllSelected?: boolean;
   onDealAdded?: () => void;
+  onDealUpdated?: () => void;
 }
 
 export function DealListView({ 
@@ -26,7 +27,8 @@ export function DealListView({
   onSelectAll,
   onDeselectAll,
   isAllSelected,
-  onDealAdded
+  onDealAdded,
+  onDealUpdated
 }: DealListViewProps) {
   const showSelection = !!onToggleDealSelection;
 
