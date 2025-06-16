@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useDeals } from '@/hooks/useDeals';
 import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
@@ -12,7 +11,6 @@ import { PipelineChart } from '@/components/dashboard/charts/PipelineChart';
 import { SectorChart } from '@/components/dashboard/charts/SectorChart';
 import { MonthlyTrendChart } from '@/components/dashboard/charts/MonthlyTrendChart';
 import { ValuationChart } from '@/components/dashboard/charts/ValuationChart';
-import { ConversionChart } from '@/components/dashboard/charts/ConversionChart';
 import { RoundStageChart } from '@/components/dashboard/charts/RoundStageChart';
 import { PortfolioPerformanceChart } from '@/components/dashboard/charts/PortfolioPerformanceChart';
 
@@ -58,14 +56,9 @@ export default function Dashboard() {
         <SectorChart data={analytics.sectorDistribution} />
       </div>
 
-      {/* Secondary Analytics - Sector & Performance */}
+      {/* Secondary Analytics - Round Stage & Portfolio */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ConversionChart data={analytics.conversionMetrics} />
         <RoundStageChart data={analytics.roundStageDistribution} />
-      </div>
-
-      {/* Tertiary Analytics - Round Stage & Portfolio */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <PortfolioPerformanceChart 
           portfolioCount={portfolioCompanies?.length || 0}
           totalInvested={totalInvested}
