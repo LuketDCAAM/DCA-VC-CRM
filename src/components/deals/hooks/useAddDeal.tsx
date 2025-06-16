@@ -41,6 +41,10 @@ export interface AddDealFormData {
   round_size: string;
   post_money_valuation: string;
   revenue: string;
+  deal_score: number | null;
+  deal_lead: string;
+  deal_source: string;
+  source_date: string;
 }
 
 export const defaultFormData: AddDealFormData = {
@@ -57,6 +61,10 @@ export const defaultFormData: AddDealFormData = {
   round_size: '',
   post_money_valuation: '',
   revenue: '',
+  deal_score: null,
+  deal_lead: '',
+  deal_source: '',
+  source_date: '',
 };
 
 export function useAddDeal() {
@@ -90,6 +98,10 @@ export function useAddDeal() {
         round_size: parseAndScaleCurrency(formData.round_size),
         post_money_valuation: parseAndScaleCurrency(formData.post_money_valuation),
         revenue: parseAndScaleCurrency(formData.revenue),
+        deal_score: formData.deal_score,
+        deal_lead: formData.deal_lead || null,
+        deal_source: formData.deal_source || null,
+        source_date: formData.source_date || null,
         created_by: user.id,
       };
 

@@ -1,94 +1,50 @@
 
 import React from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Grid, Table, BarChart3 } from "lucide-react";
-import { Deal } from '@/types/deal';
-import { DealFilters } from '@/hooks/usePaginatedDeals';
-import { DealListView } from './DealListView';
-import { VirtualizedDealsTable } from './VirtualizedDealsTable';
-import { DealPipelineBoard } from './DealPipelineBoard';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { List, Grid3X3, Table, Kanban, Settings, Zap, Layers } from 'lucide-react';
+import { ViewMode } from './DealsPageContent';
 
 interface DealsViewTabsProps {
-  viewMode: string;
-  onViewModeChange: (mode: string) => void;
-  filteredDeals: Deal[];
-  onViewDetails: (deal: Deal) => void;
-  onDealAdded?: () => void;
-  dealFilters: DealFilters;
-  selectedDeals: string[];
-  onToggleDealSelection: (dealId: string) => void;
-  onSelectAll: () => void;
-  onDeselectAll: () => void;
-  isAllSelected: boolean;
-  onBulkAction: (actionId: string, selectedIds: string[]) => void;
-  onDealUpdated?: () => void;
+  viewMode: ViewMode;
+  onViewModeChange: (mode: ViewMode) => void;
+  dealCount: number;
 }
 
-export function DealsViewTabs({
-  viewMode,
-  onViewModeChange,
-  filteredDeals,
-  onViewDetails,
-  onDealAdded,
-  dealFilters,  
-  selectedDeals,
-  onToggleDealSelection,
-  onSelectAll,
-  onDeselectAll,
-  isAllSelected,
-  onBulkAction,
-  onDealUpdated,
-}: DealsViewTabsProps) {
+export function DealsViewTabs({ viewMode, onViewModeChange, dealCount }: DealsViewTabsProps) {
   return (
-    <Tabs value={viewMode} onValueChange={onViewModeChange} className="space-y-4">
-      <TabsList>
-        <TabsTrigger value="list" className="flex items-center gap-2">
-          <Grid className="h-4 w-4" />
-          List View
-        </TabsTrigger>
-        <TabsTrigger value="table" className="flex items-center gap-2">
-          <Table className="h-4 w-4" />
-          Table View
-        </TabsTrigger>
-        <TabsTrigger value="pipeline" className="flex items-center gap-2">
-          <BarChart3 className="h-4 w-4" />
-          Pipeline Board
-        </TabsTrigger>
-      </TabsList>
-
-      <TabsContent value="list" className="space-y-4">
-        <DealListView
-          deals={filteredDeals}
-          onViewDetails={onViewDetails}
-          selectedDeals={selectedDeals}
-          onToggleDealSelection={onToggleDealSelection}
-          onSelectAll={onSelectAll}
-          onDeselectAll={onDeselectAll}
-          isAllSelected={isAllSelected}
-          onDealAdded={onDealAdded}
-        />
-      </TabsContent>
-
-      <TabsContent value="table" className="space-y-4">
-        <VirtualizedDealsTable
-          deals={filteredDeals}
-          onViewDetails={onViewDetails}
-          selectedDeals={selectedDeals}
-          onToggleDealSelection={onToggleDealSelection}
-          onSelectAll={onSelectAll}
-          onDeselectAll={onDeselectAll}
-          isAllSelected={isAllSelected}
-          height={600}
-        />
-      </TabsContent>
-
-      <TabsContent value="pipeline" className="space-y-4">
-        <DealPipelineBoard 
-          deals={filteredDeals}
-          onViewDetails={onViewDetails}
-          onDealUpdated={onDealUpdated}
-        />
-      </TabsContent>
-    </Tabs>
+    <div className="flex items-center justify-between">
+      <Tabs value={viewMode} onValueChange={(value) => onViewModeChange(value as ViewMode)}>
+        <TabsList className="grid w-full grid-cols-7">
+          <TabsTrigger value="configurable" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            <span className="hidden sm:inline">Configurable</span>
+          </TabsTrigger>
+          <TabsTrigger value="list" className="flex items-center gap-2">
+            <List className="h-4 w-4" />
+            <span className="hidden sm:inline">List</span>
+          </TabsTrigger>
+          <TabsTrigger value="grid" className="flex items-center gap-2">
+            <Grid3X3 className="h-4 w-4" />
+            <span className="hidden sm:inline">Grid</span>
+          </TabsTrigger>
+          <TabsTrigger value="high-performance" className="flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            <span className="hidden sm:inline">Fast Table</span>
+          </TabsTrigger>
+          <TabsTrigger value="virtualized" className="flex items-center gap-2">
+            <Layers className="h-4 w-4" />
+            <span className="hidden sm:inline">Virtual</span>
+          </TabsTrigger>
+          <TabsTrigger value="pipeline" className="flex items-center gap-2">
+            <Kanban className="h-4 w-4" />
+            <span className="hidden sm:inline">Pipeline</span>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+      
+      <div className="text-sm text-muted-foreground">
+        {dealCount} deals
+      </div>
+    </div>
   );
 }
