@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -164,8 +165,36 @@ export function useContacts() {
   };
 
   useEffect(() => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     fetchContacts();
-  }, [user]);
+
+    // Set up realtime subscription with proper cleanup
+    const channel = supabase
+      .channel('contacts-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'contacts'
+        },
+        () => {
+          // Refetch contacts when changes occur
+          fetchContacts();
+        }
+      )
+      .subscribe();
+
+    // Cleanup function to remove the channel subscription
+    return () => {
+      console.log('Cleaning up contacts subscription');
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]); // Only depend on user.id to prevent unnecessary re-subscriptions
 
   return {
     contacts,
