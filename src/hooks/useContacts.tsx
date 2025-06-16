@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
@@ -20,11 +20,16 @@ interface Contact {
   updated_at: string;
 }
 
+// Global subscription state to prevent multiple subscriptions
+let globalChannel: any = null;
+let subscribers: Set<() => void> = new Set();
+
 export function useContacts() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
+  const refetchRef = useRef<() => void>();
 
   const fetchContacts = async () => {
     if (!user) return;
@@ -48,6 +53,9 @@ export function useContacts() {
       setLoading(false);
     }
   };
+
+  // Store the refetch function in ref so it can be called from subscription
+  refetchRef.current = fetchContacts;
 
   const addContact = async (contactData: Omit<Contact, 'id' | 'created_at' | 'updated_at'>) => {
     if (!user) return;
@@ -170,34 +178,51 @@ export function useContacts() {
       return;
     }
 
+    // Initial fetch
     fetchContacts();
 
-    // Create a unique channel name to avoid subscription conflicts
-    const channelName = `contacts-changes-${user.id}-${Date.now()}`;
-    
-    // Set up realtime subscription with proper cleanup
-    const channel = supabase
-      .channel(channelName)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'contacts'
-        },
-        () => {
-          // Refetch contacts when changes occur
-          fetchContacts();
-        }
-      )
-      .subscribe();
-
-    // Cleanup function to remove the channel subscription
-    return () => {
-      console.log('Cleaning up contacts subscription');
-      supabase.removeChannel(channel);
+    // Add this instance's refetch function to subscribers
+    const refetchFunction = () => {
+      if (refetchRef.current) {
+        refetchRef.current();
+      }
     };
-  }, [user?.id]); // Only depend on user.id to prevent unnecessary re-subscriptions
+    subscribers.add(refetchFunction);
+
+    // Set up global subscription only if it doesn't exist
+    if (!globalChannel && user) {
+      console.log('Setting up global contacts subscription');
+      const channelName = `contacts-global-${user.id}`;
+      
+      globalChannel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'contacts'
+          },
+          () => {
+            // Notify all subscribers to refetch
+            subscribers.forEach(subscriber => subscriber());
+          }
+        )
+        .subscribe();
+    }
+
+    // Cleanup function
+    return () => {
+      subscribers.delete(refetchFunction);
+      
+      // Only remove the global channel if no more subscribers
+      if (subscribers.size === 0 && globalChannel) {
+        console.log('Cleaning up global contacts subscription');
+        supabase.removeChannel(globalChannel);
+        globalChannel = null;
+      }
+    };
+  }, [user?.id]);
 
   return {
     contacts,
