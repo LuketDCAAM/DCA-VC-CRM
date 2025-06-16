@@ -5,12 +5,12 @@ export const ACTIVE_PIPELINE_STAGES = [
   'First Meeting',
   'Due Diligence',
   'Term Sheet',
-  'Legal Review'
+  'Legal Review',
+  'Initial Review'
 ];
 
 export const SCREENING_STAGES = [
-  'Seen Not Reviewed',
-  'Initial Review'
+  'Seen Not Reviewed'
 ];
 
 export const FINAL_STAGES = {
