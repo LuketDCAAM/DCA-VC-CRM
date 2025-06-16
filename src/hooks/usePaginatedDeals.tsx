@@ -2,7 +2,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Deal } from '@/types/deal';
+import { Deal, PipelineStage, RoundStage } from '@/types/deal';
 import { useEffect, useMemo, useId, useRef, useState } from 'react';
 
 export interface PaginationConfig {
@@ -47,11 +47,11 @@ async function fetchPaginatedDeals(
   }
   
   if (filters.pipeline_stage) {
-    query = query.eq('pipeline_stage', filters.pipeline_stage);
+    query = query.eq('pipeline_stage', filters.pipeline_stage as PipelineStage);
   }
   
   if (filters.round_stage) {
-    query = query.eq('round_stage', filters.round_stage);
+    query = query.eq('round_stage', filters.round_stage as RoundStage);
   }
   
   if (filters.location) {

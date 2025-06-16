@@ -1,6 +1,7 @@
+
 import React, { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { LayoutGrid, List } from 'lucide-react';
+import { LayoutGrid, List, Edit, Archive, Trash2 } from 'lucide-react';
 import { useDeals } from '@/hooks/useDeals';
 import { DealDetailDialog } from '@/components/deals/DealDetailDialog';
 import { DealPipelineBoard } from '@/components/deals/DealPipelineBoard';

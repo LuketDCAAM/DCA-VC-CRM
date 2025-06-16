@@ -16,7 +16,7 @@ interface ItemData {
   onViewDetails: (deal: Deal) => void;
 }
 
-const DealItem = ({ index, style, data }: { index: number; style: any; data: ItemData }) => {
+const DealItem = ({ index, style, data }: { index: number; style: React.CSSProperties; data: ItemData }) => {
   const { deals, onViewDetails } = data;
   const deal = deals[index];
 
@@ -52,10 +52,11 @@ export function VirtualizedDealList({
     <div className="border rounded-lg">
       <List
         height={height}
+        width="100%"
         itemCount={deals.length}
         itemSize={itemHeight}
         itemData={itemData}
-        overscanCount={5} // Render 5 extra items for smooth scrolling
+        overscanCount={5}
       >
         {DealItem}
       </List>
