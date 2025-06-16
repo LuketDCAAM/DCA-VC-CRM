@@ -21,12 +21,13 @@ async function fetchDeals(userId: string): Promise<Deal[]> {
     console.log('🔍 TOTAL DEALS IN DATABASE for user:', totalCount);
   }
 
-  // Now fetch the actual data
+  // Now fetch the actual data with increased limit
   const { data, error } = await supabase
     .from('deals')
     .select('*')
     .eq('created_by', userId)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(10000); // Add limit to prevent hitting default 1000-row limit
 
   if (error) {
     console.error("Error fetching deals:", error);
