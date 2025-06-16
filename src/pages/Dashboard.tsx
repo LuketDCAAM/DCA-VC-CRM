@@ -14,7 +14,6 @@ import { MonthlyTrendChart } from '@/components/dashboard/charts/MonthlyTrendCha
 import { ValuationChart } from '@/components/dashboard/charts/ValuationChart';
 import { ConversionChart } from '@/components/dashboard/charts/ConversionChart';
 import { RoundStageChart } from '@/components/dashboard/charts/RoundStageChart';
-import { DealVelocityChart } from '@/components/dashboard/charts/DealVelocityChart';
 import { PortfolioPerformanceChart } from '@/components/dashboard/charts/PortfolioPerformanceChart';
 
 export default function Dashboard() {
@@ -56,18 +55,17 @@ export default function Dashboard() {
       {/* Primary Analytics - Deal Flow & Pipeline */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <PipelineChart data={analytics.pipelineDistribution} />
-        <DealVelocityChart data={analytics.monthlyTrends} />
+        <SectorChart data={analytics.sectorDistribution} />
       </div>
 
       {/* Secondary Analytics - Sector & Performance */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SectorChart data={analytics.sectorDistribution} />
         <ConversionChart data={analytics.conversionMetrics} />
+        <RoundStageChart data={analytics.roundStageDistribution} />
       </div>
 
       {/* Tertiary Analytics - Round Stage & Portfolio */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RoundStageChart data={analytics.roundStageDistribution} />
         <PortfolioPerformanceChart 
           portfolioCount={portfolioCompanies?.length || 0}
           totalInvested={totalInvested}
