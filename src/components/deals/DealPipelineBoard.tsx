@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +33,7 @@ interface Deal {
 interface DealPipelineBoardProps {
   deals: Deal[];
   onViewDetails?: (deal: Deal) => void;
+  onDealUpdated?: () => void;
 }
 
 const pipelineStages: PipelineStage[] = [
@@ -73,7 +73,7 @@ const getStageColor = (stage: string) => {
   return colors[stage as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-200';
 };
 
-export function DealPipelineBoard({ deals, onViewDetails }: DealPipelineBoardProps) {
+export function DealPipelineBoard({ deals, onViewDetails, onDealUpdated }: DealPipelineBoardProps) {
   const dealsByStage = pipelineStages.reduce((acc, stage) => {
     acc[stage] = deals.filter(deal => deal.pipeline_stage === stage);
     return acc;
