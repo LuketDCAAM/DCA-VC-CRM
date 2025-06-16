@@ -13,6 +13,9 @@ import { SectorChart } from '@/components/dashboard/charts/SectorChart';
 import { MonthlyTrendChart } from '@/components/dashboard/charts/MonthlyTrendChart';
 import { ValuationChart } from '@/components/dashboard/charts/ValuationChart';
 import { ConversionChart } from '@/components/dashboard/charts/ConversionChart';
+import { RoundStageChart } from '@/components/dashboard/charts/RoundStageChart';
+import { DealVelocityChart } from '@/components/dashboard/charts/DealVelocityChart';
+import { PortfolioPerformanceChart } from '@/components/dashboard/charts/PortfolioPerformanceChart';
 
 export default function Dashboard() {
   const { deals, loading: dealsLoading, dealStats } = useDeals();
@@ -50,22 +53,34 @@ export default function Dashboard() {
         totalInvested={totalInvested}
       />
 
-      {/* Analytics Charts */}
+      {/* Primary Analytics - Deal Flow & Pipeline */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <PipelineChart data={analytics.pipelineDistribution} />
-        <MonthlyTrendChart data={analytics.monthlyTrends} />
+        <DealVelocityChart data={analytics.monthlyTrends} />
       </div>
 
+      {/* Secondary Analytics - Sector & Performance */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <SectorChart data={analytics.sectorDistribution} />
         <ConversionChart data={analytics.conversionMetrics} />
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        <ValuationChart data={analytics.valuationAnalysis} />
+      {/* Tertiary Analytics - Round Stage & Portfolio */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <RoundStageChart data={analytics.roundStageDistribution} />
+        <PortfolioPerformanceChart 
+          portfolioCount={portfolioCompanies?.length || 0}
+          totalInvested={totalInvested}
+        />
       </div>
 
-      {/* Recent Activity & Quick Actions */}
+      {/* Detailed Analytics - Full Width */}
+      <div className="grid grid-cols-1 gap-6">
+        <ValuationChart data={analytics.valuationAnalysis} />
+        <MonthlyTrendChart data={analytics.monthlyTrends} />
+      </div>
+
+      {/* Activity & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <RecentDealsCard deals={deals?.slice(0, 5) || []} />
