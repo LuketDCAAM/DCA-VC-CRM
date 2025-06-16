@@ -80,70 +80,70 @@ export function DealPipelineBoard({ deals, onViewDetails }: DealPipelineBoardPro
   }, {} as Record<PipelineStage, Deal[]>);
 
   const DealCardMini = ({ deal }: { deal: Deal }) => (
-    <Card className="mb-3 hover:shadow-md transition-shadow cursor-pointer" onClick={() => onViewDetails?.(deal)}>
-      <CardHeader className="pb-2 px-3 pt-3">
+    <Card className="mb-2 hover:shadow-md transition-shadow cursor-pointer bg-white border border-gray-200" onClick={() => onViewDetails?.(deal)}>
+      <CardHeader className="pb-1 px-3 pt-2">
         <div className="flex justify-between items-start">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Building2 className="h-4 w-4" />
-            {deal.company_name}
+          <CardTitle className="text-xs font-semibold flex items-center gap-1 text-gray-900">
+            <Building2 className="h-3 w-3" />
+            <span className="truncate">{deal.company_name}</span>
           </CardTitle>
           {onViewDetails && (
-            <Button variant="ghost" size="sm" className="h-auto p-1">
+            <Button variant="ghost" size="sm" className="h-auto p-0.5 opacity-60 hover:opacity-100">
               <Eye className="h-3 w-3" />
             </Button>
           )}
         </div>
       </CardHeader>
-      <CardContent className="px-3 pb-3 space-y-2">
+      <CardContent className="px-3 pb-2 space-y-1">
         <div className="flex items-center justify-between">
             {deal.round_stage && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs px-1 py-0">
                 {deal.round_stage}
               </Badge>
             )}
            {typeof deal.deal_score === 'number' && (
-             <div className="flex items-center gap-1 text-xs text-gray-600 font-medium">
-               <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-               {deal.deal_score}
+             <div className="flex items-center gap-0.5 text-xs text-gray-600 font-medium">
+               <Star className="h-2.5 w-2.5 text-yellow-400 fill-yellow-400" />
+               <span className="text-xs">{deal.deal_score}</span>
              </div>
            )}
         </div>
         
         {deal.round_size && (
           <div className="flex items-center gap-1 text-xs text-gray-600">
-            <DollarSign className="h-3 w-3 text-green-600" />
-            {formatCurrency(deal.round_size)}
+            <DollarSign className="h-2.5 w-2.5 text-green-600" />
+            <span className="font-medium">{formatCurrency(deal.round_size)}</span>
           </div>
         )}
         
         <div className="flex items-center gap-1 text-xs text-gray-500">
-          <Calendar className="h-3 w-3" />
-          {new Date(deal.updated_at).toLocaleDateString()}
+          <Calendar className="h-2.5 w-2.5" />
+          <span>{new Date(deal.updated_at).toLocaleDateString()}</span>
         </div>
       </CardContent>
     </Card>
   );
 
   return (
-    <div className="flex gap-4 overflow-x-auto pb-4">
+    <div className="flex gap-3 overflow-x-auto pb-4">
       {pipelineStages.map(stage => (
-        <div key={stage} className="flex-shrink-0 w-72">
-          <Card className={`h-full ${getStageColor(stage)}`}>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center justify-between">
-                <span>{stage}</span>
-                <Badge variant="secondary" className="text-xs">
+        <div key={stage} className="flex-shrink-0 w-64">
+          <Card className={`h-full ${getStageColor(stage)} shadow-sm`}>
+            <CardHeader className="pb-2 px-3 pt-3">
+              <CardTitle className="text-sm font-semibold flex items-center justify-between">
+                <span className="truncate">{stage}</span>
+                <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-white/70">
                   {dealsByStage[stage].length}
                 </Badge>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 max-h-96 overflow-y-auto">
+            <CardContent className="space-y-1 max-h-[70vh] overflow-y-auto px-3 pb-3">
               {dealsByStage[stage].length > 0 ? (
                 dealsByStage[stage].map(deal => (
                   <DealCardMini key={deal.id} deal={deal} />
                 ))
               ) : (
-                <div className="text-center py-8 text-gray-500 text-sm">
+                <div className="text-center py-6 text-gray-500 text-xs">
                   No deals in this stage
                 </div>
               )}

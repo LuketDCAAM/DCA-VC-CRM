@@ -46,7 +46,7 @@ export function DealsTableRow({
       <TableCell>
         <Badge 
           variant={getPipelineStageColor(deal.pipeline_stage) as any}
-          className="font-medium"
+          className="font-medium text-xs"
         >
           {deal.pipeline_stage}
         </Badge>
@@ -54,11 +54,11 @@ export function DealsTableRow({
       
       <TableCell>
         {deal.round_stage ? (
-          <Badge variant="outline" className="font-medium">
+          <Badge variant="outline" className="font-medium text-xs">
             {deal.round_stage}
           </Badge>
         ) : (
-          <span className="text-muted-foreground">-</span>
+          <span className="text-muted-foreground text-sm">-</span>
         )}
       </TableCell>
       
@@ -68,10 +68,10 @@ export function DealsTableRow({
         {deal.location ? (
           <div className="flex items-center gap-1">
             <MapPin className="h-3 w-3 text-muted-foreground" />
-            <span className="text-foreground">{deal.location}</span>
+            <span className="text-foreground text-sm">{deal.location}</span>
           </div>
         ) : (
-          <span className="text-muted-foreground">-</span>
+          <span className="text-muted-foreground text-sm">-</span>
         )}
       </TableCell>
       
@@ -83,7 +83,7 @@ export function DealsTableRow({
             {deal.deal_source}
           </Badge>
         ) : (
-          <span className="text-muted-foreground">-</span>
+          <span className="text-muted-foreground text-sm">-</span>
         )}
       </TableCell>
       
@@ -110,11 +110,11 @@ export function DealsTableRow({
           <TooltipTrigger asChild>
             <Button 
               variant="ghost" 
-              size="icon" 
+              size="sm" 
               onClick={() => onViewDetails(deal)}
-              className="hover:bg-primary/10 hover:text-primary transition-colors"
+              className="h-7 w-7 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
             >
-              <Eye className="h-4 w-4" />
+              <Eye className="h-3 w-3" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>

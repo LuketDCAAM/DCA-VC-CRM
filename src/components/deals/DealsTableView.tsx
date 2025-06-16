@@ -8,6 +8,7 @@ import { Deal } from '@/types/deal';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { DealsTableHeader } from './table/DealsTableHeader';
 import { DealsTableRow } from './table/DealsTableRow';
+import { useTableSorting } from '@/hooks/deals/useTableSorting';
 
 interface DealsTableViewProps {
   deals: Deal[];
@@ -28,6 +29,8 @@ export function DealsTableView({
   onDeselectAll,
   isAllSelected,
 }: DealsTableViewProps) {
+  const { sortedDeals, sortConfig, handleSort } = useTableSorting(deals);
+
   return (
     <TooltipProvider>
       <div className="relative overflow-hidden rounded-lg border border-border bg-card">
@@ -38,9 +41,11 @@ export function DealsTableView({
               hasSelection={selectedDeals.length > 0}
               onSelectAll={onSelectAll}
               onDeselectAll={onDeselectAll}
+              sortConfig={sortConfig}
+              onSort={handleSort}
             />
             <TableBody>
-              {deals.map((deal, index) => (
+              {sortedDeals.map((deal, index) => (
                 <DealsTableRow
                   key={deal.id}
                   deal={deal}

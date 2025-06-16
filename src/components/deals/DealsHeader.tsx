@@ -43,14 +43,14 @@ export function DealsHeader({
           templateColumns={csvTemplateColumns}
           onImport={onCSVImport}
         >
-          <Button variant="outline" size="sm">
-            <Upload className="h-4 w-4 mr-2" />
+          <Button variant="outline" size="sm" className="h-8 px-3 text-xs">
+            <Upload className="h-3 w-3 mr-1" />
             Import CSV
           </Button>
         </CSVImport>
         <AddDealDialog onDealAdded={onDealAdded}>
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
+          <Button size="sm" className="h-8 px-3 text-xs">
+            <Plus className="h-3 w-3 mr-1" />
             Add Deal
           </Button>
         </AddDealDialog>
