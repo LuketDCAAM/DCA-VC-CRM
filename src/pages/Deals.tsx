@@ -113,6 +113,10 @@ export default function Deals() {
     setSelectedDeals([]);
   };
 
+  const handleDealUpdated = () => {
+    refetch();
+  };
+
   if (loading) {
     return (
       <div className="p-6">
@@ -174,6 +178,11 @@ export default function Deals() {
               : [...prev, dealId]
           );
         }}
+        onSelectAll={handleSelectAll}
+        onDeselectAll={handleDeselectAll}
+        isAllSelected={selectedDeals.length === filteredDeals.length && filteredDeals.length > 0}
+        onBulkAction={handleBulkAction}
+        onDealUpdated={handleDealUpdated}
       />
 
       {selectedDeal && (

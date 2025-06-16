@@ -19,6 +19,7 @@ interface DealsTableViewProps {
   onSelectAll: () => void;
   onDeselectAll: () => void;
   isAllSelected: boolean;
+  onDealUpdated?: () => void;
 }
 
 export function DealsTableView({
@@ -29,6 +30,7 @@ export function DealsTableView({
   onSelectAll,
   onDeselectAll,
   isAllSelected,
+  onDealUpdated,
 }: DealsTableViewProps) {
   const { 
     sortedDeals, 
@@ -72,6 +74,7 @@ export function DealsTableView({
                     isSelected={selectedDeals.includes(deal.id)}
                     onToggleSelection={onToggleDealSelection}
                     onViewDetails={onViewDetails}
+                    onDealUpdated={onDealUpdated}
                   />
                 ))}
               </TableBody>

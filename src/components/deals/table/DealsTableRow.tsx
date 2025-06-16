@@ -9,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { CompanyCell } from './CompanyCell';
 import { ContactCell } from './ContactCell';
 import { FinancialCell } from './FinancialCell';
+import { PipelineStageDropdown } from './PipelineStageDropdown';
 import { formatDate, getPipelineStageColor } from './tableUtils';
 
 interface DealsTableRowProps {
@@ -17,6 +18,7 @@ interface DealsTableRowProps {
   isSelected: boolean;
   onToggleSelection: (dealId: string) => void;
   onViewDetails: (deal: Deal) => void;
+  onDealUpdated?: () => void;
 }
 
 export function DealsTableRow({
@@ -25,6 +27,7 @@ export function DealsTableRow({
   isSelected,
   onToggleSelection,
   onViewDetails,
+  onDealUpdated,
 }: DealsTableRowProps) {
   return (
     <TableRow 
@@ -44,12 +47,10 @@ export function DealsTableRow({
       <ContactCell deal={deal} />
       
       <TableCell>
-        <Badge 
-          variant={getPipelineStageColor(deal.pipeline_stage) as any}
-          className="font-medium text-xs"
-        >
-          {deal.pipeline_stage}
-        </Badge>
+        <PipelineStageDropdown 
+          deal={deal} 
+          onUpdate={onDealUpdated}
+        />
       </TableCell>
       
       <TableCell>
