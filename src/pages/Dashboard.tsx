@@ -10,7 +10,7 @@ import { RemindersWidget } from '@/components/reminders/RemindersWidget';
 
 export default function Dashboard() {
   const { deals, loading: dealsLoading, dealStats } = useDeals();
-  const { portfolioCompanies, loading: portfolioLoading } = usePortfolioCompanies();
+  const { companies: portfolioCompanies, loading: portfolioLoading } = usePortfolioCompanies();
 
   // Calculate total invested from portfolio companies
   const totalInvested = portfolioCompanies
@@ -48,7 +48,10 @@ export default function Dashboard() {
           <RemindersWidget />
         </div>
         <div className="space-y-6">
-          <RecentPortfolioCard companies={portfolioCompanies?.slice(0, 5) || []} />
+          <RecentPortfolioCard 
+            companies={portfolioCompanies?.slice(0, 5) || []} 
+            onViewDetails={() => {}} 
+          />
           <DashboardQuickActions />
         </div>
       </div>
