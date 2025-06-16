@@ -27,16 +27,34 @@ export default function Deals() {
   const { csvTemplateColumns, exportColumns, handleCSVImport } = useDealsCSVConfig();
 
   const handleCSVImportWrapper = async (data: any[]) => {
+    console.log('CSV Import wrapper called with', data.length, 'rows');
+    
+    // Process the data through our configuration
     const processResult = await handleCSVImport(data);
+    console.log('Process result:', processResult);
+    
     if (!processResult.success) {
-      return processResult;
+      return {
+        success: false,
+        error: processResult.error,
+        errors: processResult.errors
+      };
     }
     
+    // Import the processed data
     const result = await importDeals(processResult.data);
+    console.log('Import result:', result);
+    
     if (result.success) {
-      refetch();
+      // Refresh the deals list after successful import
+      await refetch();
     }
-    return result;
+    
+    return {
+      success: result.success,
+      imported: result.imported,
+      errors: result.errors || processResult.errors
+    };
   };
 
   const filteredDeals = useFilteredDeals(deals, searchTerm, activeFilters);
