@@ -62,6 +62,8 @@ export function AddDealDialog({ onDealAdded, children }: AddDealDialogProps) {
     contact_phone: '',
     website: '',
     location: '',
+    sector: '',
+    description: '',
     pipeline_stage: 'Initial Contact' as typeof pipelineStages[number],
     round_stage: '' as typeof roundStages[number] | '',
     round_size: '',
@@ -89,6 +91,8 @@ export function AddDealDialog({ onDealAdded, children }: AddDealDialogProps) {
         contact_phone: formData.contact_phone || null,
         website: formData.website || null,
         location: formData.location || null,
+        sector: formData.sector || null,
+        description: formData.description || null,
         pipeline_stage: formData.pipeline_stage,
         round_stage: formData.round_stage ? formData.round_stage as typeof roundStages[number] : null,
         round_size: parseAndScaleCurrency(formData.round_size),
@@ -115,6 +119,8 @@ export function AddDealDialog({ onDealAdded, children }: AddDealDialogProps) {
         contact_phone: '',
         website: '',
         location: '',
+        sector: '',
+        description: '',
         pipeline_stage: 'Initial Contact',
         round_stage: '',
         round_size: '',
@@ -217,6 +223,15 @@ export function AddDealDialog({ onDealAdded, children }: AddDealDialogProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
+              <Label htmlFor="sector">Sector</Label>
+              <Input
+                id="sector"
+                value={formData.sector}
+                onChange={(e) => handleInputChange('sector', e.target.value)}
+                placeholder="e.g. FinTech, HealthTech, AI/ML"
+              />
+            </div>
+            <div>
               <Label htmlFor="pipeline_stage">Pipeline Stage</Label>
               <Select
                 value={formData.pipeline_stage}
@@ -234,24 +249,36 @@ export function AddDealDialog({ onDealAdded, children }: AddDealDialogProps) {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label htmlFor="round_stage">Round Stage</Label>
-              <Select
-                value={formData.round_stage}
-                onValueChange={(value) => handleInputChange('round_stage', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select round stage" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roundStages.map((stage) => (
-                    <SelectItem key={stage} value={stage}>
-                      {stage}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="round_stage">Round Stage</Label>
+            <Select
+              value={formData.round_stage}
+              onValueChange={(value) => handleInputChange('round_stage', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select round stage" />
+              </SelectTrigger>
+              <SelectContent>
+                {roundStages.map((stage) => (
+                  <SelectItem key={stage} value={stage}>
+                    {stage}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label htmlFor="description">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              placeholder="Enter a description for the company..."
+              className="min-h-[80px]"
+            />
           </div>
 
           <div className="grid grid-cols-3 gap-4">
