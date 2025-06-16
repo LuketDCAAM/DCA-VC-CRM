@@ -27,9 +27,9 @@ export function DashboardMetrics({
 
   const metrics = [
     {
-      title: "Active Deals",
+      title: "Active Pipeline",
       value: activeDeals,
-      description: "deals in pipeline",
+      description: "deals in active pipeline",
       icon: DollarSign,
       color: "text-blue-600",
     },

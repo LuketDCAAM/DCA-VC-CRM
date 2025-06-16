@@ -1,103 +1,56 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useDeals } from '@/hooks/useDeals';
 import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
-import { PortfolioDetailDialog } from '@/components/portfolio/PortfolioDetailDialog';
-import { RemindersWidget } from '@/components/reminders/RemindersWidget';
 import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics';
 import { RecentDealsCard } from '@/components/dashboard/RecentDealsCard';
 import { RecentPortfolioCard } from '@/components/dashboard/RecentPortfolioCard';
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions';
+import { RemindersWidget } from '@/components/reminders/RemindersWidget';
 
 export default function Dashboard() {
-  const { deals, loading: dealsLoading } = useDeals();
-  const { companies, loading: companiesLoading } = usePortfolioCompanies();
-  const [selectedCompany, setSelectedCompany] = useState<any>(null);
-  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const { deals, loading: dealsLoading, dealStats } = useDeals();
+  const { portfolioCompanies, loading: portfolioLoading } = usePortfolioCompanies();
 
-  // Calculate metrics
-  const activeDeals = deals.filter(deal => 
-    !['Invested', 'Passed'].includes(deal.pipeline_stage)
-  ).length;
+  // Calculate total invested from portfolio companies
+  const totalInvested = portfolioCompanies
+    ?.reduce((total, company) => {
+      const companyInvested = company.investments?.reduce((sum, inv) => sum + (inv.amount_invested || 0), 0) || 0;
+      return total + companyInvested;
+    }, 0) || 0;
 
-  const totalInvested = companies.reduce((sum, company) => 
-    sum + company.investments.reduce((invSum, inv) => invSum + inv.amount_invested, 0), 0
-  );
+  const isLoading = dealsLoading || portfolioLoading;
 
-  const recentDeals = deals
-    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-    .slice(0, 3);
-
-  const recentCompanies = companies
-    .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
-    .slice(0, 3);
-
-  const handleViewCompanyDetails = (company: any) => {
-    setSelectedCompany(company);
-    setDetailDialogOpen(true);
-  };
-
-  if (dealsLoading || companiesLoading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading dashboard...</p>
-        </div>
+      <div className="p-6">
+        <div className="text-center">Loading dashboard...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Overview of your VC deal flow and portfolio
-          </p>
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+      </div>
+
+      <DashboardMetrics
+        activeDeals={dealStats.activeDeals}
+        portfolioCount={portfolioCompanies?.length || 0}
+        totalDeals={dealStats.totalDeals}
+        totalInvested={totalInvested}
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-6">
+          <RecentDealsCard deals={deals?.slice(0, 5) || []} />
+          <RemindersWidget />
         </div>
-
-        {/* Metrics */}
-        <DashboardMetrics
-          activeDeals={activeDeals}
-          portfolioCount={companies.length}
-          totalDeals={deals.length}
-          totalInvested={totalInvested}
-        />
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-          {/* Left Column - Takes 3/4 width on xl screens */}
-          <div className="xl:col-span-3 space-y-6">
-            {/* Recent Activity Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <RecentDealsCard deals={recentDeals} />
-              <RecentPortfolioCard 
-                companies={recentCompanies}
-                onViewDetails={handleViewCompanyDetails}
-              />
-            </div>
-            
-            {/* Quick Actions */}
-            <DashboardQuickActions />
-          </div>
-
-          {/* Right Column - Takes 1/4 width on xl screens */}
-          <div className="xl:col-span-1">
-            <RemindersWidget />
-          </div>
+        <div className="space-y-6">
+          <RecentPortfolioCard companies={portfolioCompanies?.slice(0, 5) || []} />
+          <DashboardQuickActions />
         </div>
-
-        <PortfolioDetailDialog
-          company={selectedCompany}
-          open={detailDialogOpen}
-          onOpenChange={setDetailDialogOpen}
-          onCompanyUpdated={() => {
-            // Refetch companies if needed
-          }}
-        />
       </div>
     </div>
   );

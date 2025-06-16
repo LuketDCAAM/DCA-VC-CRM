@@ -14,7 +14,7 @@ import { DealsViewTabs } from '@/components/deals/DealsViewTabs';
 import { useDealsCSVConfig } from '@/components/deals/DealsCSVConfig';
 
 export default function Deals() {
-  const { deals, loading, refetch } = useDeals();
+  const { deals, loading, refetch, dealStats } = useDeals();
   const { importDeals } = useCSVImport();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
@@ -113,10 +113,6 @@ export default function Deals() {
     setSelectedDeals([]);
   };
 
-  const activeDeals = useMemo(() => deals.filter(deal => !['Invested', 'Passed'].includes(deal.pipeline_stage)).length, [deals]);
-  const investedDeals = useMemo(() => deals.filter(deal => deal.pipeline_stage === 'Invested').length, [deals]);
-  const passedDeals = useMemo(() => deals.filter(deal => deal.pipeline_stage === 'Passed').length, [deals]);
-
   if (loading) {
     return (
       <div className="p-6">
@@ -137,10 +133,10 @@ export default function Deals() {
       />
 
       <DealsStats
-        totalDeals={deals.length}
-        activeDeals={activeDeals}
-        investedDeals={investedDeals}
-        passedDeals={passedDeals}
+        totalDeals={dealStats.totalDeals}
+        activeDeals={dealStats.activeDeals}
+        investedDeals={dealStats.investedDeals}
+        passedDeals={dealStats.passedDeals}
       />
 
       <DealsFilters
