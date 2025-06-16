@@ -5,7 +5,7 @@ import { DealStats } from './dealStatsCalculator';
 
 // Pre-compute stage sets for better performance
 const ACTIVE_STAGES_SET = new Set([
-  'Seen Not Reviewed',
+  'Inactive',
   'Initial Review', 
   'Initial Contact',
   'First Meeting',
@@ -15,7 +15,7 @@ const ACTIVE_STAGES_SET = new Set([
 ]);
 
 const SCREENING_STAGES_SET = new Set([
-  'Seen Not Reviewed',
+  'Inactive',
   'Initial Review',
   'Initial Contact'
 ]);

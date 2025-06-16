@@ -26,7 +26,7 @@ const PIPELINE_STAGES: PipelineStage[] = [
   'Term Sheet',
   'Legal Review',
   'Initial Review',
-  'Seen Not Reviewed',
+  'Inactive',
   'Invested',
   'Passed'
 ];

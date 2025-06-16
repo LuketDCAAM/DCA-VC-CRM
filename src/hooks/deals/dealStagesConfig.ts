@@ -10,7 +10,7 @@ export const ACTIVE_PIPELINE_STAGES = [
 ];
 
 export const SCREENING_STAGES = [
-  'Seen Not Reviewed'
+  'Inactive'
 ];
 
 export const FINAL_STAGES = {

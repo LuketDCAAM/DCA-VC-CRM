@@ -37,7 +37,7 @@ interface DealPipelineBoardProps {
 }
 
 const pipelineStages: PipelineStage[] = [
-  'Seen Not Reviewed',
+  'Inactive',
   'Initial Review',
   'Initial Contact',
   'First Meeting',
@@ -60,7 +60,7 @@ const formatCurrency = (amount: number | null) => {
 
 const getStageColor = (stage: string) => {
   const colors = {
-    'Seen Not Reviewed': 'bg-stone-100 text-stone-800 border-stone-200',
+    'Inactive': 'bg-stone-100 text-stone-800 border-stone-200',
     'Initial Review': 'bg-gray-100 text-gray-800 border-gray-200',
     'Initial Contact': 'bg-sky-100 text-sky-800 border-sky-200',
     'First Meeting': 'bg-blue-100 text-blue-800 border-blue-200',

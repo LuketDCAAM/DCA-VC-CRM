@@ -20,7 +20,7 @@ export const formatDate = (dateString: string | null) => {
 
 export const getPipelineStageColor = (stage: string) => {
   const colors = {
-    'Seen Not Reviewed': 'secondary',
+    'Inactive': 'secondary',
     'Initial Review': 'secondary',
     'Initial Contact': 'default',
     'First Meeting': 'default',

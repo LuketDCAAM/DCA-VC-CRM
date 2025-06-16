@@ -11,7 +11,7 @@ export const formatCurrency = (amount: number | null) => {
 
 export const getStageColor = (stage: string) => {
   const colors = {
-    'Seen Not Reviewed': 'bg-stone-100 text-stone-800',
+    'Inactive': 'bg-stone-100 text-stone-800',
     'Initial Review': 'bg-gray-100 text-gray-800',
     'Initial Contact': 'bg-sky-100 text-sky-800',
     'First Meeting': 'bg-blue-100 text-blue-800',
