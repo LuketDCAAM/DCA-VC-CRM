@@ -1,6 +1,6 @@
 
 import { Deal } from '@/types/deal';
-import { ACTIVE_PIPELINE_STAGES, SCREENING_STAGES, FINAL_STAGES } from './dealStagesConfig';
+import { ACTIVE_PIPELINE_STAGES, SCREENING_STAGES } from './dealStagesConfig';
 
 export interface DealStats {
   totalDeals: number;
@@ -23,13 +23,13 @@ export function calculateDealStats(deals: Deal[]): DealStats {
   console.log('Active deals list:', activeDealsList.map(d => ({ name: d.company_name, stage: d.pipeline_stage })));
   
   const investedDealsList = deals.filter(deal => 
-    deal.pipeline_stage === FINAL_STAGES.INVESTED
+    deal.pipeline_stage === 'Invested'
   );
   console.log('Invested deals:', investedDealsList.length, 'deals');
   console.log('Invested deals list:', investedDealsList.map(d => ({ name: d.company_name, stage: d.pipeline_stage })));
   
   const passedDealsList = deals.filter(deal => 
-    deal.pipeline_stage === FINAL_STAGES.PASSED
+    deal.pipeline_stage === 'Passed'
   );
   console.log('Passed deals:', passedDealsList.length, 'deals');
   console.log('Passed deals list:', passedDealsList.map(d => ({ name: d.company_name, stage: d.pipeline_stage })));
@@ -46,8 +46,8 @@ export function calculateDealStats(deals: Deal[]): DealStats {
   if (categorizedCount !== totalDeals) {
     const uncategorized = deals.filter(deal => 
       !ACTIVE_PIPELINE_STAGES.includes(deal.pipeline_stage) &&
-      deal.pipeline_stage !== FINAL_STAGES.INVESTED &&
-      deal.pipeline_stage !== FINAL_STAGES.PASSED &&
+      deal.pipeline_stage !== 'Invested' &&
+      deal.pipeline_stage !== 'Passed' &&
       !SCREENING_STAGES.includes(deal.pipeline_stage)
     );
     console.warn('UNCATEGORIZED DEALS FOUND:', uncategorized.length);

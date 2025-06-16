@@ -1,8 +1,10 @@
 
+
 // Pipeline stage configurations
 export const PIPELINE_STAGES = [
   'Initial Review',
   'Initial Contact', 
+  'First Meeting',
   'Due Diligence',
   'Term Sheet',
   'Legal Review',
@@ -17,6 +19,7 @@ export type PipelineStage = typeof PIPELINE_STAGES[number];
 export const ACTIVE_PIPELINE_STAGES: PipelineStage[] = [
   'Initial Review',
   'Initial Contact',
+  'First Meeting',
   'Due Diligence', 
   'Term Sheet',
   'Legal Review'
@@ -55,3 +58,4 @@ export const isPassedStage = (stage: string): boolean => {
 export const isInactiveStage = (stage: string): boolean => {
   return stage === 'Inactive';
 };
+
