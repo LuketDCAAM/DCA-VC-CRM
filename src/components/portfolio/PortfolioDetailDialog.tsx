@@ -1,12 +1,12 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Edit, Building2, DollarSign, TrendingUp, Calendar, Users, FileText, Phone, Mail, Globe, MapPin } from 'lucide-react';
+import { Edit, Building2, DollarSign, TrendingUp, Calendar, Users, FileText } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
+import { PortfolioEditForm } from './PortfolioEditForm';
 
 type CompanyStatus = Database['public']['Enums']['company_status'];
 
@@ -23,6 +23,7 @@ interface Investment {
 interface PortfolioCompany {
   id: string;
   company_name: string;
+  description: string | null;
   status: CompanyStatus;
   tags: string[] | null;
   relationship_owner: string | null;
@@ -72,6 +73,17 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
 
   if (!company) return null;
 
+  const handleSave = () => {
+    setIsEditing(false);
+    if (onCompanyUpdated) {
+      onCompanyUpdated();
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+
   const totalInvested = company.investments.reduce((sum, inv) => sum + inv.amount_invested, 0);
   const latestInvestment = company.investments.sort((a, b) => 
     new Date(b.investment_date).getTime() - new Date(a.investment_date).getTime()
@@ -80,6 +92,20 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
   const currentValue = company.current_valuation?.last_round_post_money_valuation;
   const originalValue = company.investments.find(inv => inv.post_money_valuation)?.post_money_valuation;
   const valueMultiple = currentValue && originalValue ? currentValue / originalValue : null;
+
+  if (isEditing) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <PortfolioEditForm
+            company={company}
+            onSave={handleSave}
+            onCancel={handleCancel}
+          />
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -196,6 +222,12 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
                     <p className="mt-1">{new Date(company.updated_at).toLocaleDateString()}</p>
                   </div>
                 </div>
+                {company.description && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-500">Description</label>
+                    <p className="mt-1">{company.description}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
