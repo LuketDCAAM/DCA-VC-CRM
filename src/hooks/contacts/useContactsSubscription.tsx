@@ -30,7 +30,7 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
     if (!globalChannel) {
       console.log('Setting up global contacts subscription');
       
-      const channelName = `contacts-global-${user.id}-${Date.now()}`;
+      const channelName = `contacts-global-${user.id}`;
       globalChannel = supabase.channel(channelName);
       
       globalChannel
