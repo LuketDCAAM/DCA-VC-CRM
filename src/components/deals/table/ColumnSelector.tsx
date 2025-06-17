@@ -12,12 +12,10 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  DropResult,
-} from '@hello-pangea/dnd';
+
+// Change this import to import the whole namespace as Dnd
+import * as Dnd from '@hello-pangea/dnd';
+
 import { Settings, GripVertical, RotateCcw, Eye, EyeOff } from 'lucide-react';
 import { TableColumn, useTableColumns } from '@/hooks/deals/useTableColumns';
 
@@ -34,7 +32,7 @@ export function ColumnSelector({ onColumnsChange }: ColumnSelectorProps) {
     setLocalColumns(columns);
   }, [columns]);
 
-  const handleDragEnd = (result: DropResult) => {
+  const handleDragEnd = (result: Dnd.DropResult) => {
     if (!result.destination) return;
 
     const items = Array.from(localColumns);
@@ -86,8 +84,8 @@ export function ColumnSelector({ onColumnsChange }: ColumnSelectorProps) {
         </DialogHeader>
         
         <div className="flex-1 overflow-y-auto">
-          <DragDropContext onDragEnd={handleDragEnd}>
-            <Droppable droppableId="columns">
+          <Dnd.DragDropContext onDragEnd={handleDragEnd}>
+            <Dnd.Droppable droppableId="columns">
               {(provided) => (
                 <div
                   {...provided.droppableProps}
@@ -95,7 +93,7 @@ export function ColumnSelector({ onColumnsChange }: ColumnSelectorProps) {
                   className="space-y-2"
                 >
                   {localColumns.map((column, index) => (
-                    <Draggable
+                    <Dnd.Draggable
                       key={column.key}
                       draggableId={column.key}
                       index={index}
@@ -105,73 +103,3 @@ export function ColumnSelector({ onColumnsChange }: ColumnSelectorProps) {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           className={`
-                            flex items-center gap-3 p-3 border rounded-lg bg-card
-                            ${snapshot.isDragging ? 'shadow-lg' : ''}
-                            ${column.locked ? 'opacity-75' : ''}
-                          `}
-                        >
-                          <div
-                            {...provided.dragHandleProps}
-                            className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing"
-                          >
-                            <GripVertical className="h-4 w-4" />
-                          </div>
-                          
-                          <Checkbox
-                            checked={column.visible}
-                            onCheckedChange={() => handleToggleVisibility(column.key)}
-                            disabled={column.locked}
-                            className="flex-shrink-0"
-                          />
-                          
-                          <div className="flex items-center gap-2 flex-1">
-                            {column.icon && (
-                              <column.icon className="h-4 w-4 text-muted-foreground" />
-                            )}
-                            <span className="font-medium">{column.label}</span>
-                            {column.locked && (
-                              <Badge variant="outline" className="text-xs">
-                                Required
-                              </Badge>
-                            )}
-                          </div>
-                          
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            {column.visible ? (
-                              <Eye className="h-4 w-4" />
-                            ) : (
-                              <EyeOff className="h-4 w-4" />
-                            )}
-                            <Badge variant="secondary" className="text-xs">
-                              {column.dataType}
-                            </Badge>
-                          </div>
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
-        </div>
-
-        <DialogFooter className="flex justify-between">
-          <Button variant="outline" onClick={handleReset}>
-            <RotateCcw className="h-4 w-4 mr-2" />
-            Reset to Default
-          </Button>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleApplyChanges}>
-              Apply Changes
-            </Button>
-          </div>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
