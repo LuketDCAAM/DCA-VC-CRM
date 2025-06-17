@@ -70,19 +70,16 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
       
       // Only remove the global channel if no more subscribers
       if (subscribers.size === 0 && globalChannel) {
-        console.log('Cleaning up global deals subscription');
-        try {
-          globalChannel.unsubscribe();
-        } catch (error) {
-          console.log('Error unsubscribing from deals channel:', error);
-        }
-        try {
-          supabase.removeChannel(globalChannel);
-        } catch (error) {
-          console.log('Error removing deals channel:', error);
-        }
-        globalChannel = null;
-      }
+  console.log('Cleaning up global deals subscription');
+  try {
+    globalChannel.unsubscribe();
+    supabase.removeChannel(globalChannel);
+  } catch (error) {
+    console.log('Error cleaning up channel:', error);
+  }
+  globalChannel = null;
+  globalSubscribed = false;
+}
     };
   }, [userId, queryClient]);
 
