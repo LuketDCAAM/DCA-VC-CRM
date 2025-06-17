@@ -20,7 +20,7 @@ import {
   DropResult,
 } from '@hello-pangea/dnd';
 
-import { Settings, GripVertical, RotateCcw, Eye, EyeOff } from 'lucide-react';
+import { Settings, GripVertical, RotateCcw } from 'lucide-react';
 import { TableColumn, useTableColumns } from '@/hooks/deals/useTableColumns';
 
 interface ColumnSelectorProps {
@@ -114,15 +114,13 @@ export function ColumnSelector({ onColumnsChange }: ColumnSelectorProps) {
                             <GripVertical className="h-5 w-5 text-gray-500" />
                           </div>
 
-                          <div className="flex-1">
+                          <div className="flex-1 flex items-center">
                             <Checkbox
                               checked={column.visible}
                               onCheckedChange={() => handleToggleVisibility(column.key)}
                             />
                             <span className="ml-2">{column.label}</span>
                           </div>
-
-                          {/* Optional: Add reset visibility button or info here */}
                         </div>
                       )}
                     </Draggable>
@@ -135,7 +133,8 @@ export function ColumnSelector({ onColumnsChange }: ColumnSelectorProps) {
         </div>
 
         <DialogFooter className="flex justify-between mt-4">
-          <Button variant="ghost" onClick={handleReset} leftIcon={<RotateCcw />}>
+          <Button variant="ghost" onClick={handleReset}>
+            <RotateCcw className="mr-2 h-4 w-4" />
             Reset to Default
           </Button>
           <Button onClick={handleApplyChanges}>Apply Changes</Button>
