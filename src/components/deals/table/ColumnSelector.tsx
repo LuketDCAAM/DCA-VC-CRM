@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
@@ -13,8 +13,12 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 
-// Change this import to import the whole namespace as Dnd
-import * as Dnd from '@hello-pangea/dnd';
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from '@hello-pangea/dnd';
 
 import { Settings, GripVertical, RotateCcw, Eye, EyeOff } from 'lucide-react';
 import { TableColumn, useTableColumns } from '@/hooks/deals/useTableColumns';
@@ -28,11 +32,11 @@ export function ColumnSelector({ onColumnsChange }: ColumnSelectorProps) {
   const [open, setOpen] = useState(false);
   const [localColumns, setLocalColumns] = useState<TableColumn[]>(columns);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setLocalColumns(columns);
   }, [columns]);
 
-  const handleDragEnd = (result: Dnd.DropResult) => {
+  const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
 
     const items = Array.from(localColumns);
@@ -82,10 +86,10 @@ export function ColumnSelector({ onColumnsChange }: ColumnSelectorProps) {
             Drag and drop to reorder columns, or toggle visibility. Changes are saved automatically.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="flex-1 overflow-y-auto">
-          <Dnd.DragDropContext onDragEnd={handleDragEnd}>
-            <Dnd.Droppable droppableId="columns">
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="columns">
               {(provided) => (
                 <div
                   {...provided.droppableProps}
@@ -93,7 +97,7 @@ export function ColumnSelector({ onColumnsChange }: ColumnSelectorProps) {
                   className="space-y-2"
                 >
                   {localColumns.map((column, index) => (
-                    <Dnd.Draggable
+                    <Draggable
                       key={column.key}
                       draggableId={column.key}
                       index={index}
@@ -102,4 +106,41 @@ export function ColumnSelector({ onColumnsChange }: ColumnSelectorProps) {
                         <div
                           ref={provided.innerRef}
                           {...provided.draggableProps}
-                          className={`
+                          className={`flex items-center justify-between rounded border p-2 ${
+                            snapshot.isDragging ? 'bg-gray-200' : 'bg-white'
+                          }`}
+                        >
+                          <div {...provided.dragHandleProps} className="cursor-move mr-2">
+                            <GripVertical className="h-5 w-5 text-gray-500" />
+                          </div>
+
+                          <div className="flex-1">
+                            <Checkbox
+                              checked={column.visible}
+                              onCheckedChange={() => handleToggleVisibility(column.key)}
+                            />
+                            <span className="ml-2">{column.title}</span>
+                          </div>
+
+                          {/* Optional: Add reset visibility button or info here */}
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </div>
+
+        <DialogFooter className="flex justify-between mt-4">
+          <Button variant="ghost" onClick={handleReset} leftIcon={<RotateCcw />}>
+            Reset to Default
+          </Button>
+          <Button onClick={handleApplyChanges}>Apply Changes</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
