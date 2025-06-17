@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -13,7 +14,6 @@ import Dashboard from './pages/Dashboard';
 import Deals from './pages/Deals';
 import Portfolio from './pages/Portfolio';
 import Investors from './pages/Investors';
-import Contacts from './pages/Contacts';
 import Reminders from './pages/Reminders';
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -52,7 +52,6 @@ function AppContent() {
             <Route path="/deals" element={<Deals />} />
             <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/investors" element={<Investors />} />
-            <Route path="/contacts" element={<Contacts />} />
             <Route path="/reminders" element={<Reminders />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
