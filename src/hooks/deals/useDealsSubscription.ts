@@ -6,7 +6,6 @@ import { supabase } from '@/integrations/supabase/client';
 // Global subscription state to prevent multiple subscriptions
 let globalChannel: any = null;
 let subscribers: Set<() => void> = new Set();
-let isSubscribed = false;
 
 export function useDealsSubscription(userId: string | undefined, queryKey: (string | undefined)[]) {
   const queryClient = useQueryClient();
@@ -27,8 +26,8 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
     };
     subscribers.add(invalidateFunction);
 
-    // Set up global subscription only if it doesn't exist and hasn't been subscribed
-    if (!globalChannel && !isSubscribed) {
+    // Set up global subscription only if it doesn't exist
+    if (!globalChannel) {
       console.log('Setting up global deals subscription');
       
       const channelName = `deals-global-${userId}`;
@@ -55,11 +54,8 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
         )
         .subscribe((status: string) => {
           console.log('Deals subscription status:', status);
-          if (status === 'SUBSCRIBED') {
-            isSubscribed = true;
-          } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+          if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
             globalChannel = null;
-            isSubscribed = false;
           }
         });
     }
@@ -70,10 +66,17 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
       // Only remove the global channel if no more subscribers
       if (subscribers.size === 0 && globalChannel) {
         console.log('Cleaning up global deals subscription');
-        globalChannel.unsubscribe();
-        supabase.removeChannel(globalChannel);
+        try {
+          globalChannel.unsubscribe();
+        } catch (error) {
+          console.log('Error unsubscribing from deals channel:', error);
+        }
+        try {
+          supabase.removeChannel(globalChannel);
+        } catch (error) {
+          console.log('Error removing deals channel:', error);
+        }
         globalChannel = null;
-        isSubscribed = false;
       }
     };
   }, [userId, queryClient]);

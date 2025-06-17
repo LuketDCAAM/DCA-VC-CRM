@@ -6,7 +6,6 @@ import type { User } from '@supabase/supabase-js';
 // Global subscription state to prevent multiple subscriptions
 let globalChannel: any = null;
 let subscribers: Set<() => void> = new Set();
-let isSubscribed = false;
 
 export function useContactsSubscription(user: User | null, refetch: () => void) {
   const refetchRef = useRef<() => void>();
@@ -27,8 +26,8 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
     };
     subscribers.add(refetchFunction);
 
-    // Set up global subscription only if it doesn't exist and hasn't been subscribed
-    if (!globalChannel && !isSubscribed) {
+    // Set up global subscription only if it doesn't exist
+    if (!globalChannel) {
       console.log('Setting up global contacts subscription');
       
       const channelName = `contacts-global-${user.id}`;
@@ -50,11 +49,8 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
         )
         .subscribe((status: string) => {
           console.log('Contacts subscription status:', status);
-          if (status === 'SUBSCRIBED') {
-            isSubscribed = true;
-          } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+          if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
             globalChannel = null;
-            isSubscribed = false;
           }
         });
     }
@@ -66,10 +62,17 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
       // Only remove the global channel if no more subscribers
       if (subscribers.size === 0 && globalChannel) {
         console.log('Cleaning up global contacts subscription');
-        globalChannel.unsubscribe();
-        supabase.removeChannel(globalChannel);
+        try {
+          globalChannel.unsubscribe();
+        } catch (error) {
+          console.log('Error unsubscribing from contacts channel:', error);
+        }
+        try {
+          supabase.removeChannel(globalChannel);
+        } catch (error) {
+          console.log('Error removing contacts channel:', error);
+        }
         globalChannel = null;
-        isSubscribed = false;
       }
     };
   }, [user?.id]);
