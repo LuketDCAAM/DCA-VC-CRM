@@ -3,76 +3,78 @@ import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-// Global state
-let globalChannel: ReturnType<typeof supabase.channel> | null = null;
-let subscribers: Set<() => void> = new Set();
-let hasSubscribed = false;
+// Global map to store channels keyed by userId
+const channelsMap: Record<string, any> = {};
+const subscribersMap: Record<string, Set<() => void>> = {};
+
+// Helper to get or create a singleton channel per userId for 'contacts' table
+function getOrCreateContactsChannel(userId: string) {
+  if (!channelsMap[userId]) {
+    const channel = supabase.channel(`contacts-global-${userId}`);
+
+    channel.on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'contacts' },
+      () => {
+        // Notify all subscribers for this userId
+        if (subscribersMap[userId]) {
+          subscribersMap[userId].forEach((callback) => callback());
+        }
+      }
+    );
+
+    channelsMap[userId] = channel;
+    subscribersMap[userId] = new Set();
+  }
+  return channelsMap[userId];
+}
 
 export function useContactsSubscription(user: User | null, refetch: () => void) {
   const refetchRef = useRef(refetch);
-  refetchRef.current = refetch;
+
+  // Keep refetch updated
+  useEffect(() => {
+    refetchRef.current = refetch;
+  }, [refetch]);
 
   useEffect(() => {
     if (!user) return;
 
-    // Wrap the refetch so we can call it later
-    const notify = () => {
+    const userId = user.id;
+    const channel = getOrCreateContactsChannel(userId);
+
+    // Add this component's refetch function to subscribers set
+    const callback = () => {
       if (refetchRef.current) {
         refetchRef.current();
       }
     };
+    subscribersMap[userId].add(callback);
 
-    subscribers.add(notify);
-
-    // If there's no channel, create one
-    if (!globalChannel) {
-      const channelName = `contacts-global-${user.id}`;
-      console.log('Creating new channel:', channelName);
-      globalChannel = supabase.channel(channelName);
+    // Subscribe if not subscribed yet
+    if (!channel.isSubscribed) {
+      channel.subscribe((status: string) => {
+        console.log(`Contacts subscription status for user ${userId}:`, status);
+        if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+          delete channelsMap[userId];
+          delete subscribersMap[userId];
+        }
+      });
+      channel.isSubscribed = true;
     }
 
-    // Only subscribe once
-    if (globalChannel && !hasSubscribed) {
-      hasSubscribed = true;
-
-      globalChannel
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'contacts',
-          },
-          () => {
-            console.log('Contacts change received. Notifying all subscribers...');
-            subscribers.forEach((fn) => fn());
-          }
-        )
-        .subscribe((status: string) => {
-          console.log('Contacts channel status:', status);
-          if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-            globalChannel = null;
-            hasSubscribed = false;
-          }
-        });
-    }
-
-    // Clean up this hook's subscription
     return () => {
-      subscribers.delete(notify);
+      // Remove this subscriber's callback
+      subscribersMap[userId].delete(callback);
 
-      // If no more components are listening, clean up the whole channel
-      if (subscribers.size === 0 && globalChannel) {
-        console.log('Unsubscribing from global contacts channel...');
-        globalChannel
-          .unsubscribe()
-          .then(() => {
-            if (globalChannel) supabase.removeChannel(globalChannel);
-          })
-          .catch((err) => console.warn('Error unsubscribing:', err));
-
-        globalChannel = null;
-        hasSubscribed = false;
+      // If no subscribers left, unsubscribe and clean up
+      if (subscribersMap[userId].size === 0) {
+        if (channel.isSubscribed) {
+          channel.unsubscribe();
+          channel.isSubscribed = false;
+        }
+        delete channelsMap[userId];
+        delete subscribersMap[userId];
       }
     };
   }, [user?.id]);
