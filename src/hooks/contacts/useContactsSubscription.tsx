@@ -3,10 +3,10 @@ import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-// Globals
-let globalChannel: any = null;
-let isSubscribed = false;
+// Global state
+let globalChannel: ReturnType<typeof supabase.channel> | null = null;
 let subscribers: Set<() => void> = new Set();
+let hasSubscribed = false;
 
 export function useContactsSubscription(user: User | null, refetch: () => void) {
   const refetchRef = useRef(refetch);
@@ -15,6 +15,7 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
   useEffect(() => {
     if (!user) return;
 
+    // Wrap the refetch so we can call it later
     const notify = () => {
       if (refetchRef.current) {
         refetchRef.current();
@@ -23,16 +24,17 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
 
     subscribers.add(notify);
 
-    // Setup channel once
+    // If there's no channel, create one
     if (!globalChannel) {
       const channelName = `contacts-global-${user.id}`;
-      console.log('Creating contacts channel:', channelName);
+      console.log('Creating new channel:', channelName);
       globalChannel = supabase.channel(channelName);
     }
 
-    // Subscribe once
-    if (!isSubscribed && globalChannel) {
-      console.log('Subscribing to contacts channel...');
+    // Only subscribe once
+    if (globalChannel && !hasSubscribed) {
+      hasSubscribed = true;
+
       globalChannel
         .on(
           'postgres_changes',
@@ -42,34 +44,35 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
             table: 'contacts',
           },
           () => {
-            console.log('Contacts change detected, notifying subscribers');
-            subscribers.forEach(fn => fn());
+            console.log('Contacts change received. Notifying all subscribers...');
+            subscribers.forEach((fn) => fn());
           }
         )
         .subscribe((status: string) => {
-          console.log('Contacts subscription status:', status);
-          if (status === 'SUBSCRIBED') isSubscribed = true;
+          console.log('Contacts channel status:', status);
           if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
             globalChannel = null;
-            isSubscribed = false;
+            hasSubscribed = false;
           }
         });
     }
 
-    // Cleanup
+    // Clean up this hook's subscription
     return () => {
       subscribers.delete(notify);
 
+      // If no more components are listening, clean up the whole channel
       if (subscribers.size === 0 && globalChannel) {
-        console.log('Cleaning up contacts subscription...');
-        try {
-          globalChannel.unsubscribe();
-          supabase.removeChannel(globalChannel);
-        } catch (e) {
-          console.warn('Error cleaning up contacts channel:', e);
-        }
+        console.log('Unsubscribing from global contacts channel...');
+        globalChannel
+          .unsubscribe()
+          .then(() => {
+            if (globalChannel) supabase.removeChannel(globalChannel);
+          })
+          .catch((err) => console.warn('Error unsubscribing:', err));
+
         globalChannel = null;
-        isSubscribed = false;
+        hasSubscribed = false;
       }
     };
   }, [user?.id]);
