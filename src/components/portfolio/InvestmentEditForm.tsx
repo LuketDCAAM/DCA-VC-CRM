@@ -43,7 +43,18 @@ type InvestmentFormValues = z.infer<typeof investmentSchema>;
 export function InvestmentEditForm({ companyId, investments, onSave, onCancel }: InvestmentEditFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [editingInvestments, setEditingInvestments] = React.useState(investments);
+  
+  // Convert investments to display format (cents to dollars for editing)
+  const [editingInvestments, setEditingInvestments] = React.useState(() =>
+    investments.map(inv => ({
+      ...inv,
+      // Convert from cents to dollars for display
+      amount_invested: inv.amount_invested / 100,
+      post_money_valuation: inv.post_money_valuation ? inv.post_money_valuation / 100 : null,
+      price_per_share: inv.price_per_share ? inv.price_per_share / 100 : null,
+      revenue_at_investment: inv.revenue_at_investment ? inv.revenue_at_investment / 100 : null,
+    }))
+  );
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   const addNewInvestment = () => {
@@ -96,10 +107,10 @@ export function InvestmentEditForm({ companyId, investments, onSave, onCancel }:
         const investmentData = {
           portfolio_company_id: companyId,
           investment_date: investment.investment_date,
-          amount_invested: investment.amount_invested * 100, // Convert to cents
-          post_money_valuation: investment.post_money_valuation ? investment.post_money_valuation * 100 : null,
-          price_per_share: investment.price_per_share ? investment.price_per_share * 100 : null,
-          revenue_at_investment: investment.revenue_at_investment ? investment.revenue_at_investment * 100 : null,
+          amount_invested: Math.round(investment.amount_invested * 100), // Convert to cents
+          post_money_valuation: investment.post_money_valuation ? Math.round(investment.post_money_valuation * 100) : null,
+          price_per_share: investment.price_per_share ? Math.round(investment.price_per_share * 100) : null,
+          revenue_at_investment: investment.revenue_at_investment ? Math.round(investment.revenue_at_investment * 100) : null,
           ownership_percentage: investment.ownership_percentage,
         };
 
@@ -197,8 +208,8 @@ export function InvestmentEditForm({ companyId, investments, onSave, onCancel }:
                   <Input
                     type="number"
                     placeholder="0"
-                    value={investment.amount_invested / 100}
-                    onChange={(e) => updateInvestment(index, 'amount_invested', parseFloat(e.target.value) * 100 || 0)}
+                    value={investment.amount_invested || ''}
+                    onChange={(e) => updateInvestment(index, 'amount_invested', parseFloat(e.target.value) || 0)}
                   />
                 </div>
                 <div>
@@ -206,8 +217,8 @@ export function InvestmentEditForm({ companyId, investments, onSave, onCancel }:
                   <Input
                     type="number"
                     placeholder="0"
-                    value={investment.post_money_valuation ? investment.post_money_valuation / 100 : ''}
-                    onChange={(e) => updateInvestment(index, 'post_money_valuation', e.target.value ? parseFloat(e.target.value) * 100 : null)}
+                    value={investment.post_money_valuation || ''}
+                    onChange={(e) => updateInvestment(index, 'post_money_valuation', e.target.value ? parseFloat(e.target.value) : null)}
                   />
                 </div>
                 <div>
@@ -216,8 +227,8 @@ export function InvestmentEditForm({ companyId, investments, onSave, onCancel }:
                     type="number"
                     step="0.01"
                     placeholder="0.00"
-                    value={investment.price_per_share ? investment.price_per_share / 100 : ''}
-                    onChange={(e) => updateInvestment(index, 'price_per_share', e.target.value ? parseFloat(e.target.value) * 100 : null)}
+                    value={investment.price_per_share || ''}
+                    onChange={(e) => updateInvestment(index, 'price_per_share', e.target.value ? parseFloat(e.target.value) : null)}
                   />
                 </div>
                 <div>
@@ -225,8 +236,8 @@ export function InvestmentEditForm({ companyId, investments, onSave, onCancel }:
                   <Input
                     type="number"
                     placeholder="0"
-                    value={investment.revenue_at_investment ? investment.revenue_at_investment / 100 : ''}
-                    onChange={(e) => updateInvestment(index, 'revenue_at_investment', e.target.value ? parseFloat(e.target.value) * 100 : null)}
+                    value={investment.revenue_at_investment || ''}
+                    onChange={(e) => updateInvestment(index, 'revenue_at_investment', e.target.value ? parseFloat(e.target.value) : null)}
                   />
                 </div>
                 <div>
