@@ -1,87 +1,78 @@
-
 import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-// Global subscription state to prevent multiple subscriptions
+// Global store for the channel and state
 let globalChannel: any = null;
-let subscribers: Set<() => void> = new Set();
-let globalSubscribed = false;
+let isSubscribed = false;
+const subscribers: Set<() => void> = new Set();
 
 export function useDealsSubscription(userId: string | undefined, queryKey: (string | undefined)[]) {
   const queryClient = useQueryClient();
-  const queryKeyRef = useRef<(string | undefined)[]>();
+  const queryKeyRef = useRef(queryKey);
 
-  // Store the query key in ref so it can be used from subscription
+  // Always keep latest queryKey
   queryKeyRef.current = queryKey;
 
   useEffect(() => {
     if (!userId) return;
 
-    // Add this instance's invalidation function to subscribers
-    const invalidateFunction = () => {
+    // Function to invalidate react-query cache
+    const invalidate = () => {
       if (queryKeyRef.current) {
         console.log('Invalidating deals query...');
         queryClient.invalidateQueries({ queryKey: queryKeyRef.current });
       }
     };
-    subscribers.add(invalidateFunction);
 
-    // Set up global subscription only if it doesn't exist
-    if (!globalChannel || !globalSubscribed) {
-  console.log('Setting up global deals subscription');
+    // Add this hook's invalidate function to the global set
+    subscribers.add(invalidate);
 
-  const channelName = `deals-global-${userId}`;
-  globalChannel = supabase.channel(channelName);
+    // Only create and subscribe once
+    if (!globalChannel) {
+      const channelName = `deals-global-${userId}`;
+      globalChannel = supabase.channel(channelName);
 
-  globalChannel
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'deals',
-        filter: `created_by=eq.${userId}`,
-      },
-      (payload: any) => {
-        console.log('=== DEALS REALTIME UPDATE ===');
-        console.log('Event:', payload.eventType);
-        console.log('Table:', payload.table);
-        console.log('Payload:', payload);
+      globalChannel
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'deals',
+            filter: `created_by=eq.${userId}`,
+          },
+          (payload: any) => {
+            console.log('🔥 DEALS REALTIME UPDATE');
+            subscribers.forEach(fn => fn());
+          }
+        )
+        .subscribe((status: string) => {
+          console.log('Deals subscription status:', status);
+          if (status === 'SUBSCRIBED') {
+            isSubscribed = true;
+          } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+            globalChannel = null;
+            isSubscribed = false;
+          }
+        });
+    }
 
-        // Notify all subscribers
-        subscribers.forEach(subscriber => subscriber());
-      }
-    )
-    .subscribe((status: string) => {
-      console.log('Deals subscription status:', status);
-      if (status === 'SUBSCRIBED') {
-        globalSubscribed = true;
-      }
-      if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-        globalChannel = null;
-        globalSubscribed = false;
-      }
-    });
-}
-
+    // 🧼 Cleanup: remove this hook’s subscriber
     return () => {
-      subscribers.delete(invalidateFunction);
-      
-      // Only remove the global channel if no more subscribers
+      subscribers.delete(invalidate);
+
       if (subscribers.size === 0 && globalChannel) {
-  console.log('Cleaning up global deals subscription');
-  try {
-    globalChannel.unsubscribe();
-    supabase.removeChannel(globalChannel);
-  } catch (error) {
-    console.log('Error cleaning up channel:', error);
-  }
-  globalChannel = null;
-  globalSubscribed = false;
-}
+        console.log('Cleaning up global deals subscription');
+        try {
+          globalChannel.unsubscribe();
+          supabase.removeChannel(globalChannel);
+        } catch (error) {
+          console.warn('Error cleaning up deals subscription:', error);
+        }
+        globalChannel = null;
+        isSubscribed = false;
+      }
     };
   }, [userId, queryClient]);
-
-  return useRef(globalChannel);
 }
