@@ -6,8 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 // Global subscription state to prevent multiple subscriptions
 let globalChannel: any = null;
 let subscribers: Set<() => void> = new Set();
-let isSubscribing = false;
-let isSubscribed = false;
+let subscriptionPromise: Promise<void> | null = null;
 
 export function useDealsSubscription(userId: string | undefined, queryKey: (string | undefined)[]) {
   const queryClient = useQueryClient();
@@ -28,44 +27,44 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
     };
     subscribers.add(invalidateFunction);
 
-    // Set up global subscription only if it doesn't exist and we're not already subscribing
-    if (!globalChannel && userId && !isSubscribing && !isSubscribed) {
+    // Set up global subscription only if it doesn't exist
+    if (!globalChannel && !subscriptionPromise) {
       console.log('Setting up global deals subscription');
-      isSubscribing = true;
       
       const channelName = `deals-global-${userId}`;
-      
       globalChannel = supabase.channel(channelName);
       
-      globalChannel
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'deals',
-            filter: `created_by=eq.${userId}`,
-          },
-          (payload: any) => {
-            console.log('=== DEALS REALTIME UPDATE ===');
-            console.log('Event:', payload.eventType);
-            console.log('Table:', payload.table);
-            console.log('Payload:', payload);
-            
-            // Notify all subscribers to invalidate queries
-            subscribers.forEach(subscriber => subscriber());
-          }
-        )
-        .subscribe((status: string) => {
-          console.log('Deals subscription status:', status);
-          if (status === 'SUBSCRIBED') {
-            isSubscribed = true;
-            isSubscribing = false;
-          } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-            isSubscribed = false;
-            isSubscribing = false;
-          }
-        });
+      // Create subscription promise to prevent multiple simultaneous subscriptions
+      subscriptionPromise = new Promise((resolve) => {
+        globalChannel
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'deals',
+              filter: `created_by=eq.${userId}`,
+            },
+            (payload: any) => {
+              console.log('=== DEALS REALTIME UPDATE ===');
+              console.log('Event:', payload.eventType);
+              console.log('Table:', payload.table);
+              console.log('Payload:', payload);
+              
+              // Notify all subscribers to invalidate queries
+              subscribers.forEach(subscriber => subscriber());
+            }
+          )
+          .subscribe((status: string) => {
+            console.log('Deals subscription status:', status);
+            if (status === 'SUBSCRIBED') {
+              resolve();
+            } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+              globalChannel = null;
+              subscriptionPromise = null;
+            }
+          });
+      });
     }
 
     return () => {
@@ -76,8 +75,7 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
         console.log('Cleaning up global deals subscription');
         supabase.removeChannel(globalChannel);
         globalChannel = null;
-        isSubscribed = false;
-        isSubscribing = false;
+        subscriptionPromise = null;
       }
     };
   }, [userId, queryClient]);

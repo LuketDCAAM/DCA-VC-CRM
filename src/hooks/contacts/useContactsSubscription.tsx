@@ -6,8 +6,7 @@ import type { User } from '@supabase/supabase-js';
 // Global subscription state to prevent multiple subscriptions
 let globalChannel: any = null;
 let subscribers: Set<() => void> = new Set();
-let isSubscribing = false;
-let isSubscribed = false;
+let subscriptionPromise: Promise<void> | null = null;
 
 export function useContactsSubscription(user: User | null, refetch: () => void) {
   const refetchRef = useRef<() => void>();
@@ -28,39 +27,39 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
     };
     subscribers.add(refetchFunction);
 
-    // Set up global subscription only if it doesn't exist and we're not already subscribing
-    if (!globalChannel && user && !isSubscribing && !isSubscribed) {
+    // Set up global subscription only if it doesn't exist
+    if (!globalChannel && !subscriptionPromise) {
       console.log('Setting up global contacts subscription');
-      isSubscribing = true;
       
       const channelName = `contacts-global-${user.id}`;
-      
       globalChannel = supabase.channel(channelName);
       
-      globalChannel
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'contacts'
-          },
-          () => {
-            console.log('Contacts change detected, notifying subscribers');
-            // Notify all subscribers to refetch
-            subscribers.forEach(subscriber => subscriber());
-          }
-        )
-        .subscribe((status: string) => {
-          console.log('Contacts subscription status:', status);
-          if (status === 'SUBSCRIBED') {
-            isSubscribed = true;
-            isSubscribing = false;
-          } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-            isSubscribed = false;
-            isSubscribing = false;
-          }
-        });
+      // Create subscription promise to prevent multiple simultaneous subscriptions
+      subscriptionPromise = new Promise((resolve) => {
+        globalChannel
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'contacts'
+            },
+            () => {
+              console.log('Contacts change detected, notifying subscribers');
+              // Notify all subscribers to refetch
+              subscribers.forEach(subscriber => subscriber());
+            }
+          )
+          .subscribe((status: string) => {
+            console.log('Contacts subscription status:', status);
+            if (status === 'SUBSCRIBED') {
+              resolve();
+            } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+              globalChannel = null;
+              subscriptionPromise = null;
+            }
+          });
+      });
     }
 
     // Cleanup function
@@ -72,8 +71,7 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
         console.log('Cleaning up global contacts subscription');
         supabase.removeChannel(globalChannel);
         globalChannel = null;
-        isSubscribed = false;
-        isSubscribing = false;
+        subscriptionPromise = null;
       }
     };
   }, [user?.id]);
