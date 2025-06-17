@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Edit, Building2, DollarSign, TrendingUp, Calendar, Users, FileText } from 'lucide-react';
 import { Database } from '@/integrations/supabase/types';
 import { PortfolioEditForm } from './PortfolioEditForm';
+import { InvestmentEditForm } from './InvestmentEditForm';
+import { PerformanceEditForm } from './PerformanceEditForm';
 
 type CompanyStatus = Database['public']['Enums']['company_status'];
 
@@ -69,19 +72,25 @@ const getStatusColor = (status: CompanyStatus) => {
 };
 
 export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUpdated }: PortfolioDetailDialogProps) {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditingCompany, setIsEditingCompany] = useState(false);
+  const [isEditingInvestments, setIsEditingInvestments] = useState(false);
+  const [isEditingPerformance, setIsEditingPerformance] = useState(false);
 
   if (!company) return null;
 
   const handleSave = () => {
-    setIsEditing(false);
+    setIsEditingCompany(false);
+    setIsEditingInvestments(false);
+    setIsEditingPerformance(false);
     if (onCompanyUpdated) {
       onCompanyUpdated();
     }
   };
 
   const handleCancel = () => {
-    setIsEditing(false);
+    setIsEditingCompany(false);
+    setIsEditingInvestments(false);
+    setIsEditingPerformance(false);
   };
 
   const totalInvested = company.investments.reduce((sum, inv) => sum + inv.amount_invested, 0);
@@ -93,12 +102,42 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
   const originalValue = company.investments.find(inv => inv.post_money_valuation)?.post_money_valuation;
   const valueMultiple = currentValue && originalValue ? currentValue / originalValue : null;
 
-  if (isEditing) {
+  if (isEditingCompany) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <PortfolioEditForm
             company={company}
+            onSave={handleSave}
+            onCancel={handleCancel}
+          />
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (isEditingInvestments) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <InvestmentEditForm
+            companyId={company.id}
+            investments={company.investments}
+            onSave={handleSave}
+            onCancel={handleCancel}
+          />
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (isEditingPerformance) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <PerformanceEditForm
+            companyId={company.id}
+            currentValuation={company.current_valuation}
             onSave={handleSave}
             onCancel={handleCancel}
           />
@@ -128,7 +167,7 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
                 ))}
               </div>
             </div>
-            <Button onClick={() => setIsEditing(true)} size="sm">
+            <Button onClick={() => setIsEditingCompany(true)} size="sm">
               <Edit className="h-4 w-4 mr-2" />
               Edit Company
             </Button>
@@ -233,6 +272,14 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
           </TabsContent>
 
           <TabsContent value="investments" className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Investment History</h3>
+              <Button onClick={() => setIsEditingInvestments(true)} size="sm">
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Investments
+              </Button>
+            </div>
+            
             {company.investments.length > 0 ? (
               company.investments
                 .sort((a, b) => new Date(b.investment_date).getTime() - new Date(a.investment_date).getTime())
@@ -281,6 +328,14 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
           </TabsContent>
 
           <TabsContent value="performance" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Performance Metrics</h3>
+              <Button onClick={() => setIsEditingPerformance(true)} size="sm">
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Performance
+              </Button>
+            </div>
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
