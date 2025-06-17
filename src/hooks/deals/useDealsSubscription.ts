@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 // Global subscription state to prevent multiple subscriptions
 let globalChannel: any = null;
 let subscribers: Set<() => void> = new Set();
+let globalSubscribed = false;
 
 export function useDealsSubscription(userId: string | undefined, queryKey: (string | undefined)[]) {
   const queryClient = useQueryClient();
@@ -27,38 +28,42 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
     subscribers.add(invalidateFunction);
 
     // Set up global subscription only if it doesn't exist
-    if (!globalChannel) {
-      console.log('Setting up global deals subscription');
-      
-      const channelName = `deals-global-${userId}`;
-      globalChannel = supabase.channel(channelName);
-      
-      globalChannel
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'deals',
-            filter: `created_by=eq.${userId}`,
-          },
-          (payload: any) => {
-            console.log('=== DEALS REALTIME UPDATE ===');
-            console.log('Event:', payload.eventType);
-            console.log('Table:', payload.table);
-            console.log('Payload:', payload);
-            
-            // Notify all subscribers to invalidate queries
-            subscribers.forEach(subscriber => subscriber());
-          }
-        )
-        .subscribe((status: string) => {
-          console.log('Deals subscription status:', status);
-          if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-            globalChannel = null;
-          }
-        });
-    }
+    if (!globalChannel || !globalSubscribed) {
+  console.log('Setting up global deals subscription');
+
+  const channelName = `deals-global-${userId}`;
+  globalChannel = supabase.channel(channelName);
+
+  globalChannel
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'deals',
+        filter: `created_by=eq.${userId}`,
+      },
+      (payload: any) => {
+        console.log('=== DEALS REALTIME UPDATE ===');
+        console.log('Event:', payload.eventType);
+        console.log('Table:', payload.table);
+        console.log('Payload:', payload);
+
+        // Notify all subscribers
+        subscribers.forEach(subscriber => subscriber());
+      }
+    )
+    .subscribe((status: string) => {
+      console.log('Deals subscription status:', status);
+      if (status === 'SUBSCRIBED') {
+        globalSubscribed = true;
+      }
+      if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+        globalChannel = null;
+        globalSubscribed = false;
+      }
+    });
+}
 
     return () => {
       subscribers.delete(invalidateFunction);
