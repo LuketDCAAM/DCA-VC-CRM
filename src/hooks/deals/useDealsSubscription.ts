@@ -15,19 +15,22 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
   useEffect(() => {
     if (!userId) return;
 
+    // Ensure subscriber set exists
     if (!subscribersByUserId[userId]) {
       subscribersByUserId[userId] = new Set();
     }
 
-    // Add this instance's invalidation function
     const invalidateFunction = () => {
       if (queryKeyRef.current) {
         console.log('Invalidating deals query...');
         queryClient.invalidateQueries({ queryKey: queryKeyRef.current });
       }
     };
+
+    // Add this hook's invalidation function
     subscribersByUserId[userId].add(invalidateFunction);
 
+    // Only create Supabase channel once
     if (!channelsByUserId[userId]) {
       const channel = supabase.channel(`deals-global-${userId}`);
 
@@ -37,40 +40,3 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
           {
             event: '*',
             schema: 'public',
-            table: 'deals',
-            filter: `created_by=eq.${userId}`,
-          },
-          (payload: any) => {
-            console.log('=== DEALS REALTIME UPDATE ===', payload);
-            subscribersByUserId[userId].forEach(sub => sub());
-          }
-        )
-        .subscribe((status) => {
-          console.log('Deals subscription status:', status);
-          if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-            delete channelsByUserId[userId];
-            delete subscribersByUserId[userId];
-          }
-        });
-
-      channelsByUserId[userId] = channel;
-    }
-
-    return () => {
-      subscribersByUserId[userId].delete(invalidateFunction);
-
-      if (
-        subscribersByUserId[userId].size === 0 &&
-        channelsByUserId[userId]
-      ) {
-        channelsByUserId[userId].unsubscribe();
-        supabase.removeChannel(channelsByUserId[userId]);
-        delete channelsByUserId[userId];
-        delete subscribersByUserId[userId];
-      }
-    };
-  }, [userId, queryClient]);
-
-  // Not returning anything useful here, can return null or the channel if needed
-  return null;
-}
