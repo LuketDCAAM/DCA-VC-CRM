@@ -119,7 +119,7 @@ export function ColumnSelector({ onColumnsChange }: ColumnSelectorProps) {
                               checked={column.visible}
                               onCheckedChange={() => handleToggleVisibility(column.key)}
                             />
-                            <span className="ml-2">{column.title}</span>
+                            <span className="ml-2">{column.label}</span>
                           </div>
 
                           {/* Optional: Add reset visibility button or info here */}
