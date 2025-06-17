@@ -30,7 +30,7 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
     if (!globalChannel) {
       console.log('Setting up global deals subscription');
       
-      const channelName = `deals-global-${user.id}`;
+      const channelName = `deals-global-${userId}`;
       globalChannel = supabase.channel(channelName);
       
       globalChannel
