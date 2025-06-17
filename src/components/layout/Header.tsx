@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Building2, Users, DollarSign, BarChart3, LogOut, Menu } from 'lucide-react';
+import { Building2, Users, DollarSign, Contact, BarChart3, LogOut, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -16,6 +15,7 @@ const navigation = [
   { name: 'Deals', href: '/deals', icon: DollarSign },
   { name: 'Portfolio', href: '/portfolio', icon: Building2 },
   { name: 'Investors', href: '/investors', icon: Users },
+  { name: 'Contacts', href: '/contacts', icon: Contact },
 ];
 
 export default function Header() {
