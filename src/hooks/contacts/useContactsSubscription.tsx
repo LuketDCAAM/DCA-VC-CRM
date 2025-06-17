@@ -3,78 +3,63 @@ import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-// Global map to store channels keyed by userId
-const channelsMap: Record<string, any> = {};
-const subscribersMap: Record<string, Set<() => void>> = {};
-
-// Helper to get or create a singleton channel per userId for 'contacts' table
-function getOrCreateContactsChannel(userId: string) {
-  if (!channelsMap[userId]) {
-    const channel = supabase.channel(`contacts-global-${userId}`);
-
-    channel.on(
-      'postgres_changes',
-      { event: '*', schema: 'public', table: 'contacts' },
-      () => {
-        // Notify all subscribers for this userId
-        if (subscribersMap[userId]) {
-          subscribersMap[userId].forEach((callback) => callback());
-        }
-      }
-    );
-
-    channelsMap[userId] = channel;
-    subscribersMap[userId] = new Set();
-  }
-  return channelsMap[userId];
-}
+// Cache of active channels by user ID
+const channelsByUserId: Record<string, any> = {};
+const subscribersByUserId: Record<string, Set<() => void>> = {};
 
 export function useContactsSubscription(user: User | null, refetch: () => void) {
   const refetchRef = useRef(refetch);
-
-  // Keep refetch updated
-  useEffect(() => {
-    refetchRef.current = refetch;
-  }, [refetch]);
+  refetchRef.current = refetch;
 
   useEffect(() => {
     if (!user) return;
 
-    const userId = user.id;
-    const channel = getOrCreateContactsChannel(userId);
+    // Initialize subscriber set for this user
+    if (!subscribersByUserId[user.id]) {
+      subscribersByUserId[user.id] = new Set();
+    }
 
-    // Add this component's refetch function to subscribers set
-    const callback = () => {
+    // Add current refetch to subscribers for this user
+    const refetchFunction = () => {
       if (refetchRef.current) {
         refetchRef.current();
       }
     };
-    subscribersMap[userId].add(callback);
+    subscribersByUserId[user.id].add(refetchFunction);
 
-    // Subscribe if not subscribed yet
-    if (!channel.isSubscribed) {
-      channel.subscribe((status: string) => {
-        console.log(`Contacts subscription status for user ${userId}:`, status);
-        if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-          delete channelsMap[userId];
-          delete subscribersMap[userId];
-        }
-      });
-      channel.isSubscribed = true;
+    // If channel for this user doesn't exist, create and subscribe
+    if (!channelsByUserId[user.id]) {
+      const channel = supabase.channel(`contacts-global-${user.id}`);
+
+      channel
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'contacts' },
+          () => {
+            subscribersByUserId[user.id].forEach(sub => sub());
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+            delete channelsByUserId[user.id];
+            delete subscribersByUserId[user.id];
+          }
+        });
+
+      channelsByUserId[user.id] = channel;
     }
 
     return () => {
-      // Remove this subscriber's callback
-      subscribersMap[userId].delete(callback);
+      subscribersByUserId[user.id].delete(refetchFunction);
 
-      // If no subscribers left, unsubscribe and clean up
-      if (subscribersMap[userId].size === 0) {
-        if (channel.isSubscribed) {
-          channel.unsubscribe();
-          channel.isSubscribed = false;
-        }
-        delete channelsMap[userId];
-        delete subscribersMap[userId];
+      if (
+        subscribersByUserId[user.id].size === 0 &&
+        channelsByUserId[user.id]
+      ) {
+        channelsByUserId[user.id].unsubscribe();
+        supabase.removeChannel(channelsByUserId[user.id]);
+        delete channelsByUserId[user.id];
+        delete subscribersByUserId[user.id];
       }
     };
   }, [user?.id]);
