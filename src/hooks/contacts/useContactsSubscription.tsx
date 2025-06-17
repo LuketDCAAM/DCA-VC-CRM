@@ -6,6 +6,7 @@ import type { User } from '@supabase/supabase-js';
 // Global subscription state to prevent multiple subscriptions
 let globalChannel: any = null;
 let subscribers: Set<() => void> = new Set();
+let isSubscribing = false;
 let isSubscribed = false;
 
 export function useContactsSubscription(user: User | null, refetch: () => void) {
@@ -27,9 +28,11 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
     };
     subscribers.add(refetchFunction);
 
-    // Set up global subscription only if it doesn't exist and hasn't been subscribed
-    if (!globalChannel && user && !isSubscribed) {
+    // Set up global subscription only if it doesn't exist and we're not already subscribing
+    if (!globalChannel && user && !isSubscribing && !isSubscribed) {
       console.log('Setting up global contacts subscription');
+      isSubscribing = true;
+      
       const channelName = `contacts-global-${user.id}`;
       
       globalChannel = supabase.channel(channelName);
@@ -52,6 +55,10 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
           console.log('Contacts subscription status:', status);
           if (status === 'SUBSCRIBED') {
             isSubscribed = true;
+            isSubscribing = false;
+          } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+            isSubscribed = false;
+            isSubscribing = false;
           }
         });
     }
@@ -66,6 +73,7 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
         supabase.removeChannel(globalChannel);
         globalChannel = null;
         isSubscribed = false;
+        isSubscribing = false;
       }
     };
   }, [user?.id]);
