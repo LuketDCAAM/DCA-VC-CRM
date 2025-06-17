@@ -7,7 +7,10 @@ import { supabase } from '@/integrations/supabase/client';
 const channelsByUserId: Record<string, any> = {};
 const subscribersByUserId: Record<string, Set<() => void>> = {};
 
-export function useDealsSubscription(userId: string | undefined, queryKey: (string | undefined)[]) {
+export function useDealsSubscription(
+  userId: string | undefined,
+  queryKey: (string | undefined)[]
+) {
   const queryClient = useQueryClient();
   const queryKeyRef = useRef(queryKey);
   queryKeyRef.current = queryKey;
@@ -15,7 +18,6 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
   useEffect(() => {
     if (!userId) return;
 
-    // Ensure subscriber set exists
     if (!subscribersByUserId[userId]) {
       subscribersByUserId[userId] = new Set();
     }
@@ -27,10 +29,8 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
       }
     };
 
-    // Add this hook's invalidation function
     subscribersByUserId[userId].add(invalidateFunction);
 
-    // Only create Supabase channel once
     if (!channelsByUserId[userId]) {
       const channel = supabase.channel(`deals-global-${userId}`);
 
@@ -40,3 +40,41 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
           {
             event: '*',
             schema: 'public',
+            table: 'deals',
+            filter: `created_by=eq.${userId}`,
+          },
+          (payload: any) => {
+            console.log('=== DEALS REALTIME UPDATE ===', payload);
+            subscribersByUserId[userId]?.forEach((sub) => sub());
+          }
+        )
+        .subscribe((status: string) => {
+          console.log('Deals subscription status:', status);
+          if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+            delete channelsByUserId[userId];
+            delete subscribersByUserId[userId];
+          }
+        });
+
+      channelsByUserId[userId] = channel;
+    }
+
+    return () => {
+      if (subscribersByUserId[userId]) {
+        subscribersByUserId[userId].delete(invalidateFunction);
+
+        if (
+          subscribersByUserId[userId].size === 0 &&
+          channelsByUserId[userId]
+        ) {
+          channelsByUserId[userId].unsubscribe();
+          supabase.removeChannel(channelsByUserId[userId]);
+          delete channelsByUserId[userId];
+          delete subscribersByUserId[userId];
+        }
+      }
+    };
+  }, [userId, queryClient]);
+
+  return null;
+}
