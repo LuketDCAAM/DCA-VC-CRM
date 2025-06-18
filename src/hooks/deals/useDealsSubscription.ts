@@ -3,8 +3,9 @@ import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
-// Cache only subscribers (no longer sharing channels)
+const channelsByUserId: Record<string, ReturnType<typeof supabase.channel>> = {};
 const subscribersByUserId: Record<string, Set<() => void>> = {};
+const subscribedFlags: Record<string, boolean> = {};
 
 export function useDealsSubscription(
   userId: string | undefined,
@@ -14,8 +15,6 @@ export function useDealsSubscription(
   const queryKeyRef = useRef(queryKey);
   queryKeyRef.current = queryKey;
 
-  const channelRef = useRef<any>(null);
-
   useEffect(() => {
     if (!userId) return;
 
@@ -23,49 +22,59 @@ export function useDealsSubscription(
       subscribersByUserId[userId] = new Set();
     }
 
-    const invalidateFunction = () => {
+    const invalidate = () => {
       if (queryKeyRef.current) {
-        console.log('Invalidating deals query...');
         queryClient.invalidateQueries({ queryKey: queryKeyRef.current });
       }
     };
 
-    subscribersByUserId[userId].add(invalidateFunction);
+    subscribersByUserId[userId].add(invalidate);
 
-    // Create new channel for this hook instance
-    const channel = supabase.channel(`deals-global-${userId}-${Date.now()}`);
-    channelRef.current = channel;
+    if (!channelsByUserId[userId]) {
+      const channel = supabase.channel(`deals-global-${userId}`);
+      channelsByUserId[userId] = channel;
+    }
 
-    channel
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'deals',
-          filter: `created_by=eq.${userId}`,
-        },
-        (payload: any) => {
-          console.log('=== DEALS REALTIME UPDATE ===', payload);
-          subscribersByUserId[userId]?.forEach((sub) => sub());
-        }
-      )
-      .subscribe((status: string) => {
-        console.log('Deals subscription status:', status);
-      });
+    const channel = channelsByUserId[userId];
+
+    // ✅ only subscribe once
+    if (!subscribedFlags[userId]) {
+      channel
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'deals',
+            filter: `created_by=eq.${userId}`,
+          },
+          () => {
+            subscribersByUserId[userId]?.forEach((fn) => fn());
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+            delete channelsByUserId[userId];
+            delete subscribersByUserId[userId];
+            delete subscribedFlags[userId];
+          }
+        });
+
+      subscribedFlags[userId] = true;
+    }
 
     return () => {
-      subscribersByUserId[userId].delete(invalidateFunction);
-      if (subscribersByUserId[userId].size === 0) {
-        delete subscribersByUserId[userId];
-      }
+      subscribersByUserId[userId]?.delete(invalidate);
 
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
+      if (
+        subscribersByUserId[userId]?.size === 0 &&
+        channelsByUserId[userId]
+      ) {
+        supabase.removeChannel(channelsByUserId[userId]);
+        delete channelsByUserId[userId];
+        delete subscribersByUserId[userId];
+        delete subscribedFlags[userId];
       }
     };
   }, [userId, queryClient]);
-
-  return null;
 }
