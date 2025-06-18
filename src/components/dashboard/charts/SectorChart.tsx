@@ -18,13 +18,22 @@ export function SectorChart({ data }: SectorChartProps) {
     '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57'
   ];
 
+  // Filter out any invalid data and limit to top 8
+  const validData = data.filter(item => 
+    item && 
+    typeof item.sector === 'string' && 
+    item.sector.trim() !== '' &&
+    typeof item.count === 'number' && 
+    item.count > 0
+  );
+
   // Add colors to the data and limit to top 8
-  const coloredData = data.slice(0, 8).map((item, index) => ({
+  const coloredData = validData.slice(0, 8).map((item, index) => ({
     ...item,
     fill: colors[index % colors.length]
   }));
 
-  console.log('Colored data for chart:', coloredData);
+  console.log('Processed data for chart:', coloredData);
 
   // Simple chart config for the container
   const chartConfig = {
@@ -34,7 +43,7 @@ export function SectorChart({ data }: SectorChartProps) {
     }
   };
 
-  if (!data.length) {
+  if (!coloredData.length) {
     return (
       <Card>
         <CardHeader>
@@ -54,24 +63,35 @@ export function SectorChart({ data }: SectorChartProps) {
     <Card>
       <CardHeader>
         <CardTitle>Top Sectors</CardTitle>
-        <CardDescription>Deal distribution by industry sector (Top {Math.min(data.length, 8)})</CardDescription>
+        <CardDescription>Deal distribution by industry sector (Top {coloredData.length})</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={coloredData} layout="horizontal" margin={{ left: 80, right: 20, top: 10, bottom: 10 }}>
-              <XAxis type="number" />
+            <BarChart 
+              data={coloredData} 
+              layout="horizontal" 
+              margin={{ left: 80, right: 20, top: 10, bottom: 10 }}
+            >
+              <XAxis 
+                type="number" 
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: '#666' }}
+              />
               <YAxis 
                 type="category" 
                 dataKey="sector" 
                 width={75}
                 fontSize={11}
                 interval={0}
-                tick={{ textAnchor: 'end' }}
+                tick={{ textAnchor: 'end', fontSize: 11, fill: '#666' }}
+                axisLine={false}
+                tickLine={false}
               />
               <ChartTooltip 
                 content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
+                  if (active && payload && payload.length > 0) {
                     const data = payload[0].payload;
                     return (
                       <div className="bg-background border rounded-lg p-3 shadow-lg">
@@ -88,6 +108,7 @@ export function SectorChart({ data }: SectorChartProps) {
               <Bar 
                 dataKey="count" 
                 radius={[0, 4, 4, 0]}
+                fill="#8884d8"
               />
             </BarChart>
           </ResponsiveContainer>
