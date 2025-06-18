@@ -2,7 +2,7 @@
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Grid3X3, Table, Kanban } from 'lucide-react';
-import { ViewMode } from './DealsPageContent';
+import { ViewMode } from './views/DealsViewRenderer';
 
 interface DealsViewTabsProps {
   viewMode: ViewMode;
