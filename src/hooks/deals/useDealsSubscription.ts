@@ -67,8 +67,17 @@ export function useDealsSubscription(
           subscribersByUserId[userId].size === 0 &&
           channelsByUserId[userId]
         ) {
-          channelsByUserId[userId].unsubscribe();
-          supabase.removeChannel(channelsByUserId[userId]);
+          // Add null check before calling unsubscribe
+          const channel = channelsByUserId[userId];
+          if (channel && typeof channel.unsubscribe === 'function') {
+            channel.unsubscribe();
+          }
+          
+          // Add null check before removing channel
+          if (channel) {
+            supabase.removeChannel(channel);
+          }
+          
           delete channelsByUserId[userId];
           delete subscribersByUserId[userId];
         }

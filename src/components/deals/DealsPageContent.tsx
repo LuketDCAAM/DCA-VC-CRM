@@ -65,6 +65,9 @@ export function DealsPageContent({
   exportColumns,
   onCSVImport,
 }: DealsPageContentProps) {
+  console.log('DealsPageContent - showAdvancedFilters:', showAdvancedFilters);
+  console.log('DealsPageContent - activeFilters:', activeFilters);
+
   const filterOptions: FilterOption[] = [
     {
       key: 'pipeline_stage',

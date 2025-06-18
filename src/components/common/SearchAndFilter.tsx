@@ -38,6 +38,10 @@ export function SearchAndFilter({
   showAdvanced = false,
   onToggleAdvanced
 }: SearchAndFilterProps) {
+  console.log('SearchAndFilter - filters received:', filters);
+  console.log('SearchAndFilter - activeFilters:', activeFilters);
+  console.log('SearchAndFilter - showAdvanced:', showAdvanced);
+
   const activeFilterCount = Object.keys(activeFilters).filter(key => 
     activeFilters[key] && activeFilters[key] !== 'all' && activeFilters[key] !== ''
   ).length;
@@ -96,7 +100,10 @@ export function SearchAndFilter({
                   {filter.type === 'select' && (
                     <Select
                       value={activeFilters[filter.key] || 'all'}
-                      onValueChange={(value) => onFilterChange(filter.key, value)}
+                      onValueChange={(value) => {
+                        console.log(`Filter change - ${filter.key}:`, value);
+                        onFilterChange(filter.key, value);
+                      }}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder={`All ${filter.label}`} />
@@ -115,7 +122,10 @@ export function SearchAndFilter({
                     <Input
                       type="date"
                       value={activeFilters[filter.key] || ''}
-                      onChange={(e) => onFilterChange(filter.key, e.target.value)}
+                      onChange={(e) => {
+                        console.log(`Date filter change - ${filter.key}:`, e.target.value);
+                        onFilterChange(filter.key, e.target.value);
+                      }}
                     />
                   )}
                   {filter.type === 'range' && (
@@ -124,13 +134,19 @@ export function SearchAndFilter({
                         type="number"
                         placeholder="Min"
                         value={activeFilters[`${filter.key}_min`] || ''}
-                        onChange={(e) => onFilterChange(`${filter.key}_min`, e.target.value)}
+                        onChange={(e) => {
+                          console.log(`Range min filter change - ${filter.key}_min:`, e.target.value);
+                          onFilterChange(`${filter.key}_min`, e.target.value);
+                        }}
                       />
                       <Input
                         type="number"
                         placeholder="Max"
                         value={activeFilters[`${filter.key}_max`] || ''}
-                        onChange={(e) => onFilterChange(`${filter.key}_max`, e.target.value)}
+                        onChange={(e) => {
+                          console.log(`Range max filter change - ${filter.key}_max:`, e.target.value);
+                          onFilterChange(`${filter.key}_max`, e.target.value);
+                        }}
                       />
                     </div>
                   )}
@@ -157,7 +173,10 @@ export function SearchAndFilter({
                         {filter.label}: {value}
                         <X
                           className="h-3 w-3 cursor-pointer hover:text-red-500"
-                          onClick={() => onFilterChange(key, '')}
+                          onClick={() => {
+                            console.log(`Removing filter - ${key}`);
+                            onFilterChange(key, '');
+                          }}
                         />
                       </Badge>
                     );
