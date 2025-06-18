@@ -12,28 +12,16 @@ export function SectorChart({ data }: SectorChartProps) {
   console.log('=== SECTOR CHART DEBUG ===');
   console.log('Received sector data:', data);
 
-  // Define a color palette for the sectors
-  const colors = [
-    '#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00ff7f', 
-    '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57'
-  ];
-
   // Filter out any invalid data and limit to top 8
-  const validData = data.filter(item => 
+  const validData = data?.filter(item => 
     item && 
     typeof item.sector === 'string' && 
     item.sector.trim() !== '' &&
     typeof item.count === 'number' && 
     item.count > 0
-  );
+  ) || [];
 
-  // Add colors to the data and limit to top 8
-  const coloredData = validData.slice(0, 8).map((item, index) => ({
-    ...item,
-    fill: colors[index % colors.length]
-  }));
-
-  console.log('Processed data for chart:', coloredData);
+  console.log('Valid data count:', validData.length);
 
   // Simple chart config for the container
   const chartConfig = {
@@ -43,7 +31,7 @@ export function SectorChart({ data }: SectorChartProps) {
     }
   };
 
-  if (!coloredData.length) {
+  if (!validData.length) {
     return (
       <Card>
         <CardHeader>
@@ -59,33 +47,38 @@ export function SectorChart({ data }: SectorChartProps) {
     );
   }
 
+  // Prepare data for horizontal bar chart - limit to top 8
+  const chartData = validData.slice(0, 8);
+  console.log('Chart data prepared:', chartData);
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Top Sectors</CardTitle>
-        <CardDescription>Deal distribution by industry sector (Top {coloredData.length})</CardDescription>
+        <CardDescription>Deal distribution by industry sector (Top {chartData.length})</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart 
-              data={coloredData} 
+              data={chartData} 
               layout="horizontal" 
-              margin={{ left: 80, right: 20, top: 10, bottom: 10 }}
+              margin={{ left: 100, right: 20, top: 10, bottom: 10 }}
             >
               <XAxis 
                 type="number" 
                 axisLine={false}
                 tickLine={false}
                 tick={{ fontSize: 12, fill: '#666' }}
+                domain={[0, 'dataMax']}
               />
               <YAxis 
                 type="category" 
                 dataKey="sector" 
-                width={75}
-                fontSize={11}
+                width={90}
+                fontSize={12}
                 interval={0}
-                tick={{ textAnchor: 'end', fontSize: 11, fill: '#666' }}
+                tick={{ textAnchor: 'end', fontSize: 12, fill: '#666' }}
                 axisLine={false}
                 tickLine={false}
               />

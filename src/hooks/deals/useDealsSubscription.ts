@@ -6,13 +6,23 @@ import { supabase } from '@/integrations/supabase/client';
 export function useDealsSubscription(userId: string | undefined, queryKey: (string | undefined)[]) {
   const queryClient = useQueryClient();
   const queryKeyRef = useRef(queryKey);
+  const channelRef = useRef<any>(null);
+  
   queryKeyRef.current = queryKey;
 
   useEffect(() => {
     if (!userId) return;
 
-    // Create a scoped channel for this hook instance
-    const channel = supabase.channel(`deals-global-${userId}-${Date.now()}`);
+    // Clean up any existing channel first
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+
+    // Create a unique channel name to avoid conflicts
+    const channelName = `deals-${userId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const channel = supabase.channel(channelName);
+    channelRef.current = channel;
 
     const handleUpdate = () => {
       console.log('Invalidating deals query...');
@@ -45,7 +55,10 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
     return () => {
       // Cleanly remove the channel on unmount
       console.log('Unsubscribing deals channel...');
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
   }, [userId, queryClient]);
 
