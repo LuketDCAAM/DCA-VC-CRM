@@ -76,7 +76,7 @@ export type Database = {
           email: string | null
           id: string
           investor_id: string | null
-          name: string
+          name: string | null
           phone: string | null
           portfolio_company_id: string | null
           relationship_owner: string | null
@@ -91,7 +91,7 @@ export type Database = {
           email?: string | null
           id?: string
           investor_id?: string | null
-          name: string
+          name?: string | null
           phone?: string | null
           portfolio_company_id?: string | null
           relationship_owner?: string | null
@@ -106,7 +106,7 @@ export type Database = {
           email?: string | null
           id?: string
           investor_id?: string | null
-          name?: string
+          name?: string | null
           phone?: string | null
           portfolio_company_id?: string | null
           relationship_owner?: string | null
