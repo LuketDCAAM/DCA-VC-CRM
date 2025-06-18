@@ -1,8 +1,6 @@
-
 import { useState, useMemo } from 'react';
 import { Deal } from '@/types/deal';
-
-export type ViewMode = 'grid' | 'configurable' | 'pipeline';
+import { ViewMode } from '@/components/deals/views/DealsViewRenderer';
 
 export function useDealsPageState() {
   const [searchTerm, setSearchTerm] = useState('');
