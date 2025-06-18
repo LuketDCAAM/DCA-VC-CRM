@@ -31,8 +31,8 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
     };
     subscribersByUserId[user.id].add(refetchFunction);
 
-    // If channel for this user doesn't exist or is unsubscribed, create and subscribe
-    if (!channelsByUserId[user.id] || subscriptionStatusByUserId[user.id] === 'unsubscribed') {
+    // Only create and subscribe to a new channel if none exists or if explicitly unsubscribed
+    if (!channelsByUserId[user.id] && subscriptionStatusByUserId[user.id] !== 'subscribing' && subscriptionStatusByUserId[user.id] !== 'subscribed') {
       console.log(`[ContactsSubscription] Creating new channel for user: ${user.id}`);
       
       // Mark as subscribing to prevent race conditions
@@ -64,7 +64,7 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
 
       channelsByUserId[user.id] = channel;
     } else {
-      console.log(`[ContactsSubscription] Reusing existing channel for user: ${user.id}`);
+      console.log(`[ContactsSubscription] Reusing existing channel for user: ${user.id}, status: ${subscriptionStatusByUserId[user.id]}`);
     }
 
     return () => {
