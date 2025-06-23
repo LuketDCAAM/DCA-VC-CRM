@@ -11,8 +11,6 @@ interface DealsViewTabsProps {
 }
 
 export function DealsViewTabs({ viewMode, onViewModeChange, dealCount }: DealsViewTabsProps) {
-  console.log('🎯 DEALS VIEW TABS:', { viewMode, dealCount });
-
   return (
     <div className="flex items-center justify-between">
       <Tabs value={viewMode} onValueChange={(value) => onViewModeChange(value as ViewMode)}>
@@ -32,8 +30,8 @@ export function DealsViewTabs({ viewMode, onViewModeChange, dealCount }: DealsVi
         </TabsList>
       </Tabs>
       
-      <div className="text-sm text-muted-foreground font-medium">
-        All {dealCount.toLocaleString()} deals
+      <div className="text-sm text-muted-foreground">
+        {dealCount} deals
       </div>
     </div>
   );

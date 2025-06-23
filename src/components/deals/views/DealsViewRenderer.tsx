@@ -30,12 +30,6 @@ export function DealsViewRenderer({
   isAllSelected,
   onDealUpdated,
 }: DealsViewRendererProps) {
-  console.log('🎯 DEALS VIEW RENDERER:', {
-    viewMode,
-    totalDeals: filteredDeals.length,
-    selectedDeals: selectedDeals.length,
-  });
-
   const commonProps = {
     deals: filteredDeals,
     onViewDetails,

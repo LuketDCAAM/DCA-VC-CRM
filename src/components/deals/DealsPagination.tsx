@@ -1,171 +1,113 @@
-import { useState, useEffect, useMemo } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { Deal } from '@/types/deal';
 
-export interface PaginationConfig {
-  page: number;
-  pageSize: number;
+import React from 'react';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+interface DealsPaginationProps {
+  currentPage: number;
+  totalItems: number;
+  itemsPerPage: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 }
 
-export interface DealFilters {
-  searchTerm?: string;
-  pipeline_stage?: string;
-  round_stage?: string;
-  sector?: string;
-  location?: string;
-  round_size?: [number, number];
-  deal_score?: [number, number];
-  created_at?: { from?: Date; to?: Date };
-  deal_source?: string;
-  source_date?: { from?: Date; to?: Date };
-}
+export function DealsPagination({
+  currentPage,
+  totalItems,
+  itemsPerPage,
+  onPageChange,
+  onPageSizeChange,
+}: DealsPaginationProps) {
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startItem = (currentPage - 1) * itemsPerPage + 1;
+  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
 
-// Valid stages for TS-safe filtering
-const VALID_PIPELINE_STAGES = [
-  'Inactive',
-  'Initial Review',
-  'Initial Contact',
-  'First Meeting',
-  'Due Diligence',
-  'Term Sheet',
-  'Legal Review',
-  'Invested',
-  'Passed',
-] as const;
-
-const VALID_ROUND_STAGES = [
-  'Pre-Seed',
-  'Seed',
-  'Series A',
-  'Series B',
-  'Series C',
-  'Bridge',
-  'Growth',
-] as const;
-
-export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFilters = {}) {
-  const [deals, setDeals] = useState<Deal[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [isRefetching, setIsRefetching] = useState(false);
-  const { user } = useAuth();
-
-  const fetchPaginatedDeals = async () => {
-    if (!user?.id) return;
-
-    try {
-      setLoading(true);
-      setIsRefetching(true);
-
-      const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser();
-      if (authError || !currentUser) throw new Error('Authentication failed');
-
-      const { data: approvalData, error: approvalError } = await supabase
-        .from('user_approvals')
-        .select('status')
-        .eq('user_id', currentUser.id)
-        .single();
-
-      if (approvalError && approvalError.code !== 'PGRST116') throw approvalError;
-
-      if (!approvalData || approvalData.status !== 'approved') {
-        setDeals([]);
-        setTotal(0);
-        return;
-      }
-
-      let query = supabase.from('deals').select('*', { count: 'exact' });
-
-      // Full-text search
-      if (filters.searchTerm) {
-        query = query.or(
-          `company_name.ilike.%${filters.searchTerm}%,contact_name.ilike.%${filters.searchTerm}%,location.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%`
-        );
-      }
-
-      // Safe filters
-      if (
-        filters.pipeline_stage &&
-        VALID_PIPELINE_STAGES.includes(filters.pipeline_stage as any)
-      ) {
-        query = query.eq('pipeline_stage', filters.pipeline_stage);
-      }
-
-      if (
-        filters.round_stage &&
-        VALID_ROUND_STAGES.includes(filters.round_stage as any)
-      ) {
-        query = query.eq('round_stage', filters.round_stage);
-      }
-
-      if (filters.sector) query = query.eq('sector', filters.sector);
-      if (filters.location) query = query.eq('location', filters.location);
-      if (filters.deal_source) query = query.eq('deal_source', filters.deal_source);
-
-      if (filters.round_size) {
-        query = query
-          .gte('round_size', filters.round_size[0])
-          .lte('round_size', filters.round_size[1]);
-      }
-
-      if (filters.deal_score) {
-        query = query
-          .gte('deal_score', filters.deal_score[0])
-          .lte('deal_score', filters.deal_score[1]);
-      }
-
-      if (filters.created_at?.from) {
-        query = query.gte('created_at', filters.created_at.from.toISOString());
-      }
-
-      if (filters.created_at?.to) {
-        query = query.lte('created_at', filters.created_at.to.toISOString());
-      }
-
-      if (filters.source_date?.from) {
-        query = query.gte('source_date', filters.source_date.from.toISOString().split('T')[0]);
-      }
-
-      if (filters.source_date?.to) {
-        query = query.lte('source_date', filters.source_date.to.toISOString().split('T')[0]);
-      }
-
-      const from = (pagination.page - 1) * pagination.pageSize;
-      const to = from + pagination.pageSize - 1;
-
-      const { data, count, error } = await query
-        .order('created_at', { ascending: false })
-        .range(from, to);
-
-      if (error) throw error;
-
-      setDeals(data || []);
-      setTotal(count || 0);
-    } catch (error: any) {
-      console.error('Error fetching paginated deals:', error);
-      setDeals([]);
-      setTotal(0);
-    } finally {
-      setLoading(false);
-      setIsRefetching(false);
+  const getVisiblePages = () => {
+    const delta = 2;
+    const range = [];
+    
+    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+      range.push(i);
     }
+
+    if (currentPage - delta > 2) {
+      range.unshift('...');
+    }
+    if (currentPage + delta < totalPages - 1) {
+      range.push('...');
+    }
+
+    range.unshift(1);
+    if (totalPages > 1) {
+      range.push(totalPages);
+    }
+
+    return range;
   };
 
-  useEffect(() => {
-    fetchPaginatedDeals();
-  }, [user?.id, pagination.page, pagination.pageSize, JSON.stringify(filters)]);
+  if (totalPages <= 1) return null;
 
-  const hasMore = useMemo(() => {
-    return pagination.page * pagination.pageSize < total;
-  }, [pagination.page, pagination.pageSize, total]);
+  return (
+    <div className="flex items-center justify-between px-2 py-4">
+      <div className="flex items-center space-x-2">
+        <p className="text-sm text-gray-700">
+          Showing {startItem} to {endItem} of {totalItems} results
+        </p>
+        <Select value={itemsPerPage.toString()} onValueChange={(value) => onPageSizeChange(Number(value))}>
+          <SelectTrigger className="w-20">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="25">25</SelectItem>
+            <SelectItem value="50">50</SelectItem>
+            <SelectItem value="100">100</SelectItem>
+            <SelectItem value="200">200</SelectItem>
+          </SelectContent>
+        </Select>
+        <span className="text-sm text-gray-700">per page</span>
+      </div>
 
-  return {
-    deals,
-    total,
-    loading,
-    isRefetching,
-    hasMore,
-    refetch: fetchPaginatedDeals,
-  };
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious 
+              onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+              className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+            />
+          </PaginationItem>
+          
+          {getVisiblePages().map((page, index) => (
+            <PaginationItem key={index}>
+              {page === '...' ? (
+                <PaginationEllipsis />
+              ) : (
+                <PaginationLink
+                  onClick={() => typeof page === 'number' && onPageChange(page)}
+                  isActive={page === currentPage}
+                  className="cursor-pointer"
+                >
+                  {page}
+                </PaginationLink>
+              )}
+            </PaginationItem>
+          ))}
+          
+          <PaginationItem>
+            <PaginationNext 
+              onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+              className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    </div>
+  );
 }

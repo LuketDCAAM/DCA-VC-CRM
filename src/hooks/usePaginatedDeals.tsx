@@ -1,180 +1,198 @@
 
-import { useState, useEffect, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import type { Deal, PipelineStage, RoundStage } from '@/types/deal';
-
-export interface DealFilters {
-  searchTerm?: string;
-  pipeline_stage?: PipelineStage;
-  round_stage?: RoundStage;
-  sector?: string;
-  location?: string;
-  round_size?: [number, number];
-  deal_score?: [number, number];
-  created_at?: { from?: Date; to?: Date };
-  deal_source?: string;
-  source_date?: { from?: Date; to?: Date };
-}
+import { Deal, PipelineStage, RoundStage } from '@/types/deal';
+import { useEffect, useMemo, useId, useRef, useState } from 'react';
 
 export interface PaginationConfig {
   page: number;
   pageSize: number;
 }
 
-export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFilters = {}) {
-  const [deals, setDeals] = useState<Deal[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [isRefetching, setIsRefetching] = useState(false);
-  const { user } = useAuth();
+export interface DealFilters {
+  searchTerm?: string;
+  pipeline_stage?: string;
+  round_stage?: string;
+  location?: string;
+  deal_source?: string;
+  sector?: string;
+  round_size_min?: number;
+  round_size_max?: number;
+  deal_score_min?: number;
+  deal_score_max?: number;
+  created_at_from?: string;
+  created_at_to?: string;
+  source_date_from?: string;
+  source_date_to?: string;
+}
 
-  const fetchPaginatedDeals = async () => {
-    if (!user?.id) return;
+async function fetchPaginatedDeals(
+  userId: string, 
+  pagination: PaginationConfig,
+  filters: DealFilters = {}
+): Promise<{ deals: Deal[]; total: number; hasMore: boolean }> {
+  const { page, pageSize } = pagination;
+  const offset = (page - 1) * pageSize;
 
-    try {
-      setLoading(true);
-      setIsRefetching(true);
+  let query = supabase
+    .from('deals')
+    .select('*', { count: 'exact' })
+    .eq('created_by', userId)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + pageSize - 1);
 
-      console.log('=== PAGINATED DEALS FETCH DEBUG ===');
-      console.log('Pagination config:', pagination);
-      console.log('Filters:', filters);
+  // Apply filters
+  if (filters.searchTerm) {
+    query = query.or(`company_name.ilike.%${filters.searchTerm}%,contact_name.ilike.%${filters.searchTerm}%,location.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%,sector.ilike.%${filters.searchTerm}%`);
+  }
+  
+  if (filters.pipeline_stage) {
+    query = query.eq('pipeline_stage', filters.pipeline_stage as PipelineStage);
+  }
+  
+  if (filters.round_stage) {
+    query = query.eq('round_stage', filters.round_stage as RoundStage);
+  }
+  
+  if (filters.location) {
+    query = query.eq('location', filters.location);
+  }
+  
+  if (filters.deal_source) {
+    query = query.eq('deal_source', filters.deal_source);
+  }
+  
+  if (filters.sector) {
+    query = query.eq('sector', filters.sector);
+  }
+  
+  if (filters.round_size_min !== undefined) {
+    query = query.gte('round_size', filters.round_size_min * 100); // Convert to cents
+  }
+  
+  if (filters.round_size_max !== undefined) {
+    query = query.lte('round_size', filters.round_size_max * 100); // Convert to cents
+  }
+  
+  if (filters.deal_score_min !== undefined) {
+    query = query.gte('deal_score', filters.deal_score_min);
+  }
+  
+  if (filters.deal_score_max !== undefined) {
+    query = query.lte('deal_score', filters.deal_score_max);
+  }
+  
+  if (filters.created_at_from) {
+    query = query.gte('created_at', filters.created_at_from);
+  }
+  
+  if (filters.created_at_to) {
+    query = query.lte('created_at', filters.created_at_to);
+  }
+  
+  if (filters.source_date_from) {
+    query = query.gte('source_date', filters.source_date_from);
+  }
+  
+  if (filters.source_date_to) {
+    query = query.lte('source_date', filters.source_date_to);
+  }
 
-      // Check authentication and approval
-      const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError || !currentUser) {
-        console.error('Authentication error:', authError);
-        throw new Error('Authentication failed');
-      }
+  const { data, error, count } = await query;
 
-      // Check approval status
-      const { data: approvalData, error: approvalError } = await supabase
-        .from('user_approvals')
-        .select('status')
-        .eq('user_id', currentUser.id)
-        .single();
+  if (error) {
+    console.error("Error fetching paginated deals:", error);
+    throw new Error(error.message);
+  }
 
-      if (approvalError && approvalError.code !== 'PGRST116') {
-        console.error('Error checking approval:', approvalError);
-      }
+  const total = count || 0;
+  const hasMore = offset + pageSize < total;
 
-      if (!approvalData || approvalData.status !== 'approved') {
-        console.warn('User not approved for paginated deals. Status:', approvalData?.status || 'not found');
-        setDeals([]);
-        setTotal(0);
-        return;
-      }
-
-      let query = supabase
-        .from('deals')
-        .select('*', { count: 'exact' });
-
-      // Apply filters
-      if (filters.searchTerm) {
-        query = query.or(`company_name.ilike.%${filters.searchTerm}%,contact_name.ilike.%${filters.searchTerm}%,location.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%`);
-      }
-
-      if (filters.pipeline_stage) {
-        query = query.eq('pipeline_stage', filters.pipeline_stage);
-      }
-
-      if (filters.round_stage) {
-        query = query.eq('round_stage', filters.round_stage);
-      }
-
-      if (filters.sector) {
-        query = query.eq('sector', filters.sector);
-      }
-
-      if (filters.location) {
-        query = query.eq('location', filters.location);
-      }
-
-      if (filters.deal_source) {
-        query = query.eq('deal_source', filters.deal_source);
-      }
-
-      if (filters.round_size) {
-        query = query
-          .gte('round_size', filters.round_size[0])
-          .lte('round_size', filters.round_size[1]);
-      }
-
-      if (filters.deal_score) {
-        query = query
-          .gte('deal_score', filters.deal_score[0])
-          .lte('deal_score', filters.deal_score[1]);
-      }
-
-      if (filters.created_at?.from) {
-        query = query.gte('created_at', filters.created_at.from.toISOString());
-      }
-
-      if (filters.created_at?.to) {
-        query = query.lte('created_at', filters.created_at.to.toISOString());
-      }
-
-      if (filters.source_date?.from) {
-        query = query.gte('source_date', filters.source_date.from.toISOString().split('T')[0]);
-      }
-
-      if (filters.source_date?.to) {
-        query = query.lte('source_date', filters.source_date.to.toISOString().split('T')[0]);
-      }
-
-      // Apply pagination - Remove the limit to show all results
-      const offset = (pagination.page - 1) * pagination.pageSize;
-      
-      // For now, let's fetch all deals without pagination limits to ensure we see everything
-      const { data, error, count } = await query
-        .order('created_at', { ascending: false });
-
-      console.log('Paginated deals query result:');
-      console.log('- Data count:', data?.length || 0);
-      console.log('- Total count:', count);
-      console.log('- Error:', error);
-
-      if (error) {
-        console.error("Error fetching paginated deals:", error);
-        throw new Error(error.message);
-      }
-
-      // Apply client-side pagination for now to show all data
-      const startIndex = offset;
-      const endIndex = startIndex + pagination.pageSize;
-      const paginatedData = data?.slice(startIndex, endIndex) || [];
-
-      setDeals(data || []); // Show all deals for now
-      setTotal(count || 0);
-
-      console.log('📊 PAGINATED DEALS FETCHED:', paginatedData.length, 'of', count);
-      console.log('=== END PAGINATED DEALS FETCH DEBUG ===');
-
-    } catch (error: any) {
-      console.error('Error in fetchPaginatedDeals:', error);
-      setDeals([]);
-      setTotal(0);
-    } finally {
-      setLoading(false);
-      setIsRefetching(false);
-    }
+  return { 
+    deals: data || [], 
+    total,
+    hasMore 
   };
+}
+
+export function usePaginatedDeals(
+  pagination: PaginationConfig = { page: 1, pageSize: 50 },
+  filters: DealFilters = {}
+) {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const id = useId();
+  const channelRef = useRef<any>(null);
+
+  const queryKey = useMemo(() => [
+    'paginated-deals', 
+    user?.id, 
+    pagination.page, 
+    pagination.pageSize,
+    filters
+  ], [user?.id, pagination.page, pagination.pageSize, filters]);
+
+  const {
+    data,
+    isLoading: loading,
+    refetch,
+    isRefetching,
+  } = useQuery({
+    queryKey,
+    queryFn: () => {
+      if (!user?.id) return { deals: [], total: 0, hasMore: false };
+      return fetchPaginatedDeals(user.id, pagination, filters);
+    },
+    enabled: !!user?.id,
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    gcTime: 300000, // Keep in cache for 5 minutes
+  });
 
   useEffect(() => {
-    fetchPaginatedDeals();
-  }, [user?.id, pagination.page, pagination.pageSize, JSON.stringify(filters)]);
+    if (!user?.id) return;
 
-  const hasMore = useMemo(() => {
-    return (pagination.page * pagination.pageSize) < total;
-  }, [pagination.page, pagination.pageSize, total]);
+    // Clean up any existing channel
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
+    }
+
+    const channelName = `paginated-deals-channel-${id}`;
+    const dealsChannel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'deals',
+          filter: `created_by=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('Paginated deals change received!', payload);
+          // Invalidate all paginated queries to refresh data
+          queryClient.invalidateQueries({ queryKey: ['paginated-deals', user.id] });
+        }
+      )
+      .subscribe();
+
+    channelRef.current = dealsChannel;
+
+    return () => {
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
+    };
+  }, [user?.id, queryClient, id]);
 
   return {
-    deals,
-    total,
+    deals: data?.deals || [],
+    total: data?.total || 0,
+    hasMore: data?.hasMore || false,
     loading,
     isRefetching,
-    hasMore,
-    refetch: fetchPaginatedDeals,
+    refetch,
   };
 }

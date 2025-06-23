@@ -37,12 +37,6 @@ export function ConfigurableDealsTable({
     getSortPriority,
   } = useAdvancedTableSorting(deals);
 
-  console.log('🎯 CONFIGURABLE TABLE RENDER:', {
-    totalDeals: deals.length,
-    sortedDealsCount: sortedDeals.length,
-    selectedDeals: selectedDeals.length,
-  });
-
   if (deals.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-card p-12 text-center">
@@ -61,7 +55,7 @@ export function ConfigurableDealsTable({
       <div className="flex justify-between items-center px-1">
         <div className="flex items-center gap-4">
           <div className="text-sm font-medium text-foreground">
-            Showing all {sortedDeals.length} deals
+            {deals.length} deals
           </div>
           {selectedDeals.length > 0 && (
             <div className="text-xs text-muted-foreground bg-primary/10 px-2 py-1 rounded-md">
