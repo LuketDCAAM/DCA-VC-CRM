@@ -4,32 +4,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Deal } from '@/types/deal';
 
-// 1. Define allowed stage types
-export type PipelineStage =
-  | 'Inactive'
-  | 'Initial Review'
-  | 'Initial Contact'
-  | 'First Meeting'
-  | 'Due Diligence'
-  | 'Term Sheet'
-  | 'Legal Review'
-  | 'Invested'
-  | 'Passed';
+export interface PaginationConfig {
+  page: number;
+  pageSize: number;
+}
 
-export type RoundStage =
-  | 'Pre-Seed'
-  | 'Seed'
-  | 'Series A'
-  | 'Series B'
-  | 'Series C'
-  | 'Bridge'
-  | 'Growth';
-
-// 2. Update filter interface to use correct types
 export interface DealFilters {
   searchTerm?: string;
-  pipeline_stage?: PipelineStage;
-  round_stage?: RoundStage;
+  pipeline_stage?: string;
+  round_stage?: string;
   sector?: string;
   location?: string;
   round_size?: [number, number];
@@ -37,11 +20,6 @@ export interface DealFilters {
   created_at?: { from?: Date; to?: Date };
   deal_source?: string;
   source_date?: { from?: Date; to?: Date };
-}
-
-export interface PaginationConfig {
-  page: number;
-  pageSize: number;
 }
 
 export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFilters = {}) {
@@ -58,27 +36,43 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
       setLoading(true);
       setIsRefetching(true);
 
-      const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser();
-      if (authError || !currentUser) throw new Error('Authentication failed');
+      console.log('=== PAGINATED DEALS FETCH DEBUG ===');
+      console.log('Pagination config:', pagination);
+      console.log('Filters:', filters);
 
-      const { data: approvalData } = await supabase
+      // Check authentication and approval
+      const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !currentUser) {
+        console.error('Authentication error:', authError);
+        throw new Error('Authentication failed');
+      }
+
+      // Check approval status
+      const { data: approvalData, error: approvalError } = await supabase
         .from('user_approvals')
         .select('status')
         .eq('user_id', currentUser.id)
         .single();
 
+      if (approvalError && approvalError.code !== 'PGRST116') {
+        console.error('Error checking approval:', approvalError);
+      }
+
       if (!approvalData || approvalData.status !== 'approved') {
+        console.warn('User not approved for paginated deals. Status:', approvalData?.status || 'not found');
         setDeals([]);
         setTotal(0);
         return;
       }
 
-      let query = supabase.from('deals').select('*', { count: 'exact' });
+      let query = supabase
+        .from('deals')
+        .select('*', { count: 'exact' });
 
+      // Apply filters
       if (filters.searchTerm) {
-        query = query.or(
-          `company_name.ilike.%${filters.searchTerm}%,contact_name.ilike.%${filters.searchTerm}%,location.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%`
-        );
+        query = query.or(`company_name.ilike.%${filters.searchTerm}%,contact_name.ilike.%${filters.searchTerm}%,location.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%`);
       }
 
       if (filters.pipeline_stage) {
@@ -89,9 +83,17 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
         query = query.eq('round_stage', filters.round_stage);
       }
 
-      if (filters.sector) query = query.eq('sector', filters.sector);
-      if (filters.location) query = query.eq('location', filters.location);
-      if (filters.deal_source) query = query.eq('deal_source', filters.deal_source);
+      if (filters.sector) {
+        query = query.eq('sector', filters.sector);
+      }
+
+      if (filters.location) {
+        query = query.eq('location', filters.location);
+      }
+
+      if (filters.deal_source) {
+        query = query.eq('deal_source', filters.deal_source);
+      }
 
       if (filters.round_size) {
         query = query
@@ -105,8 +107,13 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
           .lte('deal_score', filters.deal_score[1]);
       }
 
-      if (filters.created_at?.from) query = query.gte('created_at', filters.created_at.from.toISOString());
-      if (filters.created_at?.to) query = query.lte('created_at', filters.created_at.to.toISOString());
+      if (filters.created_at?.from) {
+        query = query.gte('created_at', filters.created_at.from.toISOString());
+      }
+
+      if (filters.created_at?.to) {
+        query = query.lte('created_at', filters.created_at.to.toISOString());
+      }
 
       if (filters.source_date?.from) {
         query = query.gte('source_date', filters.source_date.from.toISOString().split('T')[0]);
@@ -116,19 +123,36 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
         query = query.lte('source_date', filters.source_date.to.toISOString().split('T')[0]);
       }
 
-      const from = (pagination.page - 1) * pagination.pageSize;
-      const to = from + pagination.pageSize - 1;
-
+      // Apply pagination - Remove the limit to show all results
+      const offset = (pagination.page - 1) * pagination.pageSize;
+      
+      // For now, let's fetch all deals without pagination limits to ensure we see everything
       const { data, error, count } = await query
-        .order('created_at', { ascending: false })
-        .range(from, to);
+        .order('created_at', { ascending: false });
 
-      if (error) throw new Error(error.message);
+      console.log('Paginated deals query result:');
+      console.log('- Data count:', data?.length || 0);
+      console.log('- Total count:', count);
+      console.log('- Error:', error);
 
-      setDeals(data || []);
+      if (error) {
+        console.error("Error fetching paginated deals:", error);
+        throw new Error(error.message);
+      }
+
+      // Apply client-side pagination for now to show all data
+      const startIndex = offset;
+      const endIndex = startIndex + pagination.pageSize;
+      const paginatedData = data?.slice(startIndex, endIndex) || [];
+
+      setDeals(data || []); // Show all deals for now
       setTotal(count || 0);
-    } catch (err: any) {
-      console.error('Error fetching deals:', err);
+
+      console.log('📊 PAGINATED DEALS FETCHED:', paginatedData.length, 'of', count);
+      console.log('=== END PAGINATED DEALS FETCH DEBUG ===');
+
+    } catch (error: any) {
+      console.error('Error in fetchPaginatedDeals:', error);
       setDeals([]);
       setTotal(0);
     } finally {
@@ -142,7 +166,7 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
   }, [user?.id, pagination.page, pagination.pageSize, JSON.stringify(filters)]);
 
   const hasMore = useMemo(() => {
-    return pagination.page * pagination.pageSize < total;
+    return (pagination.page * pagination.pageSize) < total;
   }, [pagination.page, pagination.pageSize, total]);
 
   return {
