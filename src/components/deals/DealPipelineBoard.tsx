@@ -1,53 +1,25 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Building2, DollarSign, Eye, Calendar, Star } from 'lucide-react';
-import { Database } from '@/integrations/supabase/types';
+// Import PipelineStage from your centralized types file
+import { Deal, PipelineStage, RoundStage } from '@/types/deal'; 
 import { getPipelineStageClasses } from './pipelineStageColors';
 
-type PipelineStage = Database['public']['Enums']['pipeline_stage'];
-type RoundStage = Database['public']['Enums']['round_stage'];
-
-interface Deal {
-  id: string;
-  company_name: string;
-  contact_name: string | null;
-  contact_email: string | null;
-  contact_phone: string | null;
-  website: string | null;
-  location: string | null;
-  description: string | null;
-  pipeline_stage: PipelineStage;
-  round_stage: RoundStage | null;
-  round_size: number | null;
-  post_money_valuation: number | null;
-  revenue: number | null;
-  created_at: string;
-  updated_at: string;
-  deal_score: number | null;
-  source_date: string | null;
-  deal_source: string | null;
-  deal_lead: string | null;
-}
-
-interface DealPipelineBoardProps {
-  deals: Deal[];
-  onViewDetails?: (deal: Deal) => void;
-  onDealUpdated?: () => void;
-}
-
+// This array MUST match the canonical PipelineStage enum from Supabase types
+// Please verify the exact string literals in src/integrations/supabase/types.ts
 const pipelineStages: PipelineStage[] = [
   'Inactive',
-  'Initial Review',
+  'Initial Review',   // Assuming this is in your Supabase enum
   'Initial Contact',
   'First Meeting',
   'Due Diligence',
-  'Memo',
+  'Term Sheet',       // Assuming this is in your Supabase enum
   'Legal Review',
   'Invested',
   'Passed'
+  // 'Memo' should be removed if it's not in your Supabase enum, as per error messages
 ];
 
 const formatCurrency = (amount: number | null) => {
@@ -61,9 +33,15 @@ const formatCurrency = (amount: number | null) => {
 };
 
 // Use centralized color system
-const getStageColor = (stage: string) => {
+const getStageColor = (stage: PipelineStage) => { // Type 'stage' as PipelineStage
   return getPipelineStageClasses(stage);
 };
+
+interface DealPipelineBoardProps {
+  deals: Deal[];
+  onViewDetails?: (deal: Deal) => void;
+  onDealUpdated?: () => void;
+}
 
 export function DealPipelineBoard({ deals, onViewDetails, onDealUpdated }: DealPipelineBoardProps) {
   const dealsByStage = pipelineStages.reduce((acc, stage) => {
