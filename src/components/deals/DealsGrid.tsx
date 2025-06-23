@@ -27,6 +27,12 @@ export function DealsGrid({
 }: DealsGridProps) {
   const showSelection = !!onToggleDealSelection;
 
+  console.log('🎯 DEALS GRID RENDER:', {
+    totalDeals: deals.length,
+    selectedDeals: selectedDeals.length,
+    showSelection,
+  });
+
   if (deals.length === 0) {
     return (
       <Card>
@@ -48,17 +54,22 @@ export function DealsGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {deals.map((deal) => (
-        <MemoizedDealCard 
-          key={deal.id} 
-          deal={deal}
-          onViewDetails={onViewDetails}
-          isSelected={selectedDeals.includes(deal.id)}
-          onToggleSelection={onToggleDealSelection}
-          showSelection={showSelection}
-        />
-      ))}
+    <div className="space-y-4">
+      <div className="text-sm text-gray-600 mb-4">
+        Showing {deals.length} deals
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {deals.map((deal) => (
+          <MemoizedDealCard 
+            key={deal.id} 
+            deal={deal}
+            onViewDetails={onViewDetails}
+            isSelected={selectedDeals.includes(deal.id)}
+            onToggleSelection={onToggleDealSelection}
+            showSelection={showSelection}
+          />
+        ))}
+      </div>
     </div>
   );
 }
