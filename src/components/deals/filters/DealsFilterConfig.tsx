@@ -8,13 +8,13 @@ export const DEALS_FILTER_OPTIONS: FilterOption[] = [
     value: 'pipeline_stage',
     type: 'select',
     options: [
-      { label: 'Seen Not Reviewed', value: 'Seen Not Reviewed' },
+      { label: 'Inactive', value: 'Inactive' },
       { label: 'Initial Review', value: 'Initial Review' },
       { label: 'Initial Contact', value: 'Initial Contact' },
       { label: 'First Meeting', value: 'First Meeting' },
       { label: 'Due Diligence', value: 'Due Diligence' },
       { label: 'Term Sheet', value: 'Term Sheet' },
-      { label: 'Legal Review', value: 'Legal Review' },
+      { label: 'Memo', value: 'Memo' },
       { label: 'Invested', value: 'Invested' },
       { label: 'Passed', value: 'Passed' },
     ]
