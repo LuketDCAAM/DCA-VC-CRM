@@ -19,7 +19,7 @@ export function SimpleDealsTableHeader({
 }: SimpleDealsTableHeaderProps) {
   return (
     <TableHeader className="sticky top-0 z-10 bg-background border-b">
-      <TableRow className="hover:bg-transparent">
+      <TableRow className="hover:bg">
         <TableHead className="w-12">
           <Checkbox
             checked={isAllSelected ? true : (hasSelection ? 'indeterminate' : false)}
