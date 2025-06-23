@@ -33,6 +33,38 @@ export interface PortfolioCompany {
 }
 
 async function fetchCompanies(userId: string): Promise<PortfolioCompany[]> {
+  console.log('=== FETCH PORTFOLIO COMPANIES DEBUG ===');
+  console.log('Fetching portfolio companies for user:', userId);
+  
+  // Check authentication and approval
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  console.log('Current authenticated user:', user?.id);
+  
+  if (authError || !user) {
+    console.error('Authentication error:', authError);
+    throw new Error('Authentication failed');
+  }
+  
+  // Check approval status
+  const { data: approvalData, error: approvalError } = await supabase
+    .from('user_approvals')
+    .select('status')
+    .eq('user_id', user.id)
+    .single();
+    
+  console.log('Approval data:', approvalData);
+  
+  if (approvalError && approvalError.code !== 'PGRST116') {
+    console.error('Error checking approval:', approvalError);
+  }
+  
+  if (!approvalData || approvalData.status !== 'approved') {
+    console.warn('User not approved for portfolio companies. Status:', approvalData?.status || 'not found');
+    return [];
+  }
+  
+  console.log('User approved, fetching portfolio companies...');
+  
   const { data, error } = await supabase
     .from('portfolio_companies')
     .select(`
@@ -44,18 +76,26 @@ async function fetchCompanies(userId: string): Promise<PortfolioCompany[]> {
         current_ownership_percentage
       )
     `)
-    .eq('created_by', userId)
     .order('created_at', { ascending: false });
+
+  console.log('Portfolio companies query result:');
+  console.log('- Data:', data);
+  console.log('- Error:', error);
 
   if (error) {
     console.error("Error fetching portfolio companies:", error);
     throw new Error(error.message);
   }
 
-  return data?.map(company => ({
+  const companies = data?.map(company => ({
     ...company,
     current_valuation: company.current_valuations?.[0] || null
   })) || [];
+  
+  console.log('📊 PORTFOLIO COMPANIES FETCHED:', companies.length);
+  console.log('=== END FETCH PORTFOLIO COMPANIES DEBUG ===');
+
+  return companies;
 }
 
 export function usePortfolioCompanies() {
@@ -88,7 +128,6 @@ export function usePortfolioCompanies() {
           event: '*',
           schema: 'public',
           table: 'portfolio_companies',
-          filter: `created_by=eq.${user.id}`,
         },
         (payload) => {
           console.log('Portfolio companies change received!', payload);
