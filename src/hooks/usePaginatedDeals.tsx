@@ -1,8 +1,7 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-// Import PipelineStage and RoundStage from your deal types
+// Import PipelineStage and RoundStage from your canonical types file
 import { Deal, PipelineStage, RoundStage } from '@/types/deal'; 
 
 export interface PaginationConfig {
@@ -12,15 +11,14 @@ export interface PaginationConfig {
 
 export interface DealFilters {
   searchTerm?: string;
-  // KEY CHANGE: Use the specific PipelineStage and RoundStage types
   pipeline_stage?: PipelineStage; 
   round_stage?: RoundStage;
-  sector?: string;
-  location?: string;
+  sector?: string; // Still a string, assuming it's not an enum in DB
+  location?: string; // Still a string
+  deal_source?: string; // Still a string
   round_size?: [number, number];
   deal_score?: [number, number];
   created_at?: { from?: Date; to?: Date };
-  deal_source?: string;
   source_date?: { from?: Date; to?: Date };
 }
 
@@ -68,9 +66,9 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
         return;
       }
 
-      // KEY CHANGE: Specify the Deal type here using the generic
+      // Removed generic type from from(), will cast results later
       let query = supabase
-        .from<Deal>('deals') 
+        .from('deals') 
         .select('*', { count: 'exact', head: false });
 
       // Apply filters
@@ -78,25 +76,25 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
         query = query.or(`company_name.ilike.%${filters.searchTerm}%,contact_name.ilike.%${filters.searchTerm}%,location.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%`);
       }
 
-      // These are now correctly typed due to the DealFilters interface update
+      // Explicitly cast filter values to 'string' to resolve TS2345 errors with Supabase .eq()
       if (filters.pipeline_stage) {
-        query = query.eq('pipeline_stage', filters.pipeline_stage);
+        query = query.eq('pipeline_stage', filters.pipeline_stage as string); 
       }
 
       if (filters.round_stage) {
-        query = query.eq('round_stage', filters.round_stage);
+        query = query.eq('round_stage', filters.round_stage as string); 
       }
 
       if (filters.sector) {
-        query = query.eq('sector', filters.sector);
+        query = query.eq('sector', filters.sector as string); 
       }
 
       if (filters.location) {
-        query = query.eq('location', filters.location);
+        query = query.eq('location', filters.location as string); 
       }
 
       if (filters.deal_source) {
-        query = query.eq('deal_source', filters.deal_source);
+        query = query.eq('deal_source', filters.deal_source as string); 
       }
 
       if (filters.round_size) {
@@ -127,10 +125,6 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
         query = query.lte('source_date', filters.source_date.to.toISOString().split('T')[0]);
       }
 
-      // Apply pagination - Remove the limit to show all results
-      const offset = (pagination.page - 1) * pagination.pageSize;
-      
-      // For now, let's fetch all deals without pagination limits to ensure we see everything
       const { data, error, count } = await query
         .order('created_at', { ascending: false });
 
@@ -144,12 +138,15 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
         throw new Error(error.message);
       }
 
+      // Explicitly cast the data to Deal[]
+      const fetchedDeals = (data as Deal[] | null) || []; 
+
       // Apply client-side pagination for now to show all data
       const startIndex = offset;
       const endIndex = startIndex + pagination.pageSize;
-      const paginatedData = (data as Deal[] | null)?.slice(startIndex, endIndex) || []; // Cast data to Deal[] for slicing
+      const paginatedData = fetchedDeals.slice(startIndex, endIndex);
 
-      setDeals((data as Deal[] || [])); // Cast data to Deal[]
+      setDeals(fetchedDeals); 
       setTotal(count || 0);
 
       console.log('📊 PAGINATED DEALS FETCHED:', paginatedData.length, 'of', count);

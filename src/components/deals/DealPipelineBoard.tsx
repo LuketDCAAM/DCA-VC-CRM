@@ -3,23 +3,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Building2, DollarSign, Eye, Calendar, Star } from 'lucide-react';
-// Import PipelineStage from your centralized types file
+// Import PipelineStage and Deal from your canonical types file
 import { Deal, PipelineStage, RoundStage } from '@/types/deal'; 
 import { getPipelineStageClasses } from './pipelineStageColors';
 
-// This array MUST match the canonical PipelineStage enum from Supabase types
-// Please verify the exact string literals in src/integrations/supabase/types.ts
+// This array now precisely matches the pipeline_stage enum from your Supabase types.
+// 'Memo' has been removed, and 'Initial Review' and 'Term Sheet' are included.
 const pipelineStages: PipelineStage[] = [
   'Inactive',
-  'Initial Review',   // Assuming this is in your Supabase enum
+  'Initial Review',   
   'Initial Contact',
   'First Meeting',
   'Due Diligence',
-  'Term Sheet',       // Assuming this is in your Supabase enum
+  'Term Sheet',       
   'Legal Review',
   'Invested',
   'Passed'
-  // 'Memo' should be removed if it's not in your Supabase enum, as per error messages
 ];
 
 const formatCurrency = (amount: number | null) => {
@@ -33,7 +32,7 @@ const formatCurrency = (amount: number | null) => {
 };
 
 // Use centralized color system
-const getStageColor = (stage: PipelineStage) => { // Type 'stage' as PipelineStage
+const getStageColor = (stage: PipelineStage) => { 
   return getPipelineStageClasses(stage);
 };
 
