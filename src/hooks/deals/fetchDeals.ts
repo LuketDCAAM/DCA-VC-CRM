@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Deal } from '@/types/deal'; // Ensure this import is correct
 
@@ -51,15 +50,15 @@ export async function fetchDeals(userId: string): Promise<Deal[]> {
   console.log('Function test result:', functionTest);
   console.log('Function test error:', functionError);
   
-  // Now try to fetch deals, specifying the expected type using a generic
+  // Now try to fetch deals
   console.log('Attempting to fetch deals...');
-  const { data: deals, error, count } = await supabase
-    .from<Deal>('deals') // KEY CHANGE: Specify the Deal type here
+  const { data, error, count } = await supabase
+    .from('deals') // Removed generic type here
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false });
 
   console.log('Query result:');
-  console.log('- Data:', deals);
+  console.log('- Data:', data); // Log the raw data from Supabase
   console.log('- Error:', error);
   console.log('- Count:', count);
   
@@ -68,9 +67,11 @@ export async function fetchDeals(userId: string): Promise<Deal[]> {
     throw new Error(error.message);
   }
   
-  console.log('📊 DEALS FETCHED SUCCESSFULLY:', deals?.length || 0);
+  // Explicitly cast the data to Deal[] for type safety after fetching
+  const deals = (data as Deal[] | null) || [];
+
+  console.log('📊 DEALS FETCHED SUCCESSFULLY:', deals.length || 0);
   console.log('=== END FETCH DEALS DEBUG ===');
   
-  // Ensure we return an array of Deal objects
-  return deals || [];
+  return deals;
 }
