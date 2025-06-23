@@ -68,7 +68,7 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
 
       let query = supabase
         .from('deals')
-        .select('*', { count: 'exact', head = false });
+        .select('*', { count: 'exact', head: false });
 
       // Apply filters
       if (filters.searchTerm) {
