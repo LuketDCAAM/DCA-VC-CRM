@@ -3,30 +3,37 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+// Import PipelineStage and RoundStage from your centralized types file if they are globally defined there.
+// For now, deriving from here as per the original file structure, but it's better to have one source of truth.
+import { PipelineStage, RoundStage } from '@/types/deal'; // Ensure these types are imported from where your canonical types are defined
 
-const pipelineStages = [
+// These arrays should ideally derive directly from your Supabase generated types
+// (Database['public']['Enums']['pipeline_stage']) for consistency.
+// Based on the error messages, 'Initial Review' and 'Term Sheet' are expected,
+// and 'Memo' might not be in the Supabase enum.
+// PLEASE VERIFY THESE STAGES AGAINST YOUR SUPABASE ENUMS (src/integrations/supabase/types.ts)!
+const pipelineStages: PipelineStage[] = [
   'Inactive',
+  'Initial Review', // Added based on error message
   'Initial Contact',
-  'First Meeting', 
+  'First Meeting',
   'Due Diligence',
-  'Memo',
+  // 'Memo', // Removed based on error message indicating it's not in the Supabase enum
   'Legal Review',
+  'Term Sheet', // Added based on error message
   'Invested',
   'Passed'
-] as const;
+];
 
-const roundStages = [
+const roundStages: RoundStage[] = [
   'Pre-Seed',
   'Seed',
-  'Series A', 
+  'Series A',
   'Series B',
   'Series C',
   'Bridge',
   'Growth'
-] as const;
-
-export type PipelineStage = typeof pipelineStages[number];
-export type RoundStage = typeof roundStages[number];
+];
 
 export interface AddDealFormData {
   company_name: string;
@@ -37,8 +44,8 @@ export interface AddDealFormData {
   location: string;
   sector: string;
   description: string;
-  pipeline_stage: PipelineStage | null;
-  round_stage: RoundStage | '';
+  pipeline_stage: PipelineStage; // Use the imported PipelineStage type
+  round_stage: RoundStage | ''; // Use the imported RoundStage type
   round_size: string;
   post_money_valuation: string;
   revenue: string;
@@ -57,8 +64,9 @@ export const defaultFormData: AddDealFormData = {
   location: '',
   sector: '',
   description: '',
-  pipeline_stage: '',
-  round_stage: '',
+  // FIX: Initialize pipeline_stage to a valid enum member, not an empty string
+  pipeline_stage: 'Inactive', 
+  round_stage: '', // Keep as is if empty string is meant to be 'null' before insert
   round_size: '',
   post_money_valuation: '',
   revenue: '',
@@ -85,7 +93,27 @@ export function useAddDeal() {
     setLoading(true);
 
     try {
-      const dealData = {
+      // Ensure the object keys and types match your 'deals' table in Supabase
+      const dealData: {
+        company_name: string;
+        contact_name: string | null;
+        contact_email: string | null;
+        contact_phone: string | null;
+        website: string | null;
+        location: string | null;
+        sector: string | null;
+        description: string | null;
+        pipeline_stage: PipelineStage; // Should be the Supabase enum type
+        round_stage: RoundStage | null; // Should be the Supabase enum type
+        round_size: number | null;
+        post_money_valuation: number | null;
+        revenue: number | null;
+        deal_score: number | null;
+        deal_lead: string | null;
+        deal_source: string | null;
+        source_date: string | null;
+        created_by: string;
+      } = {
         company_name: formData.company_name,
         contact_name: formData.contact_name || null,
         contact_email: formData.contact_email || null,
@@ -95,7 +123,8 @@ export function useAddDeal() {
         sector: formData.sector || null,
         description: formData.description || null,
         pipeline_stage: formData.pipeline_stage,
-        round_stage: formData.round_stage ? formData.round_stage as RoundStage : null,
+        // Cast to RoundStage or null, ensuring it matches the DB column type
+        round_stage: formData.round_stage ? (formData.round_stage as RoundStage) : null, 
         round_size: parseAndScaleCurrency(formData.round_size),
         post_money_valuation: parseAndScaleCurrency(formData.post_money_valuation),
         revenue: parseAndScaleCurrency(formData.revenue),
@@ -108,7 +137,8 @@ export function useAddDeal() {
 
       const { error } = await supabase
         .from('deals')
-        .insert(dealData);
+        // FIX: Supabase insert expects an array of objects, even for a single insert
+        .insert([dealData]); 
 
       if (error) throw error;
 
@@ -132,7 +162,7 @@ export function useAddDeal() {
   return {
     loading,
     createDeal,
-    pipelineStages,
-    roundStages,
+    pipelineStages, // These are derived from the local const array, not Supabase
+    roundStages,    // These are derived from the local const array, not Supabase
   };
 }
