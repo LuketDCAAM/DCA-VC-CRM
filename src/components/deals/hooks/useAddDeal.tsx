@@ -9,8 +9,8 @@ const pipelineStages = [
   'Initial Contact',
   'First Meeting', 
   'Due Diligence',
-  'Term Sheet',
   'Memo',
+  'Legal Review',
   'Invested',
   'Passed'
 ] as const;
@@ -57,7 +57,7 @@ export const defaultFormData: AddDealFormData = {
   location: '',
   sector: '',
   description: '',
-  pipeline_stage: '',
+  pipeline_stage: 'Initial Contact',
   round_stage: '',
   round_size: '',
   post_money_valuation: '',
