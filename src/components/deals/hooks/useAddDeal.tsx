@@ -57,7 +57,7 @@ export const defaultFormData: AddDealFormData = {
   location: '',
   sector: '',
   description: '',
-  pipeline_stage: 'Initial Contact',
+  pipeline_stage: '',
   round_stage: '',
   round_size: '',
   post_money_valuation: '',
