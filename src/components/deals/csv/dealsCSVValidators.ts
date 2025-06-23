@@ -4,12 +4,12 @@ export const validatePipelineStage = (stage: string | null | undefined): string 
   if (!stage) return 'Initial Contact';
   
   const validStages = [
-    'Seen Not Reviewed',
+    'Inactive',
     'Initial Review', 
     'Initial Contact',
     'First Meeting',
     'Due Diligence',
-    'Term Sheet',
+    'Memo',
     'Legal Review',
     'Invested',
     'Passed'
