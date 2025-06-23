@@ -1,181 +1,137 @@
-import { useState, useEffect, useMemo } from 'react';
+
+import React, { useState } from 'react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from '@/components/ui/badge';
+import { Deal, PipelineStage } from '@/types/deal';
+import { getPipelineStageColor } from '../pipelineStageColors';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-// Import PipelineStage and RoundStage from your canonical types file
-import { Deal, PipelineStage, RoundStage } from '@/types/deal'; 
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, Check } from 'lucide-react';
 
-export interface PaginationConfig {
-  page: number;
-  pageSize: number;
+interface PipelineStageDropdownProps {
+  deal: Deal;
+  onUpdate?: () => void;
 }
 
-export interface DealFilters {
-  searchTerm?: string;
-  pipeline_stage?: PipelineStage; 
-  round_stage?: RoundStage;
-  sector?: string; // Still a string, assuming it's not an enum in DB
-  location?: string; // Still a string
-  deal_source?: string; // Still a string
-  round_size?: [number, number];
-  deal_score?: [number, number];
-  created_at?: { from?: Date; to?: Date };
-  source_date?: { from?: Date; to?: Date };
-}
+const PIPELINE_STAGES: PipelineStage[] = [
+  'Inactive',
+  'Initial Contact',
+  'First Meeting', 
+  'Due Diligence',
+  'Memo',
+  'Legal Review',
+  'Initial Review',
+  'Invested',
+  'Passed'
+];
 
-export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFilters = {}) {
-  const [deals, setDeals] = useState<Deal[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [isRefetching, setIsRefetching] = useState(false);
-  const { user } = useAuth();
+export function PipelineStageDropdown({ deal, onUpdate }: PipelineStageDropdownProps) {
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  const fetchPaginatedDeals = async () => {
-    if (!user?.id) return;
+  const handleStageChange = async (newStage: PipelineStage) => {
+    if (newStage === deal.pipeline_stage) return;
+    
+    setIsLoading(true);
 
     try {
-      setLoading(true);
-      setIsRefetching(true);
+      const { error } = await supabase
+        .from('deals')
+        .update({ 
+          pipeline_stage: newStage,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', deal.id);
 
-      console.log('=== PAGINATED DEALS FETCH DEBUG ===');
-      console.log('Pagination config:', pagination);
-      console.log('Filters:', filters);
-
-      // Check authentication and approval
-      const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError || !currentUser) {
-        console.error('Authentication error:', authError);
-        throw new Error('Authentication failed');
-      }
-
-      // Check approval status
-      const { data: approvalData, error: approvalError } = await supabase
-        .from('user_approvals')
-        .select('status')
-        .eq('user_id', currentUser.id)
-        .single();
-
-      if (approvalError && approvalError.code !== 'PGRST116') {
-        console.error('Error checking approval:', approvalError);
-      }
-
-      if (!approvalData || approvalData.status !== 'approved') {
-        console.warn('User not approved for paginated deals. Status:', approvalData?.status || 'not found');
-        setDeals([]);
-        setTotal(0);
+      if (error) {
+        console.error('Error updating pipeline stage:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update pipeline stage",
+          variant: "destructive",
+        });
         return;
       }
 
-      // Removed generic type from from(), will cast results later
-      let query = supabase
-        .from('deals') 
-        .select('*', { count: 'exact', head: false });
+      // Show success feedback
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 1500);
 
-      // Apply filters
-      if (filters.searchTerm) {
-        query = query.or(`company_name.ilike.%${filters.searchTerm}%,contact_name.ilike.%${filters.searchTerm}%,location.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%`);
-      }
+      toast({
+        title: "Success",
+        description: `Pipeline stage updated to ${newStage}`,
+      });
 
-      // Explicitly cast filter values to 'string' to resolve TS2345 errors with Supabase .eq()
-      if (filters.pipeline_stage) {
-        query = query.eq('pipeline_stage', filters.pipeline_stage as string); 
-      }
-
-      if (filters.round_stage) {
-        query = query.eq('round_stage', filters.round_stage as string); 
-      }
-
-      if (filters.sector) {
-        query = query.eq('sector', filters.sector as string); 
-      }
-
-      if (filters.location) {
-        query = query.eq('location', filters.location as string); 
-      }
-
-      if (filters.deal_source) {
-        query = query.eq('deal_source', filters.deal_source as string); 
-      }
-
-      if (filters.round_size) {
-        query = query
-          .gte('round_size', filters.round_size[0])
-          .lte('round_size', filters.round_size[1]);
-      }
-
-      if (filters.deal_score) {
-        query = query
-          .gte('deal_score', filters.deal_score[0])
-          .lte('deal_score', filters.deal_score[1]);
-      }
-
-      if (filters.created_at?.from) {
-        query = query.gte('created_at', filters.created_at.from.toISOString());
-      }
-
-      if (filters.created_at?.to) {
-        query = query.lte('created_at', filters.created_at.to.toISOString());
-      }
-
-      if (filters.source_date?.from) {
-        query = query.gte('source_date', filters.source_date.from.toISOString().split('T')[0]);
-      }
-
-      if (filters.source_date?.to) {
-        query = query.lte('source_date', filters.source_date.to.toISOString().split('T')[0]);
-      }
-
-      const { data, error, count } = await query
-        .order('created_at', { ascending: false });
-
-      console.log('Paginated deals query result:');
-      console.log('- Data count:', data?.length || 0);
-      console.log('- Total count:', count);
-      console.log('- Error:', error);
-
-      if (error) {
-        console.error("Error fetching paginated deals:", error);
-        throw new Error(error.message);
-      }
-
-      // Explicitly cast the data to Deal[]
-      const fetchedDeals = (data as Deal[] | null) || []; 
-
-      // Apply client-side pagination for now to show all data
-      const startIndex = offset;
-      const endIndex = startIndex + pagination.pageSize;
-      const paginatedData = fetchedDeals.slice(startIndex, endIndex);
-
-      setDeals(fetchedDeals); 
-      setTotal(count || 0);
-
-      console.log('📊 PAGINATED DEALS FETCHED:', paginatedData.length, 'of', count);
-      console.log('=== END PAGINATED DEALS FETCH DEBUG ===');
-
-    } catch (error: any) {
-      console.error('Error in fetchPaginatedDeals:', error);
-      setDeals([]);
-      setTotal(0);
+      onUpdate?.();
+    } catch (error) {
+      console.error('Error updating pipeline stage:', error);
+      toast({
+        title: "Error", 
+        description: "Failed to update pipeline stage",
+        variant: "destructive",
+      });
     } finally {
-      setLoading(false);
-      setIsRefetching(false);
+      setIsLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchPaginatedDeals();
-  }, [user?.id, pagination.page, pagination.pageSize, JSON.stringify(filters)]);
-
-  const hasMore = useMemo(() => {
-    return (pagination.page * pagination.pageSize) < total;
-  }, [pagination.page, pagination.pageSize, total]);
-
-  return {
-    deals,
-    total,
-    loading,
-    isRefetching,
-    hasMore,
-    refetch: fetchPaginatedDeals,
-  };
+  return (
+    <Select 
+      value={deal.pipeline_stage} 
+      onValueChange={handleStageChange}
+      disabled={isLoading}
+    >
+      <SelectTrigger className="w-auto h-auto p-0 border-0 bg-transparent hover:bg-muted/50 focus:ring-0 transition-colors duration-200">
+        <SelectValue asChild>
+          <div className="relative">
+            <Badge 
+              variant={getPipelineStageColor(deal.pipeline_stage) as any}
+              className="font-medium text-xs cursor-pointer transition-all duration-200 hover:scale-105 pr-6"
+            >
+              {deal.pipeline_stage}
+            </Badge>
+            {isLoading && (
+              <Loader2 className="h-3 w-3 animate-spin absolute right-1 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+            )}
+            {showSuccess && (
+              <Check className="h-3 w-3 absolute right-1 top-1/2 transform -translate-y-1/2 text-green-600 animate-in fade-in-0 duration-300" />
+            )}
+          </div>
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent className="z-50 min-w-[180px]">
+        <div className="p-2">
+          <div className="text-xs font-medium text-muted-foreground mb-2 px-2">
+            Select Pipeline Stage
+          </div>
+          {PIPELINE_STAGES.map((stage) => (
+            <SelectItem 
+              key={stage} 
+              value={stage}
+              className="cursor-pointer focus:bg-muted/50 transition-colors duration-150"
+            >
+              <div className="flex items-center gap-2 w-full">
+                <Badge 
+                  variant={getPipelineStageColor(stage) as any}
+                  className="font-medium text-xs"
+                >
+                  {stage}
+                </Badge>
+                {stage === deal.pipeline_stage && (
+                  <Check className="h-3 w-3 text-green-600 ml-auto" />
+                )}
+              </div>
+            </SelectItem>
+          ))}
+        </div>
+      </SelectContent>
+    </Select>
+  );
 }
