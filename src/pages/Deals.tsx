@@ -68,8 +68,14 @@ export default function Deals() {
     };
   };
 
-  // Use optimized filtered deals hook
+  // Use optimized filtered deals hook - this shows ALL deals
   const filteredDeals = useOptimizedFilteredDeals(deals, searchTerm, activeFilters);
+
+  console.log('=== FILTERED DEALS DEBUG ===');
+  console.log('Original deals count:', deals.length);
+  console.log('Filtered deals count:', filteredDeals.length);
+  console.log('Search term:', searchTerm);
+  console.log('Active filters:', activeFilters);
 
   const isAllSelected = selectedDeals.length === filteredDeals.length && filteredDeals.length > 0;
 
