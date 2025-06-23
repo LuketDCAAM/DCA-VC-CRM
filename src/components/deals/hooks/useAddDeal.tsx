@@ -37,7 +37,7 @@ export interface AddDealFormData {
   location: string;
   sector: string;
   description: string;
-  pipeline_stage: PipelineStage;
+  pipeline_stage: PipelineStage | null;
   round_stage: RoundStage | '';
   round_size: string;
   post_money_valuation: string;
