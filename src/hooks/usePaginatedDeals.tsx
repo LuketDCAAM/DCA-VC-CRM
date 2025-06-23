@@ -2,17 +2,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Deal } from '@/types/deal';
-
-export interface PaginationConfig {
-  page: number;
-  pageSize: number;
-}
+import type { Deal, PipelineStage, RoundStage } from '@/types/deal';
 
 export interface DealFilters {
   searchTerm?: string;
-  pipeline_stage?: string;
-  round_stage?: string;
+  pipeline_stage?: PipelineStage;
+  round_stage?: RoundStage;
   sector?: string;
   location?: string;
   round_size?: [number, number];
@@ -20,6 +15,11 @@ export interface DealFilters {
   created_at?: { from?: Date; to?: Date };
   deal_source?: string;
   source_date?: { from?: Date; to?: Date };
+}
+
+export interface PaginationConfig {
+  page: number;
+  pageSize: number;
 }
 
 export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFilters = {}) {
