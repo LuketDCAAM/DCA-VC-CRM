@@ -20,10 +20,17 @@ export type RoundStage =
   | 'Bridge'
   | 'Growth';
 
+// @/types/deal.ts
+
 export interface Deal {
   id: string;
   company_name: string;
   contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  website?: string;
+  updated_at?: string;
+
   pipeline_stage: PipelineStage;
   round_stage: RoundStage;
   round_size?: number;
@@ -37,5 +44,7 @@ export interface Deal {
   deal_lead?: string;
   source_date?: string;
   description?: string;
+
   [key: string]: any;
 }
+
