@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Deal } from '@/types/deal';
+import { Deal } from '@/types/deal'; // Ensure this import is correct
 
 export async function fetchDeals(userId: string): Promise<Deal[]> {
   console.log('=== FETCH DEALS DEBUG ===');
@@ -32,7 +32,7 @@ export async function fetchDeals(userId: string): Promise<Deal[]> {
   console.log('Approval data:', approvalData);
   console.log('Approval error:', approvalError);
   
-  if (approvalError && approvalError.code !== 'PGRST116') {
+  if (approvalError && approvalError.code !== 'PGRST116') { // PGRST116 is "No rows found"
     console.error('Error checking approval status:', approvalError);
   }
   
@@ -51,10 +51,10 @@ export async function fetchDeals(userId: string): Promise<Deal[]> {
   console.log('Function test result:', functionTest);
   console.log('Function test error:', functionError);
   
-  // Now try to fetch deals
+  // Now try to fetch deals, specifying the expected type using a generic
   console.log('Attempting to fetch deals...');
   const { data: deals, error, count } = await supabase
-    .from('deals')
+    .from<Deal>('deals') // KEY CHANGE: Specify the Deal type here
     .select('*', { count: 'exact' })
     .order('created_at', { ascending: false });
 
@@ -71,5 +71,6 @@ export async function fetchDeals(userId: string): Promise<Deal[]> {
   console.log('📊 DEALS FETCHED SUCCESSFULLY:', deals?.length || 0);
   console.log('=== END FETCH DEALS DEBUG ===');
   
+  // Ensure we return an array of Deal objects
   return deals || [];
 }
