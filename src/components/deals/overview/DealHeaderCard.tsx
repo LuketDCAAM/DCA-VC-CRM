@@ -11,10 +11,11 @@ interface DealHeaderCardProps {
 
 const getStageColor = (stage: string) => {
   const colors = {
+    'Inactive': 'bg-gray-100 text-gray-800',
     'Initial Contact': 'bg-gray-100 text-gray-800',
     'First Meeting': 'bg-blue-100 text-blue-800',
     'Due Diligence': 'bg-yellow-100 text-yellow-800',
-    'Term Sheet': 'bg-purple-100 text-purple-800',
+    'Memo': 'bg-purple-100 text-purple-800',
     'Legal Review': 'bg-orange-100 text-orange-800',
     'Invested': 'bg-green-100 text-green-800',
     'Passed': 'bg-red-100 text-red-800',
