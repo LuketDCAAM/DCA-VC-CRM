@@ -2,7 +2,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Deal } from '@/types/deal';
+// Import PipelineStage and RoundStage from your deal types
+import { Deal, PipelineStage, RoundStage } from '@/types/deal'; 
 
 export interface PaginationConfig {
   page: number;
@@ -11,8 +12,9 @@ export interface PaginationConfig {
 
 export interface DealFilters {
   searchTerm?: string;
-  pipeline_stage?: string;
-  round_stage?: string;
+  // KEY CHANGE: Use the specific PipelineStage and RoundStage types
+  pipeline_stage?: PipelineStage; 
+  round_stage?: RoundStage;
   sector?: string;
   location?: string;
   round_size?: [number, number];
@@ -66,8 +68,9 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
         return;
       }
 
+      // KEY CHANGE: Specify the Deal type here using the generic
       let query = supabase
-        .from('deals')
+        .from<Deal>('deals') 
         .select('*', { count: 'exact', head: false });
 
       // Apply filters
@@ -75,6 +78,7 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
         query = query.or(`company_name.ilike.%${filters.searchTerm}%,contact_name.ilike.%${filters.searchTerm}%,location.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%`);
       }
 
+      // These are now correctly typed due to the DealFilters interface update
       if (filters.pipeline_stage) {
         query = query.eq('pipeline_stage', filters.pipeline_stage);
       }
@@ -143,9 +147,9 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
       // Apply client-side pagination for now to show all data
       const startIndex = offset;
       const endIndex = startIndex + pagination.pageSize;
-      const paginatedData = data?.slice(startIndex, endIndex) || [];
+      const paginatedData = (data as Deal[] | null)?.slice(startIndex, endIndex) || []; // Cast data to Deal[] for slicing
 
-      setDeals(data || []); // Show all deals for now
+      setDeals((data as Deal[] || [])); // Cast data to Deal[]
       setTotal(count || 0);
 
       console.log('📊 PAGINATED DEALS FETCHED:', paginatedData.length, 'of', count);
