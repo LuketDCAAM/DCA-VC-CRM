@@ -20,7 +20,7 @@ interface PipelineStageDropdownProps {
 }
 
 const PIPELINE_STAGES: PipelineStage[] = [
-  'Inactive'
+  'Inactive',
   'Initial Contact',
   'First Meeting', 
   'Due Diligence',
