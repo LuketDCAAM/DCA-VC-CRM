@@ -127,8 +127,12 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
       const offset = (pagination.page - 1) * pagination.pageSize;
       
       // For now, let's fetch all deals without pagination limits to ensure we see everything
+      const from = (pagination.page - 1) * pagination.pageSize;
+      const to = from + pagination.pageSize - 1;
+      
       const { data, error, count } = await query
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
       console.log('Paginated deals query result:');
       console.log('- Data count:', data?.length || 0);
