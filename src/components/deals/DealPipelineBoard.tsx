@@ -15,7 +15,7 @@ const pipelineStages: PipelineStage[] = [
   'Initial Contact',
   'First Meeting',
   'Due Diligence',
-  'Term Sheet',       
+  'Memo',       
   'Legal Review',
   'Invested',
   'Passed'
