@@ -2,7 +2,6 @@
 import { Deal, PipelineStage, RoundStage } from '@/types/deal';
 import React, { useMemo } from 'react';
 import { Table, TableBody } from "@/components/ui/table";
-import { Deal } from '@/types/deal';
 import { ConfigurableDealsTableRow } from './table/ConfigurableDealsTableRow';
 import { ConfigurableDealsTableHeader } from './table/ConfigurableDealsTableHeader';
 import { useAdvancedTableSorting } from '@/hooks/deals/useAdvancedTableSorting';
