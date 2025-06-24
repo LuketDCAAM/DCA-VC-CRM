@@ -1,181 +1,139 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState } from 'react';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-// Import PipelineStage and RoundStage from your canonical types file
-import { Deal, PipelineStage, RoundStage } from '@/types/deal'; 
+// Import PipelineStage, RoundStage, and DealInsert from your canonical types file
+import { PipelineStage, RoundStage, DealInsert } from '@/types/deal'; 
 
-export interface PaginationConfig {
-  page: number;
-  pageSize: number;
+// These arrays should ideally derive from your Supabase generated types if you want to avoid manual sync.
+// For now, they are explicitly typed to match the Supabase enum for consistency.
+const pipelineStages: PipelineStage[] = [
+  'Inactive',
+  'Initial Review',
+  'Initial Contact',
+  'First Meeting',
+  'Due Diligence',
+  'Term Sheet',
+  'Legal Review',
+  'Invested',
+  'Passed'
+];
+
+const roundStages: RoundStage[] = [
+  'Pre-Seed',
+  'Seed',
+  'Series A',
+  'Series B',
+  'Series C',
+  'Bridge',
+  'Growth'
+];
+
+export interface AddDealFormData {
+  company_name: string;
+  contact_name: string;
+  contact_email: string;
+  contact_phone: string;
+  website: string;
+  location: string;
+  sector: string;
+  description: string;
+  pipeline_stage: PipelineStage; 
+  round_stage: RoundStage | ''; 
+  round_size: string; 
+  post_money_valuation: string; 
+  revenue: string; 
+  deal_score: number | null;
+  deal_lead: string;
+  deal_source: string;
+  source_date: string;
 }
 
-export interface DealFilters {
-  searchTerm?: string;
-  pipeline_stage?: PipelineStage; 
-  round_stage?: RoundStage;
-  sector?: string; // Still a string, assuming it's not an enum in DB
-  location?: string; // Still a string
-  deal_source?: string; // Still a string
-  round_size?: [number, number];
-  deal_score?: [number, number];
-  created_at?: { from?: Date; to?: Date };
-  source_date?: { from?: Date; to?: Date };
-}
+export const defaultFormData: AddDealFormData = {
+  company_name: '',
+  contact_name: '',
+  contact_email: '',
+  contact_phone: '',
+  website: '',
+  location: '',
+  sector: '',
+  description: '',
+  pipeline_stage: 'Inactive', // Initialize to a valid enum member
+  round_stage: '',
+  round_size: '',
+  post_money_valuation: '',
+  revenue: '',
+  deal_score: null,
+  deal_lead: '',
+  deal_source: '',
+  source_date: '',
+};
 
-export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFilters = {}) {
-  const [deals, setDeals] = useState<Deal[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [isRefetching, setIsRefetching] = useState(false);
+export function useAddDeal() {
+  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
+  const { toast } = useToast();
 
-  const fetchPaginatedDeals = async () => {
-    if (!user?.id) return;
+  const parseAndScaleCurrency = (value: string) => {
+    if (!value) return null;
+    const num = parseFloat(value);
+    return isNaN(num) ? null : Math.round(num * 100); 
+  };
+
+  const createDeal = async (formData: AddDealFormData, onSuccess: () => void) => {
+    if (!user) return;
+
+    setLoading(true);
 
     try {
-      setLoading(true);
-      setIsRefetching(true);
+      const dealData: DealInsert = { // Use DealInsert type for consistency
+        company_name: formData.company_name,
+        contact_name: formData.contact_name || null,
+        contact_email: formData.contact_email || null,
+        contact_phone: formData.contact_phone || null,
+        website: formData.website || null,
+        location: formData.location || null,
+        sector: formData.sector || null,
+        description: formData.description || null,
+        pipeline_stage: formData.pipeline_stage,
+        round_stage: formData.round_stage === '' ? null : formData.round_stage, 
+        round_size: parseAndScaleCurrency(formData.round_size),
+        post_money_valuation: parseAndScaleCurrency(formData.post_money_valuation),
+        revenue: parseAndScaleCurrency(formData.revenue),
+        deal_score: formData.deal_score,
+        deal_lead: formData.deal_lead || null,
+        deal_source: formData.deal_source || null,
+        source_date: formData.source_date || null,
+        created_by: user.id,
+      };
 
-      console.log('=== PAGINATED DEALS FETCH DEBUG ===');
-      console.log('Pagination config:', pagination);
-      console.log('Filters:', filters);
+      const { error } = await supabase
+        .from('deals')
+        .insert([dealData]); 
 
-      // Check authentication and approval
-      const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError || !currentUser) {
-        console.error('Authentication error:', authError);
-        throw new Error('Authentication failed');
-      }
+      if (error) throw error;
 
-      // Check approval status
-      const { data: approvalData, error: approvalError } = await supabase
-        .from('user_approvals')
-        .select('status')
-        .eq('user_id', currentUser.id)
-        .single();
+      toast({
+        title: "Deal created successfully",
+        description: `${formData.company_name} has been added to your pipeline.`,
+      });
 
-      if (approvalError && approvalError.code !== 'PGRST116') {
-        console.error('Error checking approval:', approvalError);
-      }
-
-      if (!approvalData || approvalData.status !== 'approved') {
-        console.warn('User not approved for paginated deals. Status:', approvalData?.status || 'not found');
-        setDeals([]);
-        setTotal(0);
-        return;
-      }
-
-      // Removed generic type from from(), will cast results later
-      let query = supabase
-        .from('deals') 
-        .select('*', { count: 'exact', head: false });
-
-      // Apply filters
-      if (filters.searchTerm) {
-        query = query.or(`company_name.ilike.%${filters.searchTerm}%,contact_name.ilike.%${filters.searchTerm}%,location.ilike.%${filters.searchTerm}%,description.ilike.%${filters.searchTerm}%`);
-      }
-
-      // Explicitly cast filter values to 'string' to resolve TS2345 errors with Supabase .eq()
-      if (filters.pipeline_stage) {
-        query = query.eq('pipeline_stage', filters.pipeline_stage as string); 
-      }
-
-      if (filters.round_stage) {
-        query = query.eq('round_stage', filters.round_stage as string); 
-      }
-
-      if (filters.sector) {
-        query = query.eq('sector', filters.sector as string); 
-      }
-
-      if (filters.location) {
-        query = query.eq('location', filters.location as string); 
-      }
-
-      if (filters.deal_source) {
-        query = query.eq('deal_source', filters.deal_source as string); 
-      }
-
-      if (filters.round_size) {
-        query = query
-          .gte('round_size', filters.round_size[0])
-          .lte('round_size', filters.round_size[1]);
-      }
-
-      if (filters.deal_score) {
-        query = query
-          .gte('deal_score', filters.deal_score[0])
-          .lte('deal_score', filters.deal_score[1]);
-      }
-
-      if (filters.created_at?.from) {
-        query = query.gte('created_at', filters.created_at.from.toISOString());
-      }
-
-      if (filters.created_at?.to) {
-        query = query.lte('created_at', filters.created_at.to.toISOString());
-      }
-
-      if (filters.source_date?.from) {
-        query = query.gte('source_date', filters.source_date.from.toISOString().split('T')[0]);
-      }
-
-      if (filters.source_date?.to) {
-        query = query.lte('source_date', filters.source_date.to.toISOString().split('T')[0]);
-      }
-
-      const { data, error, count } = await query
-        .order('created_at', { ascending: false });
-
-      console.log('Paginated deals query result:');
-      console.log('- Data count:', data?.length || 0);
-      console.log('- Total count:', count);
-      console.log('- Error:', error);
-
-      if (error) {
-        console.error("Error fetching paginated deals:", error);
-        throw new Error(error.message);
-      }
-
-      // Explicitly cast the data to Deal[]
-      const fetchedDeals = (data as Deal[] | null) || []; 
-
-      // Apply client-side pagination for now to show all data
-      const startIndex = offset;
-      const endIndex = startIndex + pagination.pageSize;
-      const paginatedData = fetchedDeals.slice(startIndex, endIndex);
-
-      setDeals(fetchedDeals); 
-      setTotal(count || 0);
-
-      console.log('📊 PAGINATED DEALS FETCHED:', paginatedData.length, 'of', count);
-      console.log('=== END PAGINATED DEALS FETCH DEBUG ===');
-
+      onSuccess();
     } catch (error: any) {
-      console.error('Error in fetchPaginatedDeals:', error);
-      setDeals([]);
-      setTotal(0);
+      toast({
+        title: "Error creating deal",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
-      setIsRefetching(false);
     }
   };
 
-  useEffect(() => {
-    fetchPaginatedDeals();
-  }, [user?.id, pagination.page, pagination.pageSize, JSON.stringify(filters)]);
-
-  const hasMore = useMemo(() => {
-    return (pagination.page * pagination.pageSize) < total;
-  }, [pagination.page, pagination.pageSize, total]);
-
   return {
-    deals,
-    total,
     loading,
-    isRefetching,
-    hasMore,
-    refetch: fetchPaginatedDeals,
+    createDeal,
+    pipelineStages, 
+    roundStages,    
   };
 }
