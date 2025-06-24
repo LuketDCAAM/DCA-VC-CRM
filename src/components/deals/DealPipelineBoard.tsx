@@ -7,8 +7,8 @@ import { Building2, DollarSign, Eye, Calendar, Star } from 'lucide-react';
 import { Deal, PipelineStage, RoundStage } from '@/types/deal'; 
 import { getPipelineStageClasses } from './pipelineStageColors';
 
-// This array now precisely matches the pipeline_stage enum from your Supabase types.
-// 'Memo' has been removed, and 'Initial Review' and 'Term Sheet' are included.
+// This array MUST precisely match the pipeline_stage enum from your Supabase types.
+// (from src/integrations/supabase/types.ts -> Database.public.Enums.pipeline_stage)
 const pipelineStages: PipelineStage[] = [
   'Inactive',
   'Initial Review',   
@@ -44,6 +44,7 @@ interface DealPipelineBoardProps {
 
 export function DealPipelineBoard({ deals, onViewDetails, onDealUpdated }: DealPipelineBoardProps) {
   const dealsByStage = pipelineStages.reduce((acc, stage) => {
+    // TypeScript will now correctly understand deal.pipeline_stage due to `Deal extends Database['public']['Tables']['deals']['Row']`
     acc[stage] = deals.filter(deal => deal.pipeline_stage === stage);
     return acc;
   }, {} as Record<PipelineStage, Deal[]>);
