@@ -1,4 +1,5 @@
 
+import { Deal, PipelineStage, RoundStage } from '@/types/deal';
 import React, { useMemo } from 'react';
 import { Table, TableBody } from "@/components/ui/table";
 import { Deal } from '@/types/deal';
