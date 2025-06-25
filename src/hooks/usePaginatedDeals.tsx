@@ -73,7 +73,8 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
 
       let query = supabase
         .from('deals') 
-        .select('*', { count: 'exact', head: false });
+        .select('*', { count: 'exact', head: false })
+        .limit(Number.MAX_SAFE_INTEGER); // KEY CHANGE: Explicitly fetch a very large number of rows
 
       // Apply filters
       if (filters.searchTerm) {
@@ -81,12 +82,10 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
       }
 
       if (filters.pipeline_stage) {
-        // KEY CHANGE: Cast to NonNullable<PipelineStage>
         query = query.eq('pipeline_stage', filters.pipeline_stage as NonNullable<PipelineStage>); 
       }
 
       if (filters.round_stage) {
-        // KEY CHANGE: Cast to NonNullable<RoundStage>
         query = query.eq('round_stage', filters.round_stage as NonNullable<RoundStage>); 
       }
 
@@ -145,11 +144,12 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
 
       const fetchedDeals = (data as Deal[] | null) || []; 
 
+      // The client-side pagination logic remains, but now 'fetchedDeals' should contain all data
       const startIndex = (pagination.page - 1) * pagination.pageSize;
       const endIndex = startIndex + pagination.pageSize;
       const paginatedData = fetchedDeals.slice(startIndex, endIndex);
 
-      setDeals(fetchedDeals); 
+      setDeals(fetchedDeals); // This state will now hold all fetched deals
       setTotal(count || 0);
 
       console.log('📊 PAGINATED DEALS FETCHED:', paginatedData.length, 'of', count);
