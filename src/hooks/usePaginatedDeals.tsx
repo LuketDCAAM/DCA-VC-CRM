@@ -81,11 +81,13 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
       }
 
       if (filters.pipeline_stage) {
-        query = query.eq('pipeline_stage', filters.pipeline_stage as string); 
+        // KEY CHANGE: Cast to NonNullable<PipelineStage>
+        query = query.eq('pipeline_stage', filters.pipeline_stage as NonNullable<PipelineStage>); 
       }
 
       if (filters.round_stage) {
-        query = query.eq('round_stage', filters.round_stage as string); 
+        // KEY CHANGE: Cast to NonNullable<RoundStage>
+        query = query.eq('round_stage', filters.round_stage as NonNullable<RoundStage>); 
       }
 
       if (filters.sector) {
