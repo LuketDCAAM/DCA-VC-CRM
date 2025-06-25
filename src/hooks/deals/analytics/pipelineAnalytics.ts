@@ -8,7 +8,7 @@ export function calculatePipelineDistribution(deals: Deal[]) {
     return {
       stage,
       count,
-      percentage: Math.round((count / deals.length) * 100)
+      percentage: deals.length > 0 ? Math.round((count / deals.length) * 100) : 0
     };
   }).filter(item => item.count > 0);
 }

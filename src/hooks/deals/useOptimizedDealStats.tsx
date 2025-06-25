@@ -5,19 +5,17 @@ import { DealStats } from './dealStatsCalculator';
 
 // Pre-compute stage sets for better performance
 const ACTIVE_STAGES_SET = new Set([
-  'Inactive',
   'Initial Review', 
   'Initial Contact',
   'First Meeting',
   'Due Diligence',
-  'Term Sheet',
+  'Memo',
   'Legal Review'
 ]);
 
 const SCREENING_STAGES_SET = new Set([
   'Inactive',
-  'Initial Review',
-  'Initial Contact'
+  'Initial Review'
 ]);
 
 export function useOptimizedDealStats(deals: Deal[]): DealStats {

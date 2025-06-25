@@ -16,7 +16,7 @@ const pipelineStages: PipelineStage[] = [
   'Initial Contact',
   'First Meeting',
   'Due Diligence',
-  'Term Sheet',       // Changed from 'Memo' to 'Term Sheet' to match the enum
+  'Memo',       // Using 'Memo' to match Supabase enum
   'Legal Review',
   'Invested',
   'Passed'

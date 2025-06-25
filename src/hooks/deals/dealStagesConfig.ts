@@ -1,15 +1,15 @@
 
 // Pipeline stage configurations
 export const PIPELINE_STAGES = [
+  'Inactive',
   'Initial Review',
   'Initial Contact', 
   'First Meeting',
   'Due Diligence',
-  'Term Sheet',    // Changed from 'Memo' to 'Term Sheet'
+  'Memo',    // Keeping as 'Memo' to match Supabase enum
   'Legal Review',
   'Invested',
-  'Passed',
-  'Inactive'
+  'Passed'
 ] as const;
 
 export type PipelineStage = typeof PIPELINE_STAGES[number];
@@ -20,7 +20,7 @@ export const ACTIVE_PIPELINE_STAGES: PipelineStage[] = [
   'Initial Contact',
   'First Meeting',
   'Due Diligence', 
-  'Term Sheet',
+  'Memo',
   'Legal Review'
 ];
 

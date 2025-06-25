@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +14,7 @@ const pipelineStages: PipelineStage[] = [
   'Initial Contact',
   'First Meeting',
   'Due Diligence',
-  'Term Sheet',
+  'Memo',       // Using 'Memo' to match Supabase enum
   'Legal Review',
   'Invested',
   'Passed'

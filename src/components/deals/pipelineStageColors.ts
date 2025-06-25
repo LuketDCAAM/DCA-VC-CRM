@@ -39,7 +39,7 @@ export const PIPELINE_STAGE_COLORS = {
     border: 'border-indigo-200',
     text: 'text-indigo-700'
   },
-  'Term Sheet': {
+  'Memo': {
     badge: 'bg-purple-100 text-purple-800 border-purple-200',
     variant: 'default' as const,
     background: 'bg-purple-50',

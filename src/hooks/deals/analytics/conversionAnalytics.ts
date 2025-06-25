@@ -48,13 +48,13 @@ export function calculateConversionMetrics(deals: Deal[]) {
     },
     {
       from: 'Due Diligence',
-      to: 'Term Sheet',
-      rate: calculateStageConversion(deals, 'Due Diligence', 'Term Sheet')
+      to: 'Memo',
+      rate: calculateStageConversion(deals, 'Due Diligence', 'Memo')
     },
     {
-      from: 'Term Sheet',
+      from: 'Memo',
       to: 'Invested',
-      rate: calculateStageConversion(deals, 'Term Sheet', 'Invested')
+      rate: calculateStageConversion(deals, 'Memo', 'Invested')
     }
   ];
 
