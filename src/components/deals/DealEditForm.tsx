@@ -1,20 +1,22 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { Save, X } from 'lucide-react';
-import { Deal } from '@/types/deal';
-import { Form } from '@/components/ui/form';
-import { DealCompanyForm } from './form/DealCompanyForm';
-import { DealContactForm } from './form/DealContactForm';
-import { DealStatusForm } from './form/DealStatusForm';
-import { DealFinancialForm } from './form/DealFinancialForm';
+import { Save, X, Paperclip, Link } from 'lucide-react'; // Added Paperclip and Link icons
+import { Deal } from '@/types/deal'; 
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'; 
+import { Input } from '@/components/ui/input'; 
+import { Textarea } from '@/components/ui/textarea'; 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Constants } from '@/integrations/supabase/types';
+import { useEditDeal } from './hooks/useEditDeal'; // Import the new hook
 
 interface DealEditFormProps {
   deal: Deal;
@@ -27,38 +29,35 @@ const formatCurrency = (amount: number | null) => {
   return (amount / 100).toString();
 };
 
-const parseCurrency = (value: string) => {
-  if (value === '') return null;
-  const num = parseFloat(value);
-  return isNaN(num) ? null : Math.round(num * 100);
-};
-
+// Define a separate schema for the form values, including UI-specific fields
 const dealFormSchema = z.object({
   company_name: z.string().min(1, 'Company name is required.'),
-  website: z.string().url({ message: "Invalid URL." }).or(z.literal('')).nullable(),
-  location: z.string().nullable(),
-  description: z.string().nullable(),
-  sector: z.string().nullable(),
-  contact_name: z.string().nullable(),
-  contact_email: z.string().email({ message: "Invalid email address." }).or(z.literal('')).nullable(),
-  contact_phone: z.string().nullable(),
+  website: z.string().url({ message: "Invalid URL." }).or(z.literal('')).nullable().optional(),
+  location: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  sector: z.string().nullable().optional(),
+  contact_name: z.string().nullable().optional(),
+  contact_email: z.string().email({ message: "Invalid email address." }).or(z.literal('')).nullable().optional(),
+  contact_phone: z.string().nullable().optional(),
   pipeline_stage: z.enum(Constants.public.Enums.pipeline_stage),
-  round_stage: z.enum(Constants.public.Enums.round_stage).nullable(),
-  deal_score: z.number().min(0).max(100).nullable(),
-  deal_lead: z.string().nullable(),
-  deal_source: z.string().nullable(),
-  source_date: z.string().nullable(),
-  round_size: z.string().nullable(),
-  post_money_valuation: z.string().nullable(),
-  revenue: z.string().nullable(),
+  round_stage: z.enum(Constants.public.Enums.round_stage).nullable().optional(),
+  deal_score: z.number().min(0).max(100).nullable().optional(),
+  deal_lead: z.string().nullable().optional(),
+  deal_source: z.string().nullable().optional(),
+  source_date: z.string().nullable().optional(),
+  round_size: z.string().nullable().optional(), 
+  post_money_valuation: z.string().nullable().optional(),
+  revenue: z.string().nullable().optional(),
+  pitch_deck_url: z.string().url({ message: "Invalid URL." }).or(z.literal('')).nullable().optional(), // New field for link
 });
 
-type DealFormValues = z.infer<typeof dealFormSchema>;
+type DealFormValues = z.infer<typeof dealFormSchema> & {
+  pitchDeckFile?: File | null; // Add file to form values type for convenience
+};
 
 export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  
+  const [pitchDeckFile, setPitchDeckFile] = useState<File | null>(null); // State for the file input
+
   const form = useForm<DealFormValues>({
     resolver: zodResolver(dealFormSchema),
     defaultValues: {
@@ -70,62 +69,62 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
       location: deal.location || '',
       description: deal.description || '',
       sector: deal.sector || '',
-      round_stage: deal.round_stage,
+      round_stage: deal.round_stage, 
       deal_score: deal.deal_score,
-      source_date: deal.source_date ? deal.source_date.split('T')[0] : '',
+      source_date: deal.source_date ? deal.source_date.split('T')[0] : '', 
       deal_source: deal.deal_source || '',
       deal_lead: deal.deal_lead || '',
       round_size: formatCurrency(deal.round_size),
       post_money_valuation: formatCurrency(deal.post_money_valuation),
       revenue: formatCurrency(deal.revenue),
+      // Initialize new pitch deck URL field. You might need to fetch existing links to populate this
+      pitch_deck_url: '', // This will need to be populated from fetched attachments if an existing one is linked
     },
   });
 
-  const { formState: { isSubmitting } } = form;
+  // Use the new hook
+  const { handleEditSubmit, isUpdating } = useEditDeal({ deal, onSave });
 
-  const onSubmit = async (values: DealFormValues) => {
-    try {
-      const updateData = {
-        ...values,
-        round_size: parseCurrency(values.round_size || ''),
-        post_money_valuation: parseCurrency(values.post_money_valuation || ''),
-        revenue: parseCurrency(values.revenue || ''),
-        updated_at: new Date().toISOString(),
-      };
-
-      const { error } = await supabase
-        .from('deals')
-        .update(updateData)
-        .eq('id', deal.id);
-
-      if (error) throw error;
-
-      if (values.pipeline_stage === 'Invested' && deal.pipeline_stage !== 'Invested') {
-        toast({
-          title: "Deal Invested!",
-          description: `"${values.company_name}" has been added to your portfolio.`,
-        });
-      } else {
-        toast({
-          title: "Deal updated",
-          description: "The deal has been successfully updated.",
-        });
-      }
-
-      queryClient.invalidateQueries({ queryKey: ['deals'] });
-      if (values.pipeline_stage === 'Invested') {
-        queryClient.invalidateQueries({ queryKey: ['portfolioCompanies'] });
-      }
-
-      onSave();
-    } catch (error: any) {
-      toast({
-        title: "Error updating deal",
-        description: error.message,
-        variant: "destructive",
-      });
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setPitchDeckFile(e.target.files[0]);
+    } else {
+      setPitchDeckFile(null);
     }
   };
+
+  const onSubmit = async (values: DealFormValues) => {
+    await handleEditSubmit({ ...values, pitchDeckFile }); // Pass combined values including file
+  };
+
+  // Effect to populate pitch_deck_url if deal already has one (from file_attachments)
+  // This would require fetching file_attachments for the deal when the form mounts
+  // For now, it initializes as empty, which means existing links won't show in the input
+  // To implement proper editing of existing links/files, you'd need a separate query
+  // to fetch file_attachments and pre-populate the form fields.
+  React.useEffect(() => {
+    const fetchExistingAttachments = async () => {
+      // Assuming you want to display *one* existing pitch deck URL if it exists
+      const { data: attachments, error } = await supabase
+        .from('file_attachments')
+        .select('*')
+        .eq('deal_id', deal.id)
+        .eq('file_type', 'link') // or include other relevant file types
+        .limit(1); // Fetch only one link for the form field
+
+      if (error) {
+        console.error("Error fetching existing attachments:", error);
+        return;
+      }
+
+      if (attachments && attachments.length > 0) {
+        form.setValue('pitch_deck_url', attachments[0].file_url);
+      }
+    };
+
+    fetchExistingAttachments();
+  }, [deal.id, form]);
+
 
   return (
     <Form {...form}>
@@ -133,9 +132,9 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">Edit Deal</h3>
           <div className="flex gap-2">
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isUpdating}>
               <Save className="h-4 w-4 mr-2" />
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+              {isUpdating ? 'Saving...' : 'Save Changes'}
             </Button>
             <Button onClick={onCancel} variant="outline" type="button">
               <X className="h-4 w-4 mr-2" />
@@ -145,12 +144,110 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <DealCompanyForm />
-          <DealContactForm />
-          <DealStatusForm />
-          <DealFinancialForm />
-        </div>
-      </form>
-    </Form>
-  );
-}
+          {/* Company Details */}
+          <div className="space-y-4">
+            <h4 className="font-medium">Company Details</h4>
+            <FormField
+              control={form.control}
+              name="company_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Company Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="website"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Website</FormLabel>
+                  <FormControl>
+                    <Input type="url" placeholder="https://example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Location</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="sector"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sector</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Contact Details */}
+          <div className="space-y-4">
+            <h4 className="font-medium">Contact Information</h4>
+            <FormField
+              control={form.control}
+              name="contact_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contact Name</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="contact_email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contact Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="contact_phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contact Phone</FormLabel>
+                  <FormControl>
+                    <Input {
