@@ -12,11 +12,8 @@ import {
 } from "@/components/ui/select";
 import { DialogFooter } from '@/components/ui/dialog';
 
-// Correct import path and destructuring for useAddDeal, AddDealFormData, and defaultFormData
-// Assuming AddDealForm.tsx is in src/components/deals/form/
-// and useAddDeal.tsx is in src/components/deals/hooks/
 import { useAddDeal, AddDealFormData, defaultFormData } from '../hooks/useAddDeal';
-import { PipelineStage, RoundStage } from '@/types/deal'; // Ensure these are imported from your canonical types
+import { PipelineStage, RoundStage } from '@/types/deal'; 
 
 interface AddDealFormProps {
   onSuccess: () => void;
@@ -26,6 +23,7 @@ interface AddDealFormProps {
 export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
   const { createDeal, loading, pipelineStages, roundStages } = useAddDeal();
   const [formData, setFormData] = useState<AddDealFormData>(defaultFormData);
+  const [pitchDeckFile, setPitchDeckFile] = useState<File | null>(null); // State for the file input
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -36,10 +34,20 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
     setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setPitchDeckFile(e.target.files[0]);
+    } else {
+      setPitchDeckFile(null);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await createDeal(formData, () => {
+    // Pass pitchDeckFile and pitchDeckUrl from formData to createDeal
+    await createDeal({ ...formData, pitchDeckFile }, () => { // Pass pitchDeckFile directly
       setFormData(defaultFormData); // Reset form on success
+      setPitchDeckFile(null); // Clear file input
       onSuccess();
     });
   };
@@ -139,6 +147,16 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
         <div>
           <Label htmlFor="source_date">Source Date</Label>
           <Input id="source_date" type="date" value={formData.source_date} onChange={handleChange} />
+        </div>
+        {/* New fields for Pitch Deck */}
+        <div className="md:col-span-2"> {/* Span full width for file input */}
+          <Label htmlFor="pitch_deck_file">Pitch Deck (File Upload)</Label>
+          <Input id="pitch_deck_file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx" onChange={handleFileChange} />
+          {pitchDeckFile && <p className="text-sm text-gray-500 mt-1">Selected: {pitchDeckFile.name}</p>}
+        </div>
+        <div className="md:col-span-2">
+          <Label htmlFor="pitch_deck_url">Pitch Deck (Link)</Label>
+          <Input id="pitch_deck_url" type="url" value={formData.pitch_deck_url || ''} onChange={handleChange} placeholder="e.g., https://docs.google.com/presentation/..." />
         </div>
       </div>
       <div>
