@@ -33,16 +33,16 @@ export function usePaginatedDeals(
   const { user } = useAuth();
   const [allDeals, setAllDeals] = useState<Deal[]>([]);
 
-  // First, fetch all deals to get the complete dataset
+  // Fetch ALL deals from Supabase with proper chunking
   const { data: fetchedDeals = [], isLoading, isRefetching } = useQuery({
     queryKey: ['all-deals', user?.id, filters],
     queryFn: async () => {
       if (!user?.id) return [];
 
-      console.log('Fetching all deals for pagination...');
+      console.log('Fetching ALL deals with proper chunking...');
 
-      // Start with base query - remove any limits to get all data
-      let query = supabase
+      // Start with base query
+      let baseQuery = supabase
         .from('deals')
         .select('*')
         .eq('created_by', user.id)
@@ -50,56 +50,59 @@ export function usePaginatedDeals(
 
       // Apply filters with proper type casting
       if (filters.pipeline_stage && filters.pipeline_stage.length > 0) {
-        query = query.in('pipeline_stage', filters.pipeline_stage as PipelineStage[]);
+        baseQuery = baseQuery.in('pipeline_stage', filters.pipeline_stage as PipelineStage[]);
       }
 
       if (filters.round_stage && filters.round_stage.length > 0) {
-        query = query.in('round_stage', filters.round_stage as RoundStage[]);
+        baseQuery = baseQuery.in('round_stage', filters.round_stage as RoundStage[]);
       }
 
       if (filters.sector && filters.sector.length > 0) {
-        query = query.in('sector', filters.sector);
+        baseQuery = baseQuery.in('sector', filters.sector);
       }
 
       if (filters.location && filters.location.length > 0) {
-        query = query.in('location', filters.location);
+        baseQuery = baseQuery.in('location', filters.location);
       }
 
       if (filters.search && filters.search.trim()) {
         const searchTerm = filters.search.trim();
-        query = query.or(`company_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,contact_name.ilike.%${searchTerm}%`);
+        baseQuery = baseQuery.or(`company_name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,contact_name.ilike.%${searchTerm}%`);
       }
 
-      // Fetch all data by using a large limit and handling pagination internally
-      const PAGE_SIZE = 1000;
+      // Fetch ALL data by chunking properly
+      const CHUNK_SIZE = 1000;
       let allResults: Deal[] = [];
-      let page = 0;
+      let offset = 0;
       let hasMoreData = true;
 
       while (hasMoreData) {
-        const { data, error } = await query
-          .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+        console.log(`Fetching chunk starting at offset ${offset}...`);
+        
+        const { data, error } = await baseQuery
+          .range(offset, offset + CHUNK_SIZE - 1);
 
         if (error) {
-          console.error('Error fetching deals:', error);
+          console.error('Error fetching deals chunk:', error);
           throw new Error(error.message);
         }
 
         if (data && data.length > 0) {
           allResults = [...allResults, ...data];
+          console.log(`Fetched ${data.length} deals, total so far: ${allResults.length}`);
           
-          // If we got less than PAGE_SIZE results, we've reached the end
-          if (data.length < PAGE_SIZE) {
+          // If we got less than CHUNK_SIZE results, we've reached the end
+          if (data.length < CHUNK_SIZE) {
             hasMoreData = false;
           } else {
-            page++;
+            offset += CHUNK_SIZE;
           }
         } else {
           hasMoreData = false;
         }
       }
 
-      console.log(`Fetched ${allResults.length} total deals`);
+      console.log(`✅ Fetched ALL ${allResults.length} deals successfully`);
       return allResults as Deal[];
     },
     enabled: !!user?.id,
@@ -114,14 +117,14 @@ export function usePaginatedDeals(
     }
   }, [fetchedDeals]);
 
-  // Calculate pagination from the complete dataset
+  // Calculate client-side pagination from the complete dataset
   const startIndex = (pagination.page - 1) * pagination.pageSize;
   const endIndex = startIndex + pagination.pageSize;
   const paginatedDeals = allDeals.slice(startIndex, endIndex);
   const total = allDeals.length;
   const hasMore = endIndex < total;
 
-  console.log(`Pagination: page ${pagination.page}, showing ${paginatedDeals.length} of ${total} deals`);
+  console.log(`📊 Pagination: page ${pagination.page}, showing ${paginatedDeals.length} of ${total} total deals`);
 
   return {
     deals: paginatedDeals,
