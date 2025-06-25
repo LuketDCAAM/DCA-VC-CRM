@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useDeals } from '@/hooks/useDeals';
 import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
@@ -13,6 +14,7 @@ import { MonthlyTrendChart } from '@/components/dashboard/charts/MonthlyTrendCha
 import { ValuationChart } from '@/components/dashboard/charts/ValuationChart';
 import { RoundStageChart } from '@/components/dashboard/charts/RoundStageChart';
 import { PortfolioPerformanceChart } from '@/components/dashboard/charts/PortfolioPerformanceChart';
+import { DealsLocationMap } from '@/components/dashboard/charts/DealsLocationMap';
 
 export default function Dashboard() {
   const { deals, loading: dealsLoading, dealStats } = useDeals();
@@ -49,6 +51,9 @@ export default function Dashboard() {
         totalDeals={dealStats.totalDeals}
         totalInvested={totalInvested}
       />
+
+      {/* Geographic Distribution */}
+      <DealsLocationMap deals={deals || []} />
 
       {/* Primary Analytics - Deal Flow & Pipeline */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
