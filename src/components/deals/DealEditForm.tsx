@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Constants } from '@/integrations/supabase/types';
 import { useEditDeal } from './hooks/useEditDeal'; // Import the new hook
+import { supabase } from '@/integrations/supabase/client'; // Import supabase for fetching attachments
 
 interface DealEditFormProps {
   deal: Deal;
@@ -77,12 +78,12 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
       round_size: formatCurrency(deal.round_size),
       post_money_valuation: formatCurrency(deal.post_money_valuation),
       revenue: formatCurrency(deal.revenue),
-      // Initialize new pitch deck URL field. You might need to fetch existing links to populate this
-      pitch_deck_url: '', // This will need to be populated from fetched attachments if an existing one is linked
+      // Initialize new pitch deck URL field to an empty string, will be updated by useEffect
+      pitch_deck_url: '', 
     },
   });
 
-  // Use the new hook
+  // Use the new hook for submission logic
   const { handleEditSubmit, isUpdating } = useEditDeal({ deal, onSave });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,22 +99,17 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
   };
 
   // Effect to populate pitch_deck_url if deal already has one (from file_attachments)
-  // This would require fetching file_attachments for the deal when the form mounts
-  // For now, it initializes as empty, which means existing links won't show in the input
-  // To implement proper editing of existing links/files, you'd need a separate query
-  // to fetch file_attachments and pre-populate the form fields.
   React.useEffect(() => {
     const fetchExistingAttachments = async () => {
-      // Assuming you want to display *one* existing pitch deck URL if it exists
       const { data: attachments, error } = await supabase
         .from('file_attachments')
-        .select('*')
+        .select('file_url')
         .eq('deal_id', deal.id)
-        .eq('file_type', 'link') // or include other relevant file types
-        .limit(1); // Fetch only one link for the form field
+        .eq('file_type', 'link') 
+        .limit(1); // Assuming only one primary pitch deck link for form pre-population
 
       if (error) {
-        console.error("Error fetching existing attachments:", error);
+        console.error("Error fetching existing attachments for form pre-fill:", error);
         return;
       }
 
@@ -122,7 +118,9 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
       }
     };
 
-    fetchExistingAttachments();
+    if (deal.id) { // Only fetch if deal ID is available
+      fetchExistingAttachments();
+    }
   }, [deal.id, form]);
 
 
@@ -239,15 +237,5 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
                   <FormControl>
                     <Input type="email" {...field} />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="contact_phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Contact Phone</FormLabel>
-                  <FormControl>
-                    <Input {
+                  <FormMessage
+                    
