@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +16,7 @@ const pipelineStages: PipelineStage[] = [
   'Initial Contact',
   'First Meeting',
   'Due Diligence',
-  'Memo',       
+  'Term Sheet',       // Changed from 'Memo' to 'Term Sheet' to match the enum
   'Legal Review',
   'Invested',
   'Passed'
@@ -44,7 +45,7 @@ interface DealPipelineBoardProps {
 
 export function DealPipelineBoard({ deals, onViewDetails, onDealUpdated }: DealPipelineBoardProps) {
   const dealsByStage = pipelineStages.reduce((acc, stage) => {
-    // TypeScript will now correctly understand deal.pipeline_stage due to `Deal extends Database['public']['Tables']['deals']['Row']`
+    // TypeScript will now correctly understand deal.pipeline_stage due to proper Deal interface
     acc[stage] = deals.filter(deal => deal.pipeline_stage === stage);
     return acc;
   }, {} as Record<PipelineStage, Deal[]>);

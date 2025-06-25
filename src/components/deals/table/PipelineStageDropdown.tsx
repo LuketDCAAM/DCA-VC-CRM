@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Select,
@@ -30,7 +31,6 @@ const PIPELINE_STAGES: PipelineStage[] = [
   'Legal Review',
   'Invested',
   'Passed'
-  // 'Memo' removed as it's not in your Supabase enum
 ];
 
 export function PipelineStageDropdown({ deal, onUpdate }: PipelineStageDropdownProps) {

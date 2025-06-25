@@ -1,12 +1,11 @@
 
-
 // Pipeline stage configurations
 export const PIPELINE_STAGES = [
   'Initial Review',
   'Initial Contact', 
   'First Meeting',
   'Due Diligence',
-  'Term Sheet',
+  'Term Sheet',    // Changed from 'Memo' to 'Term Sheet'
   'Legal Review',
   'Invested',
   'Passed',
@@ -57,4 +56,3 @@ export const isPassedStage = (stage: string): boolean => {
 export const isInactiveStage = (stage: string): boolean => {
   return stage === 'Inactive';
 };
-
