@@ -1,12 +1,12 @@
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Deal } from '@/types/deal';
 import { DealsHeader } from './DealsHeader';
 import { DealsStats } from './DealsStats';
 import { SearchAndFilter } from '@/components/common/SearchAndFilter';
 import { DealsViewTabs } from './DealsViewTabs';
 import { DealsViewRenderer, ViewMode } from './views/DealsViewRenderer';
-import { DEALS_FILTER_OPTIONS } from './filters/DealsFilterConfig';
+import { generateDealsFilterOptions } from './filters/DealsFilterConfig';
 import { DealStats } from '@/hooks/deals/dealStatsCalculator';
 
 interface DealsPageContentProps {
@@ -34,6 +34,7 @@ interface DealsPageContentProps {
   csvTemplateColumns: any[];
   exportColumns: any[];
   onCSVImport: (data: any[]) => Promise<any>;
+  allDeals: Deal[]; // Add this prop to access all deals for filter generation
 }
 
 export function DealsPageContent({
@@ -61,9 +62,17 @@ export function DealsPageContent({
   csvTemplateColumns,
   exportColumns,
   onCSVImport,
+  allDeals,
 }: DealsPageContentProps) {
   console.log('DealsPageContent - showAdvancedFilters:', showAdvancedFilters);
   console.log('DealsPageContent - activeFilters:', activeFilters);
+  console.log('DealsPageContent - allDeals for filter generation:', allDeals.length);
+
+  // Generate dynamic filter options based on actual deals data
+  const dynamicFilterOptions = useMemo(() => {
+    console.log('Generating dynamic filter options...');
+    return generateDealsFilterOptions(allDeals);
+  }, [allDeals]);
 
   return (
     <div className="space-y-6">
@@ -89,7 +98,7 @@ export function DealsPageContent({
           searchTerm={searchTerm}
           onSearchChange={onSearchChange}
           placeholder="Search deals by company, contact, location, or description..."
-          filters={DEALS_FILTER_OPTIONS}
+          filters={dynamicFilterOptions}
           activeFilters={activeFilters}
           onFilterChange={onFilterChange}
           onClearFilters={onClearFilters}

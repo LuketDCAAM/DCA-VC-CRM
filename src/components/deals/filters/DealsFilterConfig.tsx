@@ -1,6 +1,91 @@
-
 import { FilterOption } from '@/components/common/SearchAndFilter';
+import { Deal } from '@/types/deal';
+import { getUniqueSectors, getUniqueLocations, getUniqueDealSources } from '@/utils/dealFilterUtils';
 
+export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
+  console.log('Generating dynamic filter options from deals:', deals.length);
+  
+  return [
+    {
+      key: 'pipeline_stage',
+      label: 'Pipeline Stage',
+      value: 'pipeline_stage',
+      type: 'select',
+      options: [
+        { label: 'Inactive', value: 'Inactive' },
+        { label: 'Initial Review', value: 'Initial Review' },
+        { label: 'Initial Contact', value: 'Initial Contact' },
+        { label: 'First Meeting', value: 'First Meeting' },
+        { label: 'Due Diligence', value: 'Due Diligence' },
+        { label: 'Term Sheet', value: 'Term Sheet' },
+        { label: 'Memo', value: 'Memo' },
+        { label: 'Invested', value: 'Invested' },
+        { label: 'Passed', value: 'Passed' },
+      ]
+    },
+    {
+      key: 'round_stage',
+      label: 'Round Stage',
+      value: 'round_stage',
+      type: 'select',
+      options: [
+        { label: 'Pre-Seed', value: 'Pre-Seed' },
+        { label: 'Seed', value: 'Seed' },
+        { label: 'Series A', value: 'Series A' },
+        { label: 'Series B', value: 'Series B' },
+        { label: 'Series C', value: 'Series C' },
+        { label: 'Growth', value: 'Growth' },
+      ]
+    },
+    {
+      key: 'sector',
+      label: 'Sector',
+      value: 'sector',
+      type: 'select',
+      options: getUniqueSectors(deals)
+    },
+    {
+      key: 'location',
+      label: 'Location',
+      value: 'location',
+      type: 'select',
+      options: getUniqueLocations(deals)
+    },
+    {
+      key: 'round_size',
+      label: 'Round Size',
+      value: 'round_size',
+      type: 'range'
+    },
+    {
+      key: 'deal_score',
+      label: 'Deal Score',
+      value: 'deal_score',
+      type: 'range',
+    },
+    {
+      key: 'created_at',
+      label: 'Date Added',
+      value: 'created_at',
+      type: 'date'
+    },
+    {
+      key: 'deal_source',
+      label: 'Deal Source',
+      value: 'deal_source',
+      type: 'select',
+      options: getUniqueDealSources(deals)
+    },
+    {
+      key: 'source_date',
+      label: 'Source Date',
+      value: 'source_date',
+      type: 'date'
+    }
+  ];
+}
+
+// Keep the static version for backward compatibility if needed
 export const DEALS_FILTER_OPTIONS: FilterOption[] = [
   {
     key: 'pipeline_stage',

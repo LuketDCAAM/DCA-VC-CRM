@@ -108,6 +108,7 @@ export default function Deals() {
         csvTemplateColumns={csvTemplateColumns}
         exportColumns={exportColumns}
         onCSVImport={handleCSVImportWrapper}
+        allDeals={deals}
       />
 
       {selectedDeal && (
