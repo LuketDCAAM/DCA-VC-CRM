@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { Deal } from '@/types/deal';
+import { Deal, PipelineStage, RoundStage } from '@/types/deal';
 
 export interface PaginationConfig {
   page: number;
@@ -59,13 +59,13 @@ export function usePaginatedDeals(
           .select('*', { count: 'exact' })
           .eq('created_by', user.id);
 
-        // Apply filters
+        // Apply filters with proper type casting
         if (filters.pipeline_stage && filters.pipeline_stage.length > 0) {
-          query = query.in('pipeline_stage', filters.pipeline_stage);
+          query = query.in('pipeline_stage', filters.pipeline_stage as PipelineStage[]);
         }
 
         if (filters.round_stage && filters.round_stage.length > 0) {
-          query = query.in('round_stage', filters.round_stage);
+          query = query.in('round_stage', filters.round_stage as RoundStage[]);
         }
 
         if (filters.sector && filters.sector.length > 0) {
