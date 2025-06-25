@@ -20,32 +20,7 @@ export async function fetchDeals(userId: string): Promise<Deal[]> {
     throw new Error('User not authenticated');
   }
   
-  // --- REMOVED USER APPROVAL CHECK ---
-  // The following block has been removed to allow all authenticated users access:
-  /*
-  console.log('Checking user approval status...');
-  const { data: approvalData, error: approvalError } = await supabase
-    .from('user_approvals')
-    .select('status')
-    .eq('user_id', user.id)
-    .single();
-    
-  console.log('Approval data:', approvalData);
-  console.log('Approval error:', approvalError);
-  
-  if (approvalError && approvalError.code !== 'PGRST116') { // PGRST116 is "No rows found"
-    console.error('Error checking approval status:', approvalError);
-  }
-  
-  if (!approvalData || approvalData.status !== 'approved') {
-    console.warn('User is not approved. Status:', approvalData?.status || 'not found');
-    return []; // Return empty array if not approved
-  }
-  console.log('User is approved, proceeding with deals fetch...');
-  */
-  // --- END REMOVED BLOCK ---
-  
-  console.log('User authenticated, proceeding with deals fetch...'); // Adjusted log message
+  console.log('User authenticated, proceeding with deals fetch...'); 
   
   // Test the RLS function directly
   console.log('Testing is_user_approved function...');
@@ -60,7 +35,8 @@ export async function fetchDeals(userId: string): Promise<Deal[]> {
   const { data, error, count } = await supabase
     .from('deals') 
     .select('*', { count: 'exact' })
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .limit(Number.MAX_SAFE_INTEGER); // KEY CHANGE: Explicitly fetch a very large number of rows
 
   console.log('Query result:');
   console.log('- Data:', data); 
