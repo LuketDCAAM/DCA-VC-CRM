@@ -237,5 +237,211 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
                   <FormControl>
                     <Input type="email" {...field} />
                   </FormControl>
-                  <FormMessage
-                    
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="contact_phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Contact Phone</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Status Details */}
+          <div className="space-y-4">
+            <h4 className="font-medium">Deal Status</h4>
+            <FormField
+              control={form.control}
+              name="pipeline_stage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Pipeline Stage</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select pipeline stage" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Constants.public.Enums.pipeline_stage.map((stage) => (
+                        <SelectItem key={stage} value={stage}>
+                          {stage}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="round_stage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Round Stage</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value || ''}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select round stage" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Constants.public.Enums.round_stage.map((stage) => (
+                        <SelectItem key={stage} value={stage}>
+                          {stage}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="deal_score"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Deal Score</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} value={field.value === null ? '' : field.value} onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="deal_lead"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Deal Lead</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="deal_source"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Deal Source</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="source_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Source Date</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Financial Details */}
+          <div className="space-y-4">
+            <h4 className="font-medium">Financial Information</h4>
+            <FormField
+              control={form.control}
+              name="round_size"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Round Size (USD)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="0" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="post_money_valuation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Post-Money Valuation (USD)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="0" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="revenue"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Revenue (USD)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="0" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* New Section for Attachments */}
+          <div className="md:col-span-2 space-y-4">
+            <h4 className="font-medium">Attachments & Links</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Pitch Deck File Upload */}
+              <FormItem>
+                <FormLabel className="flex items-center gap-1">
+                  <Paperclip className="h-4 w-4" /> Pitch Deck File
+                </FormLabel>
+                <FormControl>
+                  <Input type="file" accept=".pdf,.doc,.docx,.ppt,.pptx" onChange={handleFileChange} />
+                </FormControl>
+                {pitchDeckFile && <p className="text-sm text-muted-foreground mt-1">Selected: {pitchDeckFile.name}</p>}
+                <FormMessage />
+              </FormItem>
+
+              {/* Pitch Deck URL Link */}
+              <FormField
+                control={form.control}
+                name="pitch_deck_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-1">
+                      <Link className="h-4 w-4" /> Pitch Deck Link
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="url" placeholder="https://docs.google.com/presentation/..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+
+        </div>
+      </form>
+    </Form>
+  );
+}
