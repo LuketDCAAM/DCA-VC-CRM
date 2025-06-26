@@ -1,7 +1,7 @@
-
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { MapPin, Building2, TrendingUp, ChevronDown } from 'lucide-react';
 import {
   Select,
@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Deal } from '@/types/deal';
+import { ACTIVE_PIPELINE_STAGES } from '@/hooks/deals/dealStagesConfig';
 
 interface DealsLocationMapProps {
   deals: Deal[];
@@ -57,11 +58,17 @@ const CITY_TO_REGION: Record<string, string> = {
 
 export function DealsLocationMap({ deals }: DealsLocationMapProps) {
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [showActiveOnly, setShowActiveOnly] = useState(false);
+
+  const filteredDeals = useMemo(() => {
+    if (!showActiveOnly) return deals;
+    return deals.filter(deal => ACTIVE_PIPELINE_STAGES.includes(deal.pipeline_stage as any));
+  }, [deals, showActiveOnly]);
 
   const locationData = useMemo(() => {
     const regionCounts: Record<string, { count: number; deals: Deal[]; cities: Set<string> }> = {};
     
-    deals.forEach(deal => {
+    filteredDeals.forEach(deal => {
       if (deal.location && deal.location.trim() !== '') {
         const location = deal.location.trim();
         
@@ -86,7 +93,7 @@ export function DealsLocationMap({ deals }: DealsLocationMapProps) {
         regionInfo: US_REGIONS[region] || null
       }))
       .sort((a, b) => b.count - a.count);
-  }, [deals]);
+  }, [filteredDeals]);
 
   const totalDeals = locationData.reduce((sum, item) => sum + item.count, 0);
   const topRegions = locationData.slice(0, 6);
@@ -119,20 +126,39 @@ export function DealsLocationMap({ deals }: DealsLocationMapProps) {
   return (
     <Card className="col-span-full">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MapPin className="h-5 w-5" />
-          Deal Distribution by Location
-        </CardTitle>
-        <CardDescription>
-          Geographic distribution across {locationData.length} locations • {totalDeals} total deals
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Deal Distribution by Location
+            </CardTitle>
+            <CardDescription>
+              Geographic distribution across {locationData.length} locations • {totalDeals} {showActiveOnly ? 'active' : 'total'} deals
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">Total Deals</span>
+            <Switch
+              checked={showActiveOnly}
+              onCheckedChange={setShowActiveOnly}
+            />
+            <span className="text-sm font-medium">Active Pipeline</span>
+          </div>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {locationData.length === 0 ? (
           <div className="text-center text-muted-foreground py-12">
             <Building2 className="h-16 w-16 mx-auto mb-4 opacity-30" />
-            <p className="text-lg font-medium mb-2">No location data available</p>
-            <p className="text-sm">Add location information to deals to see geographic distribution</p>
+            <p className="text-lg font-medium mb-2">
+              {showActiveOnly ? 'No active deals found' : 'No location data available'}
+            </p>
+            <p className="text-sm">
+              {showActiveOnly 
+                ? 'Switch to "Total Deals" to see all deals or add active deals with location information'
+                : 'Add location information to deals to see geographic distribution'
+              }
+            </p>
           </div>
         ) : (
           <>
@@ -263,7 +289,7 @@ export function DealsLocationMap({ deals }: DealsLocationMapProps) {
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-green-600">{totalDeals}</p>
-                  <p className="text-sm text-muted-foreground">Total Deals</p>
+                  <p className="text-sm text-muted-foreground">{showActiveOnly ? 'Active' : 'Total'} Deals</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-purple-600">
