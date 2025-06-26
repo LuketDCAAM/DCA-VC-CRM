@@ -2,7 +2,14 @@
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Building2, TrendingUp } from 'lucide-react';
+import { MapPin, Building2, TrendingUp, ChevronDown } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Deal } from '@/types/deal';
 
 interface DealsLocationMapProps {
@@ -103,6 +110,10 @@ export function DealsLocationMap({ deals }: DealsLocationMapProps) {
     if (ratio >= 0.6) return 'text-lg font-semibold';
     if (ratio >= 0.4) return 'text-base font-medium';
     return 'text-sm';
+  };
+
+  const handleLocationSelect = (locationRegion: string) => {
+    setSelectedRegion(selectedRegion === locationRegion ? null : locationRegion);
   };
 
   return (
@@ -219,26 +230,27 @@ export function DealsLocationMap({ deals }: DealsLocationMapProps) {
               </div>
             )}
 
-            {/* All Locations List */}
+            {/* All Locations Dropdown */}
             {locationData.length > 6 && (
-              <div>
-                <h4 className="font-semibold mb-3">All Locations</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                  {locationData.map((location) => (
-                    <div
-                      key={location.region}
-                      className="flex items-center justify-between p-2 bg-gray-50 rounded text-sm hover:bg-gray-100 transition-colors cursor-pointer"
-                      onClick={() => setSelectedRegion(
-                        selectedRegion === location.region ? null : location.region
-                      )}
-                    >
-                      <span className="truncate">{location.region}</span>
-                      <Badge variant="secondary" className="ml-2 text-xs">
-                        {location.count}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
+              <div className="space-y-3">
+                <h4 className="font-semibold">All Locations</h4>
+                <Select onValueChange={handleLocationSelect}>
+                  <SelectTrigger className="w-full max-w-md">
+                    <SelectValue placeholder={`Browse all ${locationData.length} locations...`} />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    {locationData.map((location) => (
+                      <SelectItem key={location.region} value={location.region}>
+                        <div className="flex items-center justify-between w-full">
+                          <span className="truncate">{location.region}</span>
+                          <Badge variant="secondary" className="ml-2 text-xs">
+                            {location.count}
+                          </Badge>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             )}
 
