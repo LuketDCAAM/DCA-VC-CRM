@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
-import { Save, X, Paperclip, Link } from 'lucide-react'; // Added Paperclip and Link icons
+import { Save, X, Paperclip, Link } from 'lucide-react';
 import { Deal } from '@/types/deal'; 
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'; 
 import { Input } from '@/components/ui/input'; 
@@ -17,8 +16,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Constants } from '@/integrations/supabase/types';
-import { useEditDeal } from './hooks/useEditDeal'; // Import the new hook
-import { supabase } from '@/integrations/supabase/client'; // Import supabase for fetching attachments
+import { useEditDeal } from './hooks/useEditDeal';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DealEditFormProps {
   deal: Deal;
@@ -31,34 +30,33 @@ const formatCurrency = (amount: number | null) => {
   return (amount / 100).toString();
 };
 
-// Define a separate schema for the form values, including UI-specific fields
 const dealFormSchema = z.object({
   company_name: z.string().min(1, 'Company name is required.'),
-  website: z.string().url({ message: "Invalid URL." }).or(z.literal('')).nullable().optional(),
-  location: z.string().nullable().optional(),
-  description: z.string().nullable().optional(),
-  sector: z.string().nullable().optional(),
-  contact_name: z.string().nullable().optional(),
-  contact_email: z.string().email({ message: "Invalid email address." }).or(z.literal('')).nullable().optional(),
-  contact_phone: z.string().nullable().optional(),
+  website: z.string().url({ message: "Invalid URL." }).or(z.literal('')).optional(),
+  location: z.string().optional(),
+  description: z.string().optional(),
+  sector: z.string().optional(),
+  contact_name: z.string().optional(),
+  contact_email: z.string().email({ message: "Invalid email address." }).or(z.literal('')).optional(),
+  contact_phone: z.string().optional(),
   pipeline_stage: z.enum(Constants.public.Enums.pipeline_stage),
-  round_stage: z.enum(Constants.public.Enums.round_stage).nullable().optional(),
-  deal_score: z.number().min(0).max(100).nullable().optional(),
-  deal_lead: z.string().nullable().optional(),
-  deal_source: z.string().nullable().optional(),
-  source_date: z.string().nullable().optional(),
-  round_size: z.string().nullable().optional(), 
-  post_money_valuation: z.string().nullable().optional(),
-  revenue: z.string().nullable().optional(),
-  pitch_deck_url: z.string().url({ message: "Invalid URL." }).or(z.literal('')).nullable().optional(), // New field for link
+  round_stage: z.enum(Constants.public.Enums.round_stage).optional(),
+  deal_score: z.number().min(0).max(100).optional(),
+  deal_lead: z.string().optional(),
+  deal_source: z.string().optional(),
+  source_date: z.string().optional(),
+  round_size: z.string().optional(), 
+  post_money_valuation: z.string().optional(),
+  revenue: z.string().optional(),
+  pitch_deck_url: z.string().url({ message: "Invalid URL." }).or(z.literal('')).optional(),
 });
 
 type DealFormValues = z.infer<typeof dealFormSchema> & {
-  pitchDeckFile?: File | null; // Add file to form values type for convenience
+  pitchDeckFile?: File | null;
 };
 
 export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
-  const [pitchDeckFile, setPitchDeckFile] = useState<File | null>(null); // State for the file input
+  const [pitchDeckFile, setPitchDeckFile] = useState<File | null>(null);
 
   const form = useForm<DealFormValues>({
     resolver: zodResolver(dealFormSchema),
@@ -79,12 +77,10 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
       round_size: formatCurrency(deal.round_size),
       post_money_valuation: formatCurrency(deal.post_money_valuation),
       revenue: formatCurrency(deal.revenue),
-      // Initialize new pitch deck URL field to an empty string, will be updated by useEffect
       pitch_deck_url: '', 
     },
   });
 
-  // Use the new hook for submission logic
   const { handleEditSubmit, isUpdating } = useEditDeal({ deal, onSave });
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,16 +92,27 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
   };
 
   const onSubmit = async (values: DealFormValues) => {
-    // Ensure company_name is always provided
     const submitValues = {
       ...values,
-      company_name: values.company_name, // This is guaranteed by the schema validation
+      website: values.website || '',
+      location: values.location || '',
+      description: values.description || '',
+      sector: values.sector || '',
+      contact_name: values.contact_name || '',
+      contact_email: values.contact_email || '',
+      contact_phone: values.contact_phone || '',
+      deal_lead: values.deal_lead || '',
+      deal_source: values.deal_source || '',
+      source_date: values.source_date || '',
+      round_size: values.round_size || '',
+      post_money_valuation: values.post_money_valuation || '',
+      revenue: values.revenue || '',
+      pitch_deck_url: values.pitch_deck_url || '',
       pitchDeckFile
     };
     await handleEditSubmit(submitValues);
   };
 
-  // Effect to populate pitch_deck_url if deal already has one (from file_attachments)
   React.useEffect(() => {
     const fetchExistingAttachments = async () => {
       const { data: attachments, error } = await supabase
@@ -113,7 +120,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
         .select('file_url')
         .eq('deal_id', deal.id)
         .eq('file_type', 'link') 
-        .limit(1); // Assuming only one primary pitch deck link for form pre-population
+        .limit(1);
 
       if (error) {
         console.error("Error fetching existing attachments for form pre-fill:", error);
@@ -125,11 +132,10 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
       }
     };
 
-    if (deal.id) { // Only fetch if deal ID is available
+    if (deal.id) {
       fetchExistingAttachments();
     }
   }, [deal.id, form]);
-
 
   return (
     <Form {...form}>
@@ -412,11 +418,10 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
             />
           </div>
 
-          {/* New Section for Attachments */}
+          {/* Attachments */}
           <div className="md:col-span-2 space-y-4">
             <h4 className="font-medium">Attachments & Links</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Pitch Deck File Upload */}
               <FormItem>
                 <FormLabel className="flex items-center gap-1">
                   <Paperclip className="h-4 w-4" /> Pitch Deck File
@@ -428,7 +433,6 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
                 <FormMessage />
               </FormItem>
 
-              {/* Pitch Deck URL Link */}
               <FormField
                 control={form.control}
                 name="pitch_deck_url"
@@ -446,7 +450,6 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
               />
             </div>
           </div>
-
         </div>
       </form>
     </Form>
