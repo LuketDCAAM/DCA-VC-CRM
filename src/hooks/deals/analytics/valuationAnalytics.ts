@@ -41,10 +41,56 @@ export function calculateValuationAnalysis(deals: Deal[]) {
     else valuationRanges[5].count++;
   });
 
+  // Quarterly trends
+  const quarterlyTrends = calculateQuarterlyValuationTrends(dealsWithValuation);
+
   return {
     averageValuation,
     medianValuation,
     totalDealValue,
-    valuationRanges
+    valuationRanges,
+    quarterlyTrends
   };
+}
+
+function calculateQuarterlyValuationTrends(deals: Deal[]) {
+  const quarterlyData: Record<string, { valuations: number[], dealCount: number }> = {};
+  
+  deals.forEach(deal => {
+    // Use source_date if available, otherwise fall back to created_at
+    const date = deal.source_date ? new Date(deal.source_date) : new Date(deal.created_at);
+    const year = date.getFullYear();
+    const quarter = Math.floor(date.getMonth() / 3) + 1;
+    const quarterKey = `${year} Q${quarter}`;
+    
+    if (!quarterlyData[quarterKey]) {
+      quarterlyData[quarterKey] = { valuations: [], dealCount: 0 };
+    }
+    
+    quarterlyData[quarterKey].valuations.push(deal.post_money_valuation!);
+    quarterlyData[quarterKey].dealCount++;
+  });
+
+  // Calculate trends for the last 8 quarters
+  const sortedQuarters = Object.keys(quarterlyData).sort();
+  const recentQuarters = sortedQuarters.slice(-8);
+  
+  return recentQuarters.map(quarter => {
+    const data = quarterlyData[quarter];
+    const averageValuation = data.valuations.length > 0 
+      ? data.valuations.reduce((sum, val) => sum + val, 0) / data.valuations.length 
+      : 0;
+    
+    const sortedVals = [...data.valuations].sort((a, b) => a - b);
+    const medianValuation = sortedVals.length > 0
+      ? sortedVals[Math.floor(sortedVals.length / 2)]
+      : 0;
+
+    return {
+      quarter,
+      averageValuation,
+      medianValuation,
+      dealCount: data.dealCount
+    };
+  });
 }

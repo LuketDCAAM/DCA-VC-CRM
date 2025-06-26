@@ -9,6 +9,12 @@ export interface DealAnalytics {
     medianValuation: number;
     totalDealValue: number;
     valuationRanges: Array<{ range: string; count: number }>;
+    quarterlyTrends: Array<{ 
+      quarter: string; 
+      averageValuation: number; 
+      medianValuation: number; 
+      dealCount: number 
+    }>;
   };
   conversionMetrics: {
     overallConversionRate: number;
