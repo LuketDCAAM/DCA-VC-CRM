@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -95,7 +96,13 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
   };
 
   const onSubmit = async (values: DealFormValues) => {
-    await handleEditSubmit({ ...values, pitchDeckFile }); // Pass combined values including file
+    // Ensure company_name is always provided
+    const submitValues = {
+      ...values,
+      company_name: values.company_name, // This is guaranteed by the schema validation
+      pitchDeckFile
+    };
+    await handleEditSubmit(submitValues);
   };
 
   // Effect to populate pitch_deck_url if deal already has one (from file_attachments)
