@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,7 +24,7 @@ interface AddDealFormProps {
 export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
   const { createDeal, loading, pipelineStages, roundStages } = useAddDeal();
   const [formData, setFormData] = useState<AddDealFormData>(defaultFormData);
-  const [pitchDeckFile, setPitchDeckFile] = useState<File | null>(null); // State for the file input
+  const [pitchDeckFile, setPitchDeckFile] = useState<File | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -44,10 +45,9 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Pass pitchDeckFile and pitchDeckUrl from formData to createDeal
-    await createDeal({ ...formData, pitchDeckFile }, () => { // Pass pitchDeckFile directly
-      setFormData(defaultFormData); // Reset form on success
-      setPitchDeckFile(null); // Clear file input
+    await createDeal({ ...formData, pitchDeckFile }, () => {
+      setFormData(defaultFormData);
+      setPitchDeckFile(null);
       onSuccess();
     });
   };
@@ -148,8 +148,19 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
           <Label htmlFor="source_date">Source Date</Label>
           <Input id="source_date" type="date" value={formData.source_date} onChange={handleChange} />
         </div>
-        {/* New fields for Pitch Deck */}
-        <div className="md:col-span-2"> {/* Span full width for file input */}
+        
+        {/* New Investor Fields */}
+        <div>
+          <Label htmlFor="lead_investor">Lead Investor</Label>
+          <Input id="lead_investor" value={formData.lead_investor || ''} onChange={handleChange} placeholder="Primary investor name" />
+        </div>
+        <div>
+          <Label htmlFor="other_investors">Other Investors</Label>
+          <Input id="other_investors" value={formData.other_investors || ''} onChange={handleChange} placeholder="Additional investors (comma-separated)" />
+        </div>
+        
+        {/* Pitch Deck Fields */}
+        <div className="md:col-span-2">
           <Label htmlFor="pitch_deck_file">Pitch Deck (File Upload)</Label>
           <Input id="pitch_deck_file" type="file" accept=".pdf,.doc,.docx,.ppt,.pptx" onChange={handleFileChange} />
           {pitchDeckFile && <p className="text-sm text-gray-500 mt-1">Selected: {pitchDeckFile.name}</p>}

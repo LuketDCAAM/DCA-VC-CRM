@@ -3,10 +3,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { PipelineStage, RoundStage, DealInsert } from '@/types/deal'; 
-import { v4 as uuidv4 } from 'uuid'; // For generating unique file names
+import { v4 as uuidv4 } from 'uuid';
 
-// These arrays should ideally derive from your Supabase generated types if you want to avoid manual sync.
-// For now, they are explicitly typed to match the Supabase enum for consistency.
 const pipelineStages: PipelineStage[] = [
   'Inactive',
   'Initial Review',
@@ -47,9 +45,10 @@ export interface AddDealFormData {
   deal_lead: string;
   deal_source: string;
   source_date: string;
-  // New fields for pitch deck
-  pitch_deck_url?: string | null; // For direct links
-  pitchDeckFile?: File | null; // For file uploads (client-side only, not for DB)
+  lead_investor?: string | null;
+  other_investors?: string | null;
+  pitch_deck_url?: string | null;
+  pitchDeckFile?: File | null;
 }
 
 export const defaultFormData: AddDealFormData = {
@@ -70,8 +69,10 @@ export const defaultFormData: AddDealFormData = {
   deal_lead: '',
   deal_source: '',
   source_date: '',
-  pitch_deck_url: null, // Default to null for new field
-  pitchDeckFile: null,  // Default to null for new field
+  lead_investor: null,
+  other_investors: null,
+  pitch_deck_url: null,
+  pitchDeckFile: null,
 };
 
 export function useAddDeal() {
@@ -98,7 +99,7 @@ export function useAddDeal() {
     setLoading(true);
 
     try {
-      // Prepare deal data for insertion into the 'deals' table
+      // Prepare deal data for insertion
       const dealData: DealInsert = { 
         company_name: formData.company_name,
         contact_name: formData.contact_name || null,
@@ -118,30 +119,27 @@ export function useAddDeal() {
         deal_source: formData.deal_source || null,
         source_date: formData.source_date || null,
         created_by: user.id,
-        // tags: formData.tags || null, // Assuming tags might be added later
-        // last_call_date: null, // Assuming this is set separately
-        // relationship_owner: null, // Assuming this is set separately
       };
 
-      // 1. Insert the deal first to get its ID
+      // Insert the deal first to get its ID
       const { data: newDeal, error: dealError } = await supabase
         .from('deals')
         .insert([dealData])
-        .select(); // Select the newly created deal to get its ID
+        .select();
 
       if (dealError) throw dealError;
       if (!newDeal || newDeal.length === 0) throw new Error("Failed to retrieve new deal ID.");
 
       const dealId = newDeal[0].id;
       
-      // 2. Handle Pitch Deck File Upload (if a file is selected)
+      // Handle file uploads and attachments
       if (formData.pitchDeckFile) {
         const file = formData.pitchDeckFile;
         const fileExtension = file.name.split('.').pop();
-        const filePath = `public/${user.id}/${uuidv4()}.${fileExtension}`; // e.g., 'public/user_id/uuid.pdf'
+        const filePath = `public/${user.id}/${uuidv4()}.${fileExtension}`;
 
         const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('pitch-decks') // Use a dedicated bucket for pitch decks
+          .from('pitch-decks')
           .upload(filePath, file, {
             cacheControl: '3600',
             upsert: false,
@@ -154,15 +152,12 @@ export function useAddDeal() {
             description: `Failed to upload pitch deck: ${uploadError.message}`,
             variant: "destructive",
           });
-          // Continue creating deal, but log file upload error
         } else {
-          // Get public URL for the uploaded file
           const { data: publicUrlData } = supabase.storage
             .from('pitch-decks')
             .getPublicUrl(filePath);
           
           if (publicUrlData) {
-            // Insert attachment record into file_attachments table
             const { error: attachmentError } = await supabase.from('file_attachments').insert({
               deal_id: dealId,
               file_name: file.name,
@@ -184,14 +179,13 @@ export function useAddDeal() {
         }
       }
 
-      // 3. Handle Pitch Deck URL (if provided)
       if (formData.pitch_deck_url) {
         const { error: linkAttachmentError } = await supabase.from('file_attachments').insert({
           deal_id: dealId,
-          file_name: `Pitch Deck Link: ${formData.company_name}`, // A descriptive name for the link
+          file_name: `Pitch Deck Link: ${formData.company_name}`,
           file_url: formData.pitch_deck_url,
-          file_type: 'link', // Custom type for links
-          file_size: 0, // No file size for a link
+          file_type: 'link',
+          file_size: 0,
           uploaded_by: user.id,
         });
 
@@ -202,6 +196,37 @@ export function useAddDeal() {
             description: `Failed to record pitch deck URL in database: ${linkAttachmentError.message}`,
             variant: "destructive",
           });
+        }
+      }
+
+      // Handle investor information as additional attachments or notes
+      if (formData.lead_investor) {
+        const { error: leadInvestorError } = await supabase.from('file_attachments').insert({
+          deal_id: dealId,
+          file_name: `Lead Investor: ${formData.lead_investor}`,
+          file_url: `investor:lead:${formData.lead_investor}`,
+          file_type: 'investor_info',
+          file_size: 0,
+          uploaded_by: user.id,
+        });
+
+        if (leadInvestorError) {
+          console.error('Error recording lead investor:', leadInvestorError);
+        }
+      }
+
+      if (formData.other_investors) {
+        const { error: otherInvestorsError } = await supabase.from('file_attachments').insert({
+          deal_id: dealId,
+          file_name: `Other Investors: ${formData.other_investors}`,
+          file_url: `investor:other:${formData.other_investors}`,
+          file_type: 'investor_info',
+          file_size: 0,
+          uploaded_by: user.id,
+        });
+
+        if (otherInvestorsError) {
+          console.error('Error recording other investors:', otherInvestorsError);
         }
       }
 

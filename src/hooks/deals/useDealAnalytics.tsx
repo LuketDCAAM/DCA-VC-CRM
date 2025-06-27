@@ -23,7 +23,8 @@ export function useDealAnalytics(deals: Deal[]): DealAnalytics {
           averageValuation: 0,
           medianValuation: 0,
           totalDealValue: 0,
-          valuationRanges: []
+          valuationRanges: [],
+          quarterlyTrends: []
         },
         conversionMetrics: {
           overallConversionRate: 0,

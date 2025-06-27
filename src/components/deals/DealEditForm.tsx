@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
-import { Save, X, Paperclip, Link } from 'lucide-react';
+import { Save, X, Paperclip, Link, Users } from 'lucide-react';
 import { Deal } from '@/types/deal'; 
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form'; 
 import { Input } from '@/components/ui/input'; 
@@ -49,6 +49,8 @@ const dealFormSchema = z.object({
   post_money_valuation: z.string().optional(),
   revenue: z.string().optional(),
   pitch_deck_url: z.string().url({ message: "Invalid URL." }).or(z.literal('')).optional(),
+  lead_investor: z.string().optional(),
+  other_investors: z.string().optional(),
 });
 
 type DealFormValues = z.infer<typeof dealFormSchema> & {
@@ -57,6 +59,8 @@ type DealFormValues = z.infer<typeof dealFormSchema> & {
 
 export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
   const [pitchDeckFile, setPitchDeckFile] = useState<File | null>(null);
+  const [leadInvestor, setLeadInvestor] = useState<string>('');
+  const [otherInvestors, setOtherInvestors] = useState<string>('');
 
   const form = useForm<DealFormValues>({
     resolver: zodResolver(dealFormSchema),
@@ -78,6 +82,8 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
       post_money_valuation: formatCurrency(deal.post_money_valuation),
       revenue: formatCurrency(deal.revenue),
       pitch_deck_url: '', 
+      lead_investor: '',
+      other_investors: '',
     },
   });
 
@@ -111,32 +117,56 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
       post_money_valuation: values.post_money_valuation || '',
       revenue: values.revenue || '',
       pitch_deck_url: values.pitch_deck_url || '',
+      lead_investor: values.lead_investor || '',
+      other_investors: values.other_investors || '',
       pitchDeckFile
     };
     await handleEditSubmit(submitValues);
   };
 
   React.useEffect(() => {
-    const fetchExistingAttachments = async () => {
+    const fetchExistingData = async () => {
+      // Fetch existing attachments including investor info
       const { data: attachments, error } = await supabase
         .from('file_attachments')
-        .select('file_url')
-        .eq('deal_id', deal.id)
-        .eq('file_type', 'link') 
-        .limit(1);
+        .select('file_name, file_url, file_type')
+        .eq('deal_id', deal.id);
 
       if (error) {
-        console.error("Error fetching existing attachments for form pre-fill:", error);
+        console.error("Error fetching existing attachments:", error);
         return;
       }
 
-      if (attachments && attachments.length > 0) {
-        form.setValue('pitch_deck_url', attachments[0].file_url);
+      if (attachments) {
+        // Set pitch deck URL
+        const pitchDeckLink = attachments.find(att => att.file_type === 'link');
+        if (pitchDeckLink) {
+          form.setValue('pitch_deck_url', pitchDeckLink.file_url);
+        }
+
+        // Set investor information
+        const leadInvestorInfo = attachments.find(att => 
+          att.file_type === 'investor_info' && att.file_url.startsWith('investor:lead:')
+        );
+        if (leadInvestorInfo) {
+          const leadName = leadInvestorInfo.file_url.replace('investor:lead:', '');
+          form.setValue('lead_investor', leadName);
+          setLeadInvestor(leadName);
+        }
+
+        const otherInvestorInfo = attachments.find(att => 
+          att.file_type === 'investor_info' && att.file_url.startsWith('investor:other:')
+        );
+        if (otherInvestorInfo) {
+          const otherNames = otherInvestorInfo.file_url.replace('investor:other:', '');
+          form.setValue('other_investors', otherNames);
+          setOtherInvestors(otherNames);
+        }
       }
     };
 
     if (deal.id) {
-      fetchExistingAttachments();
+      fetchExistingData();
     }
   }, [deal.id, form]);
 
@@ -419,6 +449,41 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
                 </FormItem>
               )}
             />
+          </div>
+
+          {/* New Investor Section */}
+          <div className="md:col-span-2 space-y-4">
+            <h4 className="font-medium flex items-center gap-2">
+              <Users className="h-4 w-4" /> Investor Information
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="lead_investor"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Lead Investor</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Primary investor name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="other_investors"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Other Investors</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Additional investors (comma-separated)" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
           </div>
 
           {/* Attachments */}

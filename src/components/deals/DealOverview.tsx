@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'; // Import useEffect and useState
+
+import React, { useEffect, useState } from 'react';
 import { Deal } from '@/types/deal';
 import { DealHeaderCard } from './overview/DealHeaderCard';
 import { DealContactCard } from './overview/DealContactCard';
@@ -6,12 +7,12 @@ import { DealCompanyDetailsCard } from './overview/DealCompanyDetailsCard';
 import { DealFinancialCard } from './overview/DealFinancialCard';
 import { DealMetricsCard } from './overview/DealMetricsCard';
 import { DealSourceCard } from './overview/DealSourceCard';
-import { supabase } from '@/integrations/supabase/client'; // Import supabase client
-import { useToast } from '@/hooks/use-toast'; // Import toast for error handling
-import { Paperclip, Link, FileText } from 'lucide-react'; // Import icons for attachments
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Import Shadcn Card components
+import { DealInvestorCard } from './overview/DealInvestorCard';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Paperclip, Link, FileText } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-// Define a type for your file_attachments table row
 interface FileAttachment {
   id: string;
   deal_id: string;
@@ -39,7 +40,8 @@ export function DealOverview({ deal }: DealOverviewProps) {
         const { data, error } = await supabase
           .from('file_attachments')
           .select('*')
-          .eq('deal_id', deal.id) // Fetch attachments related to this deal
+          .eq('deal_id', deal.id)
+          .neq('file_type', 'investor_info') // Exclude investor info from general attachments
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -66,13 +68,13 @@ export function DealOverview({ deal }: DealOverviewProps) {
       }
     };
 
-    if (deal?.id) { // Only fetch if deal.id is available
+    if (deal?.id) {
       fetchAttachments();
     } else {
-      setAttachments([]); // Clear attachments if no deal is present
+      setAttachments([]);
       setAttachmentsLoading(false);
     }
-  }, [deal?.id, toast]); // Re-fetch when deal ID changes
+  }, [deal?.id, toast]);
 
   return (
     <div className="space-y-6">
@@ -84,9 +86,10 @@ export function DealOverview({ deal }: DealOverviewProps) {
         <DealFinancialCard deal={deal} />
         <DealMetricsCard deal={deal} />
         <DealSourceCard deal={deal} />
+        <DealInvestorCard deal={deal} />
 
-        {/* New Card for Attachments */}
-        <Card className="lg:col-span-3"> {/* Spanning full width */}
+        {/* Attachments Card */}
+        <Card className="lg:col-span-3">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg font-semibold">
               <Paperclip className="h-5 w-5" /> Attachments
