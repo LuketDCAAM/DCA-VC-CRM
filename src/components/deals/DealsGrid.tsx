@@ -3,6 +3,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { MemoizedDealCard } from '@/components/deals/MemoizedDealCard';
 import { Deal } from '@/types/deal';
+import { useDealsPagination } from '@/hooks/deals/useDealsPagination';
+import { PaginationControls } from './PaginationControls';
 
 interface DealsGridProps {
   deals: Deal[];
@@ -26,9 +28,22 @@ export function DealsGrid({
   onDealUpdated
 }: DealsGridProps) {
   const showSelection = !!onToggleDealSelection;
+  
+  const {
+    currentPage,
+    pageSize,
+    totalItems,
+    totalPages,
+    paginatedDeals,
+    handlePageChange,
+    handlePageSizeChange,
+  } = useDealsPagination(deals);
 
   console.log('🎯 DEALS GRID RENDER:', {
     totalDeals: deals.length,
+    paginatedDeals: paginatedDeals.length,
+    currentPage,
+    pageSize,
     selectedDeals: selectedDeals.length,
     showSelection,
   });
@@ -55,11 +70,17 @@ export function DealsGrid({
 
   return (
     <div className="space-y-4">
-      <div className="text-sm text-gray-600 mb-4">
-        Showing {deals.length} deals
-      </div>
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {deals.map((deal) => (
+        {paginatedDeals.map((deal) => (
           <MemoizedDealCard 
             key={deal.id} 
             deal={deal}
@@ -70,6 +91,17 @@ export function DealsGrid({
           />
         ))}
       </div>
+
+      {totalPages > 1 && (
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
+      )}
     </div>
   );
 }

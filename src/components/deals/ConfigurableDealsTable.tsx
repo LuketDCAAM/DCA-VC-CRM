@@ -6,6 +6,8 @@ import { ConfigurableDealsTableRow } from './table/ConfigurableDealsTableRow';
 import { ConfigurableDealsTableHeader } from './table/ConfigurableDealsTableHeader';
 import { useAdvancedTableSorting } from '@/hooks/deals/useAdvancedTableSorting';
 import { ColumnSelector } from './table/ColumnSelector';
+import { useDealsPagination } from '@/hooks/deals/useDealsPagination';
+import { PaginationControls } from './PaginationControls';
 
 interface ConfigurableDealsTableProps {
   deals: Deal[];
@@ -37,6 +39,16 @@ export function ConfigurableDealsTable({
     getSortPriority,
   } = useAdvancedTableSorting(deals);
 
+  const {
+    currentPage,
+    pageSize,
+    totalItems,
+    totalPages,
+    paginatedDeals,
+    handlePageChange,
+    handlePageSizeChange,
+  } = useDealsPagination(sortedDeals);
+
   if (deals.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-card p-12 text-center">
@@ -65,6 +77,15 @@ export function ConfigurableDealsTable({
         </div>
         <ColumnSelector />
       </div>
+
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
       
       <div className="rounded-lg border border-border bg-card shadow-sm overflow-hidden">
         <div className="overflow-auto max-h-[calc(100vh-280px)]">
@@ -81,7 +102,7 @@ export function ConfigurableDealsTable({
               getSortPriority={getSortPriority}
             />
             <TableBody>
-              {sortedDeals.map((deal, index) => (
+              {paginatedDeals.map((deal, index) => (
                 <ConfigurableDealsTableRow
                   key={deal.id}
                   deal={deal}
@@ -95,6 +116,17 @@ export function ConfigurableDealsTable({
           </Table>
         </div>
       </div>
+
+      {totalPages > 1 && (
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
+      )}
     </div>
   );
 }
