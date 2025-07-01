@@ -27,7 +27,7 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
         <CardDescription>Monthly deal sourcing activity based on source dates over the last 12 months</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px]">
+        <ChartContainer config={chartConfig} className="h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
               <XAxis 
