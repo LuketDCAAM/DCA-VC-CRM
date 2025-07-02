@@ -17,7 +17,7 @@ export function calculateDealStats(deals: Deal[]): DealStats {
   const totalDeals = deals.length;
   
   const activeDealsList = deals.filter(deal => 
-    ACTIVE_PIPELINE_STAGES.includes(deal.pipeline_stage)
+    ACTIVE_PIPELINE_STAGES.includes(deal.pipeline_stage as any)
   );
   console.log('Active deals:', activeDealsList.length, 'deals in stages:', ACTIVE_PIPELINE_STAGES);
   console.log('Active deals list:', activeDealsList.map(d => ({ name: d.company_name, stage: d.pipeline_stage })));
@@ -35,7 +35,7 @@ export function calculateDealStats(deals: Deal[]): DealStats {
   console.log('Passed deals list:', passedDealsList.map(d => ({ name: d.company_name, stage: d.pipeline_stage })));
 
   const screeningDealsList = deals.filter(deal => 
-    SCREENING_STAGES.includes(deal.pipeline_stage)
+    SCREENING_STAGES.includes(deal.pipeline_stage as any)
   );
   console.log('Screening deals:', screeningDealsList.length, 'deals in stages:', SCREENING_STAGES);
   console.log('Screening deals list:', screeningDealsList.map(d => ({ name: d.company_name, stage: d.pipeline_stage })));
@@ -45,10 +45,10 @@ export function calculateDealStats(deals: Deal[]): DealStats {
   
   if (categorizedCount !== totalDeals) {
     const uncategorized = deals.filter(deal => 
-      !ACTIVE_PIPELINE_STAGES.includes(deal.pipeline_stage) &&
+      !ACTIVE_PIPELINE_STAGES.includes(deal.pipeline_stage as any) &&
       deal.pipeline_stage !== 'Invested' &&
       deal.pipeline_stage !== 'Passed' &&
-      !SCREENING_STAGES.includes(deal.pipeline_stage)
+      !SCREENING_STAGES.includes(deal.pipeline_stage as any)
     );
     console.warn('UNCATEGORIZED DEALS FOUND:', uncategorized.length);
     console.warn('Uncategorized deals:', uncategorized.map(d => ({ name: d.company_name, stage: d.pipeline_stage })));

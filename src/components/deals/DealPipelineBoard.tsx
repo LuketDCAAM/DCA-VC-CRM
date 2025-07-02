@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Building2, DollarSign, Eye, Calendar, Star } from 'lucide-react';
 import { Deal } from '@/types/deal'; 
-import { PIPELINE_STAGES, PipelineStage } from '../dealStagesConfig';
+import { PIPELINE_STAGES, PipelineStage } from '@/hooks/deals/dealStagesConfig';
 import { getPipelineStageClasses } from './pipelineStageColors';
 
 const formatCurrency = (amount: number | null) => {

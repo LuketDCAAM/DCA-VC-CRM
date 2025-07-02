@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from '@/components/ui/badge';
 import { Deal } from '@/types/deal';
-import { PIPELINE_STAGES, PipelineStage } from '../../dealStagesConfig';
+import { PIPELINE_STAGES, PipelineStage } from '@/hooks/deals/dealStagesConfig';
 import { getPipelineStageColor } from '../pipelineStageColors';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
