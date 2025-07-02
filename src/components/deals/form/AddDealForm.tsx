@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,9 +33,30 @@ const addDealFormSchema = z.object({
   next_steps: z.string().optional(),
 });
 
-type AddDealFormValues = z.infer<typeof addDealFormSchema> & {
+type AddDealFormValues = z.infer<typeof addDealFormSchema>;
+
+interface AddDealValues {
+  company_name: string;
+  website?: string;
+  location?: string;
+  description?: string;
+  sector?: string;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  pipeline_stage: string;
+  round_stage?: string;
+  deal_score?: number;
+  deal_lead?: string;
+  deal_source?: string;
+  source_date?: string;
+  round_size?: string;
+  post_money_valuation?: string;
+  revenue?: string;
+  pitch_deck_url?: string;
+  next_steps?: string;
   pitchDeckFile?: File | null;
-};
+}
 
 interface AddDealFormProps {
   onSuccess: () => void;
@@ -81,7 +101,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
   };
 
   const onSubmit = async (values: AddDealFormValues) => {
-    const submitValues = {
+    const submitValues: AddDealValues = {
       ...values,
       pitchDeckFile
     };
