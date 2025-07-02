@@ -75,7 +75,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
       description: deal.description || '',
       sector: deal.sector || '',
       round_stage: deal.round_stage, 
-      deal_score: deal.deal_score,
+      deal_score: deal.deal_score || '',
       source_date: deal.source_date ? deal.source_date.split('T')[0] : '', 
       deal_source: deal.deal_source || '',
       deal_lead: deal.deal_lead || '',
