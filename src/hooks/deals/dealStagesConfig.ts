@@ -2,8 +2,8 @@
 // Pipeline stage configurations - Updated to match new database schema
 export const PIPELINE_STAGES = [
   'Inactive',
-  'Initial Contact',    // Previously 'Initial Review' 
-  'First Meeting',      // Previously 'Initial Contact'
+  'Initial Review',    // Previously 'Initial Review' 
+  'Scorecard',      // Previously 'Initial Contact'
   'One Pager',          // Previously 'Scorecard'
   'Due Diligence',
   'Memo',    // Keeping as 'Memo' to match Supabase enum
