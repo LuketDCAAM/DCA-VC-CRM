@@ -102,7 +102,25 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
 
   const onSubmit = async (values: AddDealFormValues) => {
     const submitValues: AddDealValues = {
-      ...values,
+      company_name: values.company_name, // Explicitly assign required field
+      website: values.website,
+      location: values.location,
+      description: values.description,
+      sector: values.sector,
+      contact_name: values.contact_name,
+      contact_email: values.contact_email,
+      contact_phone: values.contact_phone,
+      pipeline_stage: values.pipeline_stage,
+      round_stage: values.round_stage,
+      deal_score: values.deal_score,
+      deal_lead: values.deal_lead,
+      deal_source: values.deal_source,
+      source_date: values.source_date,
+      round_size: values.round_size,
+      post_money_valuation: values.post_money_valuation,
+      revenue: values.revenue,
+      pitch_deck_url: values.pitch_deck_url,
+      next_steps: values.next_steps,
       pitchDeckFile
     };
     
