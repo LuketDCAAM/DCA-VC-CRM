@@ -26,8 +26,7 @@ export const ACTIVE_PIPELINE_STAGES: PipelineStage[] = [
 
 // Screening stages are early pipeline stages
 export const SCREENING_STAGES: PipelineStage[] = [
-  'Inactive',
-  'Initial Contact'     // Updated from 'Initial Review'
+  'Inactive'
 ];
 
 // Final outcome stages
