@@ -95,14 +95,14 @@ export const DEALS_FILTER_OPTIONS: FilterOption[] = [
     type: 'select',
     options: [
       { label: 'Inactive', value: 'Inactive' },
-      { label: 'Initial Contact', value: 'Initial Contact' },    // Updated from 'Initial Review'
-      { label: 'First Meeting', value: 'First Meeting' },        // Updated from 'Initial Contact'
-      { label: 'One Pager', value: 'One Pager' },               // Previously 'Scorecard'
-      { label: 'Due Diligence', value: 'Due Diligence' },
-      { label: 'Term Sheet', value: 'Term Sheet' },
-      { label: 'Memo', value: 'Memo' },
-      { label: 'Invested', value: 'Invested' },
-      { label: 'Passed', value: 'Passed' },
+        { label: 'Initial Review', value: 'Initial Review' },    // Updated from 'Initial Review'
+        { label: 'Scorecard', value: 'Scorecard' },        // Updated from 'Initial Contact'
+        { label: 'One Pager', value: 'One Pager' },               // Previously 'Scorecard'
+        { label: 'Due Diligence', value: 'Due Diligence' },
+        { label: 'Term Sheet', value: 'Term Sheet' },
+        { label: 'Memo', value: 'Memo' },
+        { label: 'Invested', value: 'Invested' },
+        { label: 'Passed', value: 'Passed' },
     ]
   },
   {
