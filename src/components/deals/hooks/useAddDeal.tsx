@@ -1,257 +1,170 @@
+
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { PipelineStage, RoundStage, DealInsert } from '@/types/deal'; 
-import { v4 as uuidv4 } from 'uuid';
+import { Constants } from '@/integrations/supabase/types';
 
-const pipelineStages: PipelineStage[] = [
-  'Inactive',
-  'Initial Review',
-  'Initial Contact',
-  'First Meeting',
-  'Due Diligence',
-  'Memo',
-  'Legal Review',
-  'Invested',
-  'Passed'
-];
-
-const roundStages: RoundStage[] = [
-  'Pre-Seed',
-  'Seed',
-  'Series A',
-  'Series B',
-  'Series C',
-  'Bridge',
-  'Growth'
-];
-
-export interface AddDealFormData {
+interface AddDealValues {
   company_name: string;
-  contact_name: string;
-  contact_email: string;
-  contact_phone: string;
-  website: string;
-  location: string;
-  sector: string;
-  description: string;
-  pipeline_stage: PipelineStage; 
-  round_stage: RoundStage | ''; 
-  round_size: string; 
-  post_money_valuation: string; 
-  revenue: string; 
-  deal_score: number | null;
-  deal_lead: string;
-  deal_source: string;
-  source_date: string;
-  lead_investor?: string | null;
-  other_investors?: string | null;
-  pitch_deck_url?: string | null;
+  website?: string;
+  location?: string;
+  description?: string;
+  sector?: string;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  pipeline_stage: string;
+  round_stage?: string;
+  deal_score?: number;
+  deal_lead?: string;
+  deal_source?: string;
+  source_date?: string;
+  round_size?: string;
+  post_money_valuation?: string;
+  revenue?: string;
+  pitch_deck_url?: string;
+  next_steps?: string;
   pitchDeckFile?: File | null;
 }
 
-export const defaultFormData: AddDealFormData = {
-  company_name: '',
-  contact_name: '',
-  contact_email: '',
-  contact_phone: '',
-  website: '',
-  location: '',
-  sector: '',
-  description: '',
-  pipeline_stage: 'Inactive', 
-  round_stage: '',
-  round_size: '',
-  post_money_valuation: '',
-  revenue: '',
-  deal_score: null,
-  deal_lead: '',
-  deal_source: '',
-  source_date: '',
-  lead_investor: null,
-  other_investors: null,
-  pitch_deck_url: null,
-  pitchDeckFile: null,
-};
-
 export function useAddDeal() {
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const parseAndScaleCurrency = (value: string) => {
-    if (!value) return null;
-    const num = parseFloat(value);
-    return isNaN(num) ? null : Math.round(num * 100); 
-  };
+  const pipelineStages = Constants.public.Enums.pipeline_stage;
+  const roundStages = Constants.public.Enums.round_stage;
 
-  const createDeal = async (formData: AddDealFormData, onSuccess: () => void) => {
+  const handleAddSubmit = async (values: AddDealValues): Promise<boolean> => {
     if (!user) {
       toast({
-        title: "Authentication Error",
-        description: "You must be logged in to create a deal.",
+        title: "Error",
+        description: "You must be logged in to create a deal",
         variant: "destructive",
       });
-      return;
+      return false;
     }
 
-    setLoading(true);
+    setIsLoading(true);
 
     try {
-      // Prepare deal data for insertion
-      const dealData: DealInsert = { 
-        company_name: formData.company_name,
-        contact_name: formData.contact_name || null,
-        contact_email: formData.contact_email || null,
-        contact_phone: formData.contact_phone || null,
-        website: formData.website || null,
-        location: formData.location || null,
-        sector: formData.sector || null,
-        description: formData.description || null,
-        pipeline_stage: formData.pipeline_stage,
-        round_stage: formData.round_stage === '' ? null : formData.round_stage, 
-        round_size: parseAndScaleCurrency(formData.round_size),
-        post_money_valuation: parseAndScaleCurrency(formData.post_money_valuation),
-        revenue: parseAndScaleCurrency(formData.revenue),
-        deal_score: formData.deal_score,
-        deal_lead: formData.deal_lead || null,
-        deal_source: formData.deal_source || null,
-        source_date: formData.source_date || null,
-        created_by: user.id,
-      };
+      // Parse financial values
+      const round_size = values.round_size ? Math.round(parseFloat(values.round_size) * 100) : null;
+      const post_money_valuation = values.post_money_valuation ? Math.round(parseFloat(values.post_money_valuation) * 100) : null;
+      const revenue = values.revenue ? Math.round(parseFloat(values.revenue) * 100) : null;
 
-      // Insert the deal first to get its ID
-      const { data: newDeal, error: dealError } = await supabase
+      // Insert deal
+      const { data: dealData, error: dealError } = await supabase
         .from('deals')
-        .insert([dealData])
-        .select();
+        .insert({
+          company_name: values.company_name,
+          website: values.website || null,
+          location: values.location || null,
+          description: values.description || null,
+          sector: values.sector || null,
+          contact_name: values.contact_name || null,
+          contact_email: values.contact_email || null,
+          contact_phone: values.contact_phone || null,
+          pipeline_stage: values.pipeline_stage as any,
+          round_stage: values.round_stage as any || null,
+          deal_score: values.deal_score || null,
+          deal_lead: values.deal_lead || null,
+          deal_source: values.deal_source || null,
+          source_date: values.source_date || null,
+          round_size,
+          post_money_valuation,
+          revenue,
+          next_steps: values.next_steps || null,
+          created_by: user.id,
+        })
+        .select()
+        .single();
 
-      if (dealError) throw dealError;
-      if (!newDeal || newDeal.length === 0) throw new Error("Failed to retrieve new deal ID.");
+      if (dealError) {
+        console.error('Error creating deal:', dealError);
+        throw dealError;
+      }
 
-      const dealId = newDeal[0].id;
-      
-      // Handle file uploads and attachments
-      if (formData.pitchDeckFile) {
-        const file = formData.pitchDeckFile;
-        const fileExtension = file.name.split('.').pop();
-        const filePath = `public/${user.id}/${uuidv4()}.${fileExtension}`;
-
-        const { data: uploadData, error: uploadError } = await supabase.storage
+      // Handle file upload if present
+      if (values.pitchDeckFile && dealData) {
+        const fileExt = values.pitchDeckFile.name.split('.').pop();
+        const fileName = `${dealData.id}_pitch_deck_${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
           .from('pitch-decks')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false,
-          });
+          .upload(fileName, values.pitchDeckFile);
 
         if (uploadError) {
-          console.error('Error uploading pitch deck file:', uploadError);
-          toast({
-            title: "Upload Error",
-            description: `Failed to upload pitch deck: ${uploadError.message}`,
-            variant: "destructive",
+          console.error('Error uploading file:', uploadError);
+          throw uploadError;
+        }
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from('pitch-decks')
+          .getPublicUrl(fileName);
+
+        // Save file attachment record
+        const { error: attachmentError } = await supabase
+          .from('file_attachments')
+          .insert({
+            deal_id: dealData.id,
+            file_name: values.pitchDeckFile.name,
+            file_url: urlData.publicUrl,
+            file_type: 'file',
+            file_size: values.pitchDeckFile.size,
+            uploaded_by: user.id
           });
-        } else {
-          const { data: publicUrlData } = supabase.storage
-            .from('pitch-decks')
-            .getPublicUrl(filePath);
-          
-          if (publicUrlData) {
-            const { error: attachmentError } = await supabase.from('file_attachments').insert({
-              deal_id: dealId,
-              file_name: file.name,
-              file_url: publicUrlData.publicUrl,
-              file_type: file.type,
-              file_size: file.size,
-              uploaded_by: user.id,
-            });
 
-            if (attachmentError) {
-              console.error('Error recording file attachment:', attachmentError);
-              toast({
-                title: "Database Error",
-                description: `Failed to record pitch deck in database: ${attachmentError.message}`,
-                variant: "destructive",
-              });
-            }
-          }
+        if (attachmentError) {
+          console.error('Error saving file attachment:', attachmentError);
+          throw attachmentError;
         }
       }
 
-      if (formData.pitch_deck_url) {
-        const { error: linkAttachmentError } = await supabase.from('file_attachments').insert({
-          deal_id: dealId,
-          file_name: `Pitch Deck Link: ${formData.company_name}`,
-          file_url: formData.pitch_deck_url,
-          file_type: 'link',
-          file_size: 0,
-          uploaded_by: user.id,
-        });
-
-        if (linkAttachmentError) {
-          console.error('Error recording pitch deck URL:', linkAttachmentError);
-          toast({
-            title: "Database Error",
-            description: `Failed to record pitch deck URL in database: ${linkAttachmentError.message}`,
-            variant: "destructive",
+      // Handle pitch deck URL
+      if (values.pitch_deck_url && dealData) {
+        const { error: linkError } = await supabase
+          .from('file_attachments')
+          .insert({
+            deal_id: dealData.id,
+            file_name: 'Pitch Deck Link',
+            file_url: values.pitch_deck_url,
+            file_type: 'link',
+            file_size: 0,
+            uploaded_by: user.id
           });
-        }
-      }
 
-      // Handle investor information as additional attachments or notes
-      if (formData.lead_investor) {
-        const { error: leadInvestorError } = await supabase.from('file_attachments').insert({
-          deal_id: dealId,
-          file_name: `Lead Investor: ${formData.lead_investor}`,
-          file_url: `investor:lead:${formData.lead_investor}`,
-          file_type: 'investor_info',
-          file_size: 0,
-          uploaded_by: user.id,
-        });
-
-        if (leadInvestorError) {
-          console.error('Error recording lead investor:', leadInvestorError);
-        }
-      }
-
-      if (formData.other_investors) {
-        const { error: otherInvestorsError } = await supabase.from('file_attachments').insert({
-          deal_id: dealId,
-          file_name: `Other Investors: ${formData.other_investors}`,
-          file_url: `investor:other:${formData.other_investors}`,
-          file_type: 'investor_info',
-          file_size: 0,
-          uploaded_by: user.id,
-        });
-
-        if (otherInvestorsError) {
-          console.error('Error recording other investors:', otherInvestorsError);
+        if (linkError) {
+          console.error('Error saving pitch deck link:', linkError);
+          throw linkError;
         }
       }
 
       toast({
-        title: "Deal created successfully",
-        description: `${formData.company_name} has been added to your pipeline.`,
+        title: "Success",
+        description: "Deal created successfully",
       });
 
-      onSuccess();
-    } catch (error: any) {
-      console.error("Caught error in createDeal:", error);
+      return true;
+    } catch (error) {
+      console.error('Error creating deal:', error);
       toast({
-        title: "Error creating deal",
-        description: error.message,
+        title: "Error",
+        description: "Failed to create deal. Please try again.",
         variant: "destructive",
       });
+      return false;
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return {
-    loading,
-    createDeal,
-    pipelineStages, 
-    roundStages,    
+    handleAddSubmit,
+    isLoading,
+    pipelineStages,
+    roundStages,
   };
 }

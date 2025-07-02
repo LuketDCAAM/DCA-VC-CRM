@@ -223,6 +223,7 @@ export type Database = {
           id: string
           last_call_date: string | null
           location: string | null
+          next_steps: string | null
           pipeline_stage: Database["public"]["Enums"]["pipeline_stage"]
           post_money_valuation: number | null
           relationship_owner: string | null
@@ -249,6 +250,7 @@ export type Database = {
           id?: string
           last_call_date?: string | null
           location?: string | null
+          next_steps?: string | null
           pipeline_stage?: Database["public"]["Enums"]["pipeline_stage"]
           post_money_valuation?: number | null
           relationship_owner?: string | null
@@ -275,6 +277,7 @@ export type Database = {
           id?: string
           last_call_date?: string | null
           location?: string | null
+          next_steps?: string | null
           pipeline_stage?: Database["public"]["Enums"]["pipeline_stage"]
           post_money_valuation?: number | null
           relationship_owner?: string | null

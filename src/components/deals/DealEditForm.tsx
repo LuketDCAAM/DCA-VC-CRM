@@ -51,6 +51,7 @@ const dealFormSchema = z.object({
   pitch_deck_url: z.string().url({ message: "Invalid URL." }).or(z.literal('')).optional(),
   lead_investor: z.string().optional(),
   other_investors: z.string().optional(),
+  next_steps: z.string().optional(),
 });
 
 type DealFormValues = z.infer<typeof dealFormSchema> & {
@@ -84,6 +85,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
       pitch_deck_url: '', 
       lead_investor: '',
       other_investors: '',
+      next_steps: deal.next_steps || '',
     },
   });
 
@@ -444,6 +446,28 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
                   <FormLabel>Revenue (USD)</FormLabel>
                   <FormControl>
                     <Input type="number" placeholder="0" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Next Steps Section */}
+          <div className="md:col-span-2 space-y-4">
+            <h4 className="font-medium">Next Steps</h4>
+            <FormField
+              control={form.control}
+              name="next_steps"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Next Steps</FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      {...field} 
+                      placeholder="Describe the next steps for this deal..."
+                      className="min-h-[100px]"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -2,248 +2,186 @@
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useQueryClient } from '@tanstack/react-query';
-import { v4 as uuidv4 } from 'uuid';
-import { Deal, DealUpdate } from '@/types/deal';
-import { UseFormReturn } from 'react-hook-form';
+import { Deal } from '@/types/deal';
+
+interface EditDealValues {
+  company_name: string;
+  website?: string;
+  location?: string;
+  description?: string;
+  sector?: string;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  pipeline_stage: string;
+  round_stage?: string | null;
+  deal_score?: number;
+  deal_lead?: string;
+  deal_source?: string;
+  source_date?: string;
+  round_size?: string;
+  post_money_valuation?: string;
+  revenue?: string;
+  pitch_deck_url?: string;
+  lead_investor?: string;
+  other_investors?: string;
+  next_steps?: string;
+  pitchDeckFile?: File | null;
+}
 
 interface UseEditDealProps {
   deal: Deal;
   onSave: () => void;
 }
 
-interface EditDealFormValues {
-  company_name: string;
-  website: string | null | undefined;
-  location: string | null | undefined;
-  description: string | null | undefined;
-  sector: string | null | undefined;
-  contact_name: string | null | undefined;
-  contact_email: string | null | undefined;
-  contact_phone: string | null | undefined;
-  pipeline_stage: Deal['pipeline_stage'];
-  round_stage: Deal['round_stage'] | null | undefined;
-  deal_score: number | null | undefined;
-  deal_lead: string | null | undefined;
-  deal_source: string | null | undefined;
-  source_date: string | null | undefined;
-  round_size: string | null | undefined;
-  post_money_valuation: string | null | undefined;
-  revenue: string | null | undefined;
-  pitch_deck_url?: string | null;
-  pitchDeckFile?: File | null;
-  lead_investor?: string | null;
-  other_investors?: string | null;
-}
-
 export function useEditDeal({ deal, onSave }: UseEditDealProps) {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
+  const { toast } = useToast();
 
-  const parseCurrency = (value: string | null | undefined) => {
-    if (!value) return null;
-    const num = parseFloat(value);
-    return isNaN(num) ? null : Math.round(num * 100);
-  };
-
-  const handleEditSubmit = async (values: EditDealFormValues) => {
+  const handleEditSubmit = async (values: EditDealValues) => {
     setIsUpdating(true);
+    
     try {
-      // Update the deal record
-      const updateData: DealUpdate = {
-        company_name: values.company_name,
-        contact_name: values.contact_name || null,
-        contact_email: values.contact_email || null,
-        contact_phone: values.contact_phone || null,
-        website: values.website || null,
-        location: values.location || null,
-        sector: values.sector || null,
-        description: values.description || null,
-        pipeline_stage: values.pipeline_stage,
-        round_stage: values.round_stage || null,
-        deal_score: values.deal_score,
-        deal_lead: values.deal_lead || null,
-        deal_source: values.deal_source || null,
-        source_date: values.source_date || null,
-        round_size: parseCurrency(values.round_size),
-        post_money_valuation: parseCurrency(values.post_money_valuation),
-        revenue: parseCurrency(values.revenue),
-        updated_at: new Date().toISOString(),
-      };
+      // Parse financial values
+      const round_size = values.round_size ? Math.round(parseFloat(values.round_size) * 100) : null;
+      const post_money_valuation = values.post_money_valuation ? Math.round(parseFloat(values.post_money_valuation) * 100) : null;
+      const revenue = values.revenue ? Math.round(parseFloat(values.revenue) * 100) : null;
 
-      const { error: dealUpdateError } = await supabase
+      // Update deal in database
+      const { error: dealError } = await supabase
         .from('deals')
-        .update(updateData)
+        .update({
+          company_name: values.company_name,
+          website: values.website || null,
+          location: values.location || null,
+          description: values.description || null,
+          sector: values.sector || null,
+          contact_name: values.contact_name || null,
+          contact_email: values.contact_email || null,
+          contact_phone: values.contact_phone || null,
+          pipeline_stage: values.pipeline_stage as any,
+          round_stage: values.round_stage as any || null,
+          deal_score: values.deal_score || null,
+          deal_lead: values.deal_lead || null,
+          deal_source: values.deal_source || null,
+          source_date: values.source_date || null,
+          round_size,
+          post_money_valuation,
+          revenue,
+          next_steps: values.next_steps || null,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', deal.id);
 
-      if (dealUpdateError) throw dealUpdateError;
+      if (dealError) {
+        console.error('Error updating deal:', dealError);
+        throw dealError;
+      }
 
-      // Handle pitch deck file upload
+      // Handle file upload if present
       if (values.pitchDeckFile) {
-        const file = values.pitchDeckFile;
-        const fileExtension = file.name.split('.').pop();
-        const filePath = `deal_attachments/${deal.id}/${uuidv4()}.${fileExtension}`; 
-
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const fileExt = values.pitchDeckFile.name.split('.').pop();
+        const fileName = `${deal.id}_pitch_deck_${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
           .from('pitch-decks')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false, 
-          });
+          .upload(fileName, values.pitchDeckFile);
 
         if (uploadError) {
-          console.error('Error uploading pitch deck file:', uploadError);
-          toast({
-            title: "Upload Error",
-            description: `Failed to upload pitch deck file: ${uploadError.message}`,
-            variant: "destructive",
-          });
-        } else {
-          const { data: publicUrlData } = supabase.storage
-            .from('pitch-decks')
-            .getPublicUrl(filePath);
-          
-          if (publicUrlData) {
-            const { error: attachmentError } = await supabase.from('file_attachments').insert({
-              deal_id: deal.id, 
-              file_name: file.name,
-              file_url: publicUrlData.publicUrl,
-              file_type: file.type || 'application/octet-stream',
-              file_size: file.size,
-              uploaded_by: deal.created_by,
-            });
+          console.error('Error uploading file:', uploadError);
+          throw uploadError;
+        }
 
-            if (attachmentError) {
-              console.error('Error recording file attachment:', attachmentError);
-              toast({
-                title: "Database Error",
-                description: `Failed to record pitch deck file in database: ${attachmentError.message}`,
-                variant: "destructive",
-              });
-            } else {
-              toast({
-                title: "File Uploaded",
-                description: `Pitch deck file "${file.name}" uploaded successfully.`,
-              });
-            }
-          }
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from('pitch-decks')
+          .getPublicUrl(fileName);
+
+        // Save file attachment record
+        const { error: attachmentError } = await supabase
+          .from('file_attachments')
+          .insert({
+            deal_id: deal.id,
+            file_name: values.pitchDeckFile.name,
+            file_url: urlData.publicUrl,
+            file_type: 'file',
+            file_size: values.pitchDeckFile.size,
+            uploaded_by: deal.created_by
+          });
+
+        if (attachmentError) {
+          console.error('Error saving file attachment:', attachmentError);
+          throw attachmentError;
         }
       }
 
       // Handle pitch deck URL
       if (values.pitch_deck_url) {
-        const { data: existingLinks, error: existingLinksError } = await supabase
+        const { error: linkError } = await supabase
           .from('file_attachments')
-          .select('id')
-          .eq('deal_id', deal.id)
-          .eq('file_url', values.pitch_deck_url)
-          .single();
+          .insert({
+            deal_id: deal.id,
+            file_name: 'Pitch Deck Link',
+            file_url: values.pitch_deck_url,
+            file_type: 'link',
+            file_size: 0,
+            uploaded_by: deal.created_by
+          });
 
-        if (existingLinksError && existingLinksError.code !== 'PGRST116') {
-          console.error('Error checking for existing link:', existingLinksError);
-        }
-
-        if (!existingLinks) { 
-            const { error: linkAttachmentError } = await supabase.from('file_attachments').insert({
-                deal_id: deal.id,
-                file_name: `Pitch Deck Link: ${values.company_name}`, 
-                file_url: values.pitch_deck_url,
-                file_type: 'link', 
-                file_size: 0, 
-                uploaded_by: deal.created_by,
-            });
-
-            if (linkAttachmentError) {
-                console.error('Error recording pitch deck URL:', linkAttachmentError);
-                toast({
-                    title: "Database Error",
-                    description: `Failed to record pitch deck URL: ${linkAttachmentError.message}`,
-                    variant: "destructive",
-                });
-            } else {
-                toast({
-                    title: "Link Added",
-                    description: `Pitch deck link added successfully.`,
-                });
-            }
+        if (linkError) {
+          console.error('Error saving pitch deck link:', linkError);
+          throw linkError;
         }
       }
 
-      // Handle lead investor information
+      // Handle investor information
       if (values.lead_investor) {
-        // Remove existing lead investor entries
-        await supabase
+        const { error: leadError } = await supabase
           .from('file_attachments')
-          .delete()
-          .eq('deal_id', deal.id)
-          .eq('file_type', 'investor_info')
-          .like('file_url', 'investor:lead:%');
+          .insert({
+            deal_id: deal.id,
+            file_name: 'Lead Investor',
+            file_url: `investor:lead:${values.lead_investor}`,
+            file_type: 'investor_info',
+            file_size: 0,
+            uploaded_by: deal.created_by
+          });
 
-        // Add new lead investor entry
-        const { error: leadInvestorError } = await supabase.from('file_attachments').insert({
-          deal_id: deal.id,
-          file_name: `Lead Investor: ${values.lead_investor}`,
-          file_url: `investor:lead:${values.lead_investor}`,
-          file_type: 'investor_info',
-          file_size: 0,
-          uploaded_by: deal.created_by,
-        });
-
-        if (leadInvestorError) {
-          console.error('Error recording lead investor:', leadInvestorError);
+        if (leadError) {
+          console.error('Error saving lead investor:', leadError);
+          throw leadError;
         }
       }
 
-      // Handle other investors information
       if (values.other_investors) {
-        // Remove existing other investor entries
-        await supabase
+        const { error: otherError } = await supabase
           .from('file_attachments')
-          .delete()
-          .eq('deal_id', deal.id)
-          .eq('file_type', 'investor_info')
-          .like('file_url', 'investor:other:%');
+          .insert({
+            deal_id: deal.id,
+            file_name: 'Other Investors',
+            file_url: `investor:other:${values.other_investors}`,
+            file_type: 'investor_info',
+            file_size: 0,
+            uploaded_by: deal.created_by
+          });
 
-        // Add new other investors entry
-        const { error: otherInvestorsError } = await supabase.from('file_attachments').insert({
-          deal_id: deal.id,
-          file_name: `Other Investors: ${values.other_investors}`,
-          file_url: `investor:other:${values.other_investors}`,
-          file_type: 'investor_info',
-          file_size: 0,
-          uploaded_by: deal.created_by,
-        });
-
-        if (otherInvestorsError) {
-          console.error('Error recording other investors:', otherInvestorsError);
+        if (otherError) {
+          console.error('Error saving other investors:', otherError);
+          throw otherError;
         }
       }
 
-      // Success handling
-      if (values.pipeline_stage === 'Invested' && deal.pipeline_stage !== 'Invested') {
-        toast({
-          title: "Deal Invested!",
-          description: `"${values.company_name}" has been added to your portfolio.`,
-        });
-      } else {
-        toast({
-          title: "Deal updated",
-          description: "The deal has been successfully updated.",
-        });
-      }
-
-      queryClient.invalidateQueries({ queryKey: ['deals'] });
-      if (values.pipeline_stage === 'Invested') {
-        queryClient.invalidateQueries({ queryKey: ['portfolioCompanies'] });
-      }
+      toast({
+        title: "Success",
+        description: "Deal updated successfully",
+      });
 
       onSave();
-    } catch (error: any) {
-      console.error("Error during deal update:", error);
+    } catch (error) {
+      console.error('Error updating deal:', error);
       toast({
-        title: "Error updating deal",
-        description: error.message,
+        title: "Error",
+        description: "Failed to update deal. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -251,5 +189,8 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
     }
   };
 
-  return { handleEditSubmit, isUpdating, parseCurrency };
+  return {
+    handleEditSubmit,
+    isUpdating,
+  };
 }
