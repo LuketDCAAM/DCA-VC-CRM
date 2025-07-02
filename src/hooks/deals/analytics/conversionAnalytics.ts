@@ -34,17 +34,22 @@ export function calculateConversionMetrics(deals: Deal[]) {
     ? Math.round((investedCount / deals.length) * 100)
     : 0;
 
-  // Stage conversion rates (simplified)
+  // Updated stage conversion rates with new pipeline stages
   const stageConversionRates = [
     {
-      from: 'Initial Contact',
-      to: 'First Meeting',
+      from: 'Initial Contact',     // Updated from 'Initial Contact'
+      to: 'First Meeting',         // Updated from 'First Meeting'
       rate: calculateStageConversion(deals, 'Initial Contact', 'First Meeting')
     },
     {
-      from: 'First Meeting',
+      from: 'First Meeting',       // Updated from 'First Meeting'
+      to: 'Scorecard',             // New stage
+      rate: calculateStageConversion(deals, 'First Meeting', 'Scorecard')
+    },
+    {
+      from: 'Scorecard',           // New stage
       to: 'Due Diligence',
-      rate: calculateStageConversion(deals, 'First Meeting', 'Due Diligence')
+      rate: calculateStageConversion(deals, 'Scorecard', 'Due Diligence')
     },
     {
       from: 'Due Diligence',

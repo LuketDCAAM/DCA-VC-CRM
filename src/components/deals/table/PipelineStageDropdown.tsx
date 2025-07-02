@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import {
   Select,
@@ -19,13 +18,12 @@ interface PipelineStageDropdownProps {
   onUpdate?: () => void;
 }
 
-// This array MUST precisely match the pipeline_stage enum from your Supabase types.
-// (from src/integrations/supabase/types.ts -> Database.public.Enums.pipeline_stage)
+// Updated array to match the new pipeline stages from the database
 const PIPELINE_STAGES: PipelineStage[] = [
   'Inactive',
-  'Initial Review',   // Matches Supabase enum
-  'Initial Contact',
-  'First Meeting',
+  'Initial Contact',    // Previously 'Initial Review'
+  'First Meeting',      // Previously 'Initial Contact'
+  'Scorecard',          // New stage
   'Due Diligence',
   'Memo',       // Using 'Memo' to match Supabase enum
   'Legal Review',

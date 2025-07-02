@@ -1,5 +1,5 @@
 
-// Centralized pipeline stage color system
+// Centralized pipeline stage color system - Updated with new stages
 export const PIPELINE_STAGE_COLORS = {
   // Screening stages - Gray tones
   'Inactive': {
@@ -9,7 +9,7 @@ export const PIPELINE_STAGE_COLORS = {
     border: 'border-stone-200',
     text: 'text-stone-700'
   },
-  'Initial Review': {
+  'Initial Contact': {    // Previously 'Initial Review'
     badge: 'bg-gray-100 text-gray-800 border-gray-200',
     variant: 'secondary' as const,
     background: 'bg-gray-50',
@@ -18,14 +18,14 @@ export const PIPELINE_STAGE_COLORS = {
   },
   
   // Active pipeline stages - Blue progression
-  'Initial Contact': {
+  'First Meeting': {      // Previously 'Initial Contact'
     badge: 'bg-sky-100 text-sky-800 border-sky-200',
     variant: 'default' as const,
     background: 'bg-sky-50',
     border: 'border-sky-200',
     text: 'text-sky-700'
   },
-  'First Meeting': {
+  'Scorecard': {          // New stage, previously 'First Meeting'
     badge: 'bg-blue-100 text-blue-800 border-blue-200',
     variant: 'default' as const,
     background: 'bg-blue-50',

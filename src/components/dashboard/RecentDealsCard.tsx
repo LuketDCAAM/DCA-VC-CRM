@@ -24,13 +24,13 @@ export function RecentDealsCard({ deals }: RecentDealsCardProps) {
 
   const getStageColor = (stage: string) => {
     switch (stage.toLowerCase()) {
-      case 'seen not reviewed':
+      case 'inactive':
         return 'bg-stone-100 text-stone-800';
-      case 'initial review':
+      case 'initial contact':        // Updated from 'initial review'
         return 'bg-gray-100 text-gray-800';
-      case 'initial contact':
+      case 'first meeting':          // Updated from 'initial contact'
         return 'bg-sky-100 text-sky-800';
-      case 'first meeting':
+      case 'scorecard':              // New stage
         return 'bg-blue-100 text-blue-800';
       case 'due diligence':
         return 'bg-yellow-100 text-yellow-800';

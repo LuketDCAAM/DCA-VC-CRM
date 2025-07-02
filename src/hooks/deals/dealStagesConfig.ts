@@ -1,10 +1,10 @@
 
-// Pipeline stage configurations
+// Pipeline stage configurations - Updated to match new database schema
 export const PIPELINE_STAGES = [
   'Inactive',
-  'Initial Review',
-  'Initial Contact', 
-  'First Meeting',
+  'Initial Contact',    // Previously 'Initial Review' 
+  'First Meeting',      // Previously 'Initial Contact'
+  'Scorecard',          // New stage, previously 'First Meeting'
   'Due Diligence',
   'Memo',    // Keeping as 'Memo' to match Supabase enum
   'Legal Review',
@@ -16,9 +16,9 @@ export type PipelineStage = typeof PIPELINE_STAGES[number];
 
 // Active stages are those where deals are being actively worked on
 export const ACTIVE_PIPELINE_STAGES: PipelineStage[] = [
-  'Initial Review',
-  'Initial Contact',
-  'First Meeting',
+  'Initial Contact',    // Updated from 'Initial Review'
+  'First Meeting',      // Updated from 'Initial Contact'
+  'Scorecard',          // New stage
   'Due Diligence', 
   'Memo',
   'Legal Review'
@@ -27,7 +27,7 @@ export const ACTIVE_PIPELINE_STAGES: PipelineStage[] = [
 // Screening stages are early pipeline stages
 export const SCREENING_STAGES: PipelineStage[] = [
   'Inactive',
-  'Initial Review'
+  'Initial Contact'     // Updated from 'Initial Review'
 ];
 
 // Final outcome stages

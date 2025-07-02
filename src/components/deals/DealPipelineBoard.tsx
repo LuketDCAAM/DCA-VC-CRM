@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,13 +7,12 @@ import { Building2, DollarSign, Eye, Calendar, Star } from 'lucide-react';
 import { Deal, PipelineStage, RoundStage } from '@/types/deal'; 
 import { getPipelineStageClasses } from './pipelineStageColors';
 
-// This array MUST precisely match the pipeline_stage enum from your Supabase types.
-// (from src/integrations/supabase/types.ts -> Database.public.Enums.pipeline_stage)
+// Updated array to match the new pipeline stages from the database
 const pipelineStages: PipelineStage[] = [
   'Inactive',
-  'Initial Review',   
-  'Initial Contact',
-  'First Meeting',
+  'Initial Contact',    // Previously 'Initial Review'
+  'First Meeting',      // Previously 'Initial Contact'
+  'Scorecard',          // New stage
   'Due Diligence',
   'Memo',       // Using 'Memo' to match Supabase enum
   'Legal Review',

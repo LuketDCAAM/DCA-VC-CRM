@@ -1,3 +1,4 @@
+
 import { FilterOption } from '@/components/common/SearchAndFilter';
 import { Deal } from '@/types/deal';
 import { getUniqueSectors, getUniqueLocations, getUniqueDealSources } from '@/utils/dealFilterUtils';
@@ -13,9 +14,9 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
       type: 'select',
       options: [
         { label: 'Inactive', value: 'Inactive' },
-        { label: 'Initial Review', value: 'Initial Review' },
-        { label: 'Initial Contact', value: 'Initial Contact' },
-        { label: 'First Meeting', value: 'First Meeting' },
+        { label: 'Initial Contact', value: 'Initial Contact' },    // Updated from 'Initial Review'
+        { label: 'First Meeting', value: 'First Meeting' },        // Updated from 'Initial Contact'
+        { label: 'Scorecard', value: 'Scorecard' },                // New stage
         { label: 'Due Diligence', value: 'Due Diligence' },
         { label: 'Term Sheet', value: 'Term Sheet' },
         { label: 'Memo', value: 'Memo' },
@@ -94,9 +95,9 @@ export const DEALS_FILTER_OPTIONS: FilterOption[] = [
     type: 'select',
     options: [
       { label: 'Inactive', value: 'Inactive' },
-      { label: 'Initial Review', value: 'Initial Review' },
-      { label: 'Initial Contact', value: 'Initial Contact' },
-      { label: 'First Meeting', value: 'First Meeting' },
+      { label: 'Initial Contact', value: 'Initial Contact' },    // Updated from 'Initial Review'
+      { label: 'First Meeting', value: 'First Meeting' },        // Updated from 'Initial Contact'
+      { label: 'Scorecard', value: 'Scorecard' },                // New stage
       { label: 'Due Diligence', value: 'Due Diligence' },
       { label: 'Term Sheet', value: 'Term Sheet' },
       { label: 'Memo', value: 'Memo' },
