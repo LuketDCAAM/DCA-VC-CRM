@@ -14,8 +14,8 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
       type: 'select',
       options: [
         { label: 'Inactive', value: 'Inactive' },
-        { label: 'Initial Contact', value: 'Initial Contact' },    // Updated from 'Initial Review'
-        { label: 'First Meeting', value: 'First Meeting' },        // Updated from 'Initial Contact'
+        { label: 'Initial Review', value: 'Initial Review' },    // Updated from 'Initial Review'
+        { label: 'Scorecard', value: 'Scorecard' },        // Updated from 'Initial Contact'
         { label: 'One Pager', value: 'One Pager' },               // Previously 'Scorecard'
         { label: 'Due Diligence', value: 'Due Diligence' },
         { label: 'Term Sheet', value: 'Term Sheet' },
