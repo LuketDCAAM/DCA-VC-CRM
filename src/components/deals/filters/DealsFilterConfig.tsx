@@ -16,7 +16,7 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
         { label: 'Inactive', value: 'Inactive' },
         { label: 'Initial Contact', value: 'Initial Contact' },    // Updated from 'Initial Review'
         { label: 'First Meeting', value: 'First Meeting' },        // Updated from 'Initial Contact'
-        { label: 'Scorecard', value: 'Scorecard' },                // New stage
+        { label: 'One Pager', value: 'One Pager' },               // Previously 'Scorecard'
         { label: 'Due Diligence', value: 'Due Diligence' },
         { label: 'Term Sheet', value: 'Term Sheet' },
         { label: 'Memo', value: 'Memo' },
@@ -97,7 +97,7 @@ export const DEALS_FILTER_OPTIONS: FilterOption[] = [
       { label: 'Inactive', value: 'Inactive' },
       { label: 'Initial Contact', value: 'Initial Contact' },    // Updated from 'Initial Review'
       { label: 'First Meeting', value: 'First Meeting' },        // Updated from 'Initial Contact'
-      { label: 'Scorecard', value: 'Scorecard' },                // New stage
+      { label: 'One Pager', value: 'One Pager' },               // Previously 'Scorecard'
       { label: 'Due Diligence', value: 'Due Diligence' },
       { label: 'Term Sheet', value: 'Term Sheet' },
       { label: 'Memo', value: 'Memo' },

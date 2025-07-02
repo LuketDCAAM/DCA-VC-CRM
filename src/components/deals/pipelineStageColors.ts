@@ -25,7 +25,7 @@ export const PIPELINE_STAGE_COLORS = {
     border: 'border-sky-200',
     text: 'text-sky-700'
   },
-  'Scorecard': {          // New stage, previously 'First Meeting'
+  'One Pager': {          // Previously 'Scorecard'
     badge: 'bg-blue-100 text-blue-800 border-blue-200',
     variant: 'default' as const,
     background: 'bg-blue-50',

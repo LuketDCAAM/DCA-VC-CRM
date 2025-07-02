@@ -43,13 +43,13 @@ export function calculateConversionMetrics(deals: Deal[]) {
     },
     {
       from: 'First Meeting',       // Updated from 'First Meeting'
-      to: 'Scorecard',             // New stage
-      rate: calculateStageConversion(deals, 'First Meeting', 'Scorecard')
+      to: 'One Pager',             // Previously 'Scorecard'
+      rate: calculateStageConversion(deals, 'First Meeting', 'One Pager')
     },
     {
-      from: 'Scorecard',           // New stage
+      from: 'One Pager',           // Previously 'Scorecard'
       to: 'Due Diligence',
-      rate: calculateStageConversion(deals, 'Scorecard', 'Due Diligence')
+      rate: calculateStageConversion(deals, 'One Pager', 'Due Diligence')
     },
     {
       from: 'Due Diligence',
