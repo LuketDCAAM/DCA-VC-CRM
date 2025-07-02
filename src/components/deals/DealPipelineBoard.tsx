@@ -1,24 +1,12 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Building2, DollarSign, Eye, Calendar, Star } from 'lucide-react';
-// Import PipelineStage and Deal from your canonical types file
-import { Deal, PipelineStage, RoundStage } from '@/types/deal'; 
+import { Deal } from '@/types/deal'; 
+import { PIPELINE_STAGES, PipelineStage } from '../dealStagesConfig';
 import { getPipelineStageClasses } from './pipelineStageColors';
-
-// Updated array to match the new pipeline stages from the database
-const pipelineStages: PipelineStage[] = [
-  'Inactive',
-  'Initial Contact',    // Previously 'Initial Review'
-  'First Meeting',      // Previously 'Initial Contact'
-  'Scorecard',          // New stage
-  'Due Diligence',
-  'Memo',       // Using 'Memo' to match Supabase enum
-  'Legal Review',
-  'Invested',
-  'Passed'
-];
 
 const formatCurrency = (amount: number | null) => {
   if (!amount) return 'N/A';
@@ -42,8 +30,8 @@ interface DealPipelineBoardProps {
 }
 
 export function DealPipelineBoard({ deals, onViewDetails, onDealUpdated }: DealPipelineBoardProps) {
-  const dealsByStage = pipelineStages.reduce((acc, stage) => {
-    // TypeScript will now correctly understand deal.pipeline_stage due to proper Deal interface
+  const dealsByStage = PIPELINE_STAGES.reduce((acc, stage) => {
+    // Filter deals by stage with proper type checking
     acc[stage] = deals.filter(deal => deal.pipeline_stage === stage);
     return acc;
   }, {} as Record<PipelineStage, Deal[]>);
@@ -95,7 +83,7 @@ export function DealPipelineBoard({ deals, onViewDetails, onDealUpdated }: DealP
 
   return (
     <div className="flex gap-3 overflow-x-auto pb-4">
-      {pipelineStages.map(stage => (
+      {PIPELINE_STAGES.map(stage => (
         <div key={stage} className="flex-shrink-0 w-64">
           <Card className={`h-full ${getStageColor(stage)} shadow-sm`}>
             <CardHeader className="pb-2 px-3 pt-3">

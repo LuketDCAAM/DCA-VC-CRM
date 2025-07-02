@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   Select,
@@ -7,7 +8,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from '@/components/ui/badge';
-import { Deal, PipelineStage } from '@/types/deal'; // Ensure correct import for Deal and PipelineStage
+import { Deal } from '@/types/deal';
+import { PIPELINE_STAGES, PipelineStage } from '../../dealStagesConfig';
 import { getPipelineStageColor } from '../pipelineStageColors';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -18,25 +20,12 @@ interface PipelineStageDropdownProps {
   onUpdate?: () => void;
 }
 
-// Updated array to match the new pipeline stages from the database
-const PIPELINE_STAGES: PipelineStage[] = [
-  'Inactive',
-  'Initial Contact',    // Previously 'Initial Review'
-  'First Meeting',      // Previously 'Initial Contact'
-  'Scorecard',          // New stage
-  'Due Diligence',
-  'Memo',       // Using 'Memo' to match Supabase enum
-  'Legal Review',
-  'Invested',
-  'Passed'
-];
-
 export function PipelineStageDropdown({ deal, onUpdate }: PipelineStageDropdownProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const handleStageChange = async (newStage: PipelineStage) => { // Type newStage as PipelineStage
+  const handleStageChange = async (newStage: string) => {
     if (newStage === deal.pipeline_stage) return;
     
     setIsLoading(true);
@@ -45,10 +34,10 @@ export function PipelineStageDropdown({ deal, onUpdate }: PipelineStageDropdownP
       const { error } = await supabase
         .from('deals')
         .update({ 
-          pipeline_stage: newStage, // Now correctly typed
+          pipeline_stage: newStage as any,
           updated_at: new Date().toISOString()
         })
-        .eq('id', deal.id); // 'id' should now exist on 'deal' due to the `Deal` interface fix
+        .eq('id', deal.id);
 
       if (error) {
         console.error('Error updating pipeline stage:', error);
@@ -92,7 +81,7 @@ export function PipelineStageDropdown({ deal, onUpdate }: PipelineStageDropdownP
         <SelectValue asChild>
           <div className="relative">
             <Badge 
-              variant={getPipelineStageColor(deal.pipeline_stage) as any} // Still need 'as any' if getPipelineStageColor returns a generic string that Badge expects as a literal
+              variant={getPipelineStageColor(deal.pipeline_stage) as any}
               className="font-medium text-xs cursor-pointer transition-all duration-200 hover:scale-105 pr-6"
             >
               {deal.pipeline_stage}

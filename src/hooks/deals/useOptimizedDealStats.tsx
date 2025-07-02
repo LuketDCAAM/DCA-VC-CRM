@@ -2,21 +2,7 @@
 import { useMemo } from 'react';
 import { Deal } from '@/types/deal';
 import { DealStats } from './dealStatsCalculator';
-
-// Pre-compute stage sets for better performance
-const ACTIVE_STAGES_SET = new Set([
-  'Initial Review', 
-  'Initial Contact',
-  'First Meeting',
-  'Due Diligence',
-  'Memo',
-  'Legal Review'
-]);
-
-const SCREENING_STAGES_SET = new Set([
-  'Inactive',
-  'Initial Review'
-]);
+import { ACTIVE_PIPELINE_STAGES, SCREENING_STAGES } from './dealStagesConfig';
 
 export function useOptimizedDealStats(deals: Deal[]): DealStats {
   return useMemo(() => {
@@ -39,7 +25,7 @@ export function useOptimizedDealStats(deals: Deal[]): DealStats {
     for (const deal of deals) {
       const stage = deal.pipeline_stage;
       
-      if (ACTIVE_STAGES_SET.has(stage)) {
+      if (ACTIVE_PIPELINE_STAGES.includes(stage as any)) {
         activeDeals++;
       }
       
@@ -49,7 +35,7 @@ export function useOptimizedDealStats(deals: Deal[]): DealStats {
         passedDeals++;
       }
       
-      if (SCREENING_STAGES_SET.has(stage)) {
+      if (SCREENING_STAGES.includes(stage as any)) {
         screeningDeals++;
       }
     }
