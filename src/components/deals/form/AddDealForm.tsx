@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -39,9 +40,10 @@ type AddDealFormValues = z.infer<typeof addDealFormSchema> & {
 
 interface AddDealFormProps {
   onSuccess: () => void;
+  onCancel?: () => void;
 }
 
-export function AddDealForm({ onSuccess }: AddDealFormProps) {
+export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
   const [pitchDeckFile, setPitchDeckFile] = useState<File | null>(null);
   const { handleAddSubmit, isLoading, pipelineStages, roundStages } = useAddDeal();
 
@@ -446,6 +448,11 @@ export function AddDealForm({ onSuccess }: AddDealFormProps) {
         </div>
 
         <div className="flex justify-end gap-2">
+          {onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+          )}
           <Button type="submit" disabled={isLoading}>
             {isLoading ? 'Creating...' : 'Create Deal'}
           </Button>
