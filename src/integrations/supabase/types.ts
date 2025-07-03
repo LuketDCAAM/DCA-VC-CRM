@@ -663,8 +663,8 @@ export type Database = {
       pipeline_stage:
         | "Inactive"
         | "Initial Review"
-        | "Initial Contact"
-        | "First Meeting"
+        | "Scorecard"
+        | "One Pager"
         | "Due Diligence"
         | "Memo"
         | "Legal Review"
@@ -808,8 +808,8 @@ export const Constants = {
       pipeline_stage: [
         "Inactive",
         "Initial Review",
-        "Initial Contact",
-        "First Meeting",
+        "Scorecard",
+        "One Pager",
         "Due Diligence",
         "Memo",
         "Legal Review",

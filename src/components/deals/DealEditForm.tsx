@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -75,7 +76,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
       description: deal.description || '',
       sector: deal.sector || '',
       round_stage: deal.round_stage, 
-      deal_score: deal.deal_score || '',
+      deal_score: deal.deal_score || undefined,
       source_date: deal.source_date ? deal.source_date.split('T')[0] : '', 
       deal_source: deal.deal_source || '',
       deal_lead: deal.deal_lead || '',
@@ -362,7 +363,12 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
                 <FormItem>
                   <FormLabel>Deal Score</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} value={field.value === null ? '' : field.value} onChange={(e) => field.onChange(e.target.value === '' ? null : Number(e.target.value))} />
+                    <Input 
+                      type="number" 
+                      {...field} 
+                      value={field.value === null || field.value === undefined ? '' : field.value} 
+                      onChange={(e) => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
