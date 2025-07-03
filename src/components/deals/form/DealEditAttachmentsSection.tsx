@@ -4,10 +4,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Paperclip, Link } from 'lucide-react';
 import { Control } from 'react-hook-form';
-
-interface DealFormValues {
-  pitch_deck_url?: string;
-}
+import { DealFormValues } from './dealEditFormSchema';
 
 interface DealEditAttachmentsSectionProps {
   control: Control<DealFormValues>;

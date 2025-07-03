@@ -3,12 +3,7 @@ import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Control } from 'react-hook-form';
-
-interface DealFormValues {
-  contact_name?: string;
-  contact_email?: string;
-  contact_phone?: string;
-}
+import { DealFormValues } from './dealEditFormSchema';
 
 interface DealEditContactSectionProps {
   control: Control<DealFormValues>;

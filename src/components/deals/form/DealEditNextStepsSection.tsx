@@ -3,10 +3,7 @@ import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Textarea } from '@/components/ui/textarea';
 import { Control } from 'react-hook-form';
-
-interface DealFormValues {
-  next_steps?: string;
-}
+import { DealFormValues } from './dealEditFormSchema';
 
 interface DealEditNextStepsSectionProps {
   control: Control<DealFormValues>;

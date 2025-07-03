@@ -4,14 +4,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Control } from 'react-hook-form';
-
-interface DealFormValues {
-  company_name: string;
-  website?: string;
-  location?: string;
-  sector?: string;
-  description?: string;
-}
+import { DealFormValues } from './dealEditFormSchema';
 
 interface DealEditCompanySectionProps {
   control: Control<DealFormValues>;
