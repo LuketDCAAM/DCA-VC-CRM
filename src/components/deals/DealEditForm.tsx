@@ -13,6 +13,7 @@ import { DealEditFinancialSection } from './form/DealEditFinancialSection';
 import { DealEditNextStepsSection } from './form/DealEditNextStepsSection';
 import { DealEditInvestorSection } from './form/DealEditInvestorSection';
 import { DealEditAttachmentsSection } from './form/DealEditAttachmentsSection';
+import { DealFormValues } from './form/dealEditFormSchema';
 
 interface DealEditFormProps {
   deal: Deal;
@@ -24,7 +25,10 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
   const { form, pitchDeckFile, handleFileChange } = useDealEditForm({ deal });
   const { handleEditSubmit, isUpdating } = useEditDeal({ deal, onSave });
 
-  const onSubmit = async (values: any) => {
+  const onSubmit = async (values: DealFormValues) => {
+    console.log('Form submission values:', values);
+    console.log('Next steps value:', values.next_steps);
+    
     const submitValues = {
       company_name: values.company_name,
       website: values.website || '',
@@ -46,8 +50,11 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
       pitch_deck_url: values.pitch_deck_url || '',
       lead_investor: values.lead_investor || '',
       other_investors: values.other_investors || '',
+      next_steps: values.next_steps || '',
       pitchDeckFile
     };
+    
+    console.log('Submit values with next_steps:', submitValues.next_steps);
     await handleEditSubmit(submitValues);
   };
 

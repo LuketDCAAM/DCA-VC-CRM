@@ -26,6 +26,4 @@ export const dealFormSchema = z.object({
   next_steps: z.string().optional(),
 });
 
-export type DealFormValues = z.infer<typeof dealFormSchema> & {
-  pitchDeckFile?: File | null;
-};
+export type DealFormValues = z.infer<typeof dealFormSchema>;
