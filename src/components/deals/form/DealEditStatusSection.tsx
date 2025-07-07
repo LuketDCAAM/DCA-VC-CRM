@@ -1,19 +1,10 @@
-
 import React from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Control } from 'react-hook-form';
 import { Constants } from '@/integrations/supabase/types';
-
-interface DealFormValues {
-  pipeline_stage: string;
-  round_stage?: string | null;
-  deal_score?: number;
-  deal_lead?: string;
-  deal_source?: string;
-  source_date?: string;
-}
+import { DealFormValues } from './dealEditFormSchema';
 
 interface DealEditStatusSectionProps {
   control: Control<DealFormValues>;
