@@ -8,10 +8,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Users } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { CalendarIcon, Users, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { useTaskAssignment } from '@/hooks/useTaskAssignment';
+import { Badge } from '@/components/ui/badge';
 
 interface TaskAssignmentDialogProps {
   open: boolean;
@@ -32,43 +34,62 @@ export function TaskAssignmentDialog({
 }: TaskAssignmentDialogProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [assignedTo, setAssignedTo] = useState('');
+  const [assignees, setAssignees] = useState<string[]>([]);
   const [priority, setPriority] = useState<'low' | 'medium' | 'high' | 'urgent'>('medium');
   const [dueDate, setDueDate] = useState<Date>();
+  const [sendEmailReminder, setSendEmailReminder] = useState(false);
   
   const { users, loading, assignTask } = useTaskAssignment();
 
+  const handleAssigneeToggle = (userId: string) => {
+    setAssignees(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const removeAssignee = (userId: string) => {
+    setAssignees(prev => prev.filter(id => id !== userId));
+  };
+
+  const getSelectedUsers = () => {
+    return users.filter(user => assignees.includes(user.id));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !assignedTo || !dueDate) return;
+    if (!title || assignees.length === 0 || !dueDate) return;
 
     const success = await assignTask({
       title,
       description: description || undefined,
       reminder_date: format(dueDate, 'yyyy-MM-dd'),
-      assigned_to: assignedTo,
+      assignees,
       deal_id: dealId,
       portfolio_company_id: portfolioCompanyId,
       investor_id: investorId,
       task_type: 'task',
       priority,
       status: 'pending',
+      send_email_reminder: sendEmailReminder,
     });
 
     if (success) {
       onOpenChange(false);
       setTitle('');
       setDescription('');
-      setAssignedTo('');
+      setAssignees([]);
       setPriority('medium');
       setDueDate(undefined);
+      setSendEmailReminder(false);
       onTaskCreated?.();
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -101,22 +122,47 @@ export function TaskAssignmentDialog({
 
           <div className="space-y-2">
             <Label>Assign To</Label>
-            <Select value={assignedTo} onValueChange={setAssignedTo} required>
+            {assignees.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {getSelectedUsers().map((user) => (
+                  <Badge key={user.id} variant="secondary" className="flex items-center gap-1">
+                    {user.name || user.email}
+                    <X 
+                      className="h-3 w-3 cursor-pointer" 
+                      onClick={() => removeAssignee(user.id)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+            )}
+            <Select onValueChange={handleAssigneeToggle}>
               <SelectTrigger>
-                <SelectValue placeholder="Select a user..." />
+                <SelectValue placeholder="Select users to assign..." />
               </SelectTrigger>
               <SelectContent>
                 {loading ? (
                   <SelectItem value="" disabled>Loading users...</SelectItem>
                 ) : (
                   users.map((user) => (
-                    <SelectItem key={user.id} value={user.id}>
-                      {user.name || user.email}
+                    <SelectItem 
+                      key={user.id} 
+                      value={user.id}
+                      disabled={assignees.includes(user.id)}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <span>{user.name || user.email}</span>
+                        {assignees.includes(user.id) && (
+                          <span className="text-xs text-green-600 ml-2">✓ Selected</span>
+                        )}
+                      </div>
                     </SelectItem>
                   ))
                 )}
               </SelectContent>
             </Select>
+            {assignees.length === 0 && (
+              <p className="text-sm text-red-500">Please select at least one assignee</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -160,11 +206,22 @@ export function TaskAssignmentDialog({
             </Popover>
           </div>
 
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="email-reminder"
+              checked={sendEmailReminder}
+              onCheckedChange={setSendEmailReminder}
+            />
+            <Label htmlFor="email-reminder" className="text-sm">
+              Send email reminder to assignees
+            </Label>
+          </div>
+
           <div className="flex justify-end space-x-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={!title || !assignedTo || !dueDate}>
+            <Button type="submit" disabled={!title || assignees.length === 0 || !dueDate}>
               Assign Task
             </Button>
           </div>

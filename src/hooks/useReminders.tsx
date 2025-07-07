@@ -15,6 +15,13 @@ interface Reminder {
   investor_id: string | null;
   created_by: string;
   created_at: string;
+  assigned_to: string | null;
+  task_type: string | null;
+  priority: string | null;
+  status: string | null;
+  send_email_reminder: boolean | null;
+  email_sent: boolean | null;
+  email_sent_at: string | null;
 }
 
 export function useReminders() {
@@ -31,7 +38,7 @@ export function useReminders() {
       const { data, error } = await supabase
         .from('reminders')
         .select('*')
-        .eq('created_by', user.id)
+        .or(`created_by.eq.${user.id},assigned_to.eq.${user.id}`)
         .order('reminder_date', { ascending: true });
 
       if (error) throw error;
@@ -54,6 +61,7 @@ export function useReminders() {
     deal_id?: string;
     portfolio_company_id?: string;
     investor_id?: string;
+    send_email_reminder?: boolean;
   }) => {
     if (!user) return;
 
@@ -63,6 +71,9 @@ export function useReminders() {
         .insert({
           ...reminderData,
           created_by: user.id,
+          task_type: 'reminder',
+          priority: 'medium',
+          status: 'pending',
         });
 
       if (error) throw error;

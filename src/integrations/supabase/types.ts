@@ -529,12 +529,15 @@ export type Database = {
           created_by: string
           deal_id: string | null
           description: string | null
+          email_sent: boolean | null
+          email_sent_at: string | null
           id: string
           investor_id: string | null
           is_completed: boolean
           portfolio_company_id: string | null
           priority: string | null
           reminder_date: string
+          send_email_reminder: boolean | null
           status: string | null
           task_type: string | null
           title: string
@@ -545,12 +548,15 @@ export type Database = {
           created_by: string
           deal_id?: string | null
           description?: string | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
           id?: string
           investor_id?: string | null
           is_completed?: boolean
           portfolio_company_id?: string | null
           priority?: string | null
           reminder_date: string
+          send_email_reminder?: boolean | null
           status?: string | null
           task_type?: string | null
           title: string
@@ -561,12 +567,15 @@ export type Database = {
           created_by?: string
           deal_id?: string | null
           description?: string | null
+          email_sent?: boolean | null
+          email_sent_at?: string | null
           id?: string
           investor_id?: string | null
           is_completed?: boolean
           portfolio_company_id?: string | null
           priority?: string | null
           reminder_date?: string
+          send_email_reminder?: boolean | null
           status?: string | null
           task_type?: string | null
           title?: string
@@ -591,6 +600,35 @@ export type Database = {
             columns: ["portfolio_company_id"]
             isOneToOne: false
             referencedRelation: "portfolio_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_assignments: {
+        Row: {
+          assigned_to: string
+          created_at: string
+          id: string
+          task_id: string
+        }
+        Insert: {
+          assigned_to: string
+          created_at?: string
+          id?: string
+          task_id: string
+        }
+        Update: {
+          assigned_to?: string
+          created_at?: string
+          id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_assignments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "reminders"
             referencedColumns: ["id"]
           },
         ]
@@ -654,6 +692,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_task_assignees: {
+        Args: { task_id: string }
+        Returns: {
+          id: string
+          email: string
+          name: string
+        }[]
+      }
       get_user_profiles: {
         Args: Record<PropertyKey, never>
         Returns: {
