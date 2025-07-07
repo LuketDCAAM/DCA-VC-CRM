@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -210,7 +209,7 @@ export function TaskAssignmentDialog({
             <Checkbox
               id="email-reminder"
               checked={sendEmailReminder}
-              onCheckedChange={setSendEmailReminder}
+              onCheckedChange={(checked) => setSendEmailReminder(checked === true)}
             />
             <Label htmlFor="email-reminder" className="text-sm">
               Send email reminder to assignees
