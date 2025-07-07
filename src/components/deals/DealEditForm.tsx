@@ -13,6 +13,7 @@ import { DealEditFinancialSection } from './form/DealEditFinancialSection';
 import { DealEditNextStepsSection } from './form/DealEditNextStepsSection';
 import { DealEditInvestorSection } from './form/DealEditInvestorSection';
 import { DealEditAttachmentsSection } from './form/DealEditAttachmentsSection';
+import { DealTaskSection } from './form/DealTaskSection';
 import { DealFormValues } from './form/dealEditFormSchema';
 
 interface DealEditFormProps {
@@ -116,6 +117,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
             pitchDeckFile={pitchDeckFile}
             onFileChange={handleFileChange}
           />
+          <DealTaskSection dealId={deal.id} />
         </div>
       </form>
     </Form>
