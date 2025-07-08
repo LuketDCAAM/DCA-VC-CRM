@@ -52,7 +52,9 @@ export function AssigneeSelector({
         </SelectTrigger>
         <SelectContent>
           {loading ? (
-            <SelectItem value="" disabled>Loading users...</SelectItem>
+            <SelectItem value="loading" disabled>Loading users...</SelectItem>
+          ) : users.length === 0 ? (
+            <SelectItem value="no-users" disabled>No users available</SelectItem>
           ) : (
             users.map((user) => (
               <SelectItem 
