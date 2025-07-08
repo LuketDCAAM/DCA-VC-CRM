@@ -12,6 +12,7 @@ export default function AuthForm() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
   const { toast } = useToast();
 
@@ -25,7 +26,10 @@ export default function AuthForm() {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              name: name
+            }
           }
         });
         if (error) throw error;
@@ -76,6 +80,7 @@ export default function AuthForm() {
                 setIsSignUp(false);
                 setEmail('');
                 setPassword('');
+                setName('');
               }}
               variant="outline"
               className="w-full"
@@ -102,6 +107,19 @@ export default function AuthForm() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            {isSignUp && (
+              <div>
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  placeholder="Enter your full name"
+                />
+              </div>
+            )}
             <div>
               <Label htmlFor="email">Email</Label>
               <Input

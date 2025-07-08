@@ -692,6 +692,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_all_users_with_roles: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          user_id: string
+          email: string
+          name: string
+          roles: string[]
+          approval_status: string
+          created_at: string
+        }[]
+      }
       get_task_assignees: {
         Args: { task_id: string }
         Returns: {

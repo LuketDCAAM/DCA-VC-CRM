@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { UserApprovalsDialog } from '@/components/admin/UserApprovalsDialog';
+import { AllUsersDialog } from '@/components/admin/AllUsersDialog';
 import ProfileButton from '@/components/profile/ProfileButton';
 
 const navigation = [
@@ -72,7 +73,12 @@ export default function Header() {
       <div className="flex items-center gap-4">
         {/* Desktop controls */}
         <div className="hidden md:flex items-center gap-4">
-            {isAdmin && <UserApprovalsDialog />}
+            {isAdmin && (
+              <div className="flex items-center gap-2">
+                <UserApprovalsDialog />
+                <AllUsersDialog />
+              </div>
+            )}
             <ProfileButton />
             <Button
               onClick={handleSignOut}
@@ -112,7 +118,12 @@ export default function Header() {
                   ))}
                 </nav>
                 <div className="mt-auto flex flex-col gap-2">
-                    {isAdmin && <UserApprovalsDialog />}
+                    {isAdmin && (
+                      <>
+                        <UserApprovalsDialog />
+                        <AllUsersDialog />
+                      </>
+                    )}
                     <ProfileButton />
                     <Button onClick={handleSignOut} variant="secondary" className='w-full justify-start'>
                       <LogOut className="mr-2 h-5 w-5" />
