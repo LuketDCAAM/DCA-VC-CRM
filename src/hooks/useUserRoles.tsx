@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
-type UserRole = 'admin' | 'user';
+type UserRole = 'admin' | 'user' | 'viewer';
 type UserStatus = 'pending' | 'approved' | 'rejected';
 
 interface UserApproval {
@@ -95,6 +95,7 @@ export function useUserRoles() {
   }, [user]);
 
   const isAdmin = userRoles.includes('admin');
+  const isViewer = userRoles.includes('viewer');
   const isApproved = approvalStatus === 'approved';
   const isPending = approvalStatus === 'pending';
   const isRejected = approvalStatus === 'rejected';
@@ -104,6 +105,7 @@ export function useUserRoles() {
   console.log('User roles:', userRoles);
   console.log('Approval status:', approvalStatus);
   console.log('Is admin:', isAdmin);
+  console.log('Is viewer:', isViewer);
   console.log('Is approved:', isApproved);
   console.log('Is pending:', isPending);
   console.log('Is rejected:', isRejected);
@@ -113,6 +115,7 @@ export function useUserRoles() {
     userRoles,
     approvalStatus,
     isAdmin,
+    isViewer,
     isApproved,
     isPending,
     isRejected,

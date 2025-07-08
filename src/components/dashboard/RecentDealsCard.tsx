@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useUserRoles } from '@/hooks/useUserRoles';
 
 interface Deal {
   id: string;
@@ -21,6 +22,7 @@ interface RecentDealsCardProps {
 
 export function RecentDealsCard({ deals }: RecentDealsCardProps) {
   const navigate = useNavigate();
+  const { isViewer } = useUserRoles();
 
   const getStageColor = (stage: string) => {
     switch (stage.toLowerCase()) {
@@ -54,10 +56,12 @@ export function RecentDealsCard({ deals }: RecentDealsCardProps) {
           <CardTitle className="text-lg font-semibold">Recent Deals</CardTitle>
           <CardDescription>Latest updates in your pipeline</CardDescription>
         </div>
-        <Button variant="outline" size="sm" onClick={() => navigate('/deals')}>
-          <Eye className="h-4 w-4 mr-2" />
-          View All
-        </Button>
+        {!isViewer && (
+          <Button variant="outline" size="sm" onClick={() => navigate('/deals')}>
+            <Eye className="h-4 w-4 mr-2" />
+            View All
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         {deals.length > 0 ? (
@@ -93,9 +97,11 @@ export function RecentDealsCard({ deals }: RecentDealsCardProps) {
             <p className="text-xs text-muted-foreground mb-4">
               Start by adding your first deal to track your pipeline
             </p>
-            <Button size="sm" onClick={() => navigate('/deals')}>
-              Add Deal
-            </Button>
+            {!isViewer && (
+              <Button size="sm" onClick={() => navigate('/deals')}>
+                Add Deal
+              </Button>
+            )}
           </div>
         )}
       </CardContent>

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Eye, Building2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useUserRoles } from '@/hooks/useUserRoles';
 
 interface PortfolioCompany {
   id: string;
@@ -21,6 +22,7 @@ interface RecentPortfolioCardProps {
 
 export function RecentPortfolioCard({ companies, onViewDetails }: RecentPortfolioCardProps) {
   const navigate = useNavigate();
+  const { isViewer } = useUserRoles();
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -42,10 +44,12 @@ export function RecentPortfolioCard({ companies, onViewDetails }: RecentPortfoli
           <CardTitle className="text-lg font-semibold">Recent Portfolio Updates</CardTitle>
           <CardDescription>Latest portfolio company activity</CardDescription>
         </div>
-        <Button variant="outline" size="sm" onClick={() => navigate('/portfolio')}>
-          <Eye className="h-4 w-4 mr-2" />
-          View All
-        </Button>
+        {!isViewer && (
+          <Button variant="outline" size="sm" onClick={() => navigate('/portfolio')}>
+            <Eye className="h-4 w-4 mr-2" />
+            View All
+          </Button>
+        )}
       </CardHeader>
       <CardContent className="space-y-4">
         {companies.length > 0 ? (
@@ -83,9 +87,11 @@ export function RecentPortfolioCard({ companies, onViewDetails }: RecentPortfoli
             <p className="text-xs text-muted-foreground mb-4">
               Add your first portfolio company to start tracking investments
             </p>
-            <Button size="sm" onClick={() => navigate('/portfolio')}>
-              Add Company
-            </Button>
+            {!isViewer && (
+              <Button size="sm" onClick={() => navigate('/portfolio')}>
+                Add Company
+              </Button>
+            )}
           </div>
         )}
       </CardContent>

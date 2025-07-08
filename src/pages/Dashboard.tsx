@@ -3,6 +3,7 @@ import React from 'react';
 import { useDeals } from '@/hooks/useDeals';
 import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
 import { useDealAnalytics } from '@/hooks/deals/useDealAnalytics';
+import { useUserRoles } from '@/hooks/useUserRoles';
 import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics';
 import { RecentDealsCard } from '@/components/dashboard/RecentDealsCard';
 import { RecentPortfolioCard } from '@/components/dashboard/RecentPortfolioCard';
@@ -19,6 +20,7 @@ import { DealsLocationMap } from '@/components/dashboard/charts/DealsLocationMap
 export default function Dashboard() {
   const { deals, loading: dealsLoading, dealStats } = useDeals();
   const { companies: portfolioCompanies, loading: portfolioLoading } = usePortfolioCompanies();
+  const { isViewer } = useUserRoles();
   const analytics = useDealAnalytics(deals || []);
 
   // Calculate total invested from portfolio companies
@@ -76,18 +78,18 @@ export default function Dashboard() {
         <MonthlyTrendChart data={analytics.monthlyTrends} />
       </div>
 
-      {/* Activity & Quick Actions */}
+      {/* Activity & Quick Actions - Hide Quick Actions for viewers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
           <RecentDealsCard deals={deals?.slice(0, 5) || []} />
-          <RemindersWidget />
+          {!isViewer && <RemindersWidget />}
         </div>
         <div className="space-y-6">
           <RecentPortfolioCard 
             companies={portfolioCompanies?.slice(0, 5) || []} 
             onViewDetails={() => {}} 
           />
-          <DashboardQuickActions />
+          {!isViewer && <DashboardQuickActions />}
         </div>
       </div>
     </div>

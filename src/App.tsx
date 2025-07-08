@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -22,7 +23,7 @@ const queryClient = new QueryClient();
 
 function AppContent() {
   const { user, loading: authLoading } = useAuth();
-  const { isApproved, loading: rolesLoading } = useUserRoles();
+  const { isApproved, isViewer, loading: rolesLoading } = useUserRoles();
 
   if (authLoading || rolesLoading) {
     return (
@@ -49,12 +50,26 @@ function AppContent() {
           <Routes>
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/deals" element={<Deals />} />
-            <Route path="/portfolio" element={<Portfolio />} />
-            <Route path="/investors" element={<Investors />} />
-            <Route path="/contacts" element={<Contacts />} />
-            <Route path="/reminders" element={<Reminders />} />
-            <Route path="*" element={<NotFound />} />
+            {/* Redirect viewers to dashboard for all other routes */}
+            {isViewer ? (
+              <>
+                <Route path="/deals" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/portfolio" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/investors" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/contacts" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/reminders" element={<Navigate to="/dashboard" replace />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </>
+            ) : (
+              <>
+                <Route path="/deals" element={<Deals />} />
+                <Route path="/portfolio" element={<Portfolio />} />
+                <Route path="/investors" element={<Investors />} />
+                <Route path="/contacts" element={<Contacts />} />
+                <Route path="/reminders" element={<Reminders />} />
+                <Route path="*" element={<NotFound />} />
+              </>
+            )}
           </Routes>
         </div>
       </main>

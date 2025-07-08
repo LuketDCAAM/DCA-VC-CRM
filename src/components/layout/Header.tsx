@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Building2, Users, DollarSign, Contact, BarChart3, LogOut, Menu } from 'lucide-react';
@@ -21,7 +22,7 @@ const navigation = [
 export default function Header() {
   const location = useLocation();
   const { toast } = useToast();
-  const { isAdmin } = useUserRoles();
+  const { isAdmin, isViewer } = useUserRoles();
   const [open, setOpen] = React.useState(false);
 
   const handleSignOut = async () => {
@@ -34,6 +35,11 @@ export default function Header() {
       });
     }
   };
+
+  // Filter navigation items for viewers - only show Dashboard
+  const filteredNavigation = isViewer 
+    ? navigation.filter(item => item.href === '/dashboard')
+    : navigation;
 
   const navLinkClasses = (isActive: boolean) =>
     cn(
@@ -50,7 +56,7 @@ export default function Header() {
           <img src="/lovable-uploads/c1b92e43-b852-475a-aa30-04db2ade1108.png" alt="DCA logo" className="h-8" />
         </Link>
         <nav className="hidden items-center gap-1 md:flex">
-          {navigation.map((item) => (
+          {filteredNavigation.map((item) => (
             <Link
               key={item.name}
               to={item.href}
@@ -93,7 +99,7 @@ export default function Header() {
                   <Link to="/dashboard" onClick={() => setOpen(false)} className="flex items-center mb-4">
                      <img src="/lovable-uploads/c1b92e43-b852-475a-aa30-04db2ade1108.png" alt="DCA logo" className="h-8" />
                   </Link>
-                  {navigation.map((item) => (
+                  {filteredNavigation.map((item) => (
                     <Link
                       key={item.name}
                       to={item.href}
