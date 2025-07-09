@@ -3,10 +3,9 @@ import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-// Cache of active channels and subscription status by user ID
+// Cache of active channels by user ID
 const channelsByUserId: Record<string, any> = {};
 const subscribersByUserId: Record<string, Set<() => void>> = {};
-const subscriptionStatusByUserId: Record<string, 'subscribing' | 'subscribed' | 'unsubscribed'> = {};
 
 export function useContactsSubscription(user: User | null, refetch: () => void) {
   const refetchRef = useRef(refetch);
@@ -31,15 +30,15 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
     };
     subscribersByUserId[user.id].add(refetchFunction);
 
-    // Only create and subscribe to a new channel if none exists or if explicitly unsubscribed
-    if (!channelsByUserId[user.id] && subscriptionStatusByUserId[user.id] !== 'subscribing' && subscriptionStatusByUserId[user.id] !== 'subscribed') {
+    // Only create a new channel if none exists for this user
+    if (!channelsByUserId[user.id]) {
       console.log(`[ContactsSubscription] Creating new channel for user: ${user.id}`);
       
-      // Mark as subscribing to prevent race conditions
-      subscriptionStatusByUserId[user.id] = 'subscribing';
-      
-      const channelName = `contacts-global-${user.id}-${Date.now()}`;
+      const channelName = `contacts-${user.id}-${Date.now()}`;
       const channel = supabase.channel(channelName);
+
+      // Store the channel before subscribing
+      channelsByUserId[user.id] = channel;
 
       channel
         .on(
@@ -52,19 +51,14 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
         )
         .subscribe((status) => {
           console.log(`[ContactsSubscription] Subscription status for user ${user.id}:`, status);
-          if (status === 'SUBSCRIBED') {
-            subscriptionStatusByUserId[user.id] = 'subscribed';
-          } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-            subscriptionStatusByUserId[user.id] = 'unsubscribed';
+          if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
+            // Clean up on error or closure
             delete channelsByUserId[user.id];
             delete subscribersByUserId[user.id];
-            delete subscriptionStatusByUserId[user.id];
           }
         });
-
-      channelsByUserId[user.id] = channel;
     } else {
-      console.log(`[ContactsSubscription] Reusing existing channel for user: ${user.id}, status: ${subscriptionStatusByUserId[user.id]}`);
+      console.log(`[ContactsSubscription] Reusing existing channel for user: ${user.id}`);
     }
 
     return () => {
@@ -74,31 +68,22 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
         subscribersByUserId[user.id].delete(refetchFunction);
 
         // Only unsubscribe if no more subscribers
-        if (subscribersByUserId[user.id].size === 0 && channelsByUserId[user.id]) {
+        if (subscribersByUserId[user.id].size === 0) {
           const channel = channelsByUserId[user.id];
           
-          console.log(`[ContactsSubscription] Unsubscribing channel for user: ${user.id}`);
-          
-          if (channel && typeof channel.unsubscribe === 'function') {
+          if (channel) {
+            console.log(`[ContactsSubscription] Unsubscribing channel for user: ${user.id}`);
+            
             try {
               channel.unsubscribe();
-              subscriptionStatusByUserId[user.id] = 'unsubscribed';
-            } catch (error) {
-              console.warn(`[ContactsSubscription] Error unsubscribing:`, error);
-            }
-          }
-          
-          if (channel) {
-            try {
               supabase.removeChannel(channel);
             } catch (error) {
-              console.warn(`[ContactsSubscription] Error removing channel:`, error);
+              console.warn(`[ContactsSubscription] Error cleaning up channel:`, error);
             }
           }
           
           delete channelsByUserId[user.id];
           delete subscribersByUserId[user.id];
-          delete subscriptionStatusByUserId[user.id];
         }
       }
     };
