@@ -40,7 +40,7 @@ export function useAllUsers() {
     }
   };
 
-  const updateUserRole = async (userId: string, role: 'admin' | 'user', action: 'add' | 'remove') => {
+  const updateUserRole = async (userId: string, role: 'admin' | 'user' | 'viewer', action: 'add' | 'remove') => {
     try {
       if (action === 'add') {
         const { error } = await supabase
