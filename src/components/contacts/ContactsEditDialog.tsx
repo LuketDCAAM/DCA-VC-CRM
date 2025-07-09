@@ -7,22 +7,25 @@ interface ContactsEditDialogProps {
   selectedContact: Contact | null;
   editDialogOpen: boolean;
   onContactSaved: () => void;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function ContactsEditDialog({
   selectedContact,
   editDialogOpen,
-  onContactSaved
+  onContactSaved,
+  onOpenChange
 }: ContactsEditDialogProps) {
-  if (!selectedContact || !editDialogOpen) {
+  if (!selectedContact) {
     return null;
   }
 
   return (
     <AddContactDialog
+      open={editDialogOpen}
+      onOpenChange={onOpenChange}
       contact={selectedContact}
       onContactSaved={onContactSaved}
-      trigger={<div />}
     />
   );
 }

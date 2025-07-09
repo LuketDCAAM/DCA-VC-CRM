@@ -34,6 +34,13 @@ export function ContactsPageContent({
     refetch();
   };
 
+  const handleEditDialogOpenChange = (open: boolean) => {
+    setEditDialogOpen(open);
+    if (!open) {
+      setSelectedContact(null);
+    }
+  };
+
   if (loading) {
     return <ContactsLoadingState onContactSaved={refetch} />;
   }
@@ -52,6 +59,7 @@ export function ContactsPageContent({
         selectedContact={selectedContact}
         editDialogOpen={editDialogOpen}
         onContactSaved={handleContactSaved}
+        onOpenChange={handleEditDialogOpenChange}
       />
     </div>
   );
