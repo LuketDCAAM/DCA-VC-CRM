@@ -638,7 +638,9 @@ export type Database = {
           approved_at: string | null
           approved_by: string | null
           created_at: string
+          email: string | null
           id: string
+          name: string | null
           rejected_reason: string | null
           status: Database["public"]["Enums"]["user_status"]
           updated_at: string
@@ -648,7 +650,9 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           created_at?: string
+          email?: string | null
           id?: string
+          name?: string | null
           rejected_reason?: string | null
           status?: Database["public"]["Enums"]["user_status"]
           updated_at?: string
@@ -658,13 +662,30 @@ export type Database = {
           approved_at?: string | null
           approved_by?: string | null
           created_at?: string
+          email?: string | null
           id?: string
+          name?: string | null
           rejected_reason?: string | null
           status?: Database["public"]["Enums"]["user_status"]
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_approvals_user_id_fkey1"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_approvals_user_id_fkey2"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -732,7 +753,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "viewer"
       company_status: "Active" | "Exited" | "Dissolved"
       investment_stage:
         | "Pre-Seed"
@@ -888,7 +909,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "viewer"],
       company_status: ["Active", "Exited", "Dissolved"],
       investment_stage: [
         "Pre-Seed",
