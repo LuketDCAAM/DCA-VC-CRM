@@ -32,6 +32,14 @@ interface ReminderDialogProps {
   };
 }
 
+// Helper function to format date without timezone issues
+const formatDateForDatabase = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export function ReminderDialog({
   open,
   onOpenChange,
@@ -64,7 +72,7 @@ export function ReminderDialog({
     onSubmit({
       title,
       description: description || undefined,
-      reminder_date: date.toISOString().split('T')[0],
+      reminder_date: formatDateForDatabase(date),
       deal_id: dealId,
       portfolio_company_id: portfolioCompanyId,
       investor_id: investorId,
@@ -129,6 +137,7 @@ export function ReminderDialog({
                   selected={date}
                   onSelect={setDate}
                   initialFocus
+                  className="p-3 pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
