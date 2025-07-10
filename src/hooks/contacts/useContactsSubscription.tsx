@@ -6,6 +6,7 @@ import type { User } from '@supabase/supabase-js';
 // Cache of active channels by user ID
 const channelsByUserId: Record<string, any> = {};
 const subscribersByUserId: Record<string, Set<() => void>> = {};
+const subscriptionStatusByUserId: Record<string, 'subscribing' | 'subscribed' | 'error'> = {};
 
 export function useContactsSubscription(user: User | null, refetch: () => void) {
   const refetchRef = useRef(refetch);
@@ -30,15 +31,16 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
     };
     subscribersByUserId[user.id].add(refetchFunction);
 
-    // Only create a new channel if none exists for this user
-    if (!channelsByUserId[user.id]) {
+    // Only create and subscribe to a new channel if none exists for this user
+    if (!channelsByUserId[user.id] || subscriptionStatusByUserId[user.id] === 'error') {
       console.log(`[ContactsSubscription] Creating new channel for user: ${user.id}`);
       
       const channelName = `contacts-${user.id}-${Date.now()}`;
       const channel = supabase.channel(channelName);
 
-      // Store the channel before subscribing
+      // Store the channel and mark as subscribing
       channelsByUserId[user.id] = channel;
+      subscriptionStatusByUserId[user.id] = 'subscribing';
 
       channel
         .on(
@@ -51,14 +53,19 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
         )
         .subscribe((status) => {
           console.log(`[ContactsSubscription] Subscription status for user ${user.id}:`, status);
-          if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
+          
+          if (status === 'SUBSCRIBED') {
+            subscriptionStatusByUserId[user.id] = 'subscribed';
+          } else if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
+            subscriptionStatusByUserId[user.id] = 'error';
             // Clean up on error or closure
             delete channelsByUserId[user.id];
             delete subscribersByUserId[user.id];
+            delete subscriptionStatusByUserId[user.id];
           }
         });
     } else {
-      console.log(`[ContactsSubscription] Reusing existing channel for user: ${user.id}`);
+      console.log(`[ContactsSubscription] Reusing existing channel for user: ${user.id} (status: ${subscriptionStatusByUserId[user.id]})`);
     }
 
     return () => {
@@ -84,6 +91,7 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
           
           delete channelsByUserId[user.id];
           delete subscribersByUserId[user.id];
+          delete subscriptionStatusByUserId[user.id];
         }
       }
     };
