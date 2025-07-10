@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Building2, Mail, Phone, MapPin, DollarSign, Target, UserPlus } from 'lucide-react';
+import { Building2, Mail, Phone, MapPin, DollarSign, Target, UserPlus, Globe, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface InvestorCardProps {
@@ -24,6 +25,13 @@ interface InvestorCardProps {
 }
 
 export function InvestorCard({ investor, onViewDetails, onAddContact }: InvestorCardProps) {
+  const formatUrl = (url: string) => {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return `https://${url}`;
+    }
+    return url;
+  };
+
   return (
     <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => onViewDetails?.(investor)}>
       <CardHeader className="pb-3">
@@ -35,6 +43,19 @@ export function InvestorCard({ investor, onViewDetails, onAddContact }: Investor
                 <Building2 className="h-3 w-3" />
                 {investor.firm_name}
               </div>
+            )}
+            {investor.firm_website && (
+              <a
+                href={formatUrl(investor.firm_website)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-sm text-blue-600 hover:underline mt-1 transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Globe className="h-3 w-3" />
+                {investor.firm_website}
+                <ExternalLink className="h-3 w-3" />
+              </a>
             )}
           </div>
           <div className="flex items-center gap-1">
@@ -67,13 +88,25 @@ export function InvestorCard({ investor, onViewDetails, onAddContact }: Investor
           {investor.contact_email && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Mail className="h-3 w-3" />
-              {investor.contact_email}
+              <a 
+                href={`mailto:${investor.contact_email}`}
+                className="hover:underline transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {investor.contact_email}
+              </a>
             </div>
           )}
           {investor.contact_phone && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Phone className="h-3 w-3" />
-              {investor.contact_phone}
+              <a 
+                href={`tel:${investor.contact_phone}`}
+                className="hover:underline transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {investor.contact_phone}
+              </a>
             </div>
           )}
           {investor.location && (

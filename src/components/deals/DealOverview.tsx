@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Deal } from '@/types/deal';
 import { DealHeaderCard } from './overview/DealHeaderCard';
@@ -11,7 +10,7 @@ import { DealInvestorCard } from './overview/DealInvestorCard';
 import { DealNextStepsCard } from './overview/DealNextStepsCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Paperclip, Link, FileText } from 'lucide-react';
+import { Paperclip, Link, FileText, ExternalLink } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface FileAttachment {
@@ -117,10 +116,11 @@ export function DealOverview({ deal }: DealOverviewProps) {
                       href={attachment.file_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm font-medium text-blue-600 hover:underline truncate"
+                      className="text-sm font-medium text-blue-600 hover:underline truncate flex items-center gap-1 transition-colors"
                       title={attachment.file_name}
                     >
                       {attachment.file_name}
+                      <ExternalLink className="h-3 w-3" />
                     </a>
                     {attachment.file_size > 0 && (
                       <span className="text-xs text-muted-foreground ml-auto">

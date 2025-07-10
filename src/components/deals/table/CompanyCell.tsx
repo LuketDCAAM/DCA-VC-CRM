@@ -14,6 +14,13 @@ interface CompanyCellProps {
 }
 
 export function CompanyCell({ deal, isSelected, onToggleSelection, isSticky }: CompanyCellProps) {
+  const formatUrl = (url: string) => {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return `https://${url}`;
+    }
+    return url;
+  };
+
   return (
     <>
       <TableCell className="sticky left-0 z-10 bg-inherit border-r">
@@ -29,10 +36,16 @@ export function CompanyCell({ deal, isSelected, onToggleSelection, isSticky }: C
           {deal.website && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary cursor-pointer">
+                <a
+                  href={formatUrl(deal.website)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary cursor-pointer transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Globe className="h-3 w-3" />
                   <span className="truncate max-w-[200px]">{deal.website}</span>
-                </div>
+                </a>
               </TooltipTrigger>
               <TooltipContent>
                 <p>{deal.website}</p>

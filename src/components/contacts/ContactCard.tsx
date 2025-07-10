@@ -94,7 +94,10 @@ export function ContactCard({ contact, onEdit, onDelete }: ContactCardProps) {
         {contact.email && (
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Mail className="h-4 w-4" />
-            <a href={`mailto:${contact.email}`} className="hover:underline">
+            <a 
+              href={`mailto:${contact.email}`} 
+              className="hover:underline transition-colors text-blue-600"
+            >
               {contact.email}
             </a>
           </div>
@@ -103,7 +106,10 @@ export function ContactCard({ contact, onEdit, onDelete }: ContactCardProps) {
         {contact.phone && (
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Phone className="h-4 w-4" />
-            <a href={`tel:${contact.phone}`} className="hover:underline">
+            <a 
+              href={`tel:${contact.phone}`} 
+              className="hover:underline transition-colors text-blue-600"
+            >
               {contact.phone}
             </a>
           </div>

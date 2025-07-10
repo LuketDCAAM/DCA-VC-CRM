@@ -18,10 +18,13 @@ export function ContactCell({ deal }: ContactCellProps) {
           {deal.contact_email && (
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary cursor-pointer">
+                <a
+                  href={`mailto:${deal.contact_email}`}
+                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary cursor-pointer transition-colors"
+                >
                   <Mail className="h-3 w-3" />
                   <span className="truncate max-w-[150px]">{deal.contact_email}</span>
-                </div>
+                </a>
               </TooltipTrigger>
               <TooltipContent>
                 <p>{deal.contact_email}</p>
@@ -29,10 +32,13 @@ export function ContactCell({ deal }: ContactCellProps) {
             </Tooltip>
           )}
           {deal.contact_phone && (
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
+            <a
+              href={`tel:${deal.contact_phone}`}
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary cursor-pointer transition-colors"
+            >
               <Phone className="h-3 w-3" />
               <span>{deal.contact_phone}</span>
-            </div>
+            </a>
           )}
         </div>
       ) : (

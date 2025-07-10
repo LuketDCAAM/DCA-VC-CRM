@@ -9,6 +9,13 @@ interface DealContactCardProps {
 }
 
 export function DealContactCard({ deal }: DealContactCardProps) {
+  const formatUrl = (url: string) => {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return `https://${url}`;
+    }
+    return url;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -27,7 +34,10 @@ export function DealContactCard({ deal }: DealContactCardProps) {
         {deal.contact_email && (
           <div className="flex items-center gap-2">
             <Mail className="h-4 w-4 text-gray-500" />
-            <a href={`mailto:${deal.contact_email}`} className="text-blue-600 hover:underline">
+            <a 
+              href={`mailto:${deal.contact_email}`} 
+              className="text-blue-600 hover:underline transition-colors"
+            >
               {deal.contact_email}
             </a>
           </div>
@@ -35,7 +45,10 @@ export function DealContactCard({ deal }: DealContactCardProps) {
         {deal.contact_phone && (
           <div className="flex items-center gap-2">
             <Phone className="h-4 w-4 text-gray-500" />
-            <a href={`tel:${deal.contact_phone}`} className="text-blue-600 hover:underline">
+            <a 
+              href={`tel:${deal.contact_phone}`} 
+              className="text-blue-600 hover:underline transition-colors"
+            >
               {deal.contact_phone}
             </a>
           </div>
@@ -43,7 +56,12 @@ export function DealContactCard({ deal }: DealContactCardProps) {
         {deal.website && (
           <div className="flex items-center gap-2">
             <Globe className="h-4 w-4 text-gray-500" />
-            <a href={deal.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+            <a 
+              href={formatUrl(deal.website)} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-blue-600 hover:underline transition-colors"
+            >
               {deal.website}
             </a>
           </div>
