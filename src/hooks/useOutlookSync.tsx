@@ -7,8 +7,8 @@ import { useToast } from '@/hooks/use-toast';
 interface SyncLog {
   id: string;
   user_id: string;
-  sync_type: 'full' | 'incremental' | 'push';
-  status: 'started' | 'completed' | 'failed';
+  sync_type: string; // Changed from union type to string to match database
+  status: string; // Changed from union type to string to match database
   items_processed: number | null;
   items_failed: number | null;
   error_message: string | null;
