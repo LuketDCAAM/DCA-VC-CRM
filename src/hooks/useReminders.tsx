@@ -22,6 +22,11 @@ interface Reminder {
   send_email_reminder: boolean | null;
   email_sent: boolean | null;
   email_sent_at: string | null;
+  outlook_task_id: string | null;
+  outlook_last_sync: string | null;
+  sync_status: string | null;
+  outlook_created_date: string | null;
+  outlook_modified_date: string | null;
 }
 
 export function useReminders() {
@@ -74,6 +79,7 @@ export function useReminders() {
           task_type: 'reminder',
           priority: 'medium',
           status: 'pending',
+          sync_status: 'pending',
         });
 
       if (error) throw error;

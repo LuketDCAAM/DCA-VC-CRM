@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar, Edit, Trash2, Clock } from 'lucide-react';
 import { format, isPast, isToday } from 'date-fns';
+import { OutlookSyncButton } from './OutlookSyncButton';
 
 interface Reminder {
   id: string;
@@ -16,6 +17,8 @@ interface Reminder {
   deal_id: string | null;
   portfolio_company_id: string | null;
   investor_id: string | null;
+  outlook_task_id?: string | null;
+  sync_status?: string | null;
 }
 
 interface ReminderCardProps {
@@ -95,23 +98,30 @@ export function ReminderCard({ reminder, onEdit, onDelete, onToggleComplete }: R
       )}
 
       <CardContent className="pt-0">
-        <div className="flex justify-end space-x-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onEdit(reminder)}
-            className="h-8 px-2"
-          >
-            <Edit className="h-3 w-3" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onDelete(reminder.id)}
-            className="h-8 px-2 text-red-600 hover:text-red-700"
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
+        <div className="flex justify-between items-center">
+          <OutlookSyncButton 
+            reminderId={reminder.id}
+            syncStatus={reminder.sync_status}
+            outlookTaskId={reminder.outlook_task_id}
+          />
+          <div className="flex space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit(reminder)}
+              className="h-8 px-2"
+            >
+              <Edit className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onDelete(reminder.id)}
+              className="h-8 px-2 text-red-600 hover:text-red-700"
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

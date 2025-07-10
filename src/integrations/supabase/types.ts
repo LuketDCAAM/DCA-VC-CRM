@@ -462,6 +462,75 @@ export type Database = {
         }
         Relationships: []
       }
+      microsoft_tokens: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string
+          id: string
+          refresh_token: string
+          scope: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at: string
+          id?: string
+          refresh_token: string
+          scope: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          refresh_token?: string
+          scope?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      outlook_sync_logs: {
+        Row: {
+          completed_at: string | null
+          error_message: string | null
+          id: string
+          items_failed: number | null
+          items_processed: number | null
+          started_at: string
+          status: string
+          sync_type: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          items_failed?: number | null
+          items_processed?: number | null
+          started_at?: string
+          status: string
+          sync_type: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          error_message?: string | null
+          id?: string
+          items_failed?: number | null
+          items_processed?: number | null
+          started_at?: string
+          status?: string
+          sync_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       portfolio_companies: {
         Row: {
           company_name: string
@@ -534,11 +603,16 @@ export type Database = {
           id: string
           investor_id: string | null
           is_completed: boolean
+          outlook_created_date: string | null
+          outlook_last_sync: string | null
+          outlook_modified_date: string | null
+          outlook_task_id: string | null
           portfolio_company_id: string | null
           priority: string | null
           reminder_date: string
           send_email_reminder: boolean | null
           status: string | null
+          sync_status: string | null
           task_type: string | null
           title: string
         }
@@ -553,11 +627,16 @@ export type Database = {
           id?: string
           investor_id?: string | null
           is_completed?: boolean
+          outlook_created_date?: string | null
+          outlook_last_sync?: string | null
+          outlook_modified_date?: string | null
+          outlook_task_id?: string | null
           portfolio_company_id?: string | null
           priority?: string | null
           reminder_date: string
           send_email_reminder?: boolean | null
           status?: string | null
+          sync_status?: string | null
           task_type?: string | null
           title: string
         }
@@ -572,11 +651,16 @@ export type Database = {
           id?: string
           investor_id?: string | null
           is_completed?: boolean
+          outlook_created_date?: string | null
+          outlook_last_sync?: string | null
+          outlook_modified_date?: string | null
+          outlook_task_id?: string | null
           portfolio_company_id?: string | null
           priority?: string | null
           reminder_date?: string
           send_email_reminder?: boolean | null
           status?: string | null
+          sync_status?: string | null
           task_type?: string | null
           title?: string
         }
