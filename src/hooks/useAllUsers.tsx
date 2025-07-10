@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Tables } from '@/integrations/supabase/types'; // Assuming your types are correctly generated
+import { Tables, TablesUpdate } from '@/integrations/supabase/types'; // Assuming your types are correctly generated, added TablesUpdate
 
 // Define a type for the user data you expect to fetch, including role and approval status
 // This should match the structure returned by your 'get_all_users_with_roles' function
@@ -34,7 +34,8 @@ export function useAllUsers() {
         });
         setUsers([]);
       } else {
-        setUsers(data || []);
+        // Explicitly cast the data to the expected type
+        setUsers((data || []) as UserWithRoleAndApproval[]);
       }
     } catch (err: any) {
       console.error('Unexpected error fetching users:', err);
@@ -137,7 +138,8 @@ export function useAllUsers() {
   const updateUserApprovalStatus = async (userId: string, newStatus: Tables<'user_approvals'>['status'], rejectedReason: string | null = null) => {
     setLoading(true);
     try {
-      const updateData: Partial<Tables<'user_approvals'>['Update']> = { 
+      // Correctly use TablesUpdate for the update type
+      const updateData: Partial<TablesUpdate<'user_approvals'>> = { 
         status: newStatus, 
         updated_at: new Date().toISOString(),
         approved_at: newStatus === 'approved' ? new Date().toISOString() : null,
