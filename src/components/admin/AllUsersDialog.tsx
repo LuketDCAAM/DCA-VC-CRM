@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAllUsers } from '@/hooks/useAllUsers';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -18,26 +17,25 @@ import { UserApprovalActions } from './user-management/UserApprovalActions';
 import { UserRejectionForm } from './user-management/UserRejectionForm';
 
 export function AllUsersDialog() {
-  const { users, loading, updateUserRole, updateApprovalStatus } = useAllUsers();
+  // Correctly destructure updateUserApprovalStatus from the hook
+  const { users, loading, updateUserRole, updateUserApprovalStatus } = useAllUsers();
   const { isAdmin } = useUserRoles();
   const [rejectionReason, setRejectionReason] = useState('');
   const [rejectingUserId, setRejectingUserId] = useState<string | null>(null);
 
   if (!isAdmin) return null;
 
+  // Modified handleRoleChange to use the updated updateUserRole signature
   const handleRoleChange = async (userId: string, currentRoles: string[], newRole: string) => {
-    // Remove all current roles first
-    for (const role of currentRoles) {
-      await updateUserRole(userId, role as 'admin' | 'user' | 'viewer', 'remove');
-    }
-    // Add the new role
-    if (newRole) {
-      await updateUserRole(userId, newRole as 'admin' | 'user' | 'viewer', 'add');
-    }
+    // The updateUserRole function in useAllUsers now directly sets the role.
+    // So, we just call it with the new role. The previous logic of 'add'/'remove' is internal to the hook.
+    // Ensure newRole is cast to the correct type expected by updateUserRole
+    await updateUserRole(userId, newRole as Parameters<typeof updateUserRole>[1]);
   };
 
   const handleRejectUser = async (userId: string) => {
-    await updateApprovalStatus(userId, 'rejected', rejectionReason);
+    // Use updateUserApprovalStatus
+    await updateUserApprovalStatus(userId, 'rejected', rejectionReason);
     setRejectingUserId(null);
     setRejectionReason('');
   };
@@ -73,7 +71,8 @@ export function AllUsersDialog() {
                   {user.approval_status === 'pending' && (
                     <UserApprovalActions
                       userId={user.user_id}
-                      onApprove={(userId) => updateApprovalStatus(userId, 'approved')}
+                      // Use updateUserApprovalStatus
+                      onApprove={(userId) => updateUserApprovalStatus(userId, 'approved')}
                       onReject={setRejectingUserId}
                     />
                   )}
