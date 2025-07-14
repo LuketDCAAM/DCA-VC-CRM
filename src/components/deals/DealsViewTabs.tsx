@@ -18,11 +18,11 @@ export function DealsViewTabs({ viewMode, onViewModeChange, dealCount }: DealsVi
           <Table className="h-4 w-4" />
           <span className="hidden sm:inline">Table</span>
         </TabsTrigger>
-        <TabsTrigger value="grid" className="flex items-center gap-2">
+        <TabsTrigger value="virtualized" className="flex items-center gap-2">
           <Grid3X3 className="h-4 w-4" />
           <span className="hidden sm:inline">Grid</span>
         </TabsTrigger>
-        <TabsTrigger value="pipeline" className="flex items-center gap-2">
+        <TabsTrigger value="kanban" className="flex items-center gap-2">
           <Kanban className="h-4 w-4" />
           <span className="hidden sm:inline">Pipeline</span>
         </TabsTrigger>

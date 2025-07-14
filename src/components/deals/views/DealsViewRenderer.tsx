@@ -3,7 +3,7 @@ import React from 'react';
 import { Deal } from '@/types/deal';
 import { ConfigurableDealsTable } from '../ConfigurableDealsTable';
 import { HighPerformanceDealsTableView } from '../HighPerformanceDealsTableView';
-import { VirtualizedDealsTable } from '../VirtualizedDealsTable';
+import { DealsGrid } from '../DealsGrid';
 import { DealPipelineBoard } from '../DealPipelineBoard';
 
 export type ViewMode = 'configurable' | 'high-performance' | 'virtualized' | 'kanban';
@@ -61,7 +61,7 @@ export function DealsViewRenderer({
 
     case 'virtualized':
       return (
-        <VirtualizedDealsTable
+        <DealsGrid
           deals={filteredDeals}
           onViewDetails={onViewDetails}
           selectedDeals={selectedDeals}
@@ -69,6 +69,7 @@ export function DealsViewRenderer({
           onSelectAll={onSelectAll}
           onDeselectAll={onDeselectAll}
           isAllSelected={isAllSelected}
+          onDealUpdated={onDealUpdated}
         />
       );
 
