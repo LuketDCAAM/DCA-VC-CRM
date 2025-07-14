@@ -1,4 +1,3 @@
-
 import React, { memo } from 'react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -96,13 +95,13 @@ const ConfigurableDealsTableRow = memo(({
       `}
     >
       {/* Selection checkbox */}
-      <TableCell className="w-12 sticky left-0 z-10 bg-background border-r border-border/30 py-3 px-4">
-        <div className="flex items-center justify-center">
+      <TableCell className="w-12 sticky left-0 z-10 bg-background border-r border-border/30 py-0 px-0">
+        <div className="flex items-center justify-center h-full w-full py-3">
           <Checkbox
             checked={isSelected}
             onCheckedChange={handleCheckboxChange}
             aria-label={`Select ${deal.company_name}`}
-            className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+            className="h-4 w-4"
           />
         </div>
       </TableCell>
