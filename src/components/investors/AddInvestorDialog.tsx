@@ -32,6 +32,7 @@ const investorSchema = z.object({
   contact_phone: z.string().nullable().optional(),
   firm_name: z.string().nullable().optional(),
   firm_website: z.string().url('Invalid URL').nullable().optional().or(z.literal('')),
+  linkedin_url: z.string().url('Invalid LinkedIn URL').nullable().optional().or(z.literal('')),
   location: z.string().nullable().optional(),
   preferred_investment_stage: z.enum(investmentStages).nullable().optional(),
   average_check_size: z.coerce.number().positive().nullable().optional(),
@@ -78,6 +79,7 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange }: A
           contact_phone: '',
           firm_name: '',
           firm_website: '',
+          linkedin_url: '',
           location: '',
           preferred_investment_stage: null,
           average_check_size: undefined,
@@ -143,6 +145,11 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange }: A
             <Label htmlFor="firm_website" className="text-right">Website</Label>
             <Input id="firm_website" {...register('firm_website')} className="col-span-3" />
             {errors.firm_website && <p className="col-start-2 col-span-3 text-red-500 text-sm">{errors.firm_website.message}</p>}
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="linkedin_url" className="text-right">LinkedIn</Label>
+            <Input id="linkedin_url" {...register('linkedin_url')} className="col-span-3" placeholder="https://linkedin.com/in/..." />
+            {errors.linkedin_url && <p className="col-start-2 col-span-3 text-red-500 text-sm">{errors.linkedin_url.message}</p>}
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="location" className="text-right">Location</Label>

@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Investor } from '@/types/investor';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -40,6 +40,13 @@ export function InvestorListView({
     return new Date(dateString).toLocaleDateString();
   };
 
+  const formatUrl = (url: string) => {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return `https://${url}`;
+    }
+    return url;
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -57,6 +64,7 @@ export function InvestorListView({
           <TableHead>Avg. Check Size</TableHead>
           <TableHead>Location</TableHead>
           <TableHead>Last Call Date</TableHead>
+          <TableHead>LinkedIn</TableHead>
           <TableHead>Tags</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
@@ -89,6 +97,21 @@ export function InvestorListView({
             </TableCell>
             <TableCell>{investor.location || '-'}</TableCell>
             <TableCell>{formatDate(investor.last_call_date)}</TableCell>
+            <TableCell>
+              {investor.linkedin_url ? (
+                <a
+                  href={formatUrl(investor.linkedin_url)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-blue-600 hover:underline transition-colors"
+                >
+                  <span className="truncate max-w-[100px]">LinkedIn</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              ) : (
+                '-'
+              )}
+            </TableCell>
             <TableCell>
                 <div className="flex flex-wrap gap-1">
                     {(investor.tags || []).map(tag => tag && <Badge key={tag} variant="secondary">{tag}</Badge>)}

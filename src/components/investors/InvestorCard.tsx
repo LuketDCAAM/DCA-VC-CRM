@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Building2, Mail, Phone, MapPin, DollarSign, Target, UserPlus, Globe, ExternalLink, Calendar } from 'lucide-react';
+import { Building2, Mail, Phone, MapPin, DollarSign, Target, UserPlus, Globe, ExternalLink, Calendar, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface InvestorCardProps {
@@ -13,6 +13,7 @@ interface InvestorCardProps {
     contact_phone: string | null;
     firm_name: string | null;
     firm_website: string | null;
+    linkedin_url: string | null;
     location: string | null;
     preferred_investment_stage: string | null;
     average_check_size: number | null;
@@ -50,19 +51,34 @@ export function InvestorCard({ investor, onViewDetails, onAddContact }: Investor
                 {investor.firm_name}
               </div>
             )}
-            {investor.firm_website && (
-              <a
-                href={formatUrl(investor.firm_website)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-sm text-blue-600 hover:underline mt-1 transition-colors"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Globe className="h-3 w-3" />
-                {investor.firm_website}
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            )}
+            <div className="flex items-center gap-2 mt-1">
+              {investor.firm_website && (
+                <a
+                  href={formatUrl(investor.firm_website)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm text-blue-600 hover:underline transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Globe className="h-3 w-3" />
+                  Website
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+              {investor.linkedin_url && (
+                <a
+                  href={formatUrl(investor.linkedin_url)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm text-blue-600 hover:underline transition-colors"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Linkedin className="h-3 w-3" />
+                  LinkedIn
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              )}
+            </div>
           </div>
           <div className="flex items-center gap-1">
             {onAddContact && (

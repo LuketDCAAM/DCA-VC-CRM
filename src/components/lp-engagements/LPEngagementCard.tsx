@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Edit, Eye, MapPin, Mail, Phone, Calendar, DollarSign } from 'lucide-react';
+import { Edit, Eye, MapPin, Mail, Phone, Calendar, DollarSign, ExternalLink, Linkedin } from 'lucide-react';
 import { LPEngagement } from '@/types/lpEngagement';
 
 interface LPEngagementCardProps {
@@ -20,6 +20,13 @@ const formatCurrency = (amount?: number) => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
+};
+
+const formatUrl = (url: string) => {
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    return `https://${url}`;
+  }
+  return url;
 };
 
 const getEngagementStageColor = (stage: string) => {
@@ -102,6 +109,20 @@ export function LPEngagementCard({ engagement, onView, onEdit }: LPEngagementCar
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Phone className="h-3 w-3" />
                   <span>{engagement.contact_phone}</span>
+                </div>
+              )}
+              {engagement.linkedin_url && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Linkedin className="h-3 w-3" />
+                  <a
+                    href={formatUrl(engagement.linkedin_url)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 text-blue-600 hover:underline transition-colors"
+                  >
+                    LinkedIn
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
                 </div>
               )}
             </div>

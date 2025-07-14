@@ -6,6 +6,7 @@ export interface LPEngagement {
   contact_name?: string;
   contact_email?: string;
   contact_phone?: string;
+  linkedin_url?: string;
   relationship_owner?: string;
   commitment_amount?: number;
   committed_date?: string;

@@ -21,6 +21,7 @@ export function AddLPEngagementDialog({ open, onOpenChange, onSubmit }: AddLPEng
     contact_name: '',
     contact_email: '',
     contact_phone: '',
+    linkedin_url: '',
     commitment_amount: '',
     committed_date: '',
     engagement_stage: 'Prospect' as const,
@@ -50,6 +51,7 @@ export function AddLPEngagementDialog({ open, onOpenChange, onSubmit }: AddLPEng
         ticket_size_max: formData.ticket_size_max ? Number(formData.ticket_size_max) : undefined,
         committed_date: formData.committed_date || undefined,
         last_interaction_date: formData.last_interaction_date || undefined,
+        linkedin_url: formData.linkedin_url || undefined,
       };
 
       await onSubmit(engagement);
@@ -62,6 +64,7 @@ export function AddLPEngagementDialog({ open, onOpenChange, onSubmit }: AddLPEng
         contact_name: '',
         contact_email: '',
         contact_phone: '',
+        linkedin_url: '',
         commitment_amount: '',
         committed_date: '',
         engagement_stage: 'Prospect' as const,
@@ -156,6 +159,18 @@ export function AddLPEngagementDialog({ open, onOpenChange, onSubmit }: AddLPEng
             </div>
             
             <div>
+              <Label htmlFor="linkedin_url">LinkedIn URL</Label>
+              <Input
+                id="linkedin_url"
+                value={formData.linkedin_url}
+                onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
+                placeholder="https://linkedin.com/in/..."
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <Label htmlFor="location">Location</Label>
               <Input
                 id="location"
@@ -163,9 +178,7 @@ export function AddLPEngagementDialog({ open, onOpenChange, onSubmit }: AddLPEng
                 onChange={(e) => handleInputChange('location', e.target.value)}
               />
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+            
             <div>
               <Label htmlFor="engagement_stage">Engagement Stage</Label>
               <Select 
@@ -187,7 +200,9 @@ export function AddLPEngagementDialog({ open, onOpenChange, onSubmit }: AddLPEng
                 </SelectContent>
               </Select>
             </div>
-            
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="commitment_amount">Commitment Amount</Label>
               <Input
@@ -197,9 +212,7 @@ export function AddLPEngagementDialog({ open, onOpenChange, onSubmit }: AddLPEng
                 onChange={(e) => handleInputChange('commitment_amount', e.target.value)}
               />
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+            
             <div>
               <Label htmlFor="committed_date">Committed Date</Label>
               <Input
@@ -209,7 +222,9 @@ export function AddLPEngagementDialog({ open, onOpenChange, onSubmit }: AddLPEng
                 onChange={(e) => handleInputChange('committed_date', e.target.value)}
               />
             </div>
-            
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="last_interaction_date">Last Interaction Date</Label>
               <Input
@@ -219,9 +234,7 @@ export function AddLPEngagementDialog({ open, onOpenChange, onSubmit }: AddLPEng
                 onChange={(e) => handleInputChange('last_interaction_date', e.target.value)}
               />
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+            
             <div>
               <Label htmlFor="ticket_size_min">Min Ticket Size</Label>
               <Input
@@ -231,7 +244,9 @@ export function AddLPEngagementDialog({ open, onOpenChange, onSubmit }: AddLPEng
                 onChange={(e) => handleInputChange('ticket_size_min', e.target.value)}
               />
             </div>
-            
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="ticket_size_max">Max Ticket Size</Label>
               <Input
