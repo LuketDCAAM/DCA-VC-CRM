@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ProfileButton } from '@/components/profile/ProfileButton';
+import ProfileButton from '@/components/profile/ProfileButton';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { 
   BarChart3, 
