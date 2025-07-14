@@ -77,15 +77,6 @@ export function ConfigurableDealsTable({
         </div>
         <ColumnSelector />
       </div>
-
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={totalItems}
-        pageSize={pageSize}
-        onPageChange={handlePageChange}
-        onPageSizeChange={handlePageSizeChange}
-      />
       
       <div className="rounded-lg border border-border bg-card shadow-sm overflow-hidden">
         <div className="overflow-auto max-h-[calc(100vh-280px)]">
@@ -117,16 +108,14 @@ export function ConfigurableDealsTable({
         </div>
       </div>
 
-      {totalPages > 1 && (
-        <PaginationControls
-          currentPage={currentPage}
-          totalPages={totalPages}
-          totalItems={totalItems}
-          pageSize={pageSize}
-          onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
-        />
-      )}
+      <PaginationControls
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
     </div>
   );
 }
