@@ -24,6 +24,7 @@ export function useMicrosoftAuth() {
 
   const fetchToken = async () => {
     if (!user) {
+      console.log('useMicrosoftAuth - No user, skipping token fetch');
       setLoading(false);
       return;
     }
@@ -48,7 +49,7 @@ export function useMicrosoftAuth() {
       } else {
         setToken(null);
         setIsAuthenticated(false);
-        console.log('Microsoft authentication: NOT AUTHENTICATED');
+        console.log('Microsoft authentication: NOT AUTHENTICATED - No token found');
       }
     } catch (error: any) {
       console.error('Error fetching Microsoft token:', error);
@@ -64,29 +65,60 @@ export function useMicrosoftAuth() {
     }
   };
 
-  const initiateAuth = () => {
+  const initiateAuth = async () => {
     console.log('Initiating Microsoft OAuth...');
-    // For now, use a placeholder client ID - in production this should come from environment
-    const clientId = 'YOUR_MICROSOFT_CLIENT_ID'; // This needs to be replaced with actual client ID
-    const redirectUri = encodeURIComponent(`${window.location.origin}/auth/microsoft/callback`);
-    const scope = encodeURIComponent('https://graph.microsoft.com/Tasks.ReadWrite https://graph.microsoft.com/Calendars.Read offline_access');
-    const responseType = 'code';
     
-    const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?` +
-      `client_id=${clientId}&` +
-      `response_type=${responseType}&` +
-      `redirect_uri=${redirectUri}&` +
-      `scope=${scope}&` +
-      `response_mode=query`;
+    try {
+      // First, let's check if we have the client ID configured
+      const { data: configData, error: configError } = await supabase.functions.invoke('microsoft-auth', {
+        body: { action: 'check_config' }
+      });
 
-    console.log('Redirecting to:', authUrl);
-    
-    // For now, show a message instead of redirecting
-    toast({
-      title: "Microsoft Authentication Setup Required",
-      description: "Please configure Microsoft client ID in your environment variables first.",
-      variant: "destructive",
-    });
+      console.log('Config check result:', { configData, configError });
+
+      if (configError) {
+        console.error('Config check failed:', configError);
+        toast({
+          title: "Configuration Error",
+          description: "Microsoft authentication is not properly configured. Please contact your administrator.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!configData?.clientId) {
+        console.error('No client ID found in configuration');
+        toast({
+          title: "Configuration Missing",
+          description: "Microsoft Client ID is not configured. Please contact your administrator.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const clientId = configData.clientId;
+      const redirectUri = encodeURIComponent(`${window.location.origin}/auth/microsoft/callback`);
+      const scope = encodeURIComponent('https://graph.microsoft.com/Tasks.ReadWrite https://graph.microsoft.com/Calendars.Read offline_access');
+      const responseType = 'code';
+      
+      const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?` +
+        `client_id=${clientId}&` +
+        `response_type=${responseType}&` +
+        `redirect_uri=${redirectUri}&` +
+        `scope=${scope}&` +
+        `response_mode=query`;
+
+      console.log('Redirecting to Microsoft OAuth:', authUrl);
+      window.location.href = authUrl;
+
+    } catch (error: any) {
+      console.error('Error initiating Microsoft auth:', error);
+      toast({
+        title: "Authentication Error",
+        description: "Failed to start Microsoft authentication process.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleAuthCallback = async (code: string) => {
@@ -95,6 +127,8 @@ export function useMicrosoftAuth() {
       const { data, error } = await supabase.functions.invoke('microsoft-auth', {
         body: { code, user_id: user?.id }
       });
+
+      console.log('Auth callback result:', { data, error });
 
       if (error) throw error;
 
@@ -165,7 +199,8 @@ export function useMicrosoftAuth() {
     token: !!token,
     loading,
     isAuthenticated,
-    userId: user?.id
+    userId: user?.id,
+    hasUser: !!user
   });
 
   return {
