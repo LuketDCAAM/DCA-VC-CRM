@@ -96,13 +96,15 @@ const ConfigurableDealsTableRow = memo(({
       `}
     >
       {/* Selection checkbox */}
-      <TableCell className="w-12 sticky left-0 z-10 bg-inherit border-r border-border/30 py-3 px-4">
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={handleCheckboxChange}
-          aria-label={`Select ${deal.company_name}`}
-          className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-        />
+      <TableCell className="w-12 sticky left-0 z-10 bg-background border-r border-border/30 py-3 px-4">
+        <div className="flex items-center justify-center">
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={handleCheckboxChange}
+            aria-label={`Select ${deal.company_name}`}
+            className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+          />
+        </div>
       </TableCell>
       
       {/* Dynamic columns */}
@@ -111,7 +113,7 @@ const ConfigurableDealsTableRow = memo(({
           key={column.key}
           className={`
             ${column.width} py-3 px-4 align-top
-            ${column.key === 'company_name' ? 'sticky left-12 z-10 bg-inherit border-r border-border/30' : ''}
+            ${column.key === 'company_name' ? 'sticky left-12 z-10 bg-background border-r border-border/30' : ''}
           `}
         >
           {renderCellContent(column.key)}

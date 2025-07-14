@@ -42,12 +42,14 @@ export function ConfigurableDealsTableHeader({
           canSort={false}
           className="w-12 sticky left-0 z-30 bg-muted/95 backdrop-blur-sm border-r border-border/50 py-3 px-4"
         >
-          <Checkbox
-            checked={isAllSelected ? true : (hasSelection ? 'indeterminate' : false)}
-            onCheckedChange={() => isAllSelected ? onDeselectAll() : onSelectAll()}
-            aria-label="Select all"
-            className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-          />
+          <div className="flex items-center justify-center">
+            <Checkbox
+              checked={isAllSelected ? true : (hasSelection ? 'indeterminate' : false)}
+              onCheckedChange={() => isAllSelected ? onDeselectAll() : onSelectAll()}
+              aria-label="Select all"
+              className="data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+            />
+          </div>
         </AdvancedSortableTableHead>
         
         {visibleColumns.map((column, index) => {
