@@ -74,7 +74,7 @@ export function DealsPageContent({
   }, [allDeals]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <DealsHeader 
         filteredDeals={filteredDeals}
         exportColumns={exportColumns}
@@ -84,7 +84,7 @@ export function DealsPageContent({
         onDealAdded={onDealAdded}
       />
       
-      <div className="space-y-4">
+      <div className="space-y-3">
         <SearchAndFilter
           searchTerm={searchTerm}
           onSearchChange={onSearchChange}
