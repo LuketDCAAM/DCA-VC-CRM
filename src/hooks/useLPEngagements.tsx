@@ -14,12 +14,12 @@ export function useLPEngagements() {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('lp_engagements' as any)
+        .from('lp_engagements')
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setLPEngagements((data as unknown as LPEngagement[]) || []);
+      setLPEngagements(data || []);
     } catch (err) {
       console.error('Error fetching LP engagements:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -39,15 +39,14 @@ export function useLPEngagements() {
       if (!user) throw new Error('User not authenticated');
 
       const { data, error } = await supabase
-        .from('lp_engagements' as any)
+        .from('lp_engagements')
         .insert([{ ...engagement, created_by: user.id }])
         .select()
         .single();
 
       if (error) throw error;
       
-      const newEngagement = data as unknown as LPEngagement;
-      setLPEngagements(prev => [newEngagement, ...prev]);
+      setLPEngagements(prev => [data, ...prev]);
       toast({
         title: "Success",
         description: "LP engagement created successfully",
@@ -66,7 +65,7 @@ export function useLPEngagements() {
   const updateLPEngagement = async (id: string, updates: Partial<LPEngagement>) => {
     try {
       const { data, error } = await supabase
-        .from('lp_engagements' as any)
+        .from('lp_engagements')
         .update(updates)
         .eq('id', id)
         .select()
@@ -74,9 +73,8 @@ export function useLPEngagements() {
 
       if (error) throw error;
       
-      const updatedEngagement = data as unknown as LPEngagement;
       setLPEngagements(prev => prev.map(engagement => 
-        engagement.id === id ? updatedEngagement : engagement
+        engagement.id === id ? data : engagement
       ));
       
       toast({
@@ -84,7 +82,7 @@ export function useLPEngagements() {
         description: "LP engagement updated successfully",
       });
       
-      return updatedEngagement;
+      return data;
     } catch (err) {
       console.error('Error updating LP engagement:', err);
       toast({
@@ -99,7 +97,7 @@ export function useLPEngagements() {
   const deleteLPEngagement = async (id: string) => {
     try {
       const { error } = await supabase
-        .from('lp_engagements' as any)
+        .from('lp_engagements')
         .delete()
         .eq('id', id);
 

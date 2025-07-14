@@ -670,6 +670,93 @@ export type Database = {
         }
         Relationships: []
       }
+      lp_engagements: {
+        Row: {
+          capital_called: number | null
+          capital_returned: number | null
+          commitment_amount: number | null
+          committed_date: string | null
+          contact_email: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          created_by: string
+          engagement_stage:
+            | Database["public"]["Enums"]["engagement_stage"]
+            | null
+          id: string
+          investment_focus: string[] | null
+          last_interaction_date: string | null
+          linkedin_url: string | null
+          location: string | null
+          lp_name: string
+          lp_type: string | null
+          next_steps: string | null
+          notes: string | null
+          relationship_owner: string | null
+          tags: string[] | null
+          ticket_size_max: number | null
+          ticket_size_min: number | null
+          updated_at: string
+        }
+        Insert: {
+          capital_called?: number | null
+          capital_returned?: number | null
+          commitment_amount?: number | null
+          committed_date?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by: string
+          engagement_stage?:
+            | Database["public"]["Enums"]["engagement_stage"]
+            | null
+          id?: string
+          investment_focus?: string[] | null
+          last_interaction_date?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          lp_name: string
+          lp_type?: string | null
+          next_steps?: string | null
+          notes?: string | null
+          relationship_owner?: string | null
+          tags?: string[] | null
+          ticket_size_max?: number | null
+          ticket_size_min?: number | null
+          updated_at?: string
+        }
+        Update: {
+          capital_called?: number | null
+          capital_returned?: number | null
+          commitment_amount?: number | null
+          committed_date?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          created_by?: string
+          engagement_stage?:
+            | Database["public"]["Enums"]["engagement_stage"]
+            | null
+          id?: string
+          investment_focus?: string[] | null
+          last_interaction_date?: string | null
+          linkedin_url?: string | null
+          location?: string | null
+          lp_name?: string
+          lp_type?: string | null
+          next_steps?: string | null
+          notes?: string | null
+          relationship_owner?: string | null
+          tags?: string[] | null
+          ticket_size_max?: number | null
+          ticket_size_min?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       microsoft_tokens: {
         Row: {
           access_token: string
@@ -1097,6 +1184,15 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user" | "viewer"
       company_status: "Active" | "Exited" | "Dissolved"
+      engagement_stage:
+        | "Prospect"
+        | "Initial Contact"
+        | "Due Diligence"
+        | "Negotiation"
+        | "Committed"
+        | "Active"
+        | "Inactive"
+        | "Declined"
       investment_stage:
         | "Pre-Seed"
         | "Seed"
@@ -1253,6 +1349,16 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user", "viewer"],
       company_status: ["Active", "Exited", "Dissolved"],
+      engagement_stage: [
+        "Prospect",
+        "Initial Contact",
+        "Due Diligence",
+        "Negotiation",
+        "Committed",
+        "Active",
+        "Inactive",
+        "Declined",
+      ],
       investment_stage: [
         "Pre-Seed",
         "Seed",
