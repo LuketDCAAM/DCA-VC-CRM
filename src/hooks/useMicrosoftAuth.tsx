@@ -66,10 +66,11 @@ export function useMicrosoftAuth() {
   };
 
   const initiateAuth = async () => {
-    console.log('Initiating Microsoft OAuth...');
+    console.log('=== INITIATING MICROSOFT OAUTH ===');
     
     try {
       // First, let's check if we have the client ID configured
+      console.log('Checking Microsoft OAuth configuration...');
       const { data: configData, error: configError } = await supabase.functions.invoke('microsoft-auth', {
         body: { action: 'check_config' }
       });
@@ -80,7 +81,7 @@ export function useMicrosoftAuth() {
         console.error('Config check failed:', configError);
         toast({
           title: "Configuration Error",
-          description: "Microsoft authentication is not properly configured. Please contact your administrator.",
+          description: `Microsoft authentication is not properly configured: ${configError.message}`,
           variant: "destructive",
         });
         return;
@@ -97,17 +98,31 @@ export function useMicrosoftAuth() {
       }
 
       const clientId = configData.clientId;
-      const redirectUri = encodeURIComponent(`${window.location.origin}/auth/microsoft/callback`);
+      const currentUrl = window.location.origin;
+      const redirectUri = encodeURIComponent(`${currentUrl}/auth/microsoft/callback`);
       const scope = encodeURIComponent('https://graph.microsoft.com/Tasks.ReadWrite https://graph.microsoft.com/Calendars.Read offline_access');
       const responseType = 'code';
+      const state = encodeURIComponent(JSON.stringify({ 
+        user_id: user?.id,
+        return_url: window.location.pathname 
+      }));
       
       const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?` +
         `client_id=${clientId}&` +
         `response_type=${responseType}&` +
         `redirect_uri=${redirectUri}&` +
         `scope=${scope}&` +
+        `state=${state}&` +
         `response_mode=query`;
 
+      console.log('Auth URL components:', {
+        clientId,
+        redirectUri: decodeURIComponent(redirectUri),
+        scope: decodeURIComponent(scope),
+        currentUrl,
+        userId: user?.id
+      });
+      
       console.log('Redirecting to Microsoft OAuth:', authUrl);
       window.location.href = authUrl;
 
@@ -115,36 +130,59 @@ export function useMicrosoftAuth() {
       console.error('Error initiating Microsoft auth:', error);
       toast({
         title: "Authentication Error",
-        description: "Failed to start Microsoft authentication process.",
+        description: `Failed to start Microsoft authentication: ${error.message}`,
         variant: "destructive",
       });
     }
   };
 
   const handleAuthCallback = async (code: string) => {
+    console.log('=== HANDLING MICROSOFT AUTH CALLBACK ===');
+    console.log('Received auth code:', code ? 'Present' : 'Missing');
+    
+    if (!user) {
+      console.error('No user found when handling callback');
+      throw new Error('User not authenticated');
+    }
+
     try {
-      console.log('Handling Microsoft auth callback with code:', code);
+      console.log('Calling microsoft-auth function with code and user_id:', user.id);
       const { data, error } = await supabase.functions.invoke('microsoft-auth', {
-        body: { code, user_id: user?.id }
+        body: { 
+          code, 
+          user_id: user.id 
+        }
       });
 
-      console.log('Auth callback result:', { data, error });
+      console.log('Microsoft auth function result:', { data, error });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Microsoft auth function error:', error);
+        throw new Error(error.message || 'Authentication failed');
+      }
 
+      if (!data?.success) {
+        console.error('Microsoft auth function returned non-success:', data);
+        throw new Error(data?.error || 'Authentication failed');
+      }
+
+      console.log('Microsoft authentication completed successfully');
       toast({
         title: "Microsoft authentication successful",
-        description: "Your Outlook tasks will now sync with your reminders.",
+        description: "Your Outlook integration is now active. You can sync calendar events and push tasks to Outlook.",
       });
 
-      fetchToken();
+      // Refresh the token state
+      await fetchToken();
+      
     } catch (error: any) {
-      console.error('Error handling Microsoft auth callback:', error);
+      console.error('Error in handleAuthCallback:', error);
       toast({
         title: "Authentication failed",
-        description: error.message,
+        description: error.message || 'Failed to complete Microsoft authentication',
         variant: "destructive",
       });
+      throw error;
     }
   };
 
@@ -180,19 +218,6 @@ export function useMicrosoftAuth() {
   useEffect(() => {
     console.log('useMicrosoftAuth - User changed:', user?.id);
     fetchToken();
-  }, [user]);
-
-  // Check for auth callback on page load
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    
-    if (code && user) {
-      console.log('Found auth callback code, processing...');
-      handleAuthCallback(code);
-      // Clean up the URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
   }, [user]);
 
   console.log('useMicrosoftAuth hook state:', {
