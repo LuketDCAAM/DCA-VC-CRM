@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, CheckCircle, Loader2, Copy, RefreshCw } from 'lucide-react';
+import { AlertCircle, CheckCircle, Loader2, Copy, RefreshCw, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,13 +17,16 @@ export default function MicrosoftAuthCallback() {
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [errorDetails, setErrorDetails] = useState<any>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const copyErrorToClipboard = () => {
     const errorInfo = {
       url: window.location.href,
       error: errorMessage,
       details: errorDetails,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      retry_count: retryCount
     };
     navigator.clipboard.writeText(JSON.stringify(errorInfo, null, 2));
     toast({
@@ -36,17 +39,26 @@ export default function MicrosoftAuthCallback() {
     setStatus('processing');
     setErrorMessage('');
     setErrorDetails(null);
+    setRetryCount(prev => prev + 1);
     
-    // Re-run the callback processing
     const code = searchParams.get('code');
     if (code && user) {
+      console.log(`=== RETRY ATTEMPT ${retryCount + 1} ===`);
+      console.log('Code length:', code.length);
+      console.log('User ID:', user.id);
+      
       handleAuthCallback(code).then(() => {
+        console.log('Retry successful');
         setStatus('success');
+        toast({
+          title: "Authentication successful",
+          description: "Microsoft account connected successfully!",
+        });
         setTimeout(() => {
           navigate('/deals');
         }, 2000);
       }).catch((error) => {
-        console.error('Retry error:', error);
+        console.error('Retry failed:', error);
         setStatus('error');
         setErrorMessage(error.message || 'Authentication failed');
         setErrorDetails(error);
@@ -59,7 +71,7 @@ export default function MicrosoftAuthCallback() {
       console.log('=== MICROSOFT CALLBACK PAGE ===');
       console.log('Full URL:', window.location.href);
       console.log('Search params:', window.location.search);
-      console.log('Auth state - user:', user);
+      console.log('Auth state - user:', user?.id);
       console.log('Auth state - userLoading:', userLoading);
       
       const code = searchParams.get('code');
@@ -67,7 +79,7 @@ export default function MicrosoftAuthCallback() {
       const errorDescription = searchParams.get('error_description');
       const state = searchParams.get('state');
       
-      console.log('Auth code:', code ? 'Present (length: ' + code.length + ')' : 'Missing');
+      console.log('Auth code:', code ? `Present (length: ${code.length})` : 'Missing');
       console.log('Auth error:', error);
       console.log('Error description:', errorDescription);
       console.log('State:', state);
@@ -110,16 +122,21 @@ export default function MicrosoftAuthCallback() {
         setErrorDetails({
           message: 'User not authenticated',
           user_loading: userLoading,
-          has_user: !!user
+          has_user: !!user,
+          code_length: code.length
         });
         return;
       }
 
       try {
-        console.log('Processing auth callback with user:', user.id);
+        console.log('=== PROCESSING AUTH CALLBACK ===');
+        console.log('User ID:', user.id);
         console.log('Authorization code length:', code.length);
+        console.log('Code preview:', code.substring(0, 50) + '...');
         
         await handleAuthCallback(code);
+        
+        console.log('Authentication callback completed successfully');
         setStatus('success');
         
         toast({
@@ -130,30 +147,37 @@ export default function MicrosoftAuthCallback() {
         setTimeout(() => {
           navigate('/deals');
         }, 2000);
+        
       } catch (error: any) {
-        console.error('Error processing auth callback:', error);
+        console.error('=== ERROR PROCESSING AUTH CALLBACK ===');
+        console.error('Error:', error);
+        console.error('Error message:', error.message);
         console.error('Error details:', {
-          message: error.message,
-          stack: error.stack,
           name: error.name,
+          stack: error.stack,
           cause: error.cause
         });
         
         setStatus('error');
         
-        // Parse different types of errors with more specificity
+        // Enhanced error message handling
+        let userFriendlyMessage = 'Failed to complete authentication';
+        
         if (error.message?.includes('Microsoft token exchange failed')) {
-          setErrorMessage('Microsoft rejected the authentication request. This could be due to an invalid redirect URI or expired authorization code.');
+          userFriendlyMessage = 'Microsoft rejected the authentication request. This might be due to a configuration issue or expired authorization code.';
         } else if (error.message?.includes('Edge Function returned a non-2xx status code')) {
-          setErrorMessage('Authentication service error. Please try again or contact support if the problem persists.');
+          userFriendlyMessage = 'Authentication service encountered an error. Please try again.';
         } else if (error.message?.includes('Network error')) {
-          setErrorMessage('Network error occurred. Please check your connection and try again.');
+          userFriendlyMessage = 'Network error occurred. Please check your connection and try again.';
         } else if (error.message?.includes('OAuth configuration')) {
-          setErrorMessage('Microsoft OAuth is not properly configured. Please contact support.');
-        } else {
-          setErrorMessage(error.message || 'Failed to complete authentication');
+          userFriendlyMessage = 'Microsoft OAuth is not properly configured. Please contact support.';
+        } else if (error.message?.includes('Failed to store tokens')) {
+          userFriendlyMessage = 'Authentication succeeded but failed to save credentials. Please try again.';
+        } else if (error.message) {
+          userFriendlyMessage = error.message;
         }
         
+        setErrorMessage(userFriendlyMessage);
         setErrorDetails({
           error_type: 'callback_processing_error',
           error_message: error.message,
@@ -162,13 +186,15 @@ export default function MicrosoftAuthCallback() {
           code_length: code.length,
           timestamp: new Date().toISOString(),
           url: window.location.href,
+          user_agent: navigator.userAgent,
+          retry_count: retryCount,
           raw_error: error
         });
       }
     };
 
     processCallback();
-  }, [searchParams, handleAuthCallback, navigate, user, userLoading, toast]);
+  }, [searchParams, handleAuthCallback, navigate, user, userLoading, toast, retryCount]);
 
   // Show loading while waiting for user authentication to resolve
   if (userLoading) {
@@ -224,7 +250,9 @@ export default function MicrosoftAuthCallback() {
               {errorDetails && (
                 <div className="text-xs text-muted-foreground bg-red-50 p-3 rounded border max-h-32 overflow-y-auto">
                   <p className="font-medium text-red-800 mb-2">Error Details:</p>
-                  <pre className="text-left whitespace-pre-wrap text-xs">{JSON.stringify(errorDetails, null, 2)}</pre>
+                  <pre className="text-left whitespace-pre-wrap text-xs">
+                    {JSON.stringify(errorDetails, null, 2)}
+                  </pre>
                 </div>
               )}
               <div className="flex flex-col gap-2 mt-4">
@@ -232,9 +260,10 @@ export default function MicrosoftAuthCallback() {
                   onClick={retryAuth}
                   size="sm"
                   className="flex items-center gap-2"
+                  disabled={status === 'processing'}
                 >
                   <RefreshCw className="h-4 w-4" />
-                  Retry Authentication
+                  Retry Authentication {retryCount > 0 && `(${retryCount})`}
                 </Button>
                 <Button 
                   variant="outline" 
@@ -249,7 +278,9 @@ export default function MicrosoftAuthCallback() {
                   <Button 
                     onClick={() => navigate('/')}
                     size="sm"
+                    className="flex items-center gap-2"
                   >
+                    <ExternalLink className="h-4 w-4" />
                     Go to Login
                   </Button>
                 )}
