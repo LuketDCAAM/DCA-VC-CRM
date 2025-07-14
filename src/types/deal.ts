@@ -1,4 +1,5 @@
 
+
 import { Database } from '@/integrations/supabase/types';
 
 // Export canonical enum types directly from your Supabase generated types
@@ -12,22 +13,10 @@ export type AppRole = Database['public']['Enums']['app_role'];
 // Base Deal type from database
 export type BaseDeal = Database['public']['Tables']['deals']['Row'];
 
-// Enhanced Deal type with proper inheritance - making sure all properties match
-export interface Deal extends Omit<BaseDeal, 'company_type'> {
-  // Override company_type to match the database schema (nullable)
-  company_type?: string | null;
-  
-  // External data fields are already included in BaseDeal from the migration
-  // but we can be explicit about their types for clarity
-  linkedin_url?: string | null;
-  crunchbase_url?: string | null;
-  total_funding_raised?: number | null;
-  last_funding_date?: string | null;
-  employee_count_range?: string | null;
-  founded_year?: number | null;
-  headquarters_location?: string | null;
-  external_data_last_synced?: string | null;
-  external_data_sync_status?: string | null;
+// Enhanced Deal type - just use the base type directly since it already includes all the fields
+// The database migration has already added all the external data fields to the deals table
+export interface Deal extends BaseDeal {
+  // No need to override anything - BaseDeal already has the correct types from the database
 }
 
 // You can also create types for Insert and Update operations for consistency:
@@ -38,3 +27,4 @@ export type DealUpdate = Database['public']['Tables']['deals']['Update'];
 // export interface Investor extends Database['public']['Tables']['investors']['Row'] {}
 // export interface PortfolioCompany extends Database['public']['Tables']['portfolio_companies']['Row'] {}
 // export interface CallNote extends Database['public']['Tables']['call_notes']['Row'] {}
+
