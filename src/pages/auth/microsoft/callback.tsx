@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 
@@ -9,6 +10,7 @@ export default function MicrosoftAuthCallback() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { handleAuthCallback } = useMicrosoftAuth();
+  const { user, loading: userLoading } = useAuth();
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
   const [errorMessage, setErrorMessage] = useState<string>('');
 
@@ -17,6 +19,8 @@ export default function MicrosoftAuthCallback() {
       console.log('=== MICROSOFT CALLBACK PAGE ===');
       console.log('Full URL:', window.location.href);
       console.log('Search params:', window.location.search);
+      console.log('Auth state - user:', user);
+      console.log('Auth state - userLoading:', userLoading);
       
       const code = searchParams.get('code');
       const error = searchParams.get('error');
@@ -40,8 +44,21 @@ export default function MicrosoftAuthCallback() {
         return;
       }
 
+      // Wait for user to load if it's still loading
+      if (userLoading) {
+        console.log('User still loading, waiting...');
+        return;
+      }
+
+      if (!user) {
+        console.error('No user found in auth state');
+        setStatus('error');
+        setErrorMessage('Please log in to your account first, then try connecting Microsoft again');
+        return;
+      }
+
       try {
-        console.log('Processing auth callback...');
+        console.log('Processing auth callback with user:', user.id);
         await handleAuthCallback(code);
         setStatus('success');
         setTimeout(() => {
@@ -55,7 +72,26 @@ export default function MicrosoftAuthCallback() {
     };
 
     processCallback();
-  }, [searchParams, handleAuthCallback, navigate]);
+  }, [searchParams, handleAuthCallback, navigate, user, userLoading]);
+
+  // Show loading while waiting for user authentication to resolve
+  if (userLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="flex items-center gap-2 justify-center">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Loading Authentication
+            </CardTitle>
+            <CardDescription>
+              Checking your login status...
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -94,12 +130,22 @@ export default function MicrosoftAuthCallback() {
                   {errorMessage}
                 </p>
               )}
-              <button 
-                onClick={() => navigate('/deals')}
-                className="text-sm text-blue-600 hover:underline"
-              >
-                Return to Deals
-              </button>
+              <div className="flex flex-col gap-2 mt-4">
+                {errorMessage.includes('log in to your account first') && (
+                  <button 
+                    onClick={() => navigate('/')}
+                    className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                  >
+                    Go to Login
+                  </button>
+                )}
+                <button 
+                  onClick={() => navigate('/deals')}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  Return to Deals
+                </button>
+              </div>
             </div>
           )}
         </CardContent>
