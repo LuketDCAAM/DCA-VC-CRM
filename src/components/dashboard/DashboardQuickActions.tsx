@@ -22,7 +22,7 @@ export function DashboardQuickActions() {
       variant: "outline" as const,
     },
     {
-      title: "Add Investor",
+      title: "Add Venture Investor",
       icon: Users,
       onClick: () => navigate('/investors'),
       variant: "outline" as const,

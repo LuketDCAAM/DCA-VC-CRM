@@ -25,7 +25,7 @@ export function InvestorsPageHeader({
   return (
     <div className="flex justify-between items-center mb-8">
       <div>
-        <h1 className="text-3xl font-bold">Investors</h1>
+        <h1 className="text-3xl font-bold">Venture Investors</h1>
         <p className="text-gray-600">Manage your investor relationships</p>
       </div>
       <div className="flex items-center gap-2">

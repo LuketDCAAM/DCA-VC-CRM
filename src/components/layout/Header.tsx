@@ -16,7 +16,7 @@ const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
   { name: 'Deals', href: '/deals', icon: DollarSign },
   { name: 'Portfolio', href: '/portfolio', icon: Building2 },
-  { name: 'Investors', href: '/investors', icon: Users },
+  { name: 'Venture Investors', href: '/investors', icon: Users },
   { name: 'Contacts', href: '/contacts', icon: Contact },
 ];
 
