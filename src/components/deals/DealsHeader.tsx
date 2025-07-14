@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Upload, Download } from 'lucide-react';
-import { DealsStats } from './DealsStats';
+import { AddDealDialog } from './AddDealDialog';
 import { OutlookCalendarSyncButton } from '@/components/outlook/OutlookCalendarSyncButton';
 import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
 
@@ -27,10 +27,6 @@ export function DealsHeader({
 
   console.log('DealsHeader - Microsoft auth status:', { isAuthenticated, authLoading });
 
-  const handleAddDeal = () => {
-    onDealAdded();
-  };
-
   const handleImportCSV = () => {
     // CSV import logic will be handled by the parent component
   };
@@ -49,7 +45,6 @@ export function DealsHeader({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {/* Always show the sync button for debugging */}
           <OutlookCalendarSyncButton 
             variant="outline" 
             size="default" 
@@ -63,10 +58,12 @@ export function DealsHeader({
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button onClick={handleAddDeal}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Deal
-          </Button>
+          <AddDealDialog onDealAdded={onDealAdded}>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Deal
+            </Button>
+          </AddDealDialog>
         </div>
       </div>
     </div>

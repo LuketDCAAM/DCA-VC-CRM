@@ -20,17 +20,26 @@ interface AddDealDialogProps {
 export function AddDealDialog({ onDealAdded, children }: AddDealDialogProps) {
   const [open, setOpen] = useState(false);
 
+  console.log('AddDealDialog render - open:', open);
+
   const handleSuccess = () => {
+    console.log('AddDealDialog - handleSuccess called');
     setOpen(false);
     onDealAdded();
   };
 
   const handleCancel = () => {
+    console.log('AddDealDialog - handleCancel called');
     setOpen(false);
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    console.log('AddDealDialog - handleOpenChange called with:', newOpen);
+    setOpen(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {children || (
           <Button>

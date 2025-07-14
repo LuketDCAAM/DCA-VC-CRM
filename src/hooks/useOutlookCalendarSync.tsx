@@ -1,52 +1,25 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
-interface CalendarEvent {
-  id: string;
-  subject: string;
-  start: {
-    dateTime: string;
-    timeZone: string;
-  };
-  end: {
-    dateTime: string;
-    timeZone: string;
-  };
-  attendees?: Array<{
-    emailAddress: {
-      address: string;
-      name: string;
-    };
-  }>;
-  organizer?: {
-    emailAddress: {
-      address: string;
-      name: string;
-    };
-  };
-  body?: {
-    content: string;
-    contentType: string;
-  };
-}
-
-interface CalendarSyncLog {
+export interface CalendarSyncLog {
   id: string;
   user_id: string;
   sync_type: string;
   status: string;
-  items_processed: number | null;
-  items_failed: number | null;
-  error_message: string | null;
   started_at: string;
   completed_at: string | null;
+  events_processed: number | null;
+  deals_updated: number | null;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export function useOutlookCalendarSync() {
-  const [syncing, setSyncing] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [syncLogs, setSyncLogs] = useState<CalendarSyncLog[]>([]);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -59,111 +32,74 @@ export function useOutlookCalendarSync() {
         .from('outlook_calendar_sync_logs')
         .select('*')
         .eq('user_id', user.id)
-        .order('started_at', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(10);
 
       if (error) throw error;
-      setSyncLogs(data || []);
-    } catch (error: any) {
-      console.error('Error fetching calendar sync logs:', error);
+
+      // Transform the data to match our interface
+      const transformedLogs: CalendarSyncLog[] = (data || []).map(log => ({
+        id: log.id,
+        user_id: log.user_id,
+        sync_type: log.sync_type,
+        status: log.status,
+        started_at: log.started_at,
+        completed_at: log.completed_at,
+        events_processed: log.events_processed,
+        deals_updated: log.deals_updated,
+        error_message: log.error_message,
+        created_at: log.created_at,
+        updated_at: log.updated_at,
+      }));
+
+      setSyncLogs(transformedLogs);
+    } catch (error) {
+      console.error('Error fetching sync logs:', error);
     }
   };
 
-  const syncCalendarEvents = async () => {
-    if (!user) return;
+  const syncCalendar = async () => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to sync calendar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
 
     try {
-      setSyncing(true);
-      
       const { data, error } = await supabase.functions.invoke('outlook-calendar-sync', {
-        body: { 
-          user_id: user.id,
-          sync_type: 'incremental'
-        }
+        body: { userId: user.id }
       });
 
       if (error) throw error;
 
-      const result = data || {};
-      const dealsUpdated = result.deals_updated || 0;
-      const investorsUpdated = result.investors_updated || 0;
-      const totalUpdated = dealsUpdated + investorsUpdated;
-
-      if (totalUpdated > 0) {
-        toast({
-          title: "Calendar sync completed",
-          description: `Updated ${dealsUpdated} deals and ${investorsUpdated} investors with recent call dates.`,
-        });
-      } else {
-        toast({
-          title: "Calendar sync completed",
-          description: "No new call dates found to update.",
-        });
-      }
-
-      fetchSyncLogs();
-    } catch (error: any) {
-      console.error('Error syncing calendar:', error);
       toast({
-        title: "Calendar sync failed",
-        description: error.message,
+        title: "Success",
+        description: data.message || "Calendar sync completed successfully",
+      });
+
+      // Refresh sync logs
+      await fetchSyncLogs();
+    } catch (error) {
+      console.error('Calendar sync error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to sync calendar. Please try again.",
         variant: "destructive",
       });
     } finally {
-      setSyncing(false);
-    }
-  };
-
-  const fullCalendarSync = async () => {
-    if (!user) return;
-
-    try {
-      setSyncing(true);
-      
-      const { data, error } = await supabase.functions.invoke('outlook-calendar-sync', {
-        body: { 
-          user_id: user.id,
-          sync_type: 'full'
-        }
-      });
-
-      if (error) throw error;
-
-      const result = data || {};
-      const dealsUpdated = result.deals_updated || 0;
-      const investorsUpdated = result.investors_updated || 0;
-      const totalUpdated = dealsUpdated + investorsUpdated;
-
-      if (totalUpdated > 0) {
-        toast({
-          title: "Full calendar sync completed",
-          description: `Updated ${dealsUpdated} deals and ${investorsUpdated} investors with recent call dates.`,
-        });
-      } else {
-        toast({
-          title: "Full calendar sync completed",
-          description: "No new call dates found to update.",
-        });
-      }
-
-      fetchSyncLogs();
-    } catch (error: any) {
-      console.error('Error performing full calendar sync:', error);
-      toast({
-        title: "Full calendar sync failed",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setSyncing(false);
+      setIsLoading(false);
     }
   };
 
   return {
-    syncing,
+    isLoading,
     syncLogs,
-    syncCalendarEvents,
-    fullCalendarSync,
+    syncCalendar,
     fetchSyncLogs,
   };
 }
