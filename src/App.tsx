@@ -16,6 +16,7 @@ import Portfolio from './pages/Portfolio';
 import Investors from './pages/Investors';
 import Contacts from './pages/Contacts';
 import Reminders from './pages/Reminders';
+import LPEngagements from './pages/LPEngagements';
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 
@@ -58,6 +59,7 @@ function AppContent() {
                 <Route path="/investors" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/contacts" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/reminders" element={<Navigate to="/dashboard" replace />} />
+                <Route path="/lp-engagements" element={<Navigate to="/dashboard" replace />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </>
             ) : (
@@ -67,6 +69,7 @@ function AppContent() {
                 <Route path="/investors" element={<Investors />} />
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/reminders" element={<Reminders />} />
+                <Route path="/lp-engagements" element={<LPEngagements />} />
                 <Route path="*" element={<NotFound />} />
               </>
             )}

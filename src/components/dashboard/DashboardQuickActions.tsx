@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, DollarSign, Users, UserPlus } from 'lucide-react';
+import { Building2, DollarSign, Users, UserPlus, HandCoins } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function DashboardQuickActions() {
@@ -28,6 +28,12 @@ export function DashboardQuickActions() {
       variant: "outline" as const,
     },
     {
+      title: "Add LP Engagement",
+      icon: HandCoins,
+      onClick: () => navigate('/lp-engagements'),
+      variant: "outline" as const,
+    },
+    {
       title: "Add Contact",
       icon: UserPlus,
       onClick: () => navigate('/contacts'),
@@ -42,7 +48,7 @@ export function DashboardQuickActions() {
         <CardDescription>Common tasks to get started</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {actions.map((action) => (
             <Button
               key={action.title}
