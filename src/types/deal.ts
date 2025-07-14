@@ -12,9 +12,13 @@ export type AppRole = Database['public']['Enums']['app_role'];
 // Base Deal type from database
 export type BaseDeal = Database['public']['Tables']['deals']['Row'];
 
-// Enhanced Deal type with external data fields
-export interface Deal extends BaseDeal {
-  // External data fields from the new columns
+// Enhanced Deal type with proper inheritance - making sure all properties match
+export interface Deal extends Omit<BaseDeal, 'company_type'> {
+  // Override company_type to match the database schema (nullable)
+  company_type?: string | null;
+  
+  // External data fields are already included in BaseDeal from the migration
+  // but we can be explicit about their types for clarity
   linkedin_url?: string | null;
   crunchbase_url?: string | null;
   total_funding_raised?: number | null;
@@ -22,7 +26,6 @@ export interface Deal extends BaseDeal {
   employee_count_range?: string | null;
   founded_year?: number | null;
   headquarters_location?: string | null;
-  company_type?: string | null;
   external_data_last_synced?: string | null;
   external_data_sync_status?: string | null;
 }
