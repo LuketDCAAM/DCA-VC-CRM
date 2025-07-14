@@ -9,8 +9,11 @@ export type InvestmentStage = Database['public']['Enums']['investment_stage'];
 export type UserStatus = Database['public']['Enums']['user_status'];
 export type AppRole = Database['public']['Enums']['app_role'];
 
+// Base Deal type from database
+export type BaseDeal = Database['public']['Tables']['deals']['Row'];
+
 // Enhanced Deal type with external data fields
-export interface Deal extends Database['public']['Tables']['deals']['Row'] {
+export interface Deal extends BaseDeal {
   // External data fields from the new columns
   linkedin_url?: string | null;
   crunchbase_url?: string | null;
