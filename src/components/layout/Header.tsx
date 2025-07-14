@@ -4,8 +4,8 @@ import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ProfileButton from '@/components/profile/ProfileButton';
 import { useUserRoles } from '@/hooks/useUserRoles';
-import AllUsersDialog from '@/components/admin/AllUsersDialog';
-import UserApprovalsDialog from '@/components/admin/UserApprovalsDialog';
+import { AllUsersDialog } from '@/components/admin/AllUsersDialog';
+import { UserApprovalsDialog } from '@/components/admin/UserApprovalsDialog';
 import { 
   BarChart3, 
   DollarSign, 
