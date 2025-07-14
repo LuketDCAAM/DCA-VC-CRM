@@ -40,9 +40,9 @@ export function ConfigurableDealsTableHeader({
           sortPriority={null}
           onSort={() => {}}
           canSort={false}
-          className="w-12 sticky left-0 z-30 bg-muted/95 backdrop-blur-sm border-r border-border/50 py-0 px-0"
+          className="w-12 sticky left-0 z-30 bg-muted border-r border-border/50"
         >
-          <div className="flex items-center justify-center h-full w-full">
+          <div className="flex items-center justify-center h-12 w-12">
             <Checkbox
               checked={isAllSelected ? true : (hasSelection ? 'indeterminate' : false)}
               onCheckedChange={() => isAllSelected ? onDeselectAll() : onSelectAll()}
@@ -66,7 +66,7 @@ export function ConfigurableDealsTableHeader({
               canSort={column.sortable}
               className={`
                 ${column.width} font-semibold text-xs text-foreground py-3 px-4
-                ${column.key === 'company_name' ? 'sticky left-12 z-30 bg-muted/95 backdrop-blur-sm border-r border-border/50' : ''}
+                ${column.key === 'company_name' ? 'sticky left-12 z-30 bg-muted border-r border-border/50' : ''}
                 hover:bg-muted/60 transition-colors
               `}
             >
