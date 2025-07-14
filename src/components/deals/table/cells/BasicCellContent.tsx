@@ -1,22 +1,26 @@
 
 import React from 'react';
-import { MapPin } from 'lucide-react';
+import { MapPin, User, FileText } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Deal } from '@/types/deal';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { formatDate } from '../tableUtils';
 
 interface BasicCellContentProps {
   deal: Deal;
-  type: 'location' | 'deal_lead' | 'created_at' | 'source_date' | 'description';
+  type: 'location' | 'deal_lead' | 'created_at' | 'source_date' | 'description' | 'last_call_date';
 }
 
 export function BasicCellContent({ deal, type }: BasicCellContentProps) {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return null;
+    return new Date(dateString).toLocaleDateString();
+  };
+
   switch (type) {
     case 'location':
       return deal.location ? (
-        <div className="flex items-center gap-1.5">
-          <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-          <span className="text-sm text-foreground">{deal.location}</span>
+        <div className="flex items-center gap-1">
+          <MapPin className="h-3 w-3 text-muted-foreground" />
+          <span className="text-foreground text-sm">{deal.location}</span>
         </div>
       ) : (
         <span className="text-muted-foreground text-sm">-</span>
@@ -24,39 +28,47 @@ export function BasicCellContent({ deal, type }: BasicCellContentProps) {
 
     case 'deal_lead':
       return deal.deal_lead ? (
-        <span className="text-sm text-foreground font-medium">{deal.deal_lead}</span>
+        <div className="flex items-center gap-1">
+          <User className="h-3 w-3 text-muted-foreground" />
+          <span className="text-foreground text-sm">{deal.deal_lead}</span>
+        </div>
       ) : (
         <span className="text-muted-foreground text-sm">-</span>
       );
 
     case 'created_at':
       return (
-        <div className="text-xs text-muted-foreground font-medium">
+        <div className="text-sm text-muted-foreground">
           {formatDate(deal.created_at)}
         </div>
       );
 
     case 'source_date':
       return deal.source_date ? (
-        <div className="text-xs text-muted-foreground font-medium">
+        <div className="text-sm text-muted-foreground">
           {formatDate(deal.source_date)}
         </div>
       ) : (
         <span className="text-muted-foreground text-sm">-</span>
       );
 
+    case 'last_call_date':
+      return deal.last_call_date ? (
+        <Badge variant="outline" className="text-xs">
+          {formatDate(deal.last_call_date)}
+        </Badge>
+      ) : (
+        <span className="text-muted-foreground text-sm">-</span>
+      );
+
     case 'description':
       return deal.description ? (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <p className="text-xs text-muted-foreground line-clamp-2 max-w-[180px] cursor-help">
-              {deal.description}
-            </p>
-          </TooltipTrigger>
-          <TooltipContent className="max-w-[300px]">
-            <p className="whitespace-normal">{deal.description}</p>
-          </TooltipContent>
-        </Tooltip>
+        <div className="flex items-start gap-1">
+          <FileText className="h-3 w-3 text-muted-foreground mt-0.5" />
+          <span className="text-foreground text-sm line-clamp-2 max-w-[180px]">
+            {deal.description}
+          </span>
+        </div>
       ) : (
         <span className="text-muted-foreground text-sm">-</span>
       );

@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAddDeal } from '../hooks/useAddDeal';
-import { Paperclip, FileText } from 'lucide-react';
+import { Paperclip, FileText, Calendar } from 'lucide-react';
 
 const addDealFormSchema = z.object({
   company_name: z.string().min(1, 'Company name is required'),
@@ -31,6 +31,7 @@ const addDealFormSchema = z.object({
   revenue: z.string().optional(),
   pitch_deck_url: z.string().url({ message: "Invalid URL" }).or(z.literal('')).optional(),
   next_steps: z.string().optional(),
+  last_call_date: z.string().optional(),
 });
 
 type AddDealFormValues = z.infer<typeof addDealFormSchema>;
@@ -55,6 +56,7 @@ interface AddDealValues {
   revenue?: string;
   pitch_deck_url?: string;
   next_steps?: string;
+  last_call_date?: string;
   pitchDeckFile?: File | null;
 }
 
@@ -89,6 +91,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
       revenue: '',
       pitch_deck_url: '',
       next_steps: '',
+      last_call_date: '',
     },
   });
 
@@ -121,6 +124,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
       revenue: values.revenue,
       pitch_deck_url: values.pitch_deck_url,
       next_steps: values.next_steps,
+      last_call_date: values.last_call_date,
       pitchDeckFile
     };
     
@@ -249,6 +253,22 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
                     <FormLabel>Contact Phone</FormLabel>
                     <FormControl>
                       <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="last_call_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Last Call Date
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

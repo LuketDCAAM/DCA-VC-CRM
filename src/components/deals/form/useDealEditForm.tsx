@@ -41,6 +41,7 @@ export function useDealEditForm({ deal }: UseDealEditFormProps) {
       lead_investor: '',
       other_investors: '',
       next_steps: deal.next_steps || '',
+      last_call_date: deal.last_call_date ? deal.last_call_date.split('T')[0] : '',
     },
   });
 

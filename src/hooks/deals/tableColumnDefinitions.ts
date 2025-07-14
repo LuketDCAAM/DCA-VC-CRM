@@ -93,6 +93,15 @@ export const DEFAULT_COLUMNS: TableColumn[] = [
     dataType: 'date'
   },
   {
+    key: 'last_call_date',
+    label: 'Last Call',
+    icon: Calendar,
+    width: 'min-w-[120px]',
+    sortable: true,
+    visible: false,
+    dataType: 'date'
+  },
+  {
     key: 'post_money_valuation',
     label: 'Valuation',
     icon: DollarSign,
