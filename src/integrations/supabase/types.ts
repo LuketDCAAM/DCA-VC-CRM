@@ -14,6 +14,95 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_configurations: {
+        Row: {
+          api_key_encrypted: string
+          base_url: string | null
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean
+          provider: string
+          rate_limit_per_minute: number
+          updated_at: string
+        }
+        Insert: {
+          api_key_encrypted: string
+          base_url?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean
+          provider: string
+          rate_limit_per_minute?: number
+          updated_at?: string
+        }
+        Update: {
+          api_key_encrypted?: string
+          base_url?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean
+          provider?: string
+          rate_limit_per_minute?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      api_sync_logs: {
+        Row: {
+          api_provider: string
+          completed_at: string | null
+          created_by: string
+          data_fetched: Json | null
+          deal_id: string | null
+          error_message: string | null
+          id: string
+          records_processed: number
+          records_updated: number
+          started_at: string
+          status: string
+          sync_type: string
+        }
+        Insert: {
+          api_provider: string
+          completed_at?: string | null
+          created_by: string
+          data_fetched?: Json | null
+          deal_id?: string | null
+          error_message?: string | null
+          id?: string
+          records_processed?: number
+          records_updated?: number
+          started_at?: string
+          status?: string
+          sync_type?: string
+        }
+        Update: {
+          api_provider?: string
+          completed_at?: string | null
+          created_by?: string
+          data_fetched?: Json | null
+          deal_id?: string | null
+          error_message?: string | null
+          id?: string
+          records_processed?: number
+          records_updated?: number
+          started_at?: string
+          status?: string
+          sync_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_sync_logs_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       call_notes: {
         Row: {
           call_date: string
@@ -68,6 +157,59 @@ export type Database = {
             columns: ["portfolio_company_id"]
             isOneToOne: false
             referencedRelation: "portfolio_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_funding_rounds: {
+        Row: {
+          amount_raised: number | null
+          created_at: string
+          deal_id: string
+          external_id: string | null
+          external_source: string
+          funding_date: string | null
+          id: string
+          lead_investors: string[] | null
+          participating_investors: string[] | null
+          round_type: string
+          valuation_post_money: number | null
+          valuation_pre_money: number | null
+        }
+        Insert: {
+          amount_raised?: number | null
+          created_at?: string
+          deal_id: string
+          external_id?: string | null
+          external_source: string
+          funding_date?: string | null
+          id?: string
+          lead_investors?: string[] | null
+          participating_investors?: string[] | null
+          round_type: string
+          valuation_post_money?: number | null
+          valuation_pre_money?: number | null
+        }
+        Update: {
+          amount_raised?: number | null
+          created_at?: string
+          deal_id?: string
+          external_id?: string | null
+          external_source?: string
+          funding_date?: string | null
+          id?: string
+          lead_investors?: string[] | null
+          participating_investors?: string[] | null
+          round_type?: string
+          valuation_post_money?: number | null
+          valuation_pre_money?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_funding_rounds_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
             referencedColumns: ["id"]
           },
         ]
@@ -216,17 +358,26 @@ export type Database = {
       deals: {
         Row: {
           company_name: string
+          company_type: string | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
           created_at: string
           created_by: string
+          crunchbase_url: string | null
           deal_lead: string | null
           deal_score: number | null
           deal_source: string | null
           description: string | null
+          employee_count_range: string | null
+          external_data_last_synced: string | null
+          external_data_sync_status: string | null
+          founded_year: number | null
+          headquarters_location: string | null
           id: string
           last_call_date: string | null
+          last_funding_date: string | null
+          linkedin_url: string | null
           location: string | null
           next_steps: string | null
           pipeline_stage: Database["public"]["Enums"]["pipeline_stage"]
@@ -238,22 +389,32 @@ export type Database = {
           sector: string | null
           source_date: string | null
           tags: string[] | null
+          total_funding_raised: number | null
           updated_at: string
           website: string | null
         }
         Insert: {
           company_name: string
+          company_type?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
           created_by: string
+          crunchbase_url?: string | null
           deal_lead?: string | null
           deal_score?: number | null
           deal_source?: string | null
           description?: string | null
+          employee_count_range?: string | null
+          external_data_last_synced?: string | null
+          external_data_sync_status?: string | null
+          founded_year?: number | null
+          headquarters_location?: string | null
           id?: string
           last_call_date?: string | null
+          last_funding_date?: string | null
+          linkedin_url?: string | null
           location?: string | null
           next_steps?: string | null
           pipeline_stage?: Database["public"]["Enums"]["pipeline_stage"]
@@ -265,22 +426,32 @@ export type Database = {
           sector?: string | null
           source_date?: string | null
           tags?: string[] | null
+          total_funding_raised?: number | null
           updated_at?: string
           website?: string | null
         }
         Update: {
           company_name?: string
+          company_type?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
           created_at?: string
           created_by?: string
+          crunchbase_url?: string | null
           deal_lead?: string | null
           deal_score?: number | null
           deal_source?: string | null
           description?: string | null
+          employee_count_range?: string | null
+          external_data_last_synced?: string | null
+          external_data_sync_status?: string | null
+          founded_year?: number | null
+          headquarters_location?: string | null
           id?: string
           last_call_date?: string | null
+          last_funding_date?: string | null
+          linkedin_url?: string | null
           location?: string | null
           next_steps?: string | null
           pipeline_stage?: Database["public"]["Enums"]["pipeline_stage"]
@@ -292,8 +463,42 @@ export type Database = {
           sector?: string | null
           source_date?: string | null
           tags?: string[] | null
+          total_funding_raised?: number | null
           updated_at?: string
           website?: string | null
+        }
+        Relationships: []
+      }
+      external_investors: {
+        Row: {
+          created_at: string
+          external_id: string | null
+          external_source: string
+          firm_name: string | null
+          id: string
+          name: string
+          profile_data: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          external_id?: string | null
+          external_source: string
+          firm_name?: string | null
+          id?: string
+          name: string
+          profile_data?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          external_id?: string | null
+          external_source?: string
+          firm_name?: string | null
+          id?: string
+          name?: string
+          profile_data?: Json | null
+          updated_at?: string
         }
         Relationships: []
       }

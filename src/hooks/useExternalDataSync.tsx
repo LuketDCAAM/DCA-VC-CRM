@@ -3,23 +3,23 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import type { APIProvider, ExternalDataSyncResult, APIConfigurationInput } from '@/types/external-data';
+import type { APIProvider, ExternalDataSyncResult, APIConfigurationInput, APIConfiguration, APISyncLog } from '@/types/external-data';
 
 export const useExternalDataSync = () => {
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch API configurations
-  const { data: apiConfigs, loading: configsLoading } = useQuery({
+  const { data: apiConfigs, isLoading: configsLoading } = useQuery({
     queryKey: ['api-configurations'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('api_configurations')
+        .from('api_configurations' as any)
         .select('*')
         .eq('is_active', true);
       
       if (error) throw error;
-      return data;
+      return (data || []) as APIConfiguration[];
     },
   });
 
@@ -63,7 +63,7 @@ export const useExternalDataSync = () => {
   const saveAPIConfig = useMutation({
     mutationFn: async (config: APIConfigurationInput) => {
       const { data, error } = await supabase
-        .from('api_configurations')
+        .from('api_configurations' as any)
         .upsert({
           provider: config.provider,
           api_key_encrypted: config.api_key, // In production, this should be encrypted
@@ -76,7 +76,7 @@ export const useExternalDataSync = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as APIConfiguration;
     },
     onSuccess: () => {
       toast.success('API configuration saved successfully');
@@ -89,17 +89,17 @@ export const useExternalDataSync = () => {
   });
 
   // Fetch sync logs
-  const { data: syncLogs, loading: logsLoading } = useQuery({
+  const { data: syncLogs, isLoading: logsLoading } = useQuery({
     queryKey: ['sync-logs'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('api_sync_logs')
+        .from('api_sync_logs' as any)
         .select('*')
         .order('started_at', { ascending: false })
         .limit(50);
       
       if (error) throw error;
-      return data;
+      return (data || []) as APISyncLog[];
     },
   });
 
