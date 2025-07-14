@@ -1,4 +1,3 @@
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0'
 
 const corsHeaders = {
@@ -33,14 +32,22 @@ Deno.serve(async (req) => {
       const clientId = Deno.env.get('MICROSOFT_CLIENT_ID');
       const clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET');
       
-      console.log('Config check - Client ID exists:', !!clientId);
-      console.log('Config check - Client Secret exists:', !!clientSecret);
+      console.log('=== CONFIG CHECK DEBUG ===');
+      console.log('Client ID exists:', !!clientId);
+      console.log('Client ID length:', clientId?.length || 0);
+      console.log('Client ID first 8 chars:', clientId?.substring(0, 8) || 'N/A');
+      console.log('Client Secret exists:', !!clientSecret);
+      console.log('Client Secret length:', clientSecret?.length || 0);
+      console.log('Client Secret first 8 chars:', clientSecret?.substring(0, 8) || 'N/A');
       
       if (!clientId || !clientSecret) {
+        console.error('Missing OAuth configuration');
         return new Response(JSON.stringify({ 
           error: 'Microsoft OAuth configuration missing',
           hasClientId: !!clientId,
-          hasClientSecret: !!clientSecret
+          hasClientSecret: !!clientSecret,
+          clientIdLength: clientId?.length || 0,
+          clientSecretLength: clientSecret?.length || 0
         }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -49,7 +56,13 @@ Deno.serve(async (req) => {
 
       return new Response(JSON.stringify({ 
         clientId,
-        configured: true 
+        configured: true,
+        debug: {
+          clientIdLength: clientId.length,
+          clientSecretLength: clientSecret.length,
+          clientIdPreview: clientId.substring(0, 8) + '...',
+          clientSecretPreview: clientSecret.substring(0, 8) + '...'
+        }
       }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -71,28 +84,45 @@ Deno.serve(async (req) => {
     const clientId = Deno.env.get('MICROSOFT_CLIENT_ID');
     const clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET');
 
+    console.log('=== TOKEN EXCHANGE DEBUG ===');
+    console.log('Using Client ID:', clientId?.substring(0, 8) + '...');
+    console.log('Using Client Secret:', clientSecret?.substring(0, 8) + '...');
+
     if (!clientId || !clientSecret) {
-      console.error('Missing OAuth configuration');
+      console.error('Missing OAuth configuration for token exchange');
       return new Response(JSON.stringify({ error: 'OAuth configuration not found' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
+    const redirectUri = `${req.headers.get('origin') || 'http://localhost:3000'}/auth/microsoft/callback`;
+    console.log('Using redirect URI:', redirectUri);
+
     // Exchange code for tokens
+    const tokenRequestBody = new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      code: code,
+      grant_type: 'authorization_code',
+      redirect_uri: redirectUri,
+      scope: 'https://graph.microsoft.com/Tasks.ReadWrite https://graph.microsoft.com/Calendars.Read offline_access',
+    });
+
+    console.log('Token request parameters:', {
+      client_id: clientId.substring(0, 8) + '...',
+      client_secret: clientSecret.substring(0, 8) + '...',
+      redirect_uri: redirectUri,
+      grant_type: 'authorization_code',
+      scope: 'https://graph.microsoft.com/Tasks.ReadWrite https://graph.microsoft.com/Calendars.Read offline_access'
+    });
+
     const tokenResponse = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: new URLSearchParams({
-        client_id: clientId,
-        client_secret: clientSecret,
-        code: code,
-        grant_type: 'authorization_code',
-        redirect_uri: `${req.headers.get('origin') || 'http://localhost:3000'}/auth/microsoft/callback`,
-        scope: 'https://graph.microsoft.com/Tasks.ReadWrite https://graph.microsoft.com/Calendars.Read offline_access',
-      }),
+      body: tokenRequestBody,
     });
 
     console.log('Token response status:', tokenResponse.status);
@@ -100,7 +130,17 @@ Deno.serve(async (req) => {
     if (!tokenResponse.ok) {
       const errorText = await tokenResponse.text();
       console.error('Token exchange failed:', errorText);
-      return new Response(JSON.stringify({ error: 'Token exchange failed', details: errorText }), {
+      console.error('This usually indicates incorrect Client ID/Secret or redirect URI mismatch');
+      return new Response(JSON.stringify({ 
+        error: 'Token exchange failed', 
+        details: errorText,
+        debug: {
+          status: tokenResponse.status,
+          statusText: tokenResponse.statusText,
+          clientIdUsed: clientId.substring(0, 8) + '...',
+          redirectUriUsed: redirectUri
+        }
+      }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

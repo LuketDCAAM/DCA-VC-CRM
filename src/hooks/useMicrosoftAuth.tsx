@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -98,6 +97,14 @@ export function useMicrosoftAuth() {
       }
 
       const clientId = configData.clientId;
+      
+      // Let's show the user what Client ID is being used (first 8 characters for security)
+      console.log('Using Client ID (first 8 chars):', clientId.substring(0, 8) + '...');
+      toast({
+        title: "Debug Info",
+        description: `Using Client ID: ${clientId.substring(0, 8)}... (check console for more details)`,
+      });
+
       const currentUrl = window.location.origin;
       const redirectUri = encodeURIComponent(`${currentUrl}/auth/microsoft/callback`);
       const scope = encodeURIComponent('https://graph.microsoft.com/Tasks.ReadWrite https://graph.microsoft.com/Calendars.Read offline_access');
@@ -116,14 +123,22 @@ export function useMicrosoftAuth() {
         `response_mode=query`;
 
       console.log('Auth URL components:', {
-        clientId,
+        clientId: clientId.substring(0, 8) + '...',
         redirectUri: decodeURIComponent(redirectUri),
         scope: decodeURIComponent(scope),
         currentUrl,
         userId: user?.id
       });
       
-      console.log('Redirecting to Microsoft OAuth:', authUrl);
+      console.log('Full Auth URL (check console):', authUrl);
+      console.log('Redirecting to Microsoft OAuth...');
+      
+      // Show user the redirect URI being used
+      toast({
+        title: "Authentication Starting",
+        description: `Redirecting to Microsoft. Redirect URI: ${decodeURIComponent(redirectUri)}`,
+      });
+
       window.location.href = authUrl;
 
     } catch (error: any) {
