@@ -1,60 +1,54 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Upload } from 'lucide-react';
-import { AddDealDialog } from '@/components/deals/AddDealDialog';
-import { ExportData } from '@/components/common/ExportData';
-import { CSVImport } from '@/components/common/CSVImport';
-import { Deal } from '@/types/deal';
+import { Plus, Upload, Download } from 'lucide-react';
+import { DealsStats } from './DealsStats';
+import { OutlookCalendarSyncButton } from '@/components/outlook/OutlookCalendarSyncButton';
 
 interface DealsHeaderProps {
-  filteredDeals: Deal[];
-  exportColumns: { key: string; label: string }[];
-  loading: boolean;
-  csvTemplateColumns: { key: string; label: string; required?: boolean }[];
-  onCSVImport: (data: any[]) => Promise<{ success: boolean; error?: string }>;
-  onDealAdded: () => void;
+  dealStats: {
+    total: number;
+    active: number;
+    inactive: number;
+    pipeline: Record<string, number>;
+  };
+  onAddDeal: () => void;
+  onImportCSV: () => void;
+  onExportCSV: () => void;
 }
 
-export function DealsHeader({
-  filteredDeals,
-  exportColumns,
-  loading,
-  csvTemplateColumns,
-  onCSVImport,
-  onDealAdded,
-}: DealsHeaderProps) {
+export function DealsHeader({ dealStats, onAddDeal, onImportCSV, onExportCSV }: DealsHeaderProps) {
   return (
-    <div className="flex justify-between items-center mb-8">
-      <div>
-        <h1 className="text-3xl font-bold">Deal Flow</h1>
-        <p className="text-gray-600">Manage your investment pipeline</p>
-      </div>
-      <div className="flex items-center gap-2">
-        <ExportData
-          data={filteredDeals}
-          filename="deals"
-          columns={exportColumns}
-          loading={loading}
-        />
-        <CSVImport
-          title="Import Deals"
-          description="Upload a CSV file to import multiple deals at once"
-          templateColumns={csvTemplateColumns}
-          onImport={onCSVImport}
-        >
-          <Button variant="outline" size="sm" className="h-8 px-3 text-xs">
-            <Upload className="h-3 w-3 mr-1" />
-            Import CSV
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">Deals</h1>
+          <p className="text-muted-foreground">
+            Manage your investment pipeline and track deal progress
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <OutlookCalendarSyncButton 
+            variant="outline" 
+            size="default" 
+            showLabel={false} 
+          />
+          <Button variant="outline" onClick={onImportCSV}>
+            <Upload className="h-4 w-4 mr-2" />
+            Import
           </Button>
-        </CSVImport>
-        <AddDealDialog onDealAdded={onDealAdded}>
-          <Button size="sm" className="h-8 px-3 text-xs">
-            <Plus className="h-3 w-3 mr-1" />
+          <Button variant="outline" onClick={onExportCSV}>
+            <Download className="h-4 w-4 mr-2" />
+            Export
+          </Button>
+          <Button onClick={onAddDeal}>
+            <Plus className="h-4 w-4 mr-2" />
             Add Deal
           </Button>
-        </AddDealDialog>
+        </div>
       </div>
+      
+      <DealsStats stats={dealStats} />
     </div>
   );
 }

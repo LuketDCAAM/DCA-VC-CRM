@@ -55,10 +55,10 @@ export function useMicrosoftAuth() {
   };
 
   const initiateAuth = () => {
-    // Microsoft OAuth 2.0 authorization URL
+    // Microsoft OAuth 2.0 authorization URL with expanded permissions
     const clientId = 'your-app-client-id'; // This would be configured in environment
     const redirectUri = encodeURIComponent(`${window.location.origin}/auth/microsoft/callback`);
-    const scope = encodeURIComponent('https://graph.microsoft.com/Tasks.ReadWrite offline_access');
+    const scope = encodeURIComponent('https://graph.microsoft.com/Tasks.ReadWrite https://graph.microsoft.com/Calendars.Read offline_access');
     const responseType = 'code';
     
     const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?` +
