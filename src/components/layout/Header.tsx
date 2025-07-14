@@ -40,7 +40,7 @@ export default function Header() {
     <header className="bg-white shadow-sm border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
         <div className="flex justify-between items-center h-14">
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-8">
             <div className="flex-shrink-0">
               <img 
                 src="/lovable-uploads/c1b92e43-b852-475a-aa30-04db2ade1108.png" 
@@ -68,7 +68,7 @@ export default function Header() {
             </nav>
             
             {isAdmin && (
-              <div className="flex items-center gap-1 ml-4">
+              <div className="flex items-center gap-2 ml-6">
                 <UserApprovalsDialog />
                 <AllUsersDialog />
               </div>
