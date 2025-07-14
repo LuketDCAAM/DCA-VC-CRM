@@ -4,13 +4,17 @@ import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ProfileButton from '@/components/profile/ProfileButton';
 import { useUserRoles } from '@/hooks/useUserRoles';
+import AllUsersDialog from '@/components/admin/AllUsersDialog';
+import UserApprovalsDialog from '@/components/admin/UserApprovalsDialog';
 import { 
   BarChart3, 
   DollarSign, 
   Building2, 
   Users, 
   Contact,
-  HandCoins
+  HandCoins,
+  UserCheck,
+  Shield
 } from 'lucide-react';
 
 const navigation = [
@@ -25,7 +29,7 @@ const navigation = [
 export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { isViewer } = useUserRoles();
+  const { isViewer, isAdmin } = useUserRoles();
 
   // Filter navigation for viewers
   const filteredNavigation = isViewer 
@@ -63,6 +67,22 @@ export default function Header() {
             </nav>
           </div>
           <div className="flex items-center space-x-4">
+            {isAdmin && (
+              <>
+                <UserApprovalsDialog>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <UserCheck className="h-4 w-4" />
+                    <span className="hidden sm:inline">User Approvals</span>
+                  </Button>
+                </UserApprovalsDialog>
+                <AllUsersDialog>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Shield className="h-4 w-4" />
+                    <span className="hidden sm:inline">All Users</span>
+                  </Button>
+                </AllUsersDialog>
+              </>
+            )}
             <ProfileButton />
           </div>
         </div>
