@@ -55,8 +55,8 @@ export function useMicrosoftAuth() {
   };
 
   const initiateAuth = () => {
-    // Microsoft OAuth 2.0 authorization URL with expanded permissions
-    const clientId = 'your-app-client-id'; // This would be configured in environment
+    // Microsoft OAuth 2.0 authorization URL
+    const clientId = 'b8c13f94-8fa5-4b8f-b3d9-4e7a8b2c9d1e'; // This will be replaced by the actual client ID
     const redirectUri = encodeURIComponent(`${window.location.origin}/auth/microsoft/callback`);
     const scope = encodeURIComponent('https://graph.microsoft.com/Tasks.ReadWrite https://graph.microsoft.com/Calendars.Read offline_access');
     const responseType = 'code';
@@ -73,7 +73,6 @@ export function useMicrosoftAuth() {
 
   const handleAuthCallback = async (code: string) => {
     try {
-      // This would call an edge function to exchange the code for tokens
       const { data, error } = await supabase.functions.invoke('microsoft-auth', {
         body: { code, user_id: user?.id }
       });
@@ -126,6 +125,18 @@ export function useMicrosoftAuth() {
 
   useEffect(() => {
     fetchToken();
+  }, [user]);
+
+  // Check for auth callback on page load
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    
+    if (code && user) {
+      handleAuthCallback(code);
+      // Clean up the URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }, [user]);
 
   return {
