@@ -11,7 +11,7 @@ import { ContactCell } from './ContactCell';
 import { FinancialCell } from './FinancialCell';
 import { PipelineStageDropdown } from './PipelineStageDropdown';
 import { ExternalDataSyncButton } from '@/components/external-data/ExternalDataSyncButton';
-import { formatDate, getPipelineStageColor } from './tableUtils';
+import { formatDate } from './tableUtils';
 
 interface DealsTableRowProps {
   deal: Deal;

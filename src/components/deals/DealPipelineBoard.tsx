@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Building2, DollarSign, Eye, Calendar, Star } from 'lucide-react';
 import { Deal } from '@/types/deal'; 
 import { PIPELINE_STAGES, PipelineStage } from '@/hooks/deals/dealStagesConfig';
-import { getPipelineStageClasses } from './pipelineStageColors';
+import { getPipelineStageClasses, getPipelineStageBackground, getPipelineStageBorder } from './pipelineStageColors';
 
 const formatCurrency = (amount: number | null) => {
   if (!amount) return 'N/A';
@@ -16,11 +16,6 @@ const formatCurrency = (amount: number | null) => {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount / 100);
-};
-
-// Use centralized color system
-const getStageColor = (stage: PipelineStage) => { 
-  return getPipelineStageClasses(stage);
 };
 
 interface DealPipelineBoardProps {
@@ -85,7 +80,7 @@ export function DealPipelineBoard({ deals, onViewDetails, onDealUpdated }: DealP
     <div className="flex gap-3 overflow-x-auto pb-4">
       {PIPELINE_STAGES.map(stage => (
         <div key={stage} className="flex-shrink-0 w-64">
-          <Card className={`h-full ${getStageColor(stage)} shadow-sm`}>
+          <Card className={`h-full ${getPipelineStageBackground(stage)} ${getPipelineStageBorder(stage)} shadow-sm border`}>
             <CardHeader className="pb-2 px-3 pt-3">
               <CardTitle className="text-sm font-semibold flex items-center justify-between">
                 <span className="truncate">{stage}</span>
