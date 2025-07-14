@@ -1,13 +1,6 @@
 
 import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,30 +14,6 @@ interface AddLPEngagementDialogProps {
   onSubmit: (engagement: Omit<LPEngagement, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => Promise<void>;
 }
 
-const LP_TYPES = [
-  'Individual',
-  'Family Office',
-  'Institution',
-  'Fund of Funds',
-  'Pension Fund',
-  'Insurance Company',
-  'Sovereign Wealth Fund',
-  'Endowment',
-  'Foundation',
-  'Corporate',
-];
-
-const ENGAGEMENT_STAGES = [
-  'Prospect',
-  'Initial Contact',
-  'Due Diligence',
-  'Negotiation',
-  'Committed',
-  'Active',
-  'Inactive',
-  'Declined',
-];
-
 export function AddLPEngagementDialog({ open, onOpenChange, onSubmit }: AddLPEngagementDialogProps) {
   const [formData, setFormData] = useState({
     lp_name: '',
@@ -54,43 +23,37 @@ export function AddLPEngagementDialog({ open, onOpenChange, onSubmit }: AddLPEng
     contact_phone: '',
     commitment_amount: '',
     committed_date: '',
-    capital_called: '0',
-    capital_returned: '0',
     engagement_stage: 'Prospect' as const,
     location: '',
+    investment_focus: [] as string[],
     ticket_size_min: '',
     ticket_size_max: '',
     last_interaction_date: '',
     next_steps: '',
     notes: '',
+    tags: [] as string[],
+    capital_called: 0,
+    capital_returned: 0,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.lp_name.trim()) return;
-
     setIsSubmitting(true);
+
     try {
-      await onSubmit({
-        lp_name: formData.lp_name,
-        lp_type: formData.lp_type || undefined,
-        contact_name: formData.contact_name || undefined,
-        contact_email: formData.contact_email || undefined,
-        contact_phone: formData.contact_phone || undefined,
-        commitment_amount: formData.commitment_amount ? parseInt(formData.commitment_amount) : undefined,
+      const engagement = {
+        ...formData,
+        commitment_amount: formData.commitment_amount ? Number(formData.commitment_amount) : undefined,
+        ticket_size_min: formData.ticket_size_min ? Number(formData.ticket_size_min) : undefined,
+        ticket_size_max: formData.ticket_size_max ? Number(formData.ticket_size_max) : undefined,
         committed_date: formData.committed_date || undefined,
-        capital_called: parseInt(formData.capital_called) || 0,
-        capital_returned: parseInt(formData.capital_returned) || 0,
-        engagement_stage: formData.engagement_stage,
-        location: formData.location || undefined,
-        ticket_size_min: formData.ticket_size_min ? parseInt(formData.ticket_size_min) : undefined,
-        ticket_size_max: formData.ticket_size_max ? parseInt(formData.ticket_size_max) : undefined,
         last_interaction_date: formData.last_interaction_date || undefined,
-        next_steps: formData.next_steps || undefined,
-        notes: formData.notes || undefined,
-      });
+      };
+
+      await onSubmit(engagement);
+      onOpenChange(false);
       
       // Reset form
       setFormData({
@@ -101,18 +64,18 @@ export function AddLPEngagementDialog({ open, onOpenChange, onSubmit }: AddLPEng
         contact_phone: '',
         commitment_amount: '',
         committed_date: '',
-        capital_called: '0',
-        capital_returned: '0',
-        engagement_stage: 'Prospect',
+        engagement_stage: 'Prospect' as const,
         location: '',
+        investment_focus: [],
         ticket_size_min: '',
         ticket_size_max: '',
         last_interaction_date: '',
         next_steps: '',
         notes: '',
+        tags: [],
+        capital_called: 0,
+        capital_returned: 0,
       });
-      
-      onOpenChange(false);
     } catch (error) {
       console.error('Error submitting LP engagement:', error);
     } finally {
@@ -120,196 +83,194 @@ export function AddLPEngagementDialog({ open, onOpenChange, onSubmit }: AddLPEng
     }
   };
 
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add LP Engagement</DialogTitle>
-          <DialogDescription>
-            Create a new LP engagement to track fund relationships.
-          </DialogDescription>
         </DialogHeader>
-
+        
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <Label htmlFor="lp_name">LP Name *</Label>
               <Input
                 id="lp_name"
                 value={formData.lp_name}
-                onChange={(e) => setFormData(prev => ({ ...prev, lp_name: e.target.value }))}
-                placeholder="Enter LP name"
+                onChange={(e) => handleInputChange('lp_name', e.target.value)}
                 required
               />
             </div>
-
-            <div className="space-y-2">
+            
+            <div>
               <Label htmlFor="lp_type">LP Type</Label>
-              <Select 
-                value={formData.lp_type} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, lp_type: value }))}
-              >
+              <Select onValueChange={(value) => handleInputChange('lp_type', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select LP type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {LP_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="Individual">Individual</SelectItem>
+                  <SelectItem value="Family Office">Family Office</SelectItem>
+                  <SelectItem value="Institution">Institution</SelectItem>
+                  <SelectItem value="Fund of Funds">Fund of Funds</SelectItem>
+                  <SelectItem value="Corporate">Corporate</SelectItem>
+                  <SelectItem value="Government">Government</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+          </div>
 
-            <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <Label htmlFor="contact_name">Contact Name</Label>
               <Input
                 id="contact_name"
                 value={formData.contact_name}
-                onChange={(e) => setFormData(prev => ({ ...prev, contact_name: e.target.value }))}
-                placeholder="Enter contact name"
+                onChange={(e) => handleInputChange('contact_name', e.target.value)}
               />
             </div>
-
-            <div className="space-y-2">
+            
+            <div>
               <Label htmlFor="contact_email">Contact Email</Label>
               <Input
                 id="contact_email"
                 type="email"
                 value={formData.contact_email}
-                onChange={(e) => setFormData(prev => ({ ...prev, contact_email: e.target.value }))}
-                placeholder="Enter contact email"
+                onChange={(e) => handleInputChange('contact_email', e.target.value)}
               />
             </div>
+          </div>
 
-            <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <Label htmlFor="contact_phone">Contact Phone</Label>
               <Input
                 id="contact_phone"
                 value={formData.contact_phone}
-                onChange={(e) => setFormData(prev => ({ ...prev, contact_phone: e.target.value }))}
-                placeholder="Enter contact phone"
+                onChange={(e) => handleInputChange('contact_phone', e.target.value)}
               />
             </div>
-
-            <div className="space-y-2">
+            
+            <div>
               <Label htmlFor="location">Location</Label>
               <Input
                 id="location"
                 value={formData.location}
-                onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="Enter location"
+                onChange={(e) => handleInputChange('location', e.target.value)}
               />
             </div>
+          </div>
 
-            <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <Label htmlFor="engagement_stage">Engagement Stage</Label>
               <Select 
-                value={formData.engagement_stage} 
-                onValueChange={(value: any) => setFormData(prev => ({ ...prev, engagement_stage: value }))}
+                value={formData.engagement_stage}
+                onValueChange={(value) => handleInputChange('engagement_stage', value)}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {ENGAGEMENT_STAGES.map((stage) => (
-                    <SelectItem key={stage} value={stage}>
-                      {stage}
-                    </SelectItem>
-                  ))}
+                  <SelectItem value="Prospect">Prospect</SelectItem>
+                  <SelectItem value="Initial Contact">Initial Contact</SelectItem>
+                  <SelectItem value="Due Diligence">Due Diligence</SelectItem>
+                  <SelectItem value="Negotiation">Negotiation</SelectItem>
+                  <SelectItem value="Committed">Committed</SelectItem>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Inactive">Inactive</SelectItem>
+                  <SelectItem value="Declined">Declined</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-
-            <div className="space-y-2">
+            
+            <div>
               <Label htmlFor="commitment_amount">Commitment Amount</Label>
               <Input
                 id="commitment_amount"
                 type="number"
                 value={formData.commitment_amount}
-                onChange={(e) => setFormData(prev => ({ ...prev, commitment_amount: e.target.value }))}
-                placeholder="Enter commitment amount"
+                onChange={(e) => handleInputChange('commitment_amount', e.target.value)}
               />
             </div>
+          </div>
 
-            <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <Label htmlFor="committed_date">Committed Date</Label>
               <Input
                 id="committed_date"
                 type="date"
                 value={formData.committed_date}
-                onChange={(e) => setFormData(prev => ({ ...prev, committed_date: e.target.value }))}
+                onChange={(e) => handleInputChange('committed_date', e.target.value)}
               />
             </div>
+            
+            <div>
+              <Label htmlFor="last_interaction_date">Last Interaction Date</Label>
+              <Input
+                id="last_interaction_date"
+                type="date"
+                value={formData.last_interaction_date}
+                onChange={(e) => handleInputChange('last_interaction_date', e.target.value)}
+              />
+            </div>
+          </div>
 
-            <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
               <Label htmlFor="ticket_size_min">Min Ticket Size</Label>
               <Input
                 id="ticket_size_min"
                 type="number"
                 value={formData.ticket_size_min}
-                onChange={(e) => setFormData(prev => ({ ...prev, ticket_size_min: e.target.value }))}
-                placeholder="Enter minimum ticket size"
+                onChange={(e) => handleInputChange('ticket_size_min', e.target.value)}
               />
             </div>
-
-            <div className="space-y-2">
+            
+            <div>
               <Label htmlFor="ticket_size_max">Max Ticket Size</Label>
               <Input
                 id="ticket_size_max"
                 type="number"
                 value={formData.ticket_size_max}
-                onChange={(e) => setFormData(prev => ({ ...prev, ticket_size_max: e.target.value }))}
-                placeholder="Enter maximum ticket size"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="last_interaction_date">Last Interaction</Label>
-              <Input
-                id="last_interaction_date"
-                type="date"
-                value={formData.last_interaction_date}
-                onChange={(e) => setFormData(prev => ({ ...prev, last_interaction_date: e.target.value }))}
+                onChange={(e) => handleInputChange('ticket_size_max', e.target.value)}
               />
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="next_steps">Next Steps</Label>
             <Textarea
               id="next_steps"
               value={formData.next_steps}
-              onChange={(e) => setFormData(prev => ({ ...prev, next_steps: e.target.value }))}
-              placeholder="Enter next steps"
+              onChange={(e) => handleInputChange('next_steps', e.target.value)}
               rows={3}
             />
           </div>
 
-          <div className="space-y-2">
+          <div>
             <Label htmlFor="notes">Notes</Label>
             <Textarea
               id="notes"
               value={formData.notes}
-              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-              placeholder="Enter additional notes"
+              onChange={(e) => handleInputChange('notes', e.target.value)}
               rows={3}
             />
           </div>
 
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
+          <div className="flex justify-end gap-2 pt-4">
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting || !formData.lp_name.trim()}>
+            <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Creating...' : 'Create LP Engagement'}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>

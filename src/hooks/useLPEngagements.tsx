@@ -19,7 +19,7 @@ export function useLPEngagements() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setLPEngagements((data as LPEngagement[]) || []);
+      setLPEngagements((data as unknown as LPEngagement[]) || []);
     } catch (err) {
       console.error('Error fetching LP engagements:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -46,13 +46,12 @@ export function useLPEngagements() {
 
       if (error) throw error;
       
-      setLPEngagements(prev => [data as LPEngagement, ...prev]);
+      const newEngagement = data as unknown as LPEngagement;
+      setLPEngagements(prev => [newEngagement, ...prev]);
       toast({
         title: "Success",
         description: "LP engagement created successfully",
       });
-      
-      return data as LPEngagement;
     } catch (err) {
       console.error('Error adding LP engagement:', err);
       toast({
@@ -75,8 +74,9 @@ export function useLPEngagements() {
 
       if (error) throw error;
       
+      const updatedEngagement = data as unknown as LPEngagement;
       setLPEngagements(prev => prev.map(engagement => 
-        engagement.id === id ? data as LPEngagement : engagement
+        engagement.id === id ? updatedEngagement : engagement
       ));
       
       toast({
@@ -84,7 +84,7 @@ export function useLPEngagements() {
         description: "LP engagement updated successfully",
       });
       
-      return data as LPEngagement;
+      return updatedEngagement;
     } catch (err) {
       console.error('Error updating LP engagement:', err);
       toast({
