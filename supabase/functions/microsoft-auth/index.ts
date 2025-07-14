@@ -1,3 +1,4 @@
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0'
 
 const corsHeaders = {
@@ -35,10 +36,8 @@ Deno.serve(async (req) => {
       console.log('=== CONFIG CHECK DEBUG ===');
       console.log('Client ID exists:', !!clientId);
       console.log('Client ID length:', clientId?.length || 0);
-      console.log('Client ID first 8 chars:', clientId?.substring(0, 8) || 'N/A');
       console.log('Client Secret exists:', !!clientSecret);
       console.log('Client Secret length:', clientSecret?.length || 0);
-      console.log('Client Secret first 8 chars:', clientSecret?.substring(0, 8) || 'N/A');
       
       if (!clientId || !clientSecret) {
         console.error('Missing OAuth configuration');
@@ -73,31 +72,41 @@ Deno.serve(async (req) => {
     const { code, user_id } = body;
 
     if (!code || !user_id) {
-      return new Response(JSON.stringify({ error: 'Missing code or user_id' }), {
+      console.error('Missing required parameters:', { code: !!code, user_id: !!user_id });
+      return new Response(JSON.stringify({ 
+        error: 'Missing code or user_id',
+        received: { code: !!code, user_id: !!user_id }
+      }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     console.log('Processing OAuth callback for user:', user_id);
+    console.log('Authorization code received:', code.substring(0, 20) + '...');
 
     const clientId = Deno.env.get('MICROSOFT_CLIENT_ID');
     const clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET');
 
-    console.log('=== TOKEN EXCHANGE DEBUG ===');
-    console.log('Using Client ID:', clientId?.substring(0, 8) + '...');
-    console.log('Using Client Secret:', clientSecret?.substring(0, 8) + '...');
-
     if (!clientId || !clientSecret) {
       console.error('Missing OAuth configuration for token exchange');
-      return new Response(JSON.stringify({ error: 'OAuth configuration not found' }), {
+      return new Response(JSON.stringify({ 
+        error: 'OAuth configuration not found',
+        details: 'Missing Microsoft Client ID or Client Secret'
+      }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const redirectUri = `${req.headers.get('origin') || 'http://localhost:3000'}/auth/microsoft/callback`;
+    // Get the origin from the request headers
+    const origin = req.headers.get('origin') || 'https://dca-vc-crm.lovable.app';
+    const redirectUri = `${origin}/auth/microsoft/callback`;
+    
+    console.log('=== TOKEN EXCHANGE DEBUG ===');
+    console.log('Using Client ID:', clientId.substring(0, 8) + '...');
     console.log('Using redirect URI:', redirectUri);
+    console.log('Code length:', code.length);
 
     // Exchange code for tokens
     const tokenRequestBody = new URLSearchParams({
@@ -109,36 +118,42 @@ Deno.serve(async (req) => {
       scope: 'https://graph.microsoft.com/Tasks.ReadWrite https://graph.microsoft.com/Calendars.Read offline_access',
     });
 
-    console.log('Token request parameters:', {
-      client_id: clientId.substring(0, 8) + '...',
-      client_secret: clientSecret.substring(0, 8) + '...',
-      redirect_uri: redirectUri,
-      grant_type: 'authorization_code',
-      scope: 'https://graph.microsoft.com/Tasks.ReadWrite https://graph.microsoft.com/Calendars.Read offline_access'
-    });
-
+    console.log('Making token request to Microsoft...');
     const tokenResponse = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'application/json',
       },
       body: tokenRequestBody,
     });
 
     console.log('Token response status:', tokenResponse.status);
+    console.log('Token response headers:', Object.fromEntries(tokenResponse.headers.entries()));
+
+    const responseText = await tokenResponse.text();
+    console.log('Token response body:', responseText);
 
     if (!tokenResponse.ok) {
-      const errorText = await tokenResponse.text();
-      console.error('Token exchange failed:', errorText);
-      console.error('This usually indicates incorrect Client ID/Secret or redirect URI mismatch');
+      console.error('Token exchange failed with status:', tokenResponse.status);
+      console.error('Response body:', responseText);
+      
+      let errorDetails;
+      try {
+        errorDetails = JSON.parse(responseText);
+      } catch (e) {
+        errorDetails = { raw_response: responseText };
+      }
+      
       return new Response(JSON.stringify({ 
         error: 'Token exchange failed', 
-        details: errorText,
+        status: tokenResponse.status,
+        statusText: tokenResponse.statusText,
+        details: errorDetails,
         debug: {
-          status: tokenResponse.status,
-          statusText: tokenResponse.statusText,
           clientIdUsed: clientId.substring(0, 8) + '...',
-          redirectUriUsed: redirectUri
+          redirectUriUsed: redirectUri,
+          codeLength: code.length
         }
       }), {
         status: 400,
@@ -146,12 +161,29 @@ Deno.serve(async (req) => {
       });
     }
 
-    const tokenData = await tokenResponse.json();
-    console.log('Token exchange successful, expires in:', tokenData.expires_in);
+    let tokenData;
+    try {
+      tokenData = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Failed to parse token response:', e);
+      return new Response(JSON.stringify({ 
+        error: 'Invalid token response format',
+        details: 'Could not parse JSON response from Microsoft'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('Token exchange successful');
+    console.log('Token type:', tokenData.token_type);
+    console.log('Expires in:', tokenData.expires_in);
+    console.log('Scope:', tokenData.scope);
 
     // Calculate expiration time
     const expiresAt = new Date(Date.now() + tokenData.expires_in * 1000).toISOString();
 
+    console.log('Storing tokens in database...');
     // Store tokens in database
     const { error: insertError } = await supabase
       .from('microsoft_tokens')
@@ -166,7 +198,10 @@ Deno.serve(async (req) => {
 
     if (insertError) {
       console.error('Error storing tokens:', insertError);
-      return new Response(JSON.stringify({ error: 'Failed to store tokens' }), {
+      return new Response(JSON.stringify({ 
+        error: 'Failed to store tokens',
+        details: insertError.message
+      }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -174,14 +209,26 @@ Deno.serve(async (req) => {
 
     console.log('Microsoft authentication completed successfully for user:', user_id);
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ 
+      success: true,
+      debug: {
+        tokenType: tokenData.token_type,
+        expiresIn: tokenData.expires_in,
+        scope: tokenData.scope
+      }
+    }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
     console.error('Microsoft auth error:', error);
-    return new Response(JSON.stringify({ error: 'Internal server error', details: error.message }), {
+    console.error('Error stack:', error.stack);
+    return new Response(JSON.stringify({ 
+      error: 'Internal server error', 
+      details: error.message,
+      stack: error.stack
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
