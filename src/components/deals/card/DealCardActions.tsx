@@ -3,7 +3,6 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { MoreVertical, Eye, Edit, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ExternalDataSyncButton } from '@/components/external-data/ExternalDataSyncButton';
 import type { Deal } from '@/types/deal';
 
 interface DealCardActionsProps {
@@ -11,7 +10,6 @@ interface DealCardActionsProps {
   onViewDetails: (deal: Deal) => void;
   onEdit?: (deal: Deal) => void;
   onDelete?: (deal: Deal) => void;
-  showExternalSync?: boolean;
 }
 
 export const DealCardActions: React.FC<DealCardActionsProps> = ({
@@ -19,14 +17,9 @@ export const DealCardActions: React.FC<DealCardActionsProps> = ({
   onViewDetails,
   onEdit,
   onDelete,
-  showExternalSync = true,
 }) => {
   return (
     <div className="flex items-center gap-2">
-      {showExternalSync && (
-        <ExternalDataSyncButton deal={deal} size="sm" />
-      )}
-      
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="sm">
