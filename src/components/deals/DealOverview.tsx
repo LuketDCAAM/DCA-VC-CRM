@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Deal } from '@/types/deal';
 import { DealHeaderCard } from './overview/DealHeaderCard';
@@ -8,6 +9,7 @@ import { DealMetricsCard } from './overview/DealMetricsCard';
 import { DealSourceCard } from './overview/DealSourceCard';
 import { DealInvestorCard } from './overview/DealInvestorCard';
 import { DealNextStepsCard } from './overview/DealNextStepsCard';
+import { DealExternalDataCard } from './overview/DealExternalDataCard';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Paperclip, Link, FileText, ExternalLink } from 'lucide-react';
@@ -87,6 +89,9 @@ export function DealOverview({ deal }: DealOverviewProps) {
         <DealMetricsCard deal={deal} />
         <DealSourceCard deal={deal} />
         <DealInvestorCard deal={deal} />
+
+        {/* External Data Card */}
+        <DealExternalDataCard deal={deal} />
 
         {/* Next Steps Card */}
         <DealNextStepsCard deal={deal} />

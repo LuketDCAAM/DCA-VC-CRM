@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Deal } from '@/types/deal';
 import { useTableColumns } from '@/hooks/deals/useTableColumns';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { ExternalDataSyncButton } from '@/components/external-data/ExternalDataSyncButton';
 import { CompanyCellContent } from './cells/CompanyCellContent';
 import { ContactCellContent } from './cells/ContactCellContent';
 import { FinancialCellContent } from './cells/FinancialCellContent';
@@ -118,22 +119,25 @@ const ConfigurableDealsTableRow = memo(({
       ))}
       
       {/* Actions */}
-      <TableCell className="text-right min-w-[80px] py-3 px-4">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleViewClick}
-              className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 opacity-70 group-hover:opacity-100"
-            >
-              <Eye className="h-3.5 w-3.5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>View deal details</p>
-          </TooltipContent>
-        </Tooltip>
+      <TableCell className="text-right min-w-[120px] py-3 px-4">
+        <div className="flex items-center gap-1">
+          <ExternalDataSyncButton deal={deal} size="sm" />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleViewClick}
+                className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 opacity-70 group-hover:opacity-100"
+              >
+                <Eye className="h-3.5 w-3.5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>View deal details</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </TableCell>
     </TableRow>
   );

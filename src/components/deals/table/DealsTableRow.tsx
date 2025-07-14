@@ -10,6 +10,7 @@ import { CompanyCell } from './CompanyCell';
 import { ContactCell } from './ContactCell';
 import { FinancialCell } from './FinancialCell';
 import { PipelineStageDropdown } from './PipelineStageDropdown';
+import { ExternalDataSyncButton } from '@/components/external-data/ExternalDataSyncButton';
 import { formatDate, getPipelineStageColor } from './tableUtils';
 
 interface DealsTableRowProps {
@@ -107,21 +108,24 @@ export function DealsTableRow({
       </TableCell>
       
       <TableCell className="text-right">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => onViewDetails(deal)}
-              className="h-7 w-7 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
-            >
-              <Eye className="h-3 w-3" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>View deal details</p>
-          </TooltipContent>
-        </Tooltip>
+        <div className="flex items-center gap-1">
+          <ExternalDataSyncButton deal={deal} size="sm" />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => onViewDetails(deal)}
+                className="h-7 w-7 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
+              >
+                <Eye className="h-3 w-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>View deal details</p>
+            </TooltipContent>
+          </Tooltip>
+        </div>
       </TableCell>
     </TableRow>
   );

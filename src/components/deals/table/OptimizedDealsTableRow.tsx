@@ -6,6 +6,7 @@ import { Eye, MapPin, Mail, Phone, Globe, Star, DollarSign } from 'lucide-react'
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Deal } from '@/types/deal';
+import { ExternalDataSyncButton } from '@/components/external-data/ExternalDataSyncButton';
 import { formatCurrency, formatDate, getPipelineStageColor, getDealScoreColor } from './tableUtils';
 
 interface OptimizedDealsTableRowProps {
@@ -163,15 +164,18 @@ const OptimizedDealsTableRow = memo(({
       </TableCell>
       
       {/* Actions */}
-      <TableCell className="text-right min-w-[80px] py-2">
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={handleViewClick}
-          className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
-        >
-          <Eye className="h-3 w-3" />
-        </Button>
+      <TableCell className="text-right min-w-[120px] py-2">
+        <div className="flex items-center gap-1">
+          <ExternalDataSyncButton deal={deal} size="sm" />
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleViewClick}
+            className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
+          >
+            <Eye className="h-3 w-3" />
+          </Button>
+        </div>
       </TableCell>
     </TableRow>
   );
