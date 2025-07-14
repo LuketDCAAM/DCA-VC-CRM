@@ -37,6 +37,7 @@ const investorSchema = z.object({
   average_check_size: z.coerce.number().positive().nullable().optional(),
   preferred_sectors: z.string().nullable().optional(),
   tags: z.string().nullable().optional(),
+  last_call_date: z.string().nullable().optional(),
 });
 
 type InvestorFormData = z.infer<typeof investorSchema>;
@@ -67,7 +68,8 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange }: A
           ...investor,
           preferred_sectors: investor.preferred_sectors?.join('; ') || '',
           tags: investor.tags?.join('; ') || '',
-          average_check_size: investor.average_check_size ? investor.average_check_size / 100 : undefined
+          average_check_size: investor.average_check_size ? investor.average_check_size / 100 : undefined,
+          last_call_date: investor.last_call_date || '',
         });
       } else {
         reset({
@@ -81,6 +83,7 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange }: A
           average_check_size: undefined,
           preferred_sectors: '',
           tags: '',
+          last_call_date: '',
         });
       }
     }
@@ -92,6 +95,7 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange }: A
         preferred_sectors: data.preferred_sectors?.split(';').map(s => s.trim()).filter(Boolean) || null,
         tags: data.tags?.split(';').map(t => t.trim()).filter(Boolean) || null,
         average_check_size: data.average_check_size ? data.average_check_size * 100 : null,
+        last_call_date: data.last_call_date || null,
     };
 
     try {
@@ -174,6 +178,10 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange }: A
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="tags" className="text-right">Tags</Label>
             <Input id="tags" {...register('tags')} className="col-span-3" placeholder="Semicolon-separated" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="last_call_date" className="text-right">Last Call Date</Label>
+            <Input id="last_call_date" type="date" {...register('last_call_date')} className="col-span-3" />
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>

@@ -618,6 +618,7 @@ export type Database = {
           firm_name: string | null
           firm_website: string | null
           id: string
+          last_call_date: string | null
           location: string | null
           preferred_investment_stage:
             | Database["public"]["Enums"]["investment_stage"]
@@ -637,6 +638,7 @@ export type Database = {
           firm_name?: string | null
           firm_website?: string | null
           id?: string
+          last_call_date?: string | null
           location?: string | null
           preferred_investment_stage?:
             | Database["public"]["Enums"]["investment_stage"]
@@ -656,6 +658,7 @@ export type Database = {
           firm_name?: string | null
           firm_website?: string | null
           id?: string
+          last_call_date?: string | null
           location?: string | null
           preferred_investment_stage?:
             | Database["public"]["Enums"]["investment_stage"]
@@ -699,6 +702,56 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      outlook_calendar_sync_logs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          deals_updated: number | null
+          error_message: string | null
+          events_processed: number | null
+          id: string
+          started_at: string
+          status: string
+          sync_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          deals_updated?: number | null
+          error_message?: string | null
+          events_processed?: number | null
+          id?: string
+          started_at?: string
+          status: string
+          sync_type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          deals_updated?: number | null
+          error_message?: string | null
+          events_processed?: number | null
+          id?: string
+          started_at?: string
+          status?: string
+          sync_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_user_id_outlook_sync"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       outlook_sync_logs: {
         Row: {

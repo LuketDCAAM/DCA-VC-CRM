@@ -35,6 +35,11 @@ export function InvestorListView({
   onDeselectAll,
   isAllSelected,
 }: InvestorListViewProps) {
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString();
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -51,6 +56,7 @@ export function InvestorListView({
           <TableHead>Investment Stage</TableHead>
           <TableHead>Avg. Check Size</TableHead>
           <TableHead>Location</TableHead>
+          <TableHead>Last Call Date</TableHead>
           <TableHead>Tags</TableHead>
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
@@ -82,6 +88,7 @@ export function InvestorListView({
                 : '-'}
             </TableCell>
             <TableCell>{investor.location || '-'}</TableCell>
+            <TableCell>{formatDate(investor.last_call_date)}</TableCell>
             <TableCell>
                 <div className="flex flex-wrap gap-1">
                     {(investor.tags || []).map(tag => tag && <Badge key={tag} variant="secondary">{tag}</Badge>)}

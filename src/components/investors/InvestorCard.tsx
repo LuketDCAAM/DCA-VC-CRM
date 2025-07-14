@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Building2, Mail, Phone, MapPin, DollarSign, Target, UserPlus, Globe, ExternalLink } from 'lucide-react';
+import { Building2, Mail, Phone, MapPin, DollarSign, Target, UserPlus, Globe, ExternalLink, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface InvestorCardProps {
@@ -19,6 +19,7 @@ interface InvestorCardProps {
     preferred_sectors: string[] | null;
     tags: string[] | null;
     relationship_owner: string | null;
+    last_call_date: string | null;
   };
   onViewDetails?: (investor: any) => void;
   onAddContact?: (investor: any) => void;
@@ -30,6 +31,11 @@ export function InvestorCard({ investor, onViewDetails, onAddContact }: Investor
       return `https://${url}`;
     }
     return url;
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return null;
+    return new Date(dateString).toLocaleDateString();
   };
 
   return (
@@ -113,6 +119,12 @@ export function InvestorCard({ investor, onViewDetails, onAddContact }: Investor
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <MapPin className="h-3 w-3" />
               {investor.location}
+            </div>
+          )}
+          {investor.last_call_date && (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Calendar className="h-3 w-3" />
+              <span>Last Call: {formatDate(investor.last_call_date)}</span>
             </div>
           )}
         </div>
