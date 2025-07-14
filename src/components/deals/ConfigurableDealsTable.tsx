@@ -16,6 +16,7 @@ interface ConfigurableDealsTableProps {
   onSelectAll: () => void;
   onDeselectAll: () => void;
   isAllSelected: boolean;
+  onDealUpdated?: () => void;
 }
 
 export function ConfigurableDealsTable({
@@ -26,6 +27,7 @@ export function ConfigurableDealsTable({
   onSelectAll,
   onDeselectAll,
   isAllSelected,
+  onDealUpdated,
 }: ConfigurableDealsTableProps) {
   const selectedDealsSet = useMemo(() => new Set(selectedDeals), [selectedDeals]);
   
@@ -99,6 +101,7 @@ export function ConfigurableDealsTable({
                   isSelected={selectedDealsSet.has(deal.id)}
                   onToggleSelection={onToggleDealSelection}
                   onViewDetails={onViewDetails}
+                  onDealUpdated={onDealUpdated}
                 />
               ))}
             </TableBody>

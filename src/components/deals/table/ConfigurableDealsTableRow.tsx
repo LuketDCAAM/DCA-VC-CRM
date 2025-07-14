@@ -20,6 +20,7 @@ interface ConfigurableDealsTableRowProps {
   isSelected: boolean;
   onToggleSelection: (dealId: string) => void;
   onViewDetails: (deal: Deal) => void;
+  onDealUpdated?: () => void;
 }
 
 const ConfigurableDealsTableRow = memo(({ 
@@ -27,7 +28,8 @@ const ConfigurableDealsTableRow = memo(({
   index, 
   isSelected, 
   onToggleSelection, 
-  onViewDetails 
+  onViewDetails,
+  onDealUpdated
 }: ConfigurableDealsTableRowProps) => {
   const { visibleColumns } = useTableColumns();
   const handleCheckboxChange = () => onToggleSelection(deal.id);
@@ -42,7 +44,7 @@ const ConfigurableDealsTableRow = memo(({
         return <ContactCellContent deal={deal} />;
       
       case 'pipeline_stage':
-        return <StatusCellContent deal={deal} type="pipeline_stage" />;
+        return <StatusCellContent deal={deal} type="pipeline_stage" onUpdate={onDealUpdated} />;
       
       case 'round_stage':
         return <StatusCellContent deal={deal} type="round_stage" />;

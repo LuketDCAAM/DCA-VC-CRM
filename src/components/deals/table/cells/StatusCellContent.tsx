@@ -3,22 +3,22 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Deal } from '@/types/deal';
 import { getPipelineStageColor, getPipelineStageClasses } from '../../pipelineStageColors';
+import { PipelineStageDropdown } from '../PipelineStageDropdown';
 
 interface StatusCellContentProps {
   deal: Deal;
   type: 'pipeline_stage' | 'round_stage' | 'deal_source' | 'sector';
+  onUpdate?: () => void;
 }
 
-export function StatusCellContent({ deal, type }: StatusCellContentProps) {
+export function StatusCellContent({ deal, type, onUpdate }: StatusCellContentProps) {
   switch (type) {
     case 'pipeline_stage':
       return (
-        <Badge 
-          variant={getPipelineStageColor(deal.pipeline_stage) as any}
-          className={`text-xs font-medium px-2.5 py-1 ${getPipelineStageClasses(deal.pipeline_stage)}`}
-        >
-          {deal.pipeline_stage}
-        </Badge>
+        <PipelineStageDropdown 
+          deal={deal} 
+          onUpdate={onUpdate}
+        />
       );
 
     case 'round_stage':

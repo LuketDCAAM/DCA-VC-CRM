@@ -1,11 +1,12 @@
 
 import React from 'react';
 import { Deal } from '@/types/deal';
-import { DealsGrid } from '../DealsGrid';
-import { DealPipelineBoard } from '../DealPipelineBoard';
 import { ConfigurableDealsTable } from '../ConfigurableDealsTable';
+import { HighPerformanceDealsTableView } from '../HighPerformanceDealsTableView';
+import { VirtualizedDealsTable } from '../VirtualizedDealsTable';
+import { DealPipelineBoard } from '../DealPipelineBoard';
 
-export type ViewMode = 'grid' | 'configurable' | 'pipeline';
+export type ViewMode = 'configurable' | 'high-performance' | 'virtualized' | 'kanban';
 
 interface DealsViewRendererProps {
   viewMode: ViewMode;
@@ -16,7 +17,7 @@ interface DealsViewRendererProps {
   onSelectAll: () => void;
   onDeselectAll: () => void;
   isAllSelected: boolean;
-  onDealUpdated: () => void;
+  onDealUpdated?: () => void;
 }
 
 export function DealsViewRenderer({
@@ -30,22 +31,48 @@ export function DealsViewRenderer({
   isAllSelected,
   onDealUpdated,
 }: DealsViewRendererProps) {
-  const commonProps = {
-    deals: filteredDeals,
-    onViewDetails,
-    selectedDeals,
-    onToggleDealSelection,
-    onSelectAll,
-    onDeselectAll,
-    isAllSelected,
-  };
-
   switch (viewMode) {
     case 'configurable':
-      return <ConfigurableDealsTable {...commonProps} />;
-    case 'grid':
-      return <DealsGrid {...commonProps} onDealUpdated={onDealUpdated} />;
-    case 'pipeline':
+      return (
+        <ConfigurableDealsTable
+          deals={filteredDeals}
+          onViewDetails={onViewDetails}
+          selectedDeals={selectedDeals}
+          onToggleDealSelection={onToggleDealSelection}
+          onSelectAll={onSelectAll}
+          onDeselectAll={onDeselectAll}
+          isAllSelected={isAllSelected}
+          onDealUpdated={onDealUpdated}
+        />
+      );
+
+    case 'high-performance':
+      return (
+        <HighPerformanceDealsTableView
+          deals={filteredDeals}
+          onViewDetails={onViewDetails}
+          selectedDeals={selectedDeals}
+          onToggleDealSelection={onToggleDealSelection}
+          onSelectAll={onSelectAll}
+          onDeselectAll={onDeselectAll}
+          isAllSelected={isAllSelected}
+        />
+      );
+
+    case 'virtualized':
+      return (
+        <VirtualizedDealsTable
+          deals={filteredDeals}
+          onViewDetails={onViewDetails}
+          selectedDeals={selectedDeals}
+          onToggleDealSelection={onToggleDealSelection}
+          onSelectAll={onSelectAll}
+          onDeselectAll={onDeselectAll}
+          isAllSelected={isAllSelected}
+        />
+      );
+
+    case 'kanban':
       return (
         <DealPipelineBoard
           deals={filteredDeals}
@@ -53,7 +80,8 @@ export function DealsViewRenderer({
           onDealUpdated={onDealUpdated}
         />
       );
+
     default:
-      return <ConfigurableDealsTable {...commonProps} />;
+      return null;
   }
 }
