@@ -263,7 +263,7 @@ export function OutlookIntegrationDialog({ open, onOpenChange }: OutlookIntegrat
                       <div className="text-right">
                         {log.status === 'completed' && (
                           <div className="text-sm text-muted-foreground">
-                            {log.events_processed} events, {log.deals_updated} deals updated
+                            {log.items_processed} items processed
                           </div>
                         )}
                         {log.status === 'failed' && log.error_message && (
