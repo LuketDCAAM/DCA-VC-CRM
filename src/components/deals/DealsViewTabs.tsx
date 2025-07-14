@@ -12,27 +12,21 @@ interface DealsViewTabsProps {
 
 export function DealsViewTabs({ viewMode, onViewModeChange, dealCount }: DealsViewTabsProps) {
   return (
-    <div className="flex items-center justify-between">
-      <Tabs value={viewMode} onValueChange={(value) => onViewModeChange(value as ViewMode)}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="configurable" className="flex items-center gap-2">
-            <Table className="h-4 w-4" />
-            <span className="hidden sm:inline">Table</span>
-          </TabsTrigger>
-          <TabsTrigger value="grid" className="flex items-center gap-2">
-            <Grid3X3 className="h-4 w-4" />
-            <span className="hidden sm:inline">Grid</span>
-          </TabsTrigger>
-          <TabsTrigger value="pipeline" className="flex items-center gap-2">
-            <Kanban className="h-4 w-4" />
-            <span className="hidden sm:inline">Pipeline</span>
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-      
-      <div className="text-sm text-muted-foreground">
-        {dealCount} deals
-      </div>
-    </div>
+    <Tabs value={viewMode} onValueChange={(value) => onViewModeChange(value as ViewMode)}>
+      <TabsList className="grid w-full grid-cols-3">
+        <TabsTrigger value="configurable" className="flex items-center gap-2">
+          <Table className="h-4 w-4" />
+          <span className="hidden sm:inline">Table</span>
+        </TabsTrigger>
+        <TabsTrigger value="grid" className="flex items-center gap-2">
+          <Grid3X3 className="h-4 w-4" />
+          <span className="hidden sm:inline">Grid</span>
+        </TabsTrigger>
+        <TabsTrigger value="pipeline" className="flex items-center gap-2">
+          <Kanban className="h-4 w-4" />
+          <span className="hidden sm:inline">Pipeline</span>
+        </TabsTrigger>
+      </TabsList>
+    </Tabs>
   );
 }
