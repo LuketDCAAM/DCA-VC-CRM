@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertCircle, CheckCircle, Loader2, Copy } from 'lucide-react';
+import { AlertCircle, CheckCircle, Loader2, Copy, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
@@ -30,6 +30,28 @@ export default function MicrosoftAuthCallback() {
       title: "Error details copied",
       description: "Error information has been copied to your clipboard",
     });
+  };
+
+  const retryAuth = () => {
+    setStatus('processing');
+    setErrorMessage('');
+    setErrorDetails(null);
+    
+    // Re-run the callback processing
+    const code = searchParams.get('code');
+    if (code && user) {
+      handleAuthCallback(code).then(() => {
+        setStatus('success');
+        setTimeout(() => {
+          navigate('/deals');
+        }, 2000);
+      }).catch((error) => {
+        console.error('Retry error:', error);
+        setStatus('error');
+        setErrorMessage(error.message || 'Authentication failed');
+        setErrorDetails(error);
+      });
+    }
   };
 
   useEffect(() => {
@@ -95,29 +117,47 @@ export default function MicrosoftAuthCallback() {
 
       try {
         console.log('Processing auth callback with user:', user.id);
-        console.log('Authorization code:', code.substring(0, 20) + '...');
+        console.log('Authorization code length:', code.length);
         
         await handleAuthCallback(code);
         setStatus('success');
+        
+        toast({
+          title: "Microsoft authentication successful",
+          description: "Your Outlook integration is now active!",
+        });
+        
         setTimeout(() => {
           navigate('/deals');
         }, 2000);
       } catch (error: any) {
         console.error('Error processing auth callback:', error);
         setStatus('error');
-        setErrorMessage(error.message || 'Failed to complete authentication');
+        
+        // Parse different types of errors
+        if (error.message?.includes('Token exchange failed')) {
+          setErrorMessage('Microsoft token exchange failed. This might be a configuration issue.');
+        } else if (error.message?.includes('Network error')) {
+          setErrorMessage('Network error occurred. Please check your connection and try again.');
+        } else if (error.message?.includes('OAuth configuration')) {
+          setErrorMessage('Microsoft OAuth is not properly configured. Please contact support.');
+        } else {
+          setErrorMessage(error.message || 'Failed to complete authentication');
+        }
+        
         setErrorDetails({
           error_type: 'callback_processing_error',
           error_message: error.message,
           error_stack: error.stack,
           user_id: user.id,
-          code_length: code.length
+          code_length: code.length,
+          raw_error: error
         });
       }
     };
 
     processCallback();
-  }, [searchParams, handleAuthCallback, navigate, user, userLoading]);
+  }, [searchParams, handleAuthCallback, navigate, user, userLoading, toast]);
 
   // Show loading while waiting for user authentication to resolve
   if (userLoading) {
@@ -168,27 +208,32 @@ export default function MicrosoftAuthCallback() {
           {status === 'error' && (
             <div className="space-y-4">
               <p className="text-sm text-red-600">
-                There was an error connecting your Microsoft account.
+                {errorMessage}
               </p>
-              {errorMessage && (
+              {errorDetails && (
                 <div className="text-xs text-muted-foreground bg-red-50 p-3 rounded border">
-                  <p className="font-medium text-red-800 mb-2">{errorMessage}</p>
-                  {errorDetails && (
-                    <div className="mt-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={copyErrorToClipboard}
-                        className="text-xs"
-                      >
-                        <Copy className="h-3 w-3 mr-1" />
-                        Copy Error Details
-                      </Button>
-                    </div>
-                  )}
+                  <p className="font-medium text-red-800 mb-2">Error Details:</p>
+                  <p className="text-left break-all">{JSON.stringify(errorDetails, null, 2)}</p>
                 </div>
               )}
               <div className="flex flex-col gap-2 mt-4">
+                <Button 
+                  onClick={retryAuth}
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Retry Authentication
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={copyErrorToClipboard}
+                  className="flex items-center gap-2"
+                >
+                  <Copy className="h-4 w-4" />
+                  Copy Error Details
+                </Button>
                 {errorMessage.includes('log in to your account first') && (
                   <Button 
                     onClick={() => navigate('/')}
