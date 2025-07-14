@@ -9,8 +9,20 @@ export type InvestmentStage = Database['public']['Enums']['investment_stage'];
 export type UserStatus = Database['public']['Enums']['user_status'];
 export type AppRole = Database['public']['Enums']['app_role'];
 
-// Use the proper Supabase generated Deal type to ensure compatibility
-export type Deal = Database['public']['Tables']['deals']['Row'];
+// Enhanced Deal type with external data fields
+export interface Deal extends Database['public']['Tables']['deals']['Row'] {
+  // External data fields from the new columns
+  linkedin_url?: string | null;
+  crunchbase_url?: string | null;
+  total_funding_raised?: number | null;
+  last_funding_date?: string | null;
+  employee_count_range?: string | null;
+  founded_year?: number | null;
+  headquarters_location?: string | null;
+  company_type?: string | null;
+  external_data_last_synced?: string | null;
+  external_data_sync_status?: string | null;
+}
 
 // You can also create types for Insert and Update operations for consistency:
 export type DealInsert = Database['public']['Tables']['deals']['Insert'];

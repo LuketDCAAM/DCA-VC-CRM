@@ -1,26 +1,60 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Eye } from 'lucide-react';
-import { Deal } from '@/types/deal';
+import { MoreVertical, Eye, Edit, Trash2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { ExternalDataSyncButton } from '@/components/external-data/ExternalDataSyncButton';
+import type { Deal } from '@/types/deal';
 
 interface DealCardActionsProps {
   deal: Deal;
-  onViewDetails?: (deal: Deal) => void;
+  onViewDetails: (deal: Deal) => void;
+  onEdit?: (deal: Deal) => void;
+  onDelete?: (deal: Deal) => void;
+  showExternalSync?: boolean;
 }
 
-export function DealCardActions({ deal, onViewDetails }: DealCardActionsProps) {
-  if (!onViewDetails) return null;
-
+export const DealCardActions: React.FC<DealCardActionsProps> = ({
+  deal,
+  onViewDetails,
+  onEdit,
+  onDelete,
+  showExternalSync = true,
+}) => {
   return (
-    <Button 
-      variant="ghost" 
-      size="sm" 
-      onClick={() => onViewDetails(deal)}
-      className="hover:bg-primary/10 hover:text-primary transition-colors"
-    >
-      <Eye className="h-4 w-4 mr-2" />
-      View
-    </Button>
+    <div className="flex items-center gap-2">
+      {showExternalSync && (
+        <ExternalDataSyncButton deal={deal} size="sm" />
+      )}
+      
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm">
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => onViewDetails(deal)}>
+            <Eye className="h-4 w-4 mr-2" />
+            View Details
+          </DropdownMenuItem>
+          {onEdit && (
+            <DropdownMenuItem onClick={() => onEdit(deal)}>
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Deal
+            </DropdownMenuItem>
+          )}
+          {onDelete && (
+            <DropdownMenuItem 
+              onClick={() => onDelete(deal)}
+              className="text-destructive"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete Deal
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
-}
+};
