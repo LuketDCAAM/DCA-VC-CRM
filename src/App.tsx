@@ -17,8 +17,27 @@ import LPEngagements from "./pages/LPEngagements";
 import ExternalDataDashboard from "./pages/ExternalDataDashboard";
 import NotFound from "./pages/NotFound";
 import MicrosoftAuthCallback from "./pages/auth/microsoft/callback";
+import { useAuth } from "./hooks/useAuth";
 
 const queryClient = new QueryClient();
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Index />;
+  }
+
+  return <>{children}</>;
+}
 
 function App() {
   return (
@@ -32,19 +51,21 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/auth/microsoft/callback" element={<MicrosoftAuthCallback />} />
               <Route path="/*" element={
-                <Layout>
-                  <Routes>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/deals" element={<Deals />} />
-                    <Route path="/portfolio" element={<Portfolio />} />
-                    <Route path="/investors" element={<Investors />} />
-                    <Route path="/contacts" element={<Contacts />} />
-                    <Route path="/reminders" element={<Reminders />} />
-                    <Route path="/lp-engagements" element={<LPEngagements />} />
-                    <Route path="/external-data" element={<ExternalDataDashboard />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Layout>
+                <ProtectedRoute>
+                  <Layout>
+                    <Routes>
+                      <Route path="/dashboard" element={<Dashboard />} />
+                      <Route path="/deals" element={<Deals />} />
+                      <Route path="/portfolio" element={<Portfolio />} />
+                      <Route path="/investors" element={<Investors />} />
+                      <Route path="/contacts" element={<Contacts />} />
+                      <Route path="/reminders" element={<Reminders />} />
+                      <Route path="/lp-engagements" element={<LPEngagements />} />
+                      <Route path="/external-data" element={<ExternalDataDashboard />} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Layout>
+                </ProtectedRoute>
               } />
             </Routes>
           </BrowserRouter>
