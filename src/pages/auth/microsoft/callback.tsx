@@ -132,11 +132,20 @@ export default function MicrosoftAuthCallback() {
         }, 2000);
       } catch (error: any) {
         console.error('Error processing auth callback:', error);
+        console.error('Error details:', {
+          message: error.message,
+          stack: error.stack,
+          name: error.name,
+          cause: error.cause
+        });
+        
         setStatus('error');
         
-        // Parse different types of errors
-        if (error.message?.includes('Token exchange failed')) {
-          setErrorMessage('Microsoft token exchange failed. This might be a configuration issue.');
+        // Parse different types of errors with more specificity
+        if (error.message?.includes('Microsoft token exchange failed')) {
+          setErrorMessage('Microsoft rejected the authentication request. This could be due to an invalid redirect URI or expired authorization code.');
+        } else if (error.message?.includes('Edge Function returned a non-2xx status code')) {
+          setErrorMessage('Authentication service error. Please try again or contact support if the problem persists.');
         } else if (error.message?.includes('Network error')) {
           setErrorMessage('Network error occurred. Please check your connection and try again.');
         } else if (error.message?.includes('OAuth configuration')) {
@@ -151,6 +160,8 @@ export default function MicrosoftAuthCallback() {
           error_stack: error.stack,
           user_id: user.id,
           code_length: code.length,
+          timestamp: new Date().toISOString(),
+          url: window.location.href,
           raw_error: error
         });
       }
@@ -211,9 +222,9 @@ export default function MicrosoftAuthCallback() {
                 {errorMessage}
               </p>
               {errorDetails && (
-                <div className="text-xs text-muted-foreground bg-red-50 p-3 rounded border">
+                <div className="text-xs text-muted-foreground bg-red-50 p-3 rounded border max-h-32 overflow-y-auto">
                   <p className="font-medium text-red-800 mb-2">Error Details:</p>
-                  <p className="text-left break-all">{JSON.stringify(errorDetails, null, 2)}</p>
+                  <pre className="text-left whitespace-pre-wrap text-xs">{JSON.stringify(errorDetails, null, 2)}</pre>
                 </div>
               )}
               <div className="flex flex-col gap-2 mt-4">

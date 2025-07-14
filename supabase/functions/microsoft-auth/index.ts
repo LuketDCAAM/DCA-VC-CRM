@@ -89,13 +89,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get the origin from the request headers or use the default
-    const origin = req.headers.get('origin') || req.headers.get('referer')?.split('/auth')[0] || 'https://dca-vc-crm.lovable.app';
+    // Use the correct redirect URI based on the request origin
+    const origin = req.headers.get('origin') || 'https://preview--dca-vc-crm.lovable.app';
     const redirectUri = `${origin}/auth/microsoft/callback`;
     
     console.log('=== TOKEN EXCHANGE DEBUG ===');
     console.log('Using redirect URI:', redirectUri);
     console.log('Using origin:', origin);
+    console.log('Client ID (first 8 chars):', clientId.substring(0, 8));
 
     // Exchange code for tokens
     const tokenRequestBody = new URLSearchParams({
@@ -105,6 +106,14 @@ Deno.serve(async (req) => {
       grant_type: 'authorization_code',
       redirect_uri: redirectUri,
       scope: 'https://graph.microsoft.com/Tasks.ReadWrite https://graph.microsoft.com/Calendars.Read offline_access',
+    });
+
+    console.log('Token request body params:', {
+      client_id: clientId.substring(0, 8) + '...',
+      grant_type: 'authorization_code',
+      redirect_uri: redirectUri,
+      scope: 'https://graph.microsoft.com/Tasks.ReadWrite https://graph.microsoft.com/Calendars.Read offline_access',
+      code_length: code.length
     });
 
     console.log('Making token request to Microsoft...');
@@ -123,6 +132,7 @@ Deno.serve(async (req) => {
       console.log('Token response headers:', Object.fromEntries(tokenResponse.headers.entries()));
 
       const responseText = await tokenResponse.text();
+      console.log('Token response body:', responseText);
       
       if (!tokenResponse.ok) {
         console.error('Token exchange failed with status:', tokenResponse.status);
@@ -135,14 +145,16 @@ Deno.serve(async (req) => {
           errorDetails = { raw_response: responseText };
         }
         
+        // Return a proper error response but don't fail completely
         return new Response(JSON.stringify({ 
-          error: 'Token exchange failed', 
+          error: 'Microsoft token exchange failed', 
           status: tokenResponse.status,
           statusText: tokenResponse.statusText,
           details: errorDetails,
           debug: {
             redirectUriUsed: redirectUri,
             origin: origin,
+            clientIdPrefix: clientId.substring(0, 8),
             codeLength: code.length
           }
         }), {
@@ -207,7 +219,8 @@ Deno.serve(async (req) => {
         debug: {
           tokenType: tokenData.token_type,
           expiresIn: tokenData.expires_in,
-          scope: tokenData.scope
+          scope: tokenData.scope,
+          redirectUriUsed: redirectUri
         }
       }), {
         status: 200,
@@ -221,7 +234,8 @@ Deno.serve(async (req) => {
         details: fetchError.message,
         debug: {
           redirectUriUsed: redirectUri,
-          origin: origin
+          origin: origin,
+          clientIdPrefix: clientId.substring(0, 8)
         }
       }), {
         status: 500,
