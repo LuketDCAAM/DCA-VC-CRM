@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -37,7 +38,11 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center space-x-8">
             <div className="flex-shrink-0">
-              <h1 className="text-xl font-bold text-gray-900">VC Platform</h1>
+              <img 
+                src="/lovable-uploads/c1b92e43-b852-475a-aa30-04db2ade1108.png" 
+                alt="VC Platform Logo" 
+                className="h-8 w-auto"
+              />
             </div>
             <nav className="hidden md:flex space-x-4">
               {filteredNavigation.map((item) => {
