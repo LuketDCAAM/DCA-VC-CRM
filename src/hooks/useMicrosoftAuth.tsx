@@ -23,9 +23,13 @@ export function useMicrosoftAuth() {
   const { toast } = useToast();
 
   const fetchToken = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     try {
+      console.log('Fetching Microsoft token for user:', user.id);
       setLoading(true);
       const { data, error } = await supabase
         .from('microsoft_tokens')
@@ -33,17 +37,23 @@ export function useMicrosoftAuth() {
         .eq('user_id', user.id)
         .single();
 
+      console.log('Microsoft token fetch result:', { data, error });
+
       if (error && error.code !== 'PGRST116') throw error;
       
       if (data) {
         setToken(data);
         setIsAuthenticated(true);
+        console.log('Microsoft authentication: AUTHENTICATED');
       } else {
         setToken(null);
         setIsAuthenticated(false);
+        console.log('Microsoft authentication: NOT AUTHENTICATED');
       }
     } catch (error: any) {
       console.error('Error fetching Microsoft token:', error);
+      setToken(null);
+      setIsAuthenticated(false);
       toast({
         title: "Error fetching Microsoft authentication",
         description: error.message,
@@ -55,8 +65,9 @@ export function useMicrosoftAuth() {
   };
 
   const initiateAuth = () => {
-    // Microsoft OAuth 2.0 authorization URL
-    const clientId = 'b8c13f94-8fa5-4b8f-b3d9-4e7a8b2c9d1e'; // This will be replaced by the actual client ID
+    console.log('Initiating Microsoft OAuth...');
+    // For now, use a placeholder client ID - in production this should come from environment
+    const clientId = 'YOUR_MICROSOFT_CLIENT_ID'; // This needs to be replaced with actual client ID
     const redirectUri = encodeURIComponent(`${window.location.origin}/auth/microsoft/callback`);
     const scope = encodeURIComponent('https://graph.microsoft.com/Tasks.ReadWrite https://graph.microsoft.com/Calendars.Read offline_access');
     const responseType = 'code';
@@ -68,11 +79,19 @@ export function useMicrosoftAuth() {
       `scope=${scope}&` +
       `response_mode=query`;
 
-    window.location.href = authUrl;
+    console.log('Redirecting to:', authUrl);
+    
+    // For now, show a message instead of redirecting
+    toast({
+      title: "Microsoft Authentication Setup Required",
+      description: "Please configure Microsoft client ID in your environment variables first.",
+      variant: "destructive",
+    });
   };
 
   const handleAuthCallback = async (code: string) => {
     try {
+      console.log('Handling Microsoft auth callback with code:', code);
       const { data, error } = await supabase.functions.invoke('microsoft-auth', {
         body: { code, user_id: user?.id }
       });
@@ -99,6 +118,7 @@ export function useMicrosoftAuth() {
     if (!user) return;
 
     try {
+      console.log('Disconnecting Microsoft account for user:', user.id);
       const { error } = await supabase
         .from('microsoft_tokens')
         .delete()
@@ -124,6 +144,7 @@ export function useMicrosoftAuth() {
   };
 
   useEffect(() => {
+    console.log('useMicrosoftAuth - User changed:', user?.id);
     fetchToken();
   }, [user]);
 
@@ -133,11 +154,19 @@ export function useMicrosoftAuth() {
     const code = urlParams.get('code');
     
     if (code && user) {
+      console.log('Found auth callback code, processing...');
       handleAuthCallback(code);
       // Clean up the URL
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, [user]);
+
+  console.log('useMicrosoftAuth hook state:', {
+    token: !!token,
+    loading,
+    isAuthenticated,
+    userId: user?.id
+  });
 
   return {
     token,

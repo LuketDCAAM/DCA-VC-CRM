@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Upload, Download } from 'lucide-react';
 import { DealsStats } from './DealsStats';
 import { OutlookCalendarSyncButton } from '@/components/outlook/OutlookCalendarSyncButton';
+import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
 
 interface DealsHeaderProps {
   filteredDeals: any[];
@@ -22,6 +23,10 @@ export function DealsHeader({
   onCSVImport, 
   onDealAdded 
 }: DealsHeaderProps) {
+  const { isAuthenticated, loading: authLoading } = useMicrosoftAuth();
+
+  console.log('DealsHeader - Microsoft auth status:', { isAuthenticated, authLoading });
+
   const handleAddDeal = () => {
     onDealAdded();
   };
@@ -44,10 +49,11 @@ export function DealsHeader({
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {/* Always show the sync button for debugging */}
           <OutlookCalendarSyncButton 
             variant="outline" 
             size="default" 
-            showLabel={false} 
+            showLabel={true} 
           />
           <Button variant="outline" onClick={handleImportCSV}>
             <Upload className="h-4 w-4 mr-2" />
