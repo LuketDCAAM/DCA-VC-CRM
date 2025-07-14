@@ -38,19 +38,14 @@ export function PipelineStageDropdown({ deal, onUpdate }: PipelineStageDropdownP
 
   return (
     <Select value={deal.pipeline_stage} onValueChange={handleStageChange}>
-      <SelectTrigger asChild>
-        <Button 
-          variant="ghost" 
-          className="h-auto p-0 justify-start hover:bg-transparent"
+      <SelectTrigger className="h-auto p-0 border-0 bg-transparent shadow-none hover:bg-transparent focus:ring-0">
+        <Badge 
+          variant="outline" 
+          className={`${getPipelineStageClasses(deal.pipeline_stage)} cursor-pointer hover:opacity-80 transition-opacity border font-medium text-xs px-2.5 py-1 flex items-center gap-1`}
         >
-          <Badge 
-            variant="outline" 
-            className={`${getPipelineStageClasses(deal.pipeline_stage)} cursor-pointer hover:opacity-80 transition-opacity border font-medium text-xs px-2.5 py-1`}
-          >
-            {deal.pipeline_stage}
-            <ChevronDown className="ml-1 h-2.5 w-2.5 opacity-60" />
-          </Badge>
-        </Button>
+          {deal.pipeline_stage}
+          <ChevronDown className="h-2.5 w-2.5 opacity-60" />
+        </Badge>
       </SelectTrigger>
       <SelectContent>
         {PIPELINE_STAGES.map((stage) => (
