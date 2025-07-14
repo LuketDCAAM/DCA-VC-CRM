@@ -5,7 +5,6 @@ import { Table, TableBody } from "@/components/ui/table";
 import { ConfigurableDealsTableRow } from './table/ConfigurableDealsTableRow';
 import { ConfigurableDealsTableHeader } from './table/ConfigurableDealsTableHeader';
 import { useAdvancedTableSorting } from '@/hooks/deals/useAdvancedTableSorting';
-import { ColumnSelector } from './table/ColumnSelector';
 import { useDealsPagination } from '@/hooks/deals/useDealsPagination';
 import { PaginationControls } from './PaginationControls';
 
@@ -75,7 +74,6 @@ export function ConfigurableDealsTable({
             </div>
           )}
         </div>
-        <ColumnSelector />
       </div>
       
       <div className="rounded-lg border border-border bg-card shadow-sm overflow-hidden">

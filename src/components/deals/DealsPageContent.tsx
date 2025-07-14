@@ -7,6 +7,7 @@ import { DealsViewTabs } from './DealsViewTabs';
 import { DealsViewRenderer, ViewMode } from './views/DealsViewRenderer';
 import { generateDealsFilterOptions } from './filters/DealsFilterConfig';
 import { DealStats } from '@/hooks/deals/dealStatsCalculator';
+import { ColumnSelector } from './table/ColumnSelector';
 
 interface DealsPageContentProps {
   filteredDeals: Deal[];
@@ -85,17 +86,24 @@ export function DealsPageContent({
       />
       
       <div className="space-y-3">
-        <SearchAndFilter
-          searchTerm={searchTerm}
-          onSearchChange={onSearchChange}
-          placeholder="Search deals by company, contact, location, or description..."
-          filters={dynamicFilterOptions}
-          activeFilters={activeFilters}
-          onFilterChange={onFilterChange}
-          onClearFilters={onClearFilters}
-          showAdvanced={showAdvancedFilters}
-          onToggleAdvanced={onToggleAdvanced}
-        />
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <SearchAndFilter
+              searchTerm={searchTerm}
+              onSearchChange={onSearchChange}
+              placeholder="Search deals by company, contact, location, or description..."
+              filters={dynamicFilterOptions}
+              activeFilters={activeFilters}
+              onFilterChange={onFilterChange}
+              onClearFilters={onClearFilters}
+              showAdvanced={showAdvancedFilters}
+              onToggleAdvanced={onToggleAdvanced}
+            />
+          </div>
+          {viewMode === 'table' && (
+            <ColumnSelector />
+          )}
+        </div>
       </div>
 
       <DealsViewTabs 
