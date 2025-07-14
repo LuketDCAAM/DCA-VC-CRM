@@ -69,18 +69,8 @@ export default function Header() {
           <div className="flex items-center space-x-4">
             {isAdmin && (
               <>
-                <UserApprovalsDialog>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <UserCheck className="h-4 w-4" />
-                    <span className="hidden sm:inline">User Approvals</span>
-                  </Button>
-                </UserApprovalsDialog>
-                <AllUsersDialog>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <Shield className="h-4 w-4" />
-                    <span className="hidden sm:inline">All Users</span>
-                  </Button>
-                </AllUsersDialog>
+                <UserApprovalsDialog />
+                <AllUsersDialog />
               </>
             )}
             <ProfileButton />
