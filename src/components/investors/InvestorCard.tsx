@@ -4,26 +4,12 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Building2, Mail, Phone, MapPin, DollarSign, Target, UserPlus, Globe, ExternalLink, Calendar, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Investor } from '@/types/investor';
 
 interface InvestorCardProps {
-  investor: {
-    id: string;
-    contact_name: string;
-    contact_email: string | null;
-    contact_phone: string | null;
-    firm_name: string | null;
-    firm_website: string | null;
-    linkedin_url: string | null;
-    location: string | null;
-    preferred_investment_stage: string | null;
-    average_check_size: number | null;
-    preferred_sectors: string[] | null;
-    tags: string[] | null;
-    relationship_owner: string | null;
-    last_call_date: string | null;
-  };
-  onViewDetails?: (investor: any) => void;
-  onAddContact?: (investor: any) => void;
+  investor: Investor;
+  onViewDetails?: (investor: Investor) => void;
+  onAddContact?: (investor: Investor) => void;
 }
 
 export function InvestorCard({ investor, onViewDetails, onAddContact }: InvestorCardProps) {
