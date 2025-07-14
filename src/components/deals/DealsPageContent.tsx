@@ -34,7 +34,7 @@ interface DealsPageContentProps {
   csvTemplateColumns: any[];
   exportColumns: any[];
   onCSVImport: (data: any[]) => Promise<any>;
-  allDeals: Deal[]; // Add this prop to access all deals for filter generation
+  allDeals: Deal[];
 }
 
 export function DealsPageContent({

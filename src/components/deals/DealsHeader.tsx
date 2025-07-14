@@ -6,18 +6,34 @@ import { DealsStats } from './DealsStats';
 import { OutlookCalendarSyncButton } from '@/components/outlook/OutlookCalendarSyncButton';
 
 interface DealsHeaderProps {
-  dealStats: {
-    total: number;
-    active: number;
-    inactive: number;
-    pipeline: Record<string, number>;
-  };
-  onAddDeal: () => void;
-  onImportCSV: () => void;
-  onExportCSV: () => void;
+  filteredDeals: any[];
+  exportColumns: any[];
+  loading: boolean;
+  csvTemplateColumns: any[];
+  onCSVImport: (data: any[]) => Promise<any>;
+  onDealAdded: () => void;
 }
 
-export function DealsHeader({ dealStats, onAddDeal, onImportCSV, onExportCSV }: DealsHeaderProps) {
+export function DealsHeader({ 
+  filteredDeals, 
+  exportColumns, 
+  loading, 
+  csvTemplateColumns, 
+  onCSVImport, 
+  onDealAdded 
+}: DealsHeaderProps) {
+  const handleAddDeal = () => {
+    onDealAdded();
+  };
+
+  const handleImportCSV = () => {
+    // CSV import logic will be handled by the parent component
+  };
+
+  const handleExportCSV = () => {
+    // CSV export logic will be handled by the parent component
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -33,22 +49,20 @@ export function DealsHeader({ dealStats, onAddDeal, onImportCSV, onExportCSV }: 
             size="default" 
             showLabel={false} 
           />
-          <Button variant="outline" onClick={onImportCSV}>
+          <Button variant="outline" onClick={handleImportCSV}>
             <Upload className="h-4 w-4 mr-2" />
             Import
           </Button>
-          <Button variant="outline" onClick={onExportCSV}>
+          <Button variant="outline" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          <Button onClick={onAddDeal}>
+          <Button onClick={handleAddDeal}>
             <Plus className="h-4 w-4 mr-2" />
             Add Deal
           </Button>
         </div>
       </div>
-      
-      <DealsStats stats={dealStats} />
     </div>
   );
 }

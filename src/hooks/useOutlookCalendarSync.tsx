@@ -38,8 +38,8 @@ interface CalendarSyncLog {
   user_id: string;
   sync_type: string;
   status: string;
-  events_processed: number | null;
-  deals_updated: number | null;
+  items_processed: number | null;
+  items_failed: number | null;
   error_message: string | null;
   started_at: string;
   completed_at: string | null;
@@ -56,7 +56,7 @@ export function useOutlookCalendarSync() {
 
     try {
       const { data, error } = await supabase
-        .from('outlook_calendar_sync_logs')
+        .from('outlook_sync_logs')
         .select('*')
         .eq('user_id', user.id)
         .order('started_at', { ascending: false })
