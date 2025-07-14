@@ -88,7 +88,7 @@ export function OutlookIntegrationDialog({ open, onOpenChange }: OutlookIntegrat
                     <Badge variant="secondary">Active</Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Your reminders can sync with Outlook tasks and calendar events can update deal call dates.
+                    Your reminders can sync with Outlook tasks and calendar events can automatically update deal and investor call dates.
                   </p>
                   <Button
                     variant="outline"
@@ -107,7 +107,7 @@ export function OutlookIntegrationDialog({ open, onOpenChange }: OutlookIntegrat
                     <Badge variant="destructive">Disconnected</Badge>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Connect your Microsoft account to sync reminders with Outlook tasks and calendar events with deal call dates.
+                    Connect your Microsoft account to sync reminders with Outlook tasks and automatically update deal and investor call dates from calendar events.
                   </p>
                   <Button
                     onClick={initiateAuth}
@@ -177,8 +177,13 @@ export function OutlookIntegrationDialog({ open, onOpenChange }: OutlookIntegrat
                       Calendar Synchronization
                     </h4>
                     <p className="text-sm text-muted-foreground mb-3">
-                      Sync calendar events to automatically update deal call dates based on meetings.
+                      Automatically sync calendar events to update deal and investor call dates based on email matches. The system checks for exact and partial email matches between calendar attendees and your contacts.
                     </p>
+                    <div className="bg-blue-50 p-3 rounded-lg mb-3">
+                      <p className="text-sm text-blue-800">
+                        <strong>Auto-sync:</strong> Calendar events are automatically synced once daily. Manual sync is available anytime.
+                      </p>
+                    </div>
                     <div className="flex gap-2">
                       <Button
                         onClick={syncCalendarEvents}
@@ -191,7 +196,7 @@ export function OutlookIntegrationDialog({ open, onOpenChange }: OutlookIntegrat
                         ) : (
                           <Clock className="h-4 w-4" />
                         )}
-                        Sync Calendar
+                        Sync Calendar Now
                       </Button>
                       <Button
                         onClick={fullCalendarSync}
@@ -221,13 +226,13 @@ export function OutlookIntegrationDialog({ open, onOpenChange }: OutlookIntegrat
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {/* Task Sync Logs */}
-                  {syncLogs.map((log) => (
-                    <div key={`task-${log.id}`} className="flex items-center justify-between p-3 border rounded-lg">
+                  {/* Calendar Sync Logs */}
+                  {calendarSyncLogs.map((log) => (
+                    <div key={`calendar-${log.id}`} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center gap-3">
                         {getStatusIcon(log.status)}
                         <div>
-                          <div className="font-medium">{getSyncTypeLabel(log.sync_type)} (Tasks)</div>
+                          <div className="font-medium">{getSyncTypeLabel(log.sync_type)} (Calendar)</div>
                           <div className="text-sm text-muted-foreground">
                             {format(new Date(log.started_at), 'MMM d, yyyy HH:mm')}
                           </div>
@@ -236,7 +241,7 @@ export function OutlookIntegrationDialog({ open, onOpenChange }: OutlookIntegrat
                       <div className="text-right">
                         {log.status === 'completed' && (
                           <div className="text-sm text-muted-foreground">
-                            {log.items_processed} items processed
+                            {log.items_processed} events processed
                           </div>
                         )}
                         {log.status === 'failed' && log.error_message && (
@@ -248,13 +253,13 @@ export function OutlookIntegrationDialog({ open, onOpenChange }: OutlookIntegrat
                     </div>
                   ))}
 
-                  {/* Calendar Sync Logs */}
-                  {calendarSyncLogs.map((log) => (
-                    <div key={`calendar-${log.id}`} className="flex items-center justify-between p-3 border rounded-lg">
+                  {/* Task Sync Logs */}
+                  {syncLogs.map((log) => (
+                    <div key={`task-${log.id}`} className="flex items-center justify-between p-3 border rounded-lg">
                       <div className="flex items-center gap-3">
                         {getStatusIcon(log.status)}
                         <div>
-                          <div className="font-medium">{getSyncTypeLabel(log.sync_type)} (Calendar)</div>
+                          <div className="font-medium">{getSyncTypeLabel(log.sync_type)} (Tasks)</div>
                           <div className="text-sm text-muted-foreground">
                             {format(new Date(log.started_at), 'MMM d, yyyy HH:mm')}
                           </div>

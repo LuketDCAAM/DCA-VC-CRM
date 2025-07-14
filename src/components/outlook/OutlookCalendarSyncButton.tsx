@@ -92,7 +92,7 @@ export function OutlookCalendarSyncButton({
         <TooltipContent>
           <p>
             {isAuthenticated 
-              ? 'Sync Outlook calendar events to update deal call dates'
+              ? 'Sync Outlook calendar events to update deal and investor call dates'
               : 'Connect Microsoft account first'
             }
           </p>

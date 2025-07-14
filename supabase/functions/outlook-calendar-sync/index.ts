@@ -149,6 +149,7 @@ Deno.serve(async (req) => {
 
     let eventsProcessed = 0;
     let dealsUpdated = 0;
+    let investorsUpdated = 0;
 
     // Get all deals for this user
     const { data: userDeals, error: dealsError } = await supabase
@@ -165,7 +166,22 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Process calendar events and match with deals
+    // Get all investors for this user
+    const { data: userInvestors, error: investorsError } = await supabase
+      .from('investors')
+      .select('id, contact_name, contact_email, last_call_date')
+      .eq('created_by', user_id);
+
+    if (investorsError) {
+      console.error('Error fetching user investors:', investorsError);
+      await updateSyncLog(supabase, syncLog.id, 'failed', 'Failed to fetch user investors');
+      return new Response(JSON.stringify({ error: 'Failed to fetch user investors' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Process calendar events and match with deals and investors
     for (const event of calendarEvents) {
       try {
         eventsProcessed++;
@@ -174,25 +190,26 @@ Deno.serve(async (req) => {
         const eventSubject = event.subject.toLowerCase();
         const attendeeEmails = event.attendees?.map(a => a.emailAddress.address.toLowerCase()) || [];
         const organizerEmail = event.organizer?.emailAddress.address.toLowerCase();
+        const allEventEmails = [...attendeeEmails, organizerEmail].filter(Boolean);
         
-        // Find matching deals
+        const eventDate = new Date(event.start.dateTime).toISOString().split('T')[0];
+
+        // Match and update deals
         const matchingDeals = userDeals?.filter(deal => {
-          // Match by company name in subject
-          const companyMatch = eventSubject.includes(deal.company_name.toLowerCase());
+          if (!deal.contact_email) return false;
           
-          // Match by contact email
-          const emailMatch = deal.contact_email && (
-            attendeeEmails.includes(deal.contact_email.toLowerCase()) ||
-            organizerEmail === deal.contact_email.toLowerCase()
-          );
+          const dealEmail = deal.contact_email.toLowerCase();
           
-          return companyMatch || emailMatch;
+          // Check for exact match or partial match
+          return allEventEmails.some(eventEmail => 
+            eventEmail === dealEmail || 
+            eventEmail.includes(dealEmail) || 
+            dealEmail.includes(eventEmail)
+          ) || eventSubject.includes(deal.company_name.toLowerCase());
         }) || [];
 
         // Update matching deals with the event date as last_call_date
         for (const deal of matchingDeals) {
-          const eventDate = new Date(event.start.dateTime).toISOString().split('T')[0];
-          
           // Only update if this event is more recent than the current last_call_date
           if (!deal.last_call_date || new Date(eventDate) > new Date(deal.last_call_date)) {
             await supabase
@@ -207,20 +224,52 @@ Deno.serve(async (req) => {
             console.log(`Updated deal ${deal.company_name} with call date ${eventDate}`);
           }
         }
+
+        // Match and update investors
+        const matchingInvestors = userInvestors?.filter(investor => {
+          if (!investor.contact_email) return false;
+          
+          const investorEmail = investor.contact_email.toLowerCase();
+          
+          // Check for exact match or partial match
+          return allEventEmails.some(eventEmail => 
+            eventEmail === investorEmail || 
+            eventEmail.includes(investorEmail) || 
+            investorEmail.includes(eventEmail)
+          ) || eventSubject.includes(investor.contact_name.toLowerCase());
+        }) || [];
+
+        // Update matching investors with the event date as last_call_date
+        for (const investor of matchingInvestors) {
+          // Only update if this event is more recent than the current last_call_date
+          if (!investor.last_call_date || new Date(eventDate) > new Date(investor.last_call_date)) {
+            await supabase
+              .from('investors')
+              .update({ 
+                last_call_date: eventDate,
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', investor.id);
+            
+            investorsUpdated++;
+            console.log(`Updated investor ${investor.contact_name} with call date ${eventDate}`);
+          }
+        }
       } catch (error) {
         console.error('Error processing calendar event:', event.id, error);
       }
     }
 
     // Update sync log
-    await updateSyncLog(supabase, syncLog.id, 'completed', null, eventsProcessed, dealsUpdated);
+    await updateSyncLog(supabase, syncLog.id, 'completed', null, eventsProcessed, dealsUpdated + investorsUpdated);
 
-    console.log(`Calendar sync completed for user ${user_id}: ${eventsProcessed} events processed, ${dealsUpdated} deals updated`);
+    console.log(`Calendar sync completed for user ${user_id}: ${eventsProcessed} events processed, ${dealsUpdated} deals updated, ${investorsUpdated} investors updated`);
 
     return new Response(JSON.stringify({ 
       success: true, 
       events_processed: eventsProcessed,
-      deals_updated: dealsUpdated 
+      deals_updated: dealsUpdated,
+      investors_updated: investorsUpdated
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -291,7 +340,7 @@ async function updateSyncLog(
   status: string,
   errorMessage?: string | null,
   eventsProcessed?: number,
-  dealsUpdated?: number
+  totalUpdated?: number
 ) {
   await supabase
     .from('outlook_calendar_sync_logs')
@@ -300,7 +349,7 @@ async function updateSyncLog(
       completed_at: new Date().toISOString(),
       error_message: errorMessage,
       events_processed: eventsProcessed,
-      deals_updated: dealsUpdated,
+      deals_updated: totalUpdated, // Using deals_updated field to store total updates (deals + investors)
     })
     .eq('id', logId);
 }

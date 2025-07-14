@@ -56,7 +56,7 @@ export function useOutlookCalendarSync() {
 
     try {
       const { data, error } = await supabase
-        .from('outlook_sync_logs')
+        .from('outlook_calendar_sync_logs')
         .select('*')
         .eq('user_id', user.id)
         .order('started_at', { ascending: false })
@@ -84,10 +84,22 @@ export function useOutlookCalendarSync() {
 
       if (error) throw error;
 
-      toast({
-        title: "Calendar sync initiated",
-        description: "Syncing calendar events to update deal call dates.",
-      });
+      const result = data || {};
+      const dealsUpdated = result.deals_updated || 0;
+      const investorsUpdated = result.investors_updated || 0;
+      const totalUpdated = dealsUpdated + investorsUpdated;
+
+      if (totalUpdated > 0) {
+        toast({
+          title: "Calendar sync completed",
+          description: `Updated ${dealsUpdated} deals and ${investorsUpdated} investors with recent call dates.`,
+        });
+      } else {
+        toast({
+          title: "Calendar sync completed",
+          description: "No new call dates found to update.",
+        });
+      }
 
       fetchSyncLogs();
     } catch (error: any) {
@@ -117,10 +129,22 @@ export function useOutlookCalendarSync() {
 
       if (error) throw error;
 
-      toast({
-        title: "Full calendar sync initiated",
-        description: "Performing complete sync of calendar events with deals.",
-      });
+      const result = data || {};
+      const dealsUpdated = result.deals_updated || 0;
+      const investorsUpdated = result.investors_updated || 0;
+      const totalUpdated = dealsUpdated + investorsUpdated;
+
+      if (totalUpdated > 0) {
+        toast({
+          title: "Full calendar sync completed",
+          description: `Updated ${dealsUpdated} deals and ${investorsUpdated} investors with recent call dates.`,
+        });
+      } else {
+        toast({
+          title: "Full calendar sync completed",
+          description: "No new call dates found to update.",
+        });
+      }
 
       fetchSyncLogs();
     } catch (error: any) {
