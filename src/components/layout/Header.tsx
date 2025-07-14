@@ -66,15 +66,16 @@ export default function Header() {
                 );
               })}
             </nav>
-          </div>
-          
-          <div className="flex items-center gap-2">
+            
             {isAdmin && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 ml-4">
                 <UserApprovalsDialog />
                 <AllUsersDialog />
               </div>
             )}
+          </div>
+          
+          <div className="flex items-center">
             <ProfileButton />
           </div>
         </div>
