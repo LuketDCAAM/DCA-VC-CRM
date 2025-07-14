@@ -2,7 +2,6 @@
 import React, { useMemo } from 'react';
 import { Deal } from '@/types/deal';
 import { DealsHeader } from './DealsHeader';
-import { DealsStats } from './DealsStats';
 import { SearchAndFilter } from '@/components/common/SearchAndFilter';
 import { DealsViewTabs } from './DealsViewTabs';
 import { DealsViewRenderer, ViewMode } from './views/DealsViewRenderer';
@@ -83,14 +82,6 @@ export function DealsPageContent({
         csvTemplateColumns={csvTemplateColumns}
         onCSVImport={onCSVImport}
         onDealAdded={onDealAdded}
-      />
-      
-      <DealsStats 
-        totalDeals={dealStats.totalDeals}
-        activeDeals={dealStats.activeDeals}
-        investedDeals={dealStats.investedDeals}
-        passedDeals={dealStats.passedDeals}
-        screeningDeals={dealStats.screeningDeals}
       />
       
       <div className="space-y-4">
