@@ -100,7 +100,7 @@ export function DealsPageContent({
               onToggleAdvanced={onToggleAdvanced}
             />
           </div>
-          {viewMode === 'table' && (
+          {viewMode === 'configurable' && (
             <ColumnSelector />
           )}
         </div>
