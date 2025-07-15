@@ -1,3 +1,4 @@
+
 import { Deal } from '@/types/deal';
 
 export interface RegionInfo {
@@ -236,7 +237,7 @@ export const CITY_TO_REGION: Record<string, string> = {
   'Richmond': 'Virginia',
   'Baltimore': 'Maryland',
   'Minneapolis': 'Minnesota',
-  'St. Paul': 'Minnesota',
+  'Saint Paul': 'Minnesota',
   'Nashville': 'Tennessee',
   'Memphis': 'Tennessee',
   'Hartford': 'Connecticut',

@@ -65,6 +65,11 @@ export function DealsMap({ locationData }: DealsMapProps) {
     setSelectedLocation(null);
   };
 
+  // Sort locations by deal count (ascending) so larger bubbles are rendered last (on top)
+  const sortedLocationData = [...locationData]
+    .filter(location => location.regionInfo?.coords)
+    .sort((a, b) => a.count - b.count);
+
   return (
     <div className="w-full h-[400px] relative bg-slate-50 rounded-lg overflow-hidden">
       {/* Map Controls */}
@@ -128,46 +133,44 @@ export function DealsMap({ locationData }: DealsMapProps) {
             }
           </Geographies>
           
-          {/* Deal location markers */}
-          {locationData
-            .filter(location => location.regionInfo?.coords)
-            .map((location) => {
-              const [lat, lng] = location.regionInfo!.coords;
-              const dotSize = getDotSize(location.count, position.zoom);
-              const isSelected = selectedLocation === location.region;
-              
-              return (
-                <Marker key={location.region} coordinates={[lng, lat]}>
-                  <circle
-                    r={dotSize}
-                    fill={getDotColor(location.count)}
-                    stroke="#ffffff"
-                    strokeWidth={2}
-                    style={{
-                      cursor: 'pointer',
-                      opacity: isSelected ? 1 : 0.9,
-                      filter: isSelected ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : 'none'
-                    }}
-                    onClick={() => setSelectedLocation(
-                      selectedLocation === location.region ? null : location.region
-                    )}
-                  />
-                  {/* Deal count label for larger dots - adjust text size based on zoom */}
-                  {dotSize > 8 && (
-                    <text
-                      textAnchor="middle"
-                      y={2}
-                      fontSize={Math.max(8, 10 / Math.sqrt(position.zoom))}
-                      fill="#ffffff"
-                      fontWeight="bold"
-                      style={{ pointerEvents: 'none' }}
-                    >
-                      {location.count}
-                    </text>
+          {/* Deal location markers - sorted so larger bubbles render on top */}
+          {sortedLocationData.map((location) => {
+            const [lat, lng] = location.regionInfo!.coords;
+            const dotSize = getDotSize(location.count, position.zoom);
+            const isSelected = selectedLocation === location.region;
+            
+            return (
+              <Marker key={location.region} coordinates={[lng, lat]}>
+                <circle
+                  r={dotSize}
+                  fill={getDotColor(location.count)}
+                  stroke="#ffffff"
+                  strokeWidth={2}
+                  style={{
+                    cursor: 'pointer',
+                    opacity: isSelected ? 1 : 0.9,
+                    filter: isSelected ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : 'none'
+                  }}
+                  onClick={() => setSelectedLocation(
+                    selectedLocation === location.region ? null : location.region
                   )}
-                </Marker>
-              );
-            })}
+                />
+                {/* Deal count label for larger dots - adjust text size based on zoom */}
+                {dotSize > 8 && (
+                  <text
+                    textAnchor="middle"
+                    y={2}
+                    fontSize={Math.max(8, 10 / Math.sqrt(position.zoom))}
+                    fill="#ffffff"
+                    fontWeight="bold"
+                    style={{ pointerEvents: 'none' }}
+                  >
+                    {location.count}
+                  </text>
+                )}
+              </Marker>
+            );
+          })}
         </ZoomableGroup>
       </ComposableMap>
 
