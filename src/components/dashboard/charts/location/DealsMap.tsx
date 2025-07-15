@@ -17,8 +17,8 @@ export function DealsMap({ locationData }: DealsMapProps) {
   const maxCount = Math.max(...locationData.map(l => l.count), 1);
   
   const getDotSize = (count: number) => {
-    const minSize = 4;
-    const maxSize = 20;
+    const minSize = 6;
+    const maxSize = 16;
     return minSize + (count / maxCount) * (maxSize - minSize);
   };
 
@@ -32,14 +32,14 @@ export function DealsMap({ locationData }: DealsMapProps) {
   };
 
   return (
-    <div className="w-full h-[500px] relative">
+    <div className="w-full h-[400px] relative">
       <ComposableMap
         projection="geoAlbersUsa"
         projectionConfig={{
-          scale: 1000,
+          scale: 800,
         }}
         width={800}
-        height={500}
+        height={400}
       >
         <ZoomableGroup>
           <Geographies geography={geoUrl}>
@@ -66,24 +66,41 @@ export function DealsMap({ locationData }: DealsMapProps) {
             .filter(location => location.regionInfo?.coords)
             .map((location) => {
               const [lat, lng] = location.regionInfo!.coords;
+              const dotSize = getDotSize(location.count);
               return (
                 <Marker
                   key={location.region}
                   coordinates={[lng, lat]}
                 >
-                  <circle
-                    r={getDotSize(location.count)}
-                    fill={getDotColor(location.count)}
-                    stroke="#ffffff"
-                    strokeWidth={2}
-                    style={{
-                      cursor: 'pointer',
-                      opacity: selectedLocation === location.region ? 1 : 0.8,
-                    }}
-                    onClick={() => setSelectedLocation(
-                      selectedLocation === location.region ? null : location.region
-                    )}
-                  />
+                  <g>
+                    <circle
+                      r={dotSize}
+                      fill={getDotColor(location.count)}
+                      stroke="#ffffff"
+                      strokeWidth={2}
+                      style={{
+                        cursor: 'pointer',
+                        opacity: selectedLocation === location.region ? 1 : 0.8,
+                      }}
+                      onClick={() => setSelectedLocation(
+                        selectedLocation === location.region ? null : location.region
+                      )}
+                    />
+                    {/* Deal count label */}
+                    <text
+                      textAnchor="middle"
+                      y={1}
+                      fontSize={dotSize > 10 ? "10" : "8"}
+                      fill="#ffffff"
+                      fontWeight="bold"
+                      style={{
+                        pointerEvents: 'none',
+                        textShadow: '1px 1px 1px rgba(0,0,0,0.5)'
+                      }}
+                    >
+                      {location.count}
+                    </text>
+                  </g>
                 </Marker>
               );
             })}
