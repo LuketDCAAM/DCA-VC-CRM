@@ -105,12 +105,12 @@ export function DealsMap({ locationData }: DealsMapProps) {
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill="#f8fafc"
-                  stroke="#e2e8f0"
-                  strokeWidth={0.5}
+                  fill="none"
+                  stroke="#94a3b8"
+                  strokeWidth={0.8}
                   style={{
                     default: { outline: "none" },
-                    hover: { outline: "none", fill: "#f1f5f9" },
+                    hover: { outline: "none", stroke: "#64748b" },
                     pressed: { outline: "none" },
                   }}
                 />
