@@ -109,11 +109,11 @@ export const CITY_TO_REGION: Record<string, string> = {
   
   // Illinois cities
   'Chicago': 'Illinois',
-  'Aurora': 'Illinois',
+  'Aurora Illinois': 'Illinois',
   'Rockford': 'Illinois',
   'Joliet': 'Illinois',
   'Naperville': 'Illinois',
-  'Springfield': 'Illinois',
+  'Springfield Illinois': 'Illinois',
   'Peoria': 'Illinois',
   'Elgin': 'Illinois',
   
@@ -131,7 +131,7 @@ export const CITY_TO_REGION: Record<string, string> = {
   // Massachusetts cities
   'Boston': 'Massachusetts',
   'Worcester': 'Massachusetts',
-  'Springfield': 'Massachusetts',
+  'Springfield Massachusetts': 'Massachusetts',
   'Lowell': 'Massachusetts',
   'Cambridge': 'Massachusetts',
   'New Bedford': 'Massachusetts',
@@ -141,7 +141,7 @@ export const CITY_TO_REGION: Record<string, string> = {
   // Colorado cities
   'Denver': 'Colorado',
   'Colorado Springs': 'Colorado',
-  'Aurora': 'Colorado',
+  'Aurora Colorado': 'Colorado',
   'Fort Collins': 'Colorado',
   'Lakewood': 'Colorado',
   'Thornton': 'Colorado',
@@ -150,7 +150,7 @@ export const CITY_TO_REGION: Record<string, string> = {
   
   // Georgia cities
   'Atlanta': 'Georgia',
-  'Columbus': 'Georgia',
+  'Columbus Georgia': 'Georgia',
   'Augusta': 'Georgia',
   'Savannah': 'Georgia',
   'Athens': 'Georgia',
@@ -177,7 +177,7 @@ export const CITY_TO_REGION: Record<string, string> = {
   'Salt Lake City': 'Utah',
   'Philadelphia': 'Pennsylvania',
   'Pittsburgh': 'Pennsylvania',
-  'Columbus': 'Ohio',
+  'Columbus Ohio': 'Ohio',
   'Cleveland': 'Ohio',
   'Cincinnati': 'Ohio',
   'Detroit': 'Michigan',
