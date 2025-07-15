@@ -1,9 +1,12 @@
 
 import React, { useState } from 'react';
+import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { LocationData } from './LocationDataTypes';
+
+const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
 interface DealsMapProps {
   locationData: LocationData[];
@@ -11,13 +14,15 @@ interface DealsMapProps {
 
 export function DealsMap({ locationData }: DealsMapProps) {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [center, setCenter] = useState<[number, number]>([0, 20]);
 
   // Calculate dot sizes based on deal count
   const maxCount = Math.max(...locationData.map(l => l.count), 1);
   
   const getDotSize = (count: number) => {
     const minSize = 4;
-    const maxSize = 12;
+    const maxSize = 16;
     return minSize + (count / maxCount) * (maxSize - minSize);
   };
 
@@ -30,81 +35,91 @@ export function DealsMap({ locationData }: DealsMapProps) {
     return '#dbeafe'; // blue-100
   };
 
-  // Simplified coordinate mapping for US states/regions
-  const getCoordinates = (regionInfo: any) => {
-    if (!regionInfo?.coords) return null;
-    const [lat, lng] = regionInfo.coords;
-    
-    // Convert lat/lng to SVG coordinates (simplified US map)
-    // US bounds: roughly lat 24-49, lng -125 to -66
-    const mapWidth = 800;
-    const mapHeight = 400;
-    
-    const x = ((lng + 125) / 59) * mapWidth;
-    const y = ((49 - lat) / 25) * mapHeight;
-    
-    return { x, y };
+  const handleZoomIn = () => {
+    if (zoom < 4) setZoom(zoom * 1.5);
+  };
+
+  const handleZoomOut = () => {
+    if (zoom > 1) setZoom(zoom / 1.5);
+  };
+
+  const handleReset = () => {
+    setZoom(1);
+    setCenter([0, 20]);
+    setSelectedLocation(null);
   };
 
   return (
     <div className="w-full h-[400px] relative bg-slate-50 rounded-lg overflow-hidden">
-      {/* Simple SVG Map */}
-      <svg
-        width="100%"
-        height="100%"
-        viewBox="0 0 800 400"
-        className="w-full h-full"
+      {/* Map Controls */}
+      <div className="absolute top-4 left-4 z-10 flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleZoomIn}
+          className="bg-white/90 backdrop-blur-sm"
+        >
+          <ZoomIn className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleZoomOut}
+          className="bg-white/90 backdrop-blur-sm"
+        >
+          <ZoomOut className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleReset}
+          className="bg-white/90 backdrop-blur-sm"
+        >
+          <RotateCcw className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {/* Map */}
+      <ComposableMap
+        projection="geoMercator"
+        projectionConfig={{
+          scale: 100 * zoom,
+          center: center,
+        }}
+        width={800}
+        height={400}
+        style={{ width: '100%', height: '100%' }}
       >
-        {/* US map outline (simplified) */}
-        <path
-          d="M 50 300 L 50 100 L 200 50 L 400 80 L 600 90 L 750 120 L 750 300 L 600 350 L 400 340 L 200 320 Z"
-          fill="none"
-          stroke="#94a3b8"
-          strokeWidth="2"
-          opacity="0.3"
-        />
+        <Geographies geography={geoUrl}>
+          {({ geographies }) =>
+            geographies.map((geo) => (
+              <Geography
+                key={geo.rsmKey}
+                geography={geo}
+                fill="#f1f5f9"
+                stroke="#cbd5e1"
+                strokeWidth={0.5}
+                style={{
+                  default: { outline: 'none' },
+                  hover: { outline: 'none', fill: '#e2e8f0' },
+                  pressed: { outline: 'none' },
+                }}
+              />
+            ))
+          }
+        </Geographies>
         
-        {/* State boundaries (simplified grid) */}
-        {Array.from({ length: 6 }, (_, i) => (
-          <line
-            key={`v-${i}`}
-            x1={100 + i * 120}
-            y1={50}
-            x2={100 + i * 120}
-            y2={350}
-            stroke="#cbd5e1"
-            strokeWidth="1"
-            opacity="0.2"
-          />
-        ))}
-        {Array.from({ length: 4 }, (_, i) => (
-          <line
-            key={`h-${i}`}
-            x1={50}
-            y1={100 + i * 80}
-            x2={750}
-            y2={100 + i * 80}
-            stroke="#cbd5e1"
-            strokeWidth="1"
-            opacity="0.2"
-          />
-        ))}
-        
-        {/* Deal location dots */}
+        {/* Deal location markers */}
         {locationData
           .filter(location => location.regionInfo?.coords)
           .map((location) => {
-            const coords = getCoordinates(location.regionInfo);
-            if (!coords) return null;
-            
+            const [lat, lng] = location.regionInfo!.coords;
             const dotSize = getDotSize(location.count);
             const isSelected = selectedLocation === location.region;
             
             return (
-              <g key={location.region}>
+              <Marker key={location.region} coordinates={[lng, lat]}>
                 <circle
-                  cx={coords.x}
-                  cy={coords.y}
                   r={dotSize}
                   fill={getDotColor(location.count)}
                   stroke="#ffffff"
@@ -112,18 +127,17 @@ export function DealsMap({ locationData }: DealsMapProps) {
                   style={{
                     cursor: 'pointer',
                     opacity: isSelected ? 1 : 0.9,
-                    filter: isSelected ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' : 'none'
+                    filter: isSelected ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : 'none'
                   }}
                   onClick={() => setSelectedLocation(
                     selectedLocation === location.region ? null : location.region
                   )}
                 />
-                {/* Deal count label */}
+                {/* Deal count label for larger dots */}
                 {dotSize > 8 && (
                   <text
-                    x={coords.x}
-                    y={coords.y + 2}
                     textAnchor="middle"
+                    y={2}
                     fontSize="10"
                     fill="#ffffff"
                     fontWeight="bold"
@@ -132,10 +146,10 @@ export function DealsMap({ locationData }: DealsMapProps) {
                     {location.count}
                   </text>
                 )}
-              </g>
+              </Marker>
             );
           })}
-      </svg>
+      </ComposableMap>
 
       {/* Legend */}
       <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-sm">
