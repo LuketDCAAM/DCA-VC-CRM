@@ -17,8 +17,8 @@ export function DealsMap({ locationData }: DealsMapProps) {
   const maxCount = Math.max(...locationData.map(l => l.count), 1);
   
   const getDotSize = (count: number) => {
-    const minSize = 6;
-    const maxSize = 16;
+    const minSize = 4;
+    const maxSize = 12;
     return minSize + (count / maxCount) * (maxSize - minSize);
   };
 
@@ -32,14 +32,14 @@ export function DealsMap({ locationData }: DealsMapProps) {
   };
 
   return (
-    <div className="w-full h-[400px] relative">
+    <div className="w-full h-[300px] relative">
       <ComposableMap
         projection="geoAlbersUsa"
         projectionConfig={{
-          scale: 800,
+          scale: 600,
         }}
-        width={800}
-        height={400}
+        width={600}
+        height={300}
       >
         <ZoomableGroup>
           <Geographies geography={geoUrl}>
@@ -90,7 +90,7 @@ export function DealsMap({ locationData }: DealsMapProps) {
                     <text
                       textAnchor="middle"
                       y={1}
-                      fontSize={dotSize > 10 ? "10" : "8"}
+                      fontSize={dotSize > 8 ? "8" : "6"}
                       fill="#ffffff"
                       fontWeight="bold"
                       style={{
