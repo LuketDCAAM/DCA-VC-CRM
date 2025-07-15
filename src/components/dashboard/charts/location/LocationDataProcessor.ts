@@ -1,4 +1,3 @@
-
 import { Deal } from '@/types/deal';
 import { 
   ALL_REGIONS, 
@@ -33,7 +32,7 @@ export class LocationDataProcessor {
       .filter(part => part.length > 0);
   }
 
-  private static findBestMatch(locationPart: string): { region: string; confidence: 'high' | 'medium' | 'low'; type: string } | null {
+  private static findBestMatch(locationPart: string): { region: string; confidence: 'high' | 'medium' | 'low'; type: 'city' | 'state' | 'country' | 'region' | 'unknown' } | null {
     const cleanPart = locationPart.trim();
     
     // Check aliases first
@@ -104,7 +103,7 @@ export class LocationDataProcessor {
     }
 
     const parts = this.extractLocationParts(location);
-    let bestMatch: { region: string; confidence: 'high' | 'medium' | 'low'; type: string } | null = null;
+    let bestMatch: { region: string; confidence: 'high' | 'medium' | 'low'; type: 'city' | 'state' | 'country' | 'region' | 'unknown' } | null = null;
     
     // Try to find the best match from all parts
     for (const part of parts) {
