@@ -1,4 +1,3 @@
-
 import { Deal } from '@/types/deal';
 
 export interface RegionInfo {
