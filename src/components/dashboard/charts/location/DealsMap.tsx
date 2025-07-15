@@ -16,12 +16,16 @@ export function DealsMap({ locationData }: DealsMapProps) {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
   const [position, setPosition] = useState({ coordinates: [0, 20] as [number, number], zoom: 1 });
 
-  // Calculate dot sizes based on deal count
+  // Calculate dot sizes based on deal count - now with zoom scaling
   const maxCount = Math.max(...locationData.map(l => l.count), 1);
   
-  const getDotSize = (count: number) => {
-    const minSize = 4;
-    const maxSize = 16;
+  const getDotSize = (count: number, zoom: number) => {
+    const baseMinSize = 4;
+    const baseMaxSize = 16;
+    // Scale the base sizes by zoom level - make circles smaller as we zoom in
+    const zoomFactor = Math.max(0.5, Math.min(2, 1 / Math.sqrt(zoom)));
+    const minSize = baseMinSize * zoomFactor;
+    const maxSize = baseMaxSize * zoomFactor;
     return minSize + (count / maxCount) * (maxSize - minSize);
   };
 
@@ -129,7 +133,7 @@ export function DealsMap({ locationData }: DealsMapProps) {
             .filter(location => location.regionInfo?.coords)
             .map((location) => {
               const [lat, lng] = location.regionInfo!.coords;
-              const dotSize = getDotSize(location.count);
+              const dotSize = getDotSize(location.count, position.zoom);
               const isSelected = selectedLocation === location.region;
               
               return (
@@ -148,12 +152,12 @@ export function DealsMap({ locationData }: DealsMapProps) {
                       selectedLocation === location.region ? null : location.region
                     )}
                   />
-                  {/* Deal count label for larger dots */}
+                  {/* Deal count label for larger dots - adjust text size based on zoom */}
                   {dotSize > 8 && (
                     <text
                       textAnchor="middle"
                       y={2}
-                      fontSize="10"
+                      fontSize={Math.max(8, 10 / Math.sqrt(position.zoom))}
                       fill="#ffffff"
                       fontWeight="bold"
                       style={{ pointerEvents: 'none' }}
