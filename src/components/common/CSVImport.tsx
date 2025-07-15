@@ -13,6 +13,7 @@ import { CSVTemplateDownload } from './csv/CSVTemplateDownload';
 import { CSVFileUpload } from './csv/CSVFileUpload';
 import { CSVPreviewTable } from './csv/CSVPreviewTable';
 import { CSVValidationErrors } from './csv/CSVValidationErrors';
+import { CSVDataQualityWarnings } from './csv/CSVDataQualityWarnings';
 import { CSVImportResult } from './csv/CSVImportResult';
 import { CSVImportActions } from './csv/CSVImportActions';
 import { useCSVParser } from './csv/useCSVParser';
@@ -21,7 +22,14 @@ interface CSVImportProps {
   title: string;
   description: string;
   templateColumns: { key: string; label: string; required?: boolean }[];
-  onImport: (data: any[]) => Promise<{ success: boolean; errors?: string[]; imported?: number; error?: string }>;
+  onImport: (data: any[]) => Promise<{ 
+    success: boolean; 
+    errors?: string[]; 
+    warnings?: string[];
+    imported?: number; 
+    error?: string;
+    qualityScore?: number;
+  }>;
   children: React.ReactNode;
 }
 
@@ -36,7 +44,16 @@ export function CSVImport({ title, description, templateColumns, onImport, child
   const [file, setFile] = useState<File | null>(null);
   const [importing, setImporting] = useState(false);
   const [validationErrors, setValidationErrors] = useState<ValidationError[]>([]);
-  const [importResult, setImportResult] = useState<{ success: boolean; errors?: string[]; imported?: number; error?: string } | null>(null);
+  const [dataQualityWarnings, setDataQualityWarnings] = useState<string[]>([]);
+  const [qualityScore, setQualityScore] = useState<number | undefined>(undefined);
+  const [importResult, setImportResult] = useState<{ 
+    success: boolean; 
+    errors?: string[]; 
+    warnings?: string[];
+    imported?: number; 
+    error?: string;
+    qualityScore?: number;
+  } | null>(null);
   const [previewData, setPreviewData] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -47,6 +64,8 @@ export function CSVImport({ title, description, templateColumns, onImport, child
     
     setFile(selectedFile);
     setValidationErrors([]);
+    setDataQualityWarnings([]);
+    setQualityScore(undefined);
     setImportResult(null);
     
     try {
@@ -129,6 +148,14 @@ export function CSVImport({ title, description, templateColumns, onImport, child
       const result = await onImport(mappedData);
       setImportResult(result);
       
+      // Set data quality warnings and score
+      if (result.warnings) {
+        setDataQualityWarnings(result.warnings);
+      }
+      if (result.qualityScore) {
+        setQualityScore(result.qualityScore);
+      }
+      
       if (result.success) {
         // Reset form on success
         resetForm();
@@ -136,7 +163,7 @@ export function CSVImport({ title, description, templateColumns, onImport, child
         // Close dialog after successful import
         setTimeout(() => {
           setIsOpen(false);
-        }, 2000);
+        }, 3000);
       }
     } catch (error) {
       console.error('Import error:', error);
@@ -153,6 +180,8 @@ export function CSVImport({ title, description, templateColumns, onImport, child
   const resetForm = () => {
     setFile(null);
     setValidationErrors([]);
+    setDataQualityWarnings([]);
+    setQualityScore(undefined);
     setImportResult(null);
     setPreviewData([]);
     if (fileInputRef.current) {
@@ -186,6 +215,11 @@ export function CSVImport({ title, description, templateColumns, onImport, child
           />
 
           <CSVValidationErrors validationErrors={validationErrors} />
+
+          <CSVDataQualityWarnings 
+            warnings={dataQualityWarnings} 
+            qualityScore={qualityScore}
+          />
 
           <CSVImportResult importResult={importResult} />
 
