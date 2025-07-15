@@ -77,7 +77,6 @@ export const INTERNATIONAL_REGIONS: Record<string, RegionInfo> = {
   'Nigeria': { name: 'Nigeria', coords: [9.0820, 8.6753], abbr: 'NG' },
   'Kenya': { name: 'Kenya', coords: [-0.0236, 37.9062], abbr: 'KE' },
   'UAE': { name: 'UAE', coords: [23.4241, 53.8478], abbr: 'AE' },
-  'United Arab Emirates': { name: 'United Arab Emirates', coords: [23.4241, 53.8478], abbr: 'AE' },
   'Russia': { name: 'Russia', coords: [61.5240, 105.3188], abbr: 'RU' },
   'Poland': { name: 'Poland', coords: [51.9194, 19.1451], abbr: 'PL' },
   'Czech Republic': { name: 'Czech Republic', coords: [49.8175, 15.4730], abbr: 'CZ' },
@@ -164,11 +163,11 @@ export const CITY_TO_REGION: Record<string, string> = {
   
   // Illinois cities
   'Chicago': 'Illinois',
-  'Aurora Illinois': 'Illinois',
+  'Aurora': 'Illinois',
   'Rockford': 'Illinois',
   'Joliet': 'Illinois',
   'Naperville': 'Illinois',
-  'Springfield Illinois': 'Illinois',
+  'Springfield': 'Illinois',
   'Peoria': 'Illinois',
   'Elgin': 'Illinois',
   
@@ -186,7 +185,7 @@ export const CITY_TO_REGION: Record<string, string> = {
   // Massachusetts cities
   'Boston': 'Massachusetts',
   'Worcester': 'Massachusetts',
-  'Springfield Massachusetts': 'Massachusetts',
+  'Springfield': 'Massachusetts',
   'Lowell': 'Massachusetts',
   'Cambridge': 'Massachusetts',
   'New Bedford': 'Massachusetts',
@@ -196,7 +195,7 @@ export const CITY_TO_REGION: Record<string, string> = {
   // Colorado cities
   'Denver': 'Colorado',
   'Colorado Springs': 'Colorado',
-  'Aurora Colorado': 'Colorado',
+  'Aurora': 'Colorado',
   'Fort Collins': 'Colorado',
   'Lakewood': 'Colorado',
   'Thornton': 'Colorado',
@@ -205,7 +204,7 @@ export const CITY_TO_REGION: Record<string, string> = {
   
   // Georgia cities
   'Atlanta': 'Georgia',
-  'Columbus Georgia': 'Georgia',
+  'Columbus': 'Georgia',
   'Augusta': 'Georgia',
   'Savannah': 'Georgia',
   'Athens': 'Georgia',
@@ -232,7 +231,7 @@ export const CITY_TO_REGION: Record<string, string> = {
   'Salt Lake City': 'Utah',
   'Philadelphia': 'Pennsylvania',
   'Pittsburgh': 'Pennsylvania',
-  'Columbus Ohio': 'Ohio',
+  'Columbus': 'Ohio',
   'Cleveland': 'Ohio',
   'Cincinnati': 'Ohio',
   'Detroit': 'Michigan',
