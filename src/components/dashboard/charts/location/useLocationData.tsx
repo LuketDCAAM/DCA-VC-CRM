@@ -1,6 +1,7 @@
+
 import { useMemo } from 'react';
 import { Deal } from '@/types/deal';
-import { LocationData, US_REGIONS, CITY_TO_REGION } from './LocationDataTypes';
+import { LocationData, ALL_REGIONS, CITY_TO_REGION } from './LocationDataTypes';
 
 export function useLocationData(filteredDeals: Deal[]): LocationData[] {
   return useMemo(() => {
@@ -27,7 +28,7 @@ export function useLocationData(filteredDeals: Deal[]): LocationData[] {
             // If still not found, try state variations
             if (!region) {
               // Try the state part directly if it's a known region
-              if (US_REGIONS[state]) {
+              if (ALL_REGIONS[state]) {
                 region = state;
               } else {
                 // Try common state abbreviation to full name mappings
@@ -62,6 +63,7 @@ export function useLocationData(filteredDeals: Deal[]): LocationData[] {
                   'SC': 'South Carolina',
                   'LA': 'Louisiana',
                   'KY': 'Kentucky',
+                  'OK': 'Oklahoma',
                 };
                 region = stateMapping[state] || state;
               }
@@ -71,7 +73,7 @@ export function useLocationData(filteredDeals: Deal[]): LocationData[] {
         
         // If we still don't have a region mapping, check if it's already a known region
         if (!region) {
-          if (US_REGIONS[location]) {
+          if (ALL_REGIONS[location]) {
             region = location;
           } else {
             // For any unmapped location, keep it as-is but log it
@@ -105,7 +107,7 @@ export function useLocationData(filteredDeals: Deal[]): LocationData[] {
         count: data.count,
         deals: data.deals,
         cities: Array.from(data.cities),
-        regionInfo: US_REGIONS[region] || null
+        regionInfo: ALL_REGIONS[region] || null
       }))
       .sort((a, b) => b.count - a.count);
     
