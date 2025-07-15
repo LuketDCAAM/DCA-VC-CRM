@@ -2,9 +2,11 @@
 import React, { useState } from 'react';
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from 'react-simple-maps';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { LocationData } from './LocationDataTypes';
 
-const geoUrl = "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json";
+const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@3/countries-110m.json";
 
 interface DealsMapProps {
   locationData: LocationData[];
@@ -12,13 +14,15 @@ interface DealsMapProps {
 
 export function DealsMap({ locationData }: DealsMapProps) {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [center, setCenter] = useState<[number, number]>([0, 0]);
 
   // Calculate dot sizes based on deal count
   const maxCount = Math.max(...locationData.map(l => l.count), 1);
   
   const getDotSize = (count: number) => {
-    const minSize = 3;
-    const maxSize = 8;
+    const minSize = 2;
+    const maxSize = 6;
     return minSize + (count / maxCount) * (maxSize - minSize);
   };
 
@@ -31,30 +35,82 @@ export function DealsMap({ locationData }: DealsMapProps) {
     return '#dbeafe'; // blue-100
   };
 
+  const handleZoomIn = () => {
+    setZoom(prev => Math.min(prev * 1.5, 8));
+  };
+
+  const handleZoomOut = () => {
+    setZoom(prev => Math.max(prev / 1.5, 1));
+  };
+
+  const handleReset = () => {
+    setZoom(1);
+    setCenter([0, 0]);
+  };
+
+  const handleMoveEnd = (position: { coordinates: [number, number]; zoom: number }) => {
+    setCenter(position.coordinates);
+    setZoom(position.zoom);
+  };
+
   return (
-    <div className="w-full h-[250px] relative overflow-hidden">
+    <div className="w-full h-[400px] relative overflow-hidden bg-slate-50 rounded-lg">
+      {/* Zoom Controls */}
+      <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8 w-8 p-0 bg-white/90 backdrop-blur-sm"
+          onClick={handleZoomIn}
+        >
+          <ZoomIn className="h-3 w-3" />
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8 w-8 p-0 bg-white/90 backdrop-blur-sm"
+          onClick={handleZoomOut}
+        >
+          <ZoomOut className="h-3 w-3" />
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-8 w-8 p-0 bg-white/90 backdrop-blur-sm"
+          onClick={handleReset}
+        >
+          <RotateCcw className="h-3 w-3" />
+        </Button>
+      </div>
+
       <ComposableMap
-        projection="geoAlbersUsa"
+        projection="geoNaturalEarth1"
         projectionConfig={{
-          scale: 400,
+          scale: 120,
         }}
-        width={400}
-        height={200}
+        width={800}
+        height={400}
         className="w-full h-full"
       >
-        <ZoomableGroup>
+        <ZoomableGroup
+          zoom={zoom}
+          center={center}
+          onMoveEnd={handleMoveEnd}
+          minZoom={1}
+          maxZoom={8}
+        >
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
               geographies.map((geo) => (
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill="#f3f4f6"
-                  stroke="#e5e7eb"
-                  strokeWidth={0.3}
+                  fill="#f8fafc"
+                  stroke="#e2e8f0"
+                  strokeWidth={0.5}
                   style={{
                     default: { outline: "none" },
-                    hover: { outline: "none", fill: "#e5e7eb" },
+                    hover: { outline: "none", fill: "#f1f5f9" },
                     pressed: { outline: "none" },
                   }}
                 />
@@ -87,12 +143,12 @@ export function DealsMap({ locationData }: DealsMapProps) {
                         selectedLocation === location.region ? null : location.region
                       )}
                     />
-                    {/* Deal count label - only show for larger dots */}
-                    {dotSize > 5 && (
+                    {/* Deal count label - only show for larger dots and higher zoom */}
+                    {dotSize > 4 && zoom > 2 && (
                       <text
                         textAnchor="middle"
                         y={1}
-                        fontSize="6"
+                        fontSize={Math.min(4, zoom)}
                         fill="#ffffff"
                         fontWeight="bold"
                         style={{
@@ -183,6 +239,11 @@ export function DealsMap({ locationData }: DealsMapProps) {
           })()}
         </div>
       )}
+
+      {/* Zoom indicator */}
+      <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm rounded px-2 py-1">
+        <span className="text-xs font-medium">Zoom: {zoom.toFixed(1)}x</span>
+      </div>
     </div>
   );
 }
