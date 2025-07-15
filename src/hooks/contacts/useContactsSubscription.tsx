@@ -8,7 +8,7 @@ const globalSubscriptions: Record<string, {
   channel: any;
   subscribers: Set<() => void>;
   isSubscribed: boolean;
-  subscriptionPromise?: Promise<void>;
+  isSubscribing: boolean;
 }> = {};
 
 export function useContactsSubscription(user: User | null, refetch: () => void) {
@@ -36,55 +36,62 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
         channel: null,
         subscribers: new Set(),
         isSubscribed: false,
+        isSubscribing: false,
       };
     }
 
     const subscription = globalSubscriptions[userId];
     subscription.subscribers.add(refetchFunction);
 
-    // Create subscription if not already subscribed or in progress
-    if (!subscription.isSubscribed && !subscription.subscriptionPromise) {
+    // Only create subscription if not already subscribed or subscribing
+    if (!subscription.isSubscribed && !subscription.isSubscribing) {
       console.log(`[ContactsSubscription] Creating new subscription for user: ${userId}`);
       
-      subscription.subscriptionPromise = new Promise<void>((resolve) => {
-        const channelName = `contacts-${userId}-${Date.now()}`;
-        const channel = supabase.channel(channelName);
-        
-        subscription.channel = channel;
-        
-        channel
-          .on(
-            'postgres_changes',
-            { event: '*', schema: 'public', table: 'contacts' },
-            (payload) => {
-              console.log(`[ContactsSubscription] Received change for user ${userId}:`, payload);
-              // Notify all subscribers
-              subscription.subscribers.forEach(subscriber => subscriber());
-            }
-          )
-          .subscribe((status) => {
-            console.log(`[ContactsSubscription] Subscription status for user ${userId}:`, status);
-            
-            if (status === 'SUBSCRIBED') {
-              subscription.isSubscribed = true;
-              resolve();
-            } else if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
-              console.warn(`[ContactsSubscription] Subscription failed for user ${userId}:`, status);
-              // Clean up on error
-              subscription.isSubscribed = false;
-              subscription.subscriptionPromise = undefined;
-              if (subscription.channel) {
-                try {
-                  supabase.removeChannel(subscription.channel);
-                } catch (error) {
-                  console.warn(`[ContactsSubscription] Error removing channel:`, error);
-                }
-                subscription.channel = null;
+      subscription.isSubscribing = true;
+      
+      // Create a unique channel name to avoid conflicts
+      const channelName = `contacts-${userId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const channel = supabase.channel(channelName);
+      
+      subscription.channel = channel;
+      
+      channel
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'contacts' },
+          (payload) => {
+            console.log(`[ContactsSubscription] Received change for user ${userId}:`, payload);
+            // Notify all subscribers
+            subscription.subscribers.forEach(subscriber => {
+              try {
+                subscriber();
+              } catch (error) {
+                console.error(`[ContactsSubscription] Error in subscriber callback:`, error);
               }
-              resolve();
+            });
+          }
+        )
+        .subscribe((status) => {
+          console.log(`[ContactsSubscription] Subscription status for user ${userId}:`, status);
+          
+          if (status === 'SUBSCRIBED') {
+            subscription.isSubscribed = true;
+            subscription.isSubscribing = false;
+          } else if (status === 'CHANNEL_ERROR' || status === 'CLOSED') {
+            console.warn(`[ContactsSubscription] Subscription failed for user ${userId}:`, status);
+            // Clean up on error
+            subscription.isSubscribed = false;
+            subscription.isSubscribing = false;
+            if (subscription.channel) {
+              try {
+                supabase.removeChannel(subscription.channel);
+              } catch (error) {
+                console.warn(`[ContactsSubscription] Error removing channel:`, error);
+              }
+              subscription.channel = null;
             }
-          });
-      });
+          }
+        });
     } else if (subscription.isSubscribed) {
       console.log(`[ContactsSubscription] Reusing existing subscription for user: ${userId}`);
     } else {
