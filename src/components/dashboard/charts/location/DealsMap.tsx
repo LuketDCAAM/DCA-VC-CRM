@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { ComposableMap, Geographies, Geography, Marker } from 'react-simple-maps';
+import React, { useState, useCallback } from 'react';
+import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from 'react-simple-maps';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
@@ -14,8 +14,7 @@ interface DealsMapProps {
 
 export function DealsMap({ locationData }: DealsMapProps) {
   const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(1);
-  const [center, setCenter] = useState<[number, number]>([0, 20]);
+  const [position, setPosition] = useState({ coordinates: [0, 20] as [number, number], zoom: 1 });
 
   // Calculate dot sizes based on deal count
   const maxCount = Math.max(...locationData.map(l => l.count), 1);
@@ -35,17 +34,30 @@ export function DealsMap({ locationData }: DealsMapProps) {
     return '#dbeafe'; // blue-100
   };
 
+  const handleMoveEnd = useCallback((position: { coordinates: [number, number]; zoom: number }) => {
+    setPosition(position);
+  }, []);
+
   const handleZoomIn = () => {
-    if (zoom < 4) setZoom(zoom * 1.5);
+    if (position.zoom < 4) {
+      setPosition(prev => ({
+        ...prev,
+        zoom: prev.zoom * 1.5
+      }));
+    }
   };
 
   const handleZoomOut = () => {
-    if (zoom > 1) setZoom(zoom / 1.5);
+    if (position.zoom > 1) {
+      setPosition(prev => ({
+        ...prev,
+        zoom: prev.zoom / 1.5
+      }));
+    }
   };
 
   const handleReset = () => {
-    setZoom(1);
-    setCenter([0, 20]);
+    setPosition({ coordinates: [0, 20], zoom: 1 });
     setSelectedLocation(null);
   };
 
@@ -82,73 +94,77 @@ export function DealsMap({ locationData }: DealsMapProps) {
       {/* Map */}
       <ComposableMap
         projection="geoMercator"
-        projectionConfig={{
-          scale: 100 * zoom,
-          center: center,
-        }}
         width={800}
         height={400}
         style={{ width: '100%', height: '100%' }}
       >
-        <Geographies geography={geoUrl}>
-          {({ geographies }) =>
-            geographies.map((geo) => (
-              <Geography
-                key={geo.rsmKey}
-                geography={geo}
-                fill="#f1f5f9"
-                stroke="#cbd5e1"
-                strokeWidth={0.5}
-                style={{
-                  default: { outline: 'none' },
-                  hover: { outline: 'none', fill: '#e2e8f0' },
-                  pressed: { outline: 'none' },
-                }}
-              />
-            ))
-          }
-        </Geographies>
-        
-        {/* Deal location markers */}
-        {locationData
-          .filter(location => location.regionInfo?.coords)
-          .map((location) => {
-            const [lat, lng] = location.regionInfo!.coords;
-            const dotSize = getDotSize(location.count);
-            const isSelected = selectedLocation === location.region;
-            
-            return (
-              <Marker key={location.region} coordinates={[lng, lat]}>
-                <circle
-                  r={dotSize}
-                  fill={getDotColor(location.count)}
-                  stroke="#ffffff"
-                  strokeWidth={2}
+        <ZoomableGroup
+          zoom={position.zoom}
+          center={position.coordinates}
+          onMoveEnd={handleMoveEnd}
+          minZoom={1}
+          maxZoom={8}
+        >
+          <Geographies geography={geoUrl}>
+            {({ geographies }) =>
+              geographies.map((geo) => (
+                <Geography
+                  key={geo.rsmKey}
+                  geography={geo}
+                  fill="#f1f5f9"
+                  stroke="#cbd5e1"
+                  strokeWidth={0.5}
                   style={{
-                    cursor: 'pointer',
-                    opacity: isSelected ? 1 : 0.9,
-                    filter: isSelected ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : 'none'
+                    default: { outline: 'none' },
+                    hover: { outline: 'none', fill: '#e2e8f0' },
+                    pressed: { outline: 'none' },
                   }}
-                  onClick={() => setSelectedLocation(
-                    selectedLocation === location.region ? null : location.region
-                  )}
                 />
-                {/* Deal count label for larger dots */}
-                {dotSize > 8 && (
-                  <text
-                    textAnchor="middle"
-                    y={2}
-                    fontSize="10"
-                    fill="#ffffff"
-                    fontWeight="bold"
-                    style={{ pointerEvents: 'none' }}
-                  >
-                    {location.count}
-                  </text>
-                )}
-              </Marker>
-            );
-          })}
+              ))
+            }
+          </Geographies>
+          
+          {/* Deal location markers */}
+          {locationData
+            .filter(location => location.regionInfo?.coords)
+            .map((location) => {
+              const [lat, lng] = location.regionInfo!.coords;
+              const dotSize = getDotSize(location.count);
+              const isSelected = selectedLocation === location.region;
+              
+              return (
+                <Marker key={location.region} coordinates={[lng, lat]}>
+                  <circle
+                    r={dotSize}
+                    fill={getDotColor(location.count)}
+                    stroke="#ffffff"
+                    strokeWidth={2}
+                    style={{
+                      cursor: 'pointer',
+                      opacity: isSelected ? 1 : 0.9,
+                      filter: isSelected ? 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' : 'none'
+                    }}
+                    onClick={() => setSelectedLocation(
+                      selectedLocation === location.region ? null : location.region
+                    )}
+                  />
+                  {/* Deal count label for larger dots */}
+                  {dotSize > 8 && (
+                    <text
+                      textAnchor="middle"
+                      y={2}
+                      fontSize="10"
+                      fill="#ffffff"
+                      fontWeight="bold"
+                      style={{ pointerEvents: 'none' }}
+                    >
+                      {location.count}
+                    </text>
+                  )}
+                </Marker>
+              );
+            })}
+        </ZoomableGroup>
       </ComposableMap>
 
       {/* Legend */}

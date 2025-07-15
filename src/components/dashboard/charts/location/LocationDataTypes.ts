@@ -185,7 +185,6 @@ export const CITY_TO_REGION: Record<string, string> = {
   // Massachusetts cities
   'Boston': 'Massachusetts',
   'Worcester': 'Massachusetts',
-  'Springfield': 'Massachusetts',
   'Lowell': 'Massachusetts',
   'Cambridge': 'Massachusetts',
   'New Bedford': 'Massachusetts',
@@ -195,7 +194,6 @@ export const CITY_TO_REGION: Record<string, string> = {
   // Colorado cities
   'Denver': 'Colorado',
   'Colorado Springs': 'Colorado',
-  'Aurora': 'Colorado',
   'Fort Collins': 'Colorado',
   'Lakewood': 'Colorado',
   'Thornton': 'Colorado',
@@ -204,7 +202,6 @@ export const CITY_TO_REGION: Record<string, string> = {
   
   // Georgia cities
   'Atlanta': 'Georgia',
-  'Columbus': 'Georgia',
   'Augusta': 'Georgia',
   'Savannah': 'Georgia',
   'Athens': 'Georgia',
@@ -231,7 +228,6 @@ export const CITY_TO_REGION: Record<string, string> = {
   'Salt Lake City': 'Utah',
   'Philadelphia': 'Pennsylvania',
   'Pittsburgh': 'Pennsylvania',
-  'Columbus': 'Ohio',
   'Cleveland': 'Ohio',
   'Cincinnati': 'Ohio',
   'Detroit': 'Michigan',
@@ -260,14 +256,12 @@ export const CITY_TO_REGION: Record<string, string> = {
   
   // International cities
   'Toronto': 'Canada',
-  'Vancouver': 'Canada',
   'Montreal': 'Canada',
   'Calgary': 'Canada',
   'Ottawa': 'Canada',
   'London': 'United Kingdom',
   'Manchester': 'United Kingdom',
   'Edinburgh': 'United Kingdom',
-  'Birmingham': 'United Kingdom',
   'Glasgow': 'United Kingdom',
   'Rome': 'Italy',
   'Milan': 'Italy',
