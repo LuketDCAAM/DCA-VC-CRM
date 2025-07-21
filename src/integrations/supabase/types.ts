@@ -619,6 +619,7 @@ export type Database = {
           firm_website: string | null
           id: string
           last_call_date: string | null
+          linkedin_url: string | null
           location: string | null
           preferred_investment_stage:
             | Database["public"]["Enums"]["investment_stage"]
@@ -639,6 +640,7 @@ export type Database = {
           firm_website?: string | null
           id?: string
           last_call_date?: string | null
+          linkedin_url?: string | null
           location?: string | null
           preferred_investment_stage?:
             | Database["public"]["Enums"]["investment_stage"]
@@ -659,6 +661,7 @@ export type Database = {
           firm_website?: string | null
           id?: string
           last_call_date?: string | null
+          linkedin_url?: string | null
           location?: string | null
           preferred_investment_stage?:
             | Database["public"]["Enums"]["investment_stage"]
