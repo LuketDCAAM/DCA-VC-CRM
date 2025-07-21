@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -75,6 +75,17 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [isEditingInvestments, setIsEditingInvestments] = useState(false);
   const [isEditingPerformance, setIsEditingPerformance] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
+
+  // Reset edit states when dialog closes
+  useEffect(() => {
+    if (!open) {
+      setIsEditingCompany(false);
+      setIsEditingInvestments(false);
+      setIsEditingPerformance(false);
+      setActiveTab("overview");
+    }
+  }, [open]);
 
   if (!company) return null;
 
@@ -102,53 +113,9 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
   const originalValue = company.investments.find(inv => inv.post_money_valuation)?.post_money_valuation;
   const valueMultiple = currentValue && originalValue ? currentValue / originalValue : null;
 
-  if (isEditingCompany) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <PortfolioEditForm
-            company={company}
-            onSave={handleSave}
-            onCancel={handleCancel}
-          />
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  if (isEditingInvestments) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-          <InvestmentEditForm
-            companyId={company.id}
-            investments={company.investments}
-            onSave={handleSave}
-            onCancel={handleCancel}
-          />
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  if (isEditingPerformance) {
-    return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <PerformanceEditForm
-            companyId={company.id}
-            currentValuation={company.current_valuation}
-            onSave={handleSave}
-            onCancel={handleCancel}
-          />
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex justify-between items-center">
             <div>
@@ -174,7 +141,7 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
           </div>
         </DialogHeader>
 
-        <Tabs defaultValue="overview" className="mt-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="investments">Investments</TabsTrigger>
@@ -183,7 +150,15 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {isEditingCompany ? (
+              <PortfolioEditForm
+                company={company}
+                onSave={handleSave}
+                onCancel={handleCancel}
+              />
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
@@ -269,16 +244,27 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
                 )}
               </CardContent>
             </Card>
+                </>
+              )}
           </TabsContent>
 
           <TabsContent value="investments" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Investment History</h3>
-              <Button onClick={() => setIsEditingInvestments(true)} size="sm">
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Investments
-              </Button>
-            </div>
+            {isEditingInvestments ? (
+              <InvestmentEditForm
+                companyId={company.id}
+                investments={company.investments}
+                onSave={handleSave}
+                onCancel={handleCancel}
+              />
+            ) : (
+              <>
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Investment History</h3>
+                  <Button onClick={() => setIsEditingInvestments(true)} size="sm">
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Investments
+                  </Button>
+                </div>
             
             {company.investments.length > 0 ? (
               company.investments
@@ -325,16 +311,27 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
                 </CardContent>
               </Card>
             )}
+              </>
+            )}
           </TabsContent>
 
           <TabsContent value="performance" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Performance Metrics</h3>
-              <Button onClick={() => setIsEditingPerformance(true)} size="sm">
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Performance
-              </Button>
-            </div>
+            {isEditingPerformance ? (
+              <PerformanceEditForm
+                companyId={company.id}
+                currentValuation={company.current_valuation}
+                onSave={handleSave}
+                onCancel={handleCancel}
+              />
+            ) : (
+              <>
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold">Performance Metrics</h3>
+                  <Button onClick={() => setIsEditingPerformance(true)} size="sm">
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Performance
+                  </Button>
+                </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
@@ -380,7 +377,9 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
                   </div>
                 </CardContent>
               </Card>
-            </div>
+                </div>
+              </>
+            )}
           </TabsContent>
 
           <TabsContent value="activity" className="space-y-4">
