@@ -19,7 +19,18 @@ import NotFound from "./pages/NotFound";
 import MicrosoftAuthCallback from "./pages/auth/microsoft/callback";
 import { useAuth } from "./hooks/useAuth";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Prevent automatic refetching on window focus to avoid loading issues when switching tabs
+      refetchOnWindowFocus: false,
+      // Reduce retry attempts to avoid hanging requests
+      retry: 1,
+      // Set a reasonable stale time to prevent unnecessary refetches
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
