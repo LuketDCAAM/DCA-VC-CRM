@@ -101,8 +101,12 @@ export function useAllUsers() {
     // this function will run to unsubscribe from the channels.
     return () => {
       console.log('Unsubscribing from user_roles and user_approvals channels...');
-      supabase.removeChannel(rolesChannel);
-      supabase.removeChannel(approvalsChannel);
+      try {
+        supabase.removeChannel(rolesChannel);
+        supabase.removeChannel(approvalsChannel);
+      } catch (error) {
+        console.warn('Error removing channels:', error);
+      }
     };
   }, [fetchUsers]); // Depend on fetchUsers to re-run effect if it changes (due to useCallback, it won't often)
 

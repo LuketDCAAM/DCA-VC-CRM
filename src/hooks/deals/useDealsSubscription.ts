@@ -15,7 +15,11 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
 
     // Clean up any existing channel first
     if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
+      try {
+        supabase.removeChannel(channelRef.current);
+      } catch (error) {
+        console.warn('Error removing existing channel:', error);
+      }
       channelRef.current = null;
     }
 
@@ -56,7 +60,11 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
       // Cleanly remove the channel on unmount
       console.log('Unsubscribing deals channel...');
       if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
+        try {
+          supabase.removeChannel(channelRef.current);
+        } catch (error) {
+          console.warn('Error removing deals channel:', error);
+        }
         channelRef.current = null;
       }
     };

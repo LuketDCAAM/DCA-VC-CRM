@@ -137,7 +137,11 @@ export function usePortfolioCompanies() {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(companiesChannel);
+      try {
+        supabase.removeChannel(companiesChannel);
+      } catch (error) {
+        console.warn('Error removing portfolio companies channel:', error);
+      }
     };
   }, [user?.id, queryClient, queryKey]);
 

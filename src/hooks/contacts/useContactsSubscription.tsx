@@ -101,23 +101,31 @@ export function useContactsSubscription(user: User | null, refetch: () => void) 
     return () => {
       console.log(`[ContactsSubscription] Cleanup for user: ${userId}`);
       
-      if (subscription.subscribers.has(refetchFunction)) {
+      if (subscription && subscription.subscribers.has(refetchFunction)) {
         subscription.subscribers.delete(refetchFunction);
       }
 
       // Only cleanup if no more subscribers
-      if (subscription.subscribers.size === 0) {
+      if (subscription && subscription.subscribers.size === 0) {
         console.log(`[ContactsSubscription] No more subscribers, cleaning up for user: ${userId}`);
         
         if (subscription.channel) {
           try {
-            subscription.channel.unsubscribe();
+            // Unsubscribe first
+            if (typeof subscription.channel.unsubscribe === 'function') {
+              subscription.channel.unsubscribe();
+            }
+            // Then remove the channel safely
             supabase.removeChannel(subscription.channel);
           } catch (error) {
             console.warn(`[ContactsSubscription] Error during cleanup:`, error);
           }
+          subscription.channel = null;
         }
         
+        // Reset state before deleting
+        subscription.isSubscribed = false;
+        subscription.isSubscribing = false;
         delete globalSubscriptions[userId];
       }
     };
