@@ -35,6 +35,18 @@ export function InvestmentEditForm({ companyId, investments, onSave, onCancel }:
   );
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
+  // Sync editing investments with props when investments change
+  React.useEffect(() => {
+    setEditingInvestments(investments.map(inv => ({
+      ...inv,
+      // Convert from cents to dollars for display
+      amount_invested: inv.amount_invested / 100,
+      post_money_valuation: inv.post_money_valuation ? inv.post_money_valuation / 100 : null,
+      price_per_share: inv.price_per_share ? inv.price_per_share / 100 : null,
+      revenue_at_investment: inv.revenue_at_investment ? inv.revenue_at_investment / 100 : null,
+    })));
+  }, [investments]);
+
   const { addNewInvestment, removeInvestment, saveInvestments } = useInvestmentOperations(companyId, onSave);
 
   const handleAddNew = () => {
