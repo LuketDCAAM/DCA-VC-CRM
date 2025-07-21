@@ -74,7 +74,7 @@ export function useOutlookCalendarSync() {
 
     try {
       const { data, error } = await supabase.functions.invoke('outlook-calendar-sync', {
-        body: { userId: user.id }
+        body: { user_id: user.id, sync_type: 'incremental' }
       });
 
       if (error) throw error;
@@ -112,7 +112,7 @@ export function useOutlookCalendarSync() {
 
     try {
       const { data, error } = await supabase.functions.invoke('outlook-calendar-sync', {
-        body: { userId: user.id, syncType: 'full' }
+        body: { user_id: user.id, sync_type: 'full' }
       });
 
       if (error) throw error;
