@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; // Added useEffect
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Trash2, Edit, Archive, LayoutGrid, List } from 'lucide-react';
@@ -7,29 +7,15 @@ import { InvestorCard } from '@/components/investors/InvestorCard';
 import { SearchAndFilter, FilterOption } from '@/components/common/SearchAndFilter';
 import { BulkActions, BulkAction } from '@/components/common/BulkActions';
 import { useCSVImport } from '@/hooks/useCSVImport';
-import { AddInvestorDialog } from '@/components/investors/AddInvestorDialog';
-import { AddContactDialog } from '@/components/contacts/AddContactDialog'; // Corrected '=>' to 'from'
+// Import InvestorFormData and investmentStages from AddInvestorDialog
+import { AddInvestorDialog, InvestorFormData, investmentStages as dialogInvestmentStages } from '@/components/investors/AddInvestorDialog'; 
+import { AddContactDialog } from '@/components/contacts/AddContactDialog'; 
 import { InvestorListView } from '@/components/investors/InvestorListView';
 import { InvestorsPageHeader } from '@/components/investors/InvestorsPageHeader';
 import { InvestorStats } from '@/components/investors/InvestorStats';
 import { NoInvestorsFound } from '@/components/investors/NoInvestorsFound';
 import { Investor } from '@/types/investor';
 
-// Define a type for the investor form data (matching what AddInvestorDialog expects)
-interface InvestorFormData {
-  contact_name: string;
-  contact_email?: string | null;
-  contact_phone?: string | null;
-  firm_name?: string | null;
-  firm_website?: string | null;
-  linkedin_url?: string | null;
-  location?: string | null;
-  preferred_investment_stage?: string | null; // Use string as per enum
-  average_check_size?: number | null;
-  preferred_sectors?: string | null;
-  tags?: string | null;
-  last_call_date?: string | null;
-}
 
 const LOCAL_STORAGE_DRAFT_KEY = 'investorAddFormDraft';
 
@@ -90,14 +76,7 @@ export default function Investors() {
       label: 'Investment Stage',
       value: 'preferred_investment_stage',
       type: 'select',
-      options: [
-        { label: 'Pre-Seed', value: 'Pre-Seed' },
-        { label: 'Seed', value: 'Seed' },
-        { label: 'Series A', value: 'Series A' },
-        { label: 'Series B', value: 'Series B' },
-        { label: 'Series C', value: 'Series C' },
-        { label: 'Growth', value: 'Growth' },
-      ]
+      options: dialogInvestmentStages.map(stage => ({ label: stage, value: stage }))
     },
     {
       key: 'location',
