@@ -21,10 +21,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useInvestors } from '@/hooks/useInvestors';
-import { InvestmentStage, Investor } from '@/types/investor';
+import { Investor } from '@/types/investor'; // Assuming Investor type is still needed
 
-const investmentStages = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C', 'Growth', 'Late Stage'] as const;
+// Export investmentStages directly from here
+export const investmentStages = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C', 'Growth', 'Late Stage'] as const;
 
+// Define the Zod schema
 const investorSchema = z.object({
   contact_name: z.string().min(1, 'Contact name is required'),
   contact_email: z.string().email('Invalid email address').nullable().optional().or(z.literal('')),
@@ -40,7 +42,8 @@ const investorSchema = z.object({
   last_call_date: z.string().nullable().optional(),
 });
 
-type InvestorFormData = z.infer<typeof investorSchema>;
+// Export InvestorFormData type for use in other components
+export type InvestorFormData = z.infer<typeof investorSchema>;
 
 interface AddInvestorDialogProps {
   investor?: Investor; // For editing existing investor
