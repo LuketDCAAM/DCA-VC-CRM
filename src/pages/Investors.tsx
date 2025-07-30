@@ -218,13 +218,18 @@ export default function Investors() {
     localStorage.removeItem(LOCAL_STORAGE_DRAFT_KEY);
   };
 
-  // New handler for when the dialog closes without saving (e.g., user clicks cancel or outside)
-  const handleCloseAddInvestorDialogWithoutSave = (formData: InvestorFormData) => {
-    if (!selectedInvestor) { // Only save draft if it's an 'add' operation
+  // Handler for the Dialog component's onOpenChange prop
+  const handleDialogVisibilityChange = (newOpenState: boolean) => {
+    setIsDialogOpen(newOpenState);
+  };
+
+  // Handler for the AddInvestorDialog's onCloseWithoutSave prop
+  const handleSaveDraftData = (formData: InvestorFormData) => {
+    // Only save draft if it's an 'add' operation (not editing)
+    if (!selectedInvestor) { 
       setDraftInvestorData(formData);
       localStorage.setItem(LOCAL_STORAGE_DRAFT_KEY, JSON.stringify(formData));
     }
-    setIsDialogOpen(false);
   };
 
   const handleFilterChange = (key: string, value: any) => {
@@ -360,11 +365,11 @@ export default function Investors() {
       {/* Add/Edit Investor Dialog */}
       <AddInvestorDialog
         open={isDialogOpen}
-        onOpenChange={handleCloseAddInvestorDialogWithoutSave} {/* Use the new handler */}
+        onOpenChange={handleDialogVisibilityChange} {/* Now uses the dedicated visibility handler */}
         investor={selectedInvestor}
         onSuccess={handleDialogSuccess}
-        initialFormData={draftInvestorData} {/* Pass draft data */}
-        onCloseWithoutSave={handleCloseAddInvestorDialogWithoutSave} {/* Pass the same handler for consistency */}
+        initialFormData={draftInvestorData}
+        onCloseWithoutSave={handleSaveDraftData} {/* Now uses the dedicated draft saving handler */}
       />
       <AddContactDialog
         open={isContactDialogOpen}
