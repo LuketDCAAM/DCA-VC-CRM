@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -44,19 +43,22 @@ const investorSchema = z.object({
 type InvestorFormData = z.infer<typeof investorSchema>;
 
 interface AddInvestorDialogProps {
-  investor?: Investor;
+  investor?: Investor; // For editing existing investor
   onSuccess: () => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initialFormData?: InvestorFormData; // New prop for draft data
+  onCloseWithoutSave?: (formData: InvestorFormData) => void; // New prop to save draft
 }
 
-export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange }: AddInvestorDialogProps) {
+export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange, initialFormData, onCloseWithoutSave }: AddInvestorDialogProps) {
   const { addInvestor, updateInvestor } = useInvestors();
   const {
     register,
     handleSubmit,
     reset,
     control,
+    getValues, // Added getValues to retrieve current form data
     formState: { errors, isSubmitting },
   } = useForm<InvestorFormData>({
     resolver: zodResolver(investorSchema),
@@ -65,6 +67,7 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange }: A
   useEffect(() => {
     if (open) {
       if (investor) {
+        // Editing existing investor: populate with investor data
         reset({
           ...investor,
           preferred_sectors: investor.preferred_sectors?.join('; ') || '',
@@ -73,23 +76,33 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange }: A
           last_call_date: investor.last_call_date || '',
         });
       } else {
+        // Adding new investor: populate with initialFormData (draft) or blank
         reset({
-          contact_name: '',
-          contact_email: '',
-          contact_phone: '',
-          firm_name: '',
-          firm_website: '',
-          linkedin_url: '',
-          location: '',
-          preferred_investment_stage: null,
-          average_check_size: undefined,
-          preferred_sectors: '',
-          tags: '',
-          last_call_date: '',
+          contact_name: initialFormData?.contact_name || '',
+          contact_email: initialFormData?.contact_email || '',
+          contact_phone: initialFormData?.contact_phone || '',
+          firm_name: initialFormData?.firm_name || '',
+          firm_website: initialFormData?.firm_website || '',
+          linkedin_url: initialFormData?.linkedin_url || '',
+          location: initialFormData?.location || '',
+          preferred_investment_stage: initialFormData?.preferred_investment_stage || null,
+          average_check_size: initialFormData?.average_check_size || undefined,
+          preferred_sectors: initialFormData?.preferred_sectors || '',
+          tags: initialFormData?.tags || '',
+          last_call_date: initialFormData?.last_call_date || '',
         });
       }
     }
-  }, [investor, open, reset]);
+  }, [investor, open, reset, initialFormData]); // Added initialFormData to dependencies
+
+  const handleDialogClose = (newOpenState: boolean) => {
+    if (!newOpenState && !investor && onCloseWithoutSave) {
+      // If closing and it's an "add" operation (not editing)
+      // and a callback is provided, save the current form values as draft
+      onCloseWithoutSave(getValues());
+    }
+    onOpenChange(newOpenState);
+  };
   
   const onSubmit = async (data: InvestorFormData) => {
     const investorData = {
@@ -107,14 +120,14 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange }: A
         await addInvestor(investorData as any);
       }
       onSuccess();
-      onOpenChange(false);
+      handleDialogClose(false); // Use the new handler to close and potentially clear draft
     } catch (error) {
       console.error('Failed to save investor', error);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleDialogClose}> {/* Use handleDialogClose */}
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{investor ? 'Edit Investor' : 'Add Investor'}</DialogTitle>
@@ -191,7 +204,7 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange }: A
             <Input id="last_call_date" type="date" {...register('last_call_date')} className="col-span-3" />
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => handleDialogClose(false)}>Cancel</Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Saving...' : 'Save changes'}
             </Button>

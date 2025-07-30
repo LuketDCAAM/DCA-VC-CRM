@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Added useEffect
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Plus, Trash2, Edit, Archive, LayoutGrid, List } from 'lucide-react';
@@ -15,6 +15,24 @@ import { InvestorStats } from '@/components/investors/InvestorStats';
 import { NoInvestorsFound } from '@/components/investors/NoInvestorsFound';
 import { Investor } from '@/types/investor';
 
+// Define a type for the investor form data (matching what AddInvestorDialog expects)
+interface InvestorFormData {
+  contact_name: string;
+  contact_email?: string | null;
+  contact_phone?: string | null;
+  firm_name?: string | null;
+  firm_website?: string | null;
+  linkedin_url?: string | null;
+  location?: string | null;
+  preferred_investment_stage?: string | null; // Use string as per enum
+  average_check_size?: number | null;
+  preferred_sectors?: string | null;
+  tags?: string | null;
+  last_call_date?: string | null;
+}
+
+const LOCAL_STORAGE_DRAFT_KEY = 'investorAddFormDraft';
+
 export default function Investors() {
   const { investors, loading, refetch, deleteInvestor } = useInvestors();
   const { importInvestors } = useCSVImport();
@@ -27,6 +45,20 @@ export default function Investors() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
   const [investorForNewContact, setInvestorForNewContact] = useState<Investor | null>(null);
+  const [draftInvestorData, setDraftInvestorData] = useState<InvestorFormData | undefined>(undefined); // New state for draft data
+
+  // Load draft data from local storage on component mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem(LOCAL_STORAGE_DRAFT_KEY);
+    if (savedDraft) {
+      try {
+        setDraftInvestorData(JSON.parse(savedDraft));
+      } catch (e) {
+        console.error("Failed to parse investor draft from localStorage", e);
+        localStorage.removeItem(LOCAL_STORAGE_DRAFT_KEY); // Clear corrupted data
+      }
+    }
+  }, []);
 
   // CSV template columns for investors
   const csvTemplateColumns = [
@@ -164,7 +196,7 @@ export default function Investors() {
   };
 
   const handleAddNew = () => {
-    setSelectedInvestor(null);
+    setSelectedInvestor(null); // Ensure no investor is selected for 'add' mode
     setIsDialogOpen(true);
   };
 
@@ -181,6 +213,18 @@ export default function Investors() {
 
   const handleDialogSuccess = () => {
     refetch();
+    // Clear draft data on successful submission
+    setDraftInvestorData(undefined);
+    localStorage.removeItem(LOCAL_STORAGE_DRAFT_KEY);
+  };
+
+  // New handler for when the dialog closes without saving (e.g., user clicks cancel or outside)
+  const handleCloseAddInvestorDialogWithoutSave = (formData: InvestorFormData) => {
+    if (!selectedInvestor) { // Only save draft if it's an 'add' operation
+      setDraftInvestorData(formData);
+      localStorage.setItem(LOCAL_STORAGE_DRAFT_KEY, JSON.stringify(formData));
+    }
+    setIsDialogOpen(false);
   };
 
   const handleFilterChange = (key: string, value: any) => {
@@ -313,11 +357,14 @@ export default function Investors() {
         )}
       </div>
 
+      {/* Add/Edit Investor Dialog */}
       <AddInvestorDialog
         open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        onOpenChange={handleCloseAddInvestorDialogWithoutSave} {/* Use the new handler */}
         investor={selectedInvestor}
         onSuccess={handleDialogSuccess}
+        initialFormData={draftInvestorData} {/* Pass draft data */}
+        onCloseWithoutSave={handleCloseAddInvestorDialogWithoutSave} {/* Pass the same handler for consistency */}
       />
       <AddContactDialog
         open={isContactDialogOpen}
