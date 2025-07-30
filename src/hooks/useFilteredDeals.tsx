@@ -47,6 +47,10 @@ export function useFilteredDeals(deals: Deal[], searchTerm: string, activeFilter
             return typeof deal.deal_score !== 'number' || deal.deal_score <= parseInt(value, 10);
             
           default:
+            // Handle array values for multi-select filters
+            if (Array.isArray(value)) {
+              return value.length === 0 || value.includes(deal[key as keyof Deal] as string);
+            }
             return deal[key as keyof Deal] === value;
         }
       });

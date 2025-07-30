@@ -36,19 +36,39 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
       
       switch (key) {
         case 'pipeline_stage':
-          filtered = filtered.filter(deal => deal.pipeline_stage === value);
+          if (Array.isArray(value)) {
+            filtered = filtered.filter(deal => value.length === 0 || value.includes(deal.pipeline_stage));
+          } else {
+            filtered = filtered.filter(deal => deal.pipeline_stage === value);
+          }
           break;
         case 'round_stage':
-          filtered = filtered.filter(deal => deal.round_stage === value);
+          if (Array.isArray(value)) {
+            filtered = filtered.filter(deal => value.length === 0 || value.includes(deal.round_stage || ''));
+          } else {
+            filtered = filtered.filter(deal => deal.round_stage === value);
+          }
           break;
         case 'sector':
-          filtered = filtered.filter(deal => deal.sector === value);
+          if (Array.isArray(value)) {
+            filtered = filtered.filter(deal => value.length === 0 || value.includes(deal.sector || ''));
+          } else {
+            filtered = filtered.filter(deal => deal.sector === value);
+          }
           break;
         case 'location':
-          filtered = filtered.filter(deal => deal.location === value);
+          if (Array.isArray(value)) {
+            filtered = filtered.filter(deal => value.length === 0 || value.includes(deal.location || ''));
+          } else {
+            filtered = filtered.filter(deal => deal.location === value);
+          }
           break;
         case 'deal_source':
-          filtered = filtered.filter(deal => deal.deal_source === value);
+          if (Array.isArray(value)) {
+            filtered = filtered.filter(deal => value.length === 0 || value.includes(deal.deal_source || ''));
+          } else {
+            filtered = filtered.filter(deal => deal.deal_source === value);
+          }
           break;
         case 'round_size':
           if (Array.isArray(value) && value.length === 2) {

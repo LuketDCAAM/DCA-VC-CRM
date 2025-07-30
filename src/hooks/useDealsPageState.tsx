@@ -25,9 +25,15 @@ export function useDealsPageState() {
   }, []);
 
   const handleClearFilters = useMemo(() => () => {
-    setActiveFilters({});
+    // Clear all filters by setting them to empty arrays or empty strings
+    const clearedFilters: Record<string, any> = {};
+    Object.keys(activeFilters).forEach(key => {
+      const isMultiSelect = ['pipeline_stage', 'round_stage', 'sector', 'location', 'deal_source'].includes(key);
+      clearedFilters[key] = isMultiSelect ? [] : '';
+    });
+    setActiveFilters(clearedFilters);
     setSearchTerm('');
-  }, []);
+  }, [activeFilters]);
 
   const handleToggleDealSelection = useMemo(() => (dealId: string) => {
     setSelectedDeals(prev => 

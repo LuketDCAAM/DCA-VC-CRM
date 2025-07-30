@@ -2,6 +2,7 @@
 import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MultiSelect } from '@/components/ui/multi-select';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, Filter, X, Calendar, DollarSign, Building2, Users } from 'lucide-react';
@@ -42,9 +43,13 @@ export function SearchAndFilter({
   console.log('SearchAndFilter - activeFilters:', activeFilters);
   console.log('SearchAndFilter - showAdvanced:', showAdvanced);
 
-  const activeFilterCount = Object.keys(activeFilters).filter(key => 
-    activeFilters[key] && activeFilters[key] !== 'all' && activeFilters[key] !== ''
-  ).length;
+  const activeFilterCount = Object.keys(activeFilters).filter(key => {
+    const value = activeFilters[key];
+    if (!value) return false;
+    if (value === 'all' || value === '') return false;
+    if (Array.isArray(value)) return value.length > 0;
+    return true;
+  }).length;
 
   return (
     <div className="space-y-4">
@@ -118,6 +123,17 @@ export function SearchAndFilter({
                       </SelectContent>
                     </Select>
                   )}
+                  {filter.type === 'multiselect' && (
+                    <MultiSelect
+                      options={filter.options || []}
+                      value={activeFilters[filter.key] || []}
+                      onValueChange={(value) => {
+                        console.log(`Multi-select filter change - ${filter.key}:`, value);
+                        onFilterChange(filter.key, value);
+                      }}
+                      placeholder={`Select ${filter.label}`}
+                    />
+                  )}
                   {filter.type === 'date' && (
                     <Input
                       type="date"
@@ -161,8 +177,15 @@ export function SearchAndFilter({
                   <span className="text-sm font-medium text-gray-600">Active filters:</span>
                   {Object.entries(activeFilters).map(([key, value]) => {
                     if (!value || value === 'all' || value === '') return null;
+                    if (Array.isArray(value) && value.length === 0) return null;
                     const filter = filters.find(f => f.key === key || key.startsWith(f.key));
                     if (!filter) return null;
+                    
+                    const displayValue = Array.isArray(value) 
+                      ? value.length === 1 
+                        ? value[0] 
+                        : `${value.length} selected`
+                      : value;
                     
                     return (
                       <Badge
@@ -170,12 +193,12 @@ export function SearchAndFilter({
                         variant="secondary"
                         className="flex items-center gap-1"
                       >
-                        {filter.label}: {value}
+                        {filter.label}: {displayValue}
                         <X
                           className="h-3 w-3 cursor-pointer hover:text-red-500"
                           onClick={() => {
                             console.log(`Removing filter - ${key}`);
-                            onFilterChange(key, '');
+                            onFilterChange(key, Array.isArray(value) ? [] : '');
                           }}
                         />
                       </Badge>

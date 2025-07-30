@@ -11,7 +11,7 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
       key: 'pipeline_stage',
       label: 'Pipeline Stage',
       value: 'pipeline_stage',
-      type: 'select',
+      type: 'multiselect',
       options: [
         { label: 'Inactive', value: 'Inactive' },
         { label: 'Initial Review', value: 'Initial Review' },    // Updated from 'Initial Review'
@@ -28,7 +28,7 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
       key: 'round_stage',
       label: 'Round Stage',
       value: 'round_stage',
-      type: 'select',
+      type: 'multiselect',
       options: [
         { label: 'Pre-Seed', value: 'Pre-Seed' },
         { label: 'Seed', value: 'Seed' },
@@ -42,14 +42,14 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
       key: 'sector',
       label: 'Sector',
       value: 'sector',
-      type: 'select',
+      type: 'multiselect',
       options: getUniqueSectors(deals)
     },
     {
       key: 'location',
       label: 'Location',
       value: 'location',
-      type: 'select',
+      type: 'multiselect',
       options: getUniqueLocations(deals)
     },
     {
@@ -74,7 +74,7 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
       key: 'deal_source',
       label: 'Deal Source',
       value: 'deal_source',
-      type: 'select',
+      type: 'multiselect',
       options: getUniqueDealSources(deals)
     },
     {
