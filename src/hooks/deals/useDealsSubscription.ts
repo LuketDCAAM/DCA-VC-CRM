@@ -5,11 +5,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 export function useDealsSubscription(userId: string | undefined, queryKey: (string | undefined)[]) {
   const queryClient = useQueryClient();
-  const queryKeyRef = useRef(queryKey);
   const channelRef = useRef<any>(null);
   
-  queryKeyRef.current = queryKey;
-
   useEffect(() => {
     if (!userId) return;
 
@@ -18,22 +15,14 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
       try {
         supabase.removeChannel(channelRef.current);
       } catch (error) {
-        console.warn('Error removing existing channel:', error);
+        // Silently handle cleanup errors
       }
       channelRef.current = null;
     }
 
-    // Create a unique channel name to avoid conflicts
-    const channelName = `deals-${userId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const channel = supabase.channel(channelName);
+    // Create new subscription
+    const channel = supabase.channel(`deals_${userId}_${Date.now()}`);
     channelRef.current = channel;
-
-    const handleUpdate = () => {
-      console.log('Invalidating deals query...');
-      if (queryKeyRef.current) {
-        queryClient.invalidateQueries({ queryKey: queryKeyRef.current });
-      }
-    };
 
     channel
       .on(
@@ -44,31 +33,27 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
           table: 'deals',
           filter: `created_by=eq.${userId}`,
         },
-        (payload) => {
-          console.log('Realtime payload:', payload);
-          handleUpdate();
+        () => {
+          try {
+            queryClient.invalidateQueries({ queryKey });
+          } catch (error) {
+            // Silently handle invalidation errors
+          }
         }
       )
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-        if (status === 'CHANNEL_ERROR') {
-          console.error('Supabase channel error');
-        }
-      });
+      .subscribe();
 
     return () => {
-      // Cleanly remove the channel on unmount
-      console.log('Unsubscribing deals channel...');
       if (channelRef.current) {
         try {
           supabase.removeChannel(channelRef.current);
         } catch (error) {
-          console.warn('Error removing deals channel:', error);
+          // Silently handle cleanup errors
         }
         channelRef.current = null;
       }
     };
-  }, [userId, queryClient]);
+  }, [userId, queryClient, queryKey]);
 
   return null;
 }

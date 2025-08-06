@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { Database } from '@/integrations/supabase/types';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 type CompanyStatus = Database['public']['Enums']['company_status'];
 
@@ -101,6 +101,7 @@ async function fetchCompanies(userId: string): Promise<PortfolioCompany[]> {
 export function usePortfolioCompanies() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const channelRef = useRef<any>(null);
 
   const queryKey = useMemo(() => ['portfolioCompanies', user?.id], [user?.id]);
 
@@ -120,8 +121,21 @@ export function usePortfolioCompanies() {
   useEffect(() => {
     if (!user?.id) return;
 
-    const companiesChannel = supabase
-      .channel('custom-portfolio-channel')
+    // Clean up existing channel
+    if (channelRef.current) {
+      try {
+        supabase.removeChannel(channelRef.current);
+      } catch (error) {
+        // Silently handle cleanup errors
+      }
+      channelRef.current = null;
+    }
+
+    // Create new subscription
+    const companiesChannel = supabase.channel(`portfolio_${user.id}_${Date.now()}`);
+    channelRef.current = companiesChannel;
+
+    companiesChannel
       .on(
         'postgres_changes',
         {
@@ -129,18 +143,24 @@ export function usePortfolioCompanies() {
           schema: 'public',
           table: 'portfolio_companies',
         },
-        (payload) => {
-          console.log('Portfolio companies change received!', payload);
-          queryClient.invalidateQueries({ queryKey });
+        () => {
+          try {
+            queryClient.invalidateQueries({ queryKey });
+          } catch (error) {
+            // Silently handle invalidation errors
+          }
         }
       )
       .subscribe();
 
     return () => {
-      try {
-        supabase.removeChannel(companiesChannel);
-      } catch (error) {
-        console.warn('Error removing portfolio companies channel:', error);
+      if (channelRef.current) {
+        try {
+          supabase.removeChannel(channelRef.current);
+        } catch (error) {
+          // Silently handle cleanup errors
+        }
+        channelRef.current = null;
       }
     };
   }, [user?.id, queryClient, queryKey]);
