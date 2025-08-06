@@ -29,16 +29,10 @@ export function useUserRoles() {
     if (!user) return;
 
     try {
-      console.log('=== FETCH USER ROLES DEBUG ===');
-      console.log('Fetching roles for user:', user.id);
-      
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id);
-
-      console.log('User roles result:', data);
-      console.log('User roles error:', error);
 
       if (error) throw error;
       setUserRoles(data?.map(row => row.role as UserRole) || []);
@@ -56,24 +50,15 @@ export function useUserRoles() {
     if (!user) return;
 
     try {
-      console.log('=== FETCH APPROVAL STATUS DEBUG ===');
-      console.log('Checking approval for user:', user.id);
-      
       const { data, error } = await supabase
         .from('user_approvals')
         .select('status')
         .eq('user_id', user.id)
         .single();
 
-      console.log('Approval status result:', data);
-      console.log('Approval status error:', error);
-
       if (error && error.code !== 'PGRST116') throw error;
       const status = data?.status as UserStatus || null;
       setApprovalStatus(status);
-      
-      console.log('Final approval status set to:', status);
-      console.log('=== END FETCH APPROVAL STATUS DEBUG ===');
     } catch (error: any) {
       console.error('Error fetching approval status:', error);
       toast({
@@ -99,17 +84,6 @@ export function useUserRoles() {
   const isApproved = approvalStatus === 'approved';
   const isPending = approvalStatus === 'pending';
   const isRejected = approvalStatus === 'rejected';
-
-  console.log('=== USER ROLES STATE ===');
-  console.log('User ID:', user?.id);
-  console.log('User roles:', userRoles);
-  console.log('Approval status:', approvalStatus);
-  console.log('Is admin:', isAdmin);
-  console.log('Is viewer:', isViewer);
-  console.log('Is approved:', isApproved);
-  console.log('Is pending:', isPending);
-  console.log('Is rejected:', isRejected);
-  console.log('Loading:', loading);
 
   return {
     userRoles,

@@ -17,52 +17,28 @@ export function useInvestors() {
     try {
       setLoading(true);
       
-      console.log('=== FETCH INVESTORS DEBUG ===');
-      console.log('Fetching investors for user:', user.id);
-      
-      // Check authentication and approval
-      const { data: { user: currentUser }, error: authError } = await supabase.auth.getUser();
-      console.log('Current authenticated user:', currentUser?.id);
-      
-      if (authError || !currentUser) {
-        console.error('Authentication error:', authError);
-        throw new Error('Authentication failed');
-      }
-      
       // Check approval status
       const { data: approvalData, error: approvalError } = await supabase
         .from('user_approvals')
         .select('status')
-        .eq('user_id', currentUser.id)
+        .eq('user_id', user.id)
         .single();
-        
-      console.log('Approval data:', approvalData);
       
       if (approvalError && approvalError.code !== 'PGRST116') {
         console.error('Error checking approval:', approvalError);
       }
       
       if (!approvalData || approvalData.status !== 'approved') {
-        console.warn('User not approved for investors. Status:', approvalData?.status || 'not found');
         setInvestors([]);
         return;
       }
-      
-      console.log('User approved, fetching investors...');
       
       const { data, error } = await supabase
         .from('investors')
         .select('*')
         .order('created_at', { ascending: false });
 
-      console.log('Investors query result:');
-      console.log('- Data:', data);
-      console.log('- Error:', error);
-
       if (error) throw error;
-      
-      console.log('📊 INVESTORS FETCHED:', data?.length || 0);
-      console.log('=== END FETCH INVESTORS DEBUG ===');
       
       setInvestors(data || []);
     } catch (error: any) {
