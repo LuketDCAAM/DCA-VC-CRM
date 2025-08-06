@@ -18,6 +18,10 @@ export function useAllUsers() {
   const [users, setUsers] = useState<UserWithRoleAndApproval[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  
+  // Move useRef to top level of the hook
+  const rolesChannelRef = useRef<any>(null);
+  const approvalsChannelRef = useRef<any>(null);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -54,8 +58,6 @@ export function useAllUsers() {
     fetchUsers(); // Initial fetch when component mounts
 
     // Simplified subscription management
-    const rolesChannelRef = useRef<any>(null);
-    const approvalsChannelRef = useRef<any>(null);
 
     // Clean up existing channels
     if (rolesChannelRef.current) {
