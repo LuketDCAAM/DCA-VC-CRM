@@ -10,7 +10,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Deals from "./pages/Deals";
 import Portfolio from "./pages/Portfolio";
-import Investors from "./pages/Investors";
+import InvestorsSimple from "./pages/InvestorsSimple";
 import Contacts from "./pages/Contacts";
 import Reminders from "./pages/Reminders";
 import LPEngagements from "./pages/LPEngagements";
@@ -68,7 +68,7 @@ function App() {
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/deals" element={<Deals />} />
                       <Route path="/portfolio" element={<Portfolio />} />
-                      <Route path="/investors" element={<Investors />} />
+                      <Route path="/investors" element={<InvestorsSimple />} />
                       <Route path="/contacts" element={<Contacts />} />
                       <Route path="/reminders" element={<Reminders />} />
                       <Route path="/lp-engagements" element={<LPEngagements />} />
