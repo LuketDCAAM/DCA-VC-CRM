@@ -8,6 +8,7 @@ import { Constants } from '@/integrations/supabase/types';
 interface AddDealValues {
   company_name: string;
   website?: string;
+  linkedin_url?: string;
   location?: string;
   description?: string;
   sector?: string;
@@ -71,6 +72,7 @@ export function useAddDeal() {
         .insert({
           company_name: values.company_name,
           website: values.website || null,
+          linkedin_url: values.linkedin_url || null,
           location: values.location || null,
           description: values.description || null,
           sector: values.sector || null,

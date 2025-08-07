@@ -5,6 +5,7 @@ import { Constants } from '@/integrations/supabase/types';
 export const dealFormSchema = z.object({
   company_name: z.string().min(1, 'Company name is required.'),
   website: z.string().url({ message: "Invalid URL." }).or(z.literal('')).optional(),
+  linkedin_url: z.string().url({ message: "Invalid URL." }).or(z.literal('')).optional(),
   location: z.string().optional(),
   description: z.string().optional(),
   sector: z.string().optional(),

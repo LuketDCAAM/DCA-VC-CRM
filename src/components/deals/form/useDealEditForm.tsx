@@ -25,8 +25,8 @@ export function useDealEditForm({ deal }: UseDealEditFormProps) {
       contact_email: deal.contact_email || '',
       contact_phone: deal.contact_phone || '',
       website: deal.website || '',
+      linkedin_url: deal.linkedin_url || '',
       location: deal.location || '',
-      description: deal.description || '',
       sector: deal.sector || '',
       pipeline_stage: deal.pipeline_stage, // This should be required and not optional
       round_stage: deal.round_stage, 

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Globe } from 'lucide-react';
+import { Globe, Linkedin } from 'lucide-react';
 import { Deal } from '@/types/deal';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -35,6 +35,25 @@ export function CompanyCellContent({ deal }: CompanyCellContentProps) {
           </TooltipTrigger>
           <TooltipContent side="bottom" align="start">
             <p>{deal.website}</p>
+          </TooltipContent>
+        </Tooltip>
+      )}
+      {deal.linkedin_url && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <a
+              href={formatUrl(deal.linkedin_url)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary cursor-pointer transition-colors"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Linkedin className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate max-w-[180px]">{deal.linkedin_url}</span>
+            </a>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" align="start">
+            <p>{deal.linkedin_url}</p>
           </TooltipContent>
         </Tooltip>
       )}

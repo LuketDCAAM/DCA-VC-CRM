@@ -42,6 +42,19 @@ export function DealEditCompanySection({ control }: DealEditCompanySectionProps)
       />
       <FormField
         control={control}
+        name="linkedin_url"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>LinkedIn URL</FormLabel>
+            <FormControl>
+              <Input type="url" placeholder="https://www.linkedin.com/company/..." {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={control}
         name="location"
         render={({ field }) => (
           <FormItem>

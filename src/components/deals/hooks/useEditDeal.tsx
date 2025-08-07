@@ -7,8 +7,8 @@ import { Deal } from '@/types/deal';
 interface EditDealValues {
   company_name: string;
   website?: string;
+  linkedin_url?: string;
   location?: string;
-  description?: string;
   sector?: string;
   contact_name?: string;
   contact_email?: string;
@@ -53,8 +53,8 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
         .update({
           company_name: values.company_name,
           website: values.website || null,
+          linkedin_url: values.linkedin_url || null,
           location: values.location || null,
-          description: values.description || null,
           sector: values.sector || null,
           contact_name: values.contact_name || null,
           contact_email: values.contact_email || null,

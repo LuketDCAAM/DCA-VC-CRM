@@ -33,6 +33,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
     const submitValues = {
       company_name: values.company_name,
       website: values.website || '',
+      linkedin_url: values.linkedin_url || '',
       location: values.location || '',
       description: values.description || '',
       sector: values.sector || '',

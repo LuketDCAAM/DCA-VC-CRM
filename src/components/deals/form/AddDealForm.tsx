@@ -14,6 +14,7 @@ import { Paperclip, FileText, Calendar } from 'lucide-react';
 const addDealFormSchema = z.object({
   company_name: z.string().min(1, 'Company name is required'),
   website: z.string().url({ message: "Invalid URL" }).or(z.literal('')).optional(),
+  linkedin_url: z.string().url({ message: "Invalid URL" }).or(z.literal('')).optional(),
   location: z.string().optional(),
   description: z.string().optional(),
   sector: z.string().optional(),
@@ -39,6 +40,7 @@ type AddDealFormValues = z.infer<typeof addDealFormSchema>;
 interface AddDealValues {
   company_name: string;
   website?: string;
+  linkedin_url?: string;
   location?: string;
   description?: string;
   sector?: string;
@@ -74,6 +76,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
     defaultValues: {
       company_name: '',
       website: '',
+      linkedin_url: '',
       location: '',
       description: '',
       sector: '',
@@ -107,8 +110,8 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
     const submitValues: AddDealValues = {
       company_name: values.company_name, // Explicitly assign required field
       website: values.website,
+      linkedin_url: values.linkedin_url,
       location: values.location,
-      description: values.description,
       sector: values.sector,
       contact_name: values.contact_name,
       contact_email: values.contact_email,
@@ -166,6 +169,19 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
                     <FormLabel>Website</FormLabel>
                     <FormControl>
                       <Input type="url" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="linkedin_url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>LinkedIn URL</FormLabel>
+                    <FormControl>
+                      <Input type="url" {...field} placeholder="https://www.linkedin.com/company/..." />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

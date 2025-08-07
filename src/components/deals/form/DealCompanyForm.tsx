@@ -43,6 +43,19 @@ export function DealCompanyForm() {
         />
         <FormField
           control={control}
+          name="linkedin_url"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>LinkedIn URL</FormLabel>
+              <FormControl>
+                <Input {...field} value={field.value || ''} placeholder="https://www.linkedin.com/company/..." />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={control}
           name="location"
           render={({ field }) => (
             <FormItem>
