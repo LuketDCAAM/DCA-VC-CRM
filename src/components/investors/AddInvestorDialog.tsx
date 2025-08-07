@@ -57,6 +57,7 @@ interface AddInvestorDialogProps {
 export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange, initialFormData, onCloseWithoutSave }: AddInvestorDialogProps) {
   const { addInvestor, updateInvestor } = useInvestors();
   const hasInitializedRef = useRef(false);
+  const getDraftKey = () => (investor ? `investorEditFormDraft_${investor.id}` : 'investorAddFormDraft');
   
   const {
     register,
@@ -64,6 +65,7 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange, ini
     reset,
     control,
     getValues,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<InvestorFormData>({
     resolver: zodResolver(investorSchema),
@@ -100,6 +102,17 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange, ini
           last_call_date: initialFormData?.last_call_date || '',
         });
       }
+
+      // If there's a saved draft, load it last (it overrides the above)
+      try {
+        const draftRaw = localStorage.getItem(getDraftKey());
+        if (draftRaw) {
+          const draft = JSON.parse(draftRaw) as InvestorFormData;
+          reset(draft);
+        }
+      } catch (e) {
+        console.error('Failed to parse investor draft from localStorage', e);
+      }
     }
     
     // Reset the ref when dialog closes
@@ -108,11 +121,42 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange, ini
     }
   }, [open, investor, initialFormData, reset]);
 
+  // Autosave draft to localStorage while typing
+  useEffect(() => {
+    if (!open) return;
+    const subscription = watch((value) => {
+      try {
+        localStorage.setItem(getDraftKey(), JSON.stringify(value));
+      } catch {}
+    });
+    return () => {
+      // @ts-ignore - unsubscribe may not exist in older RHF versions
+      subscription?.unsubscribe?.();
+    };
+  }, [open, watch, investor]);
+
+  // Persist draft when tab loses visibility (switching tabs/windows)
+  useEffect(() => {
+    const handler = () => {
+      if (document.visibilityState === 'hidden' && open) {
+        try {
+          localStorage.setItem(getDraftKey(), JSON.stringify(getValues()));
+        } catch {}
+      }
+    };
+    document.addEventListener('visibilitychange', handler);
+    return () => document.removeEventListener('visibilitychange', handler);
+  }, [open, getValues, investor]);
+
   const handleDialogClose = (newOpenState: boolean) => {
-    if (!newOpenState && !investor && onCloseWithoutSave) {
-      // If closing and it's an "add" operation (not editing)
-      // and a callback is provided, save the current form values as draft
-      onCloseWithoutSave(getValues());
+    if (!newOpenState && !investor) {
+      const current = getValues();
+      try {
+        localStorage.setItem(getDraftKey(), JSON.stringify(current));
+      } catch {}
+      if (onCloseWithoutSave) {
+        onCloseWithoutSave(current);
+      }
     }
     onOpenChange(newOpenState);
   };
@@ -133,7 +177,8 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange, ini
         await addInvestor(investorData as any);
       }
       onSuccess();
-      handleDialogClose(false);
+      try { localStorage.removeItem(getDraftKey()); } catch {}
+      onOpenChange(false);
     } catch (error) {
       console.error('Failed to save investor', error);
     }
