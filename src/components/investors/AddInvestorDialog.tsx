@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useInvestors } from '@/hooks/useInvestors';
-import { Investor } from '@/types/investor'; // Assuming Investor type is still needed
+import { Investor } from '@/types/investor';
 
 // Export investmentStages directly from here
 export const investmentStages = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C', 'Growth', 'Late Stage'] as const;
@@ -46,29 +46,34 @@ const investorSchema = z.object({
 export type InvestorFormData = z.infer<typeof investorSchema>;
 
 interface AddInvestorDialogProps {
-  investor?: Investor; // For editing existing investor
+  investor?: Investor;
   onSuccess: () => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  initialFormData?: InvestorFormData; // New prop for draft data
-  onCloseWithoutSave?: (formData: InvestorFormData) => void; // New prop to save draft
+  initialFormData?: InvestorFormData;
+  onCloseWithoutSave?: (formData: InvestorFormData) => void;
 }
 
 export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange, initialFormData, onCloseWithoutSave }: AddInvestorDialogProps) {
   const { addInvestor, updateInvestor } = useInvestors();
+  const hasInitializedRef = useRef(false);
+  
   const {
     register,
     handleSubmit,
     reset,
     control,
-    getValues, // Added getValues to retrieve current form data
+    getValues,
     formState: { errors, isSubmitting },
   } = useForm<InvestorFormData>({
     resolver: zodResolver(investorSchema),
   });
 
+  // Only reset form when dialog opens for the first time or when switching between add/edit modes
   useEffect(() => {
-    if (open) {
+    if (open && !hasInitializedRef.current) {
+      hasInitializedRef.current = true;
+      
       if (investor) {
         // Editing existing investor: populate with investor data
         reset({
@@ -96,7 +101,12 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange, ini
         });
       }
     }
-  }, [investor, open, reset, initialFormData]); // Added initialFormData to dependencies
+    
+    // Reset the ref when dialog closes
+    if (!open) {
+      hasInitializedRef.current = false;
+    }
+  }, [open, investor, initialFormData, reset]);
 
   const handleDialogClose = (newOpenState: boolean) => {
     if (!newOpenState && !investor && onCloseWithoutSave) {
@@ -123,14 +133,14 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange, ini
         await addInvestor(investorData as any);
       }
       onSuccess();
-      handleDialogClose(false); // Use the new handler to close and potentially clear draft
+      handleDialogClose(false);
     } catch (error) {
       console.error('Failed to save investor', error);
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleDialogClose}> {/* Use handleDialogClose */}
+    <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{investor ? 'Edit Investor' : 'Add Investor'}</DialogTitle>
