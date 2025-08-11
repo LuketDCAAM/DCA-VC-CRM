@@ -4,6 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Constants } from '@/integrations/supabase/types';
+import { useDuplicateDetection } from '@/hooks/useDuplicateDetection';
+import { PotentialDuplicate } from '@/types/duplicates';
 
 interface AddDealValues {
   company_name: string;
@@ -32,13 +34,63 @@ interface AddDealValues {
 
 export function useAddDeal() {
   const [isLoading, setIsLoading] = useState(false);
+  const [duplicates, setDuplicates] = useState<PotentialDuplicate[]>([]);
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+  const [pendingDealData, setPendingDealData] = useState<AddDealValues | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { checkForDuplicates, isChecking } = useDuplicateDetection();
 
   const pipelineStages = Constants.public.Enums.pipeline_stage;
   const roundStages = Constants.public.Enums.round_stage;
 
+  const checkDuplicatesAndProceed = async (values: AddDealValues): Promise<boolean> => {
+    try {
+      // Check for duplicates first
+      const duplicateResult = await checkForDuplicates({
+        company_name: values.company_name,
+        website: values.website,
+        linkedin_url: values.linkedin_url,
+        contact_email: values.contact_email,
+      });
+
+      if (duplicateResult.hasDuplicates) {
+        setDuplicates(duplicateResult.duplicates);
+        setPendingDealData(values);
+        setShowDuplicateDialog(true);
+        return false; // Don't proceed yet, wait for user decision
+      }
+
+      // No duplicates found, proceed with creation
+      return await createDeal(values);
+    } catch (error) {
+      console.error('Error in duplicate check:', error);
+      // If duplicate check fails, proceed with creation
+      return await createDeal(values);
+    }
+  };
+
   const handleAddSubmit = async (values: AddDealValues): Promise<boolean> => {
+    return await checkDuplicatesAndProceed(values);
+  };
+
+  const handleDuplicateDialogProceed = async (): Promise<boolean> => {
+    if (!pendingDealData) return false;
+    
+    setShowDuplicateDialog(false);
+    const result = await createDeal(pendingDealData);
+    setPendingDealData(null);
+    setDuplicates([]);
+    return result;
+  };
+
+  const handleDuplicateDialogCancel = () => {
+    setShowDuplicateDialog(false);
+    setPendingDealData(null);
+    setDuplicates([]);
+  };
+
+  const createDeal = async (values: AddDealValues): Promise<boolean> => {
     console.log('useAddDeal - handleAddSubmit called with:', values);
     
     if (!user) {
@@ -182,8 +234,14 @@ export function useAddDeal() {
 
   return {
     handleAddSubmit,
-    isLoading,
+    isLoading: isLoading || isChecking,
     pipelineStages,
     roundStages,
+    // Duplicate detection states and handlers
+    duplicates,
+    showDuplicateDialog,
+    pendingDealData,
+    handleDuplicateDialogProceed,
+    handleDuplicateDialogCancel,
   };
 }

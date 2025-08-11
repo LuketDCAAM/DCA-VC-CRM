@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAddDeal } from '../hooks/useAddDeal';
 import { Paperclip, FileText, Calendar } from 'lucide-react';
+import { DuplicateDetectionDialog } from '../duplicates/DuplicateDetectionDialog';
 
 const addDealFormSchema = z.object({
   company_name: z.string().min(1, 'Company name is required'),
@@ -69,7 +70,17 @@ interface AddDealFormProps {
 
 export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
   const [pitchDeckFile, setPitchDeckFile] = useState<File | null>(null);
-  const { handleAddSubmit, isLoading, pipelineStages, roundStages } = useAddDeal();
+  const { 
+    handleAddSubmit, 
+    isLoading, 
+    pipelineStages, 
+    roundStages,
+    duplicates,
+    showDuplicateDialog,
+    pendingDealData,
+    handleDuplicateDialogProceed,
+    handleDuplicateDialogCancel,
+  } = useAddDeal();
 
   const form = useForm<AddDealFormValues>({
     resolver: zodResolver(addDealFormSchema),
@@ -138,8 +149,9 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+    <div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Company Information */}
           <Card>
@@ -533,5 +545,27 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
         </div>
       </form>
     </Form>
+
+    {/* Duplicate Detection Dialog */}
+    <DuplicateDetectionDialog
+      open={showDuplicateDialog}
+      onOpenChange={() => {}}
+      duplicates={duplicates}
+      newDealData={{
+        company_name: pendingDealData?.company_name || '',
+        website: pendingDealData?.website,
+        linkedin_url: pendingDealData?.linkedin_url,
+        contact_email: pendingDealData?.contact_email,
+        contact_name: pendingDealData?.contact_name,
+      }}
+      onProceed={async () => {
+        const success = await handleDuplicateDialogProceed();
+        if (success) {
+          onSuccess();
+        }
+      }}
+      onCancel={handleDuplicateDialogCancel}
+    />
+    </div>
   );
 }

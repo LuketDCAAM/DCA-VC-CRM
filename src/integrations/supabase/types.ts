@@ -1145,6 +1145,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      find_potential_duplicates: {
+        Args: {
+          p_company_name: string
+          p_website?: string
+          p_linkedin_url?: string
+          p_contact_email?: string
+          p_user_id?: string
+        }
+        Returns: {
+          deal_id: string
+          company_name: string
+          website: string
+          linkedin_url: string
+          contact_email: string
+          contact_name: string
+          pipeline_stage: string
+          created_at: string
+          confidence_level: string
+          confidence_score: number
+          match_reasons: string[]
+        }[]
+      }
       get_all_users_with_roles: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1172,6 +1194,26 @@ export type Database = {
           name: string
         }[]
       }
+      gtrgm_compress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_decompress: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_in: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
+      gtrgm_options: {
+        Args: { "": unknown }
+        Returns: undefined
+      }
+      gtrgm_out: {
+        Args: { "": unknown }
+        Returns: unknown
+      }
       has_role: {
         Args: {
           _user_id: string
@@ -1182,6 +1224,18 @@ export type Database = {
       is_user_approved: {
         Args: { _user_id: string }
         Returns: boolean
+      }
+      set_limit: {
+        Args: { "": number }
+        Returns: number
+      }
+      show_limit: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      show_trgm: {
+        Args: { "": string }
+        Returns: string[]
       }
     }
     Enums: {
