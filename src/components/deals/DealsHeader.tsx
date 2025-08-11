@@ -1,10 +1,12 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Upload, Download } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { AddDealDialog } from './AddDealDialog';
 import { OutlookCalendarSyncButton } from '@/components/outlook/OutlookCalendarSyncButton';
 import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
+import { CSVImport } from '@/components/common/CSVImport';
+import { ExportData } from '@/components/common/ExportData';
 
 interface DealsHeaderProps {
   filteredDeals: any[];
@@ -27,13 +29,6 @@ export function DealsHeader({
 
   console.log('DealsHeader - Microsoft auth status:', { isAuthenticated, authLoading });
 
-  const handleImportCSV = () => {
-    // CSV import logic will be handled by the parent component
-  };
-
-  const handleExportCSV = () => {
-    // CSV export logic will be handled by the parent component
-  };
 
   return (
     <div className="space-y-6">
@@ -50,14 +45,22 @@ export function DealsHeader({
             size="default" 
             showLabel={true} 
           />
-          <Button variant="outline" onClick={handleImportCSV}>
-            <Upload className="h-4 w-4 mr-2" />
-            Import
-          </Button>
-          <Button variant="outline" onClick={handleExportCSV}>
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
+          <CSVImport
+            title="Import Deals"
+            description="Upload a CSV file to import deals into your pipeline"
+            onImport={onCSVImport}
+            templateColumns={csvTemplateColumns}
+          >
+            <Button variant="outline">
+              Import
+            </Button>
+          </CSVImport>
+          <ExportData
+            data={filteredDeals}
+            filename="deals"
+            columns={exportColumns}
+            loading={loading}
+          />
           <AddDealDialog onDealAdded={onDealAdded}>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
