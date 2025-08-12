@@ -71,14 +71,14 @@ export function DealsMap({ locationData }: DealsMapProps) {
     .sort((a, b) => a.count - b.count);
 
   return (
-    <div className="w-full h-[400px] relative bg-slate-50 rounded-lg overflow-hidden">
+    <div className="w-full h-[400px] relative bg-card rounded-lg overflow-hidden">
       {/* Map Controls */}
       <div className="absolute top-4 left-4 z-10 flex gap-2">
         <Button
           variant="outline"
           size="sm"
           onClick={handleZoomIn}
-          className="bg-white/90 backdrop-blur-sm"
+          className="bg-card/90 backdrop-blur-sm"
         >
           <ZoomIn className="h-4 w-4" />
         </Button>
@@ -86,7 +86,7 @@ export function DealsMap({ locationData }: DealsMapProps) {
           variant="outline"
           size="sm"
           onClick={handleZoomOut}
-          className="bg-white/90 backdrop-blur-sm"
+          className="bg-card/90 backdrop-blur-sm"
         >
           <ZoomOut className="h-4 w-4" />
         </Button>
@@ -94,7 +94,7 @@ export function DealsMap({ locationData }: DealsMapProps) {
           variant="outline"
           size="sm"
           onClick={handleReset}
-          className="bg-white/90 backdrop-blur-sm"
+          className="bg-card/90 backdrop-blur-sm"
         >
           <RotateCcw className="h-4 w-4" />
         </Button>
@@ -120,12 +120,12 @@ export function DealsMap({ locationData }: DealsMapProps) {
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill="#f1f5f9"
-                  stroke="#cbd5e1"
+                  fill="hsl(var(--muted))"
+                  stroke="hsl(var(--border))"
                   strokeWidth={0.5}
                   style={{
                     default: { outline: 'none' },
-                    hover: { outline: 'none', fill: '#e2e8f0' },
+                    hover: { outline: 'none', fill: 'hsl(var(--accent))' },
                     pressed: { outline: 'none' },
                   }}
                 />
@@ -175,7 +175,7 @@ export function DealsMap({ locationData }: DealsMapProps) {
       </ComposableMap>
 
       {/* Legend */}
-      <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm rounded-lg p-3 shadow-sm">
+      <div className="absolute bottom-4 left-4 bg-card/95 backdrop-blur-sm rounded-lg p-3 shadow-sm border border-border">
         <h4 className="font-semibold text-xs mb-2">Deal Count</h4>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
@@ -204,7 +204,7 @@ export function DealsMap({ locationData }: DealsMapProps) {
 
       {/* Selected location details */}
       {selectedLocation && (
-        <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-xs">
+        <div className="absolute top-4 right-4 bg-card/95 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-xs border border-border">
           {(() => {
             const location = locationData.find(l => l.region === selectedLocation);
             if (!location) return null;
@@ -249,7 +249,7 @@ export function DealsMap({ locationData }: DealsMapProps) {
       )}
 
       {/* Total locations indicator */}
-      <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm rounded px-3 py-2">
+      <div className="absolute bottom-4 right-4 bg-card/95 backdrop-blur-sm rounded px-3 py-2 border border-border">
         <span className="text-xs font-medium">
           {locationData.length} {locationData.length === 1 ? 'Location' : 'Locations'}
         </span>
