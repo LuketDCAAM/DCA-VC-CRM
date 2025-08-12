@@ -13,6 +13,7 @@ import {
   Contact,
   HandCoins
 } from 'lucide-react';
+import ThemeToggle from '@/components/theme/ThemeToggle';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
@@ -34,7 +35,7 @@ export default function Header() {
     : navigation;
 
   return (
-    <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+    <header className="bg-background shadow-sm border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
         <div className="flex justify-between items-center h-14">
           <div className="flex items-center space-x-8">
@@ -71,7 +72,8 @@ export default function Header() {
             )}
           </div>
           
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
             <ProfileButton />
           </div>
         </div>
