@@ -27,7 +27,7 @@ export function useDuplicateDetection() {
         p_website: dealData.website || null,
         p_linkedin_url: dealData.linkedin_url || null,
         p_contact_email: dealData.contact_email || null,
-        p_user_id: user.id,
+        p_user_id: null, // Search across all users to catch org-wide duplicates
       });
 
       if (error) {
