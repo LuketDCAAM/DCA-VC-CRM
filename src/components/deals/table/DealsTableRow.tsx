@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Eye, MapPin, Calendar } from 'lucide-react';
+import { Eye, MapPin, Calendar, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Deal } from '@/types/deal';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -12,6 +11,18 @@ import { FinancialCell } from './FinancialCell';
 import { PipelineStageDropdown } from './PipelineStageDropdown';
 import { ExternalDataSyncButton } from '@/components/external-data/ExternalDataSyncButton';
 import { formatDate } from './tableUtils';
+import { useDeleteDeal } from '@/hooks/useDeleteDeal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface DealsTableRowProps {
   deal: Deal;
@@ -30,6 +41,15 @@ export function DealsTableRow({
   onViewDetails,
   onDealUpdated,
 }: DealsTableRowProps) {
+  const { deleteDeal, isDeleting } = useDeleteDeal();
+
+  const handleDelete = async () => {
+    const success = await deleteDeal(deal.id);
+    if (success && onDealUpdated) {
+      onDealUpdated();
+    }
+  };
+
   return (
     <TableRow 
       data-state={isSelected ? 'selected' : undefined}
@@ -125,6 +145,37 @@ export function DealsTableRow({
               <p>View deal details</p>
             </TooltipContent>
           </Tooltip>
+          
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-7 w-7 p-0 hover:bg-destructive/10 hover:text-destructive transition-colors"
+                disabled={isDeleting}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Deal</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete "{deal.company_name}"? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={handleDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? 'Deleting...' : 'Delete'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </TableCell>
     </TableRow>

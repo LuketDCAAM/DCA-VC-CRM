@@ -13,6 +13,7 @@ interface DealCardProps {
   isSelected?: boolean;
   onToggleSelection?: (dealId: string) => void;
   showSelection?: boolean;
+  onDealDeleted?: () => void;
 }
 
 export function DealCard({ 
@@ -20,7 +21,8 @@ export function DealCard({
   onViewDetails, 
   isSelected = false, 
   onToggleSelection,
-  showSelection = false 
+  showSelection = false,
+  onDealDeleted
 }: DealCardProps) {
   return (
     <Card className={`hover:shadow-md transition-all duration-200 ${isSelected ? 'ring-2 ring-primary ring-opacity-50 bg-primary/5' : ''}`}>
@@ -37,6 +39,7 @@ export function DealCard({
           <DealCardActions
             deal={deal}
             onViewDetails={onViewDetails}
+            onDealDeleted={onDealDeleted}
           />
         </div>
       </CardHeader>

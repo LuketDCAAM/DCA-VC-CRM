@@ -80,16 +80,17 @@ export function DealsGrid({
       />
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {paginatedDeals.map((deal) => (
-          <MemoizedDealCard 
-            key={deal.id} 
-            deal={deal}
-            onViewDetails={onViewDetails}
-            isSelected={selectedDeals.includes(deal.id)}
-            onToggleSelection={onToggleDealSelection}
-            showSelection={showSelection}
-          />
-        ))}
+         {paginatedDeals.map((deal) => (
+           <MemoizedDealCard 
+             key={deal.id} 
+             deal={deal}
+             onViewDetails={onViewDetails}
+             isSelected={selectedDeals.includes(deal.id)}
+             onToggleSelection={onToggleDealSelection}
+             showSelection={showSelection}
+             onDealDeleted={onDealUpdated}
+           />
+         ))}
       </div>
 
       {totalPages > 1 && (

@@ -9,6 +9,7 @@ interface MemoizedDealCardProps {
   isSelected?: boolean;
   onToggleSelection?: (dealId: string) => void;
   showSelection?: boolean;
+  onDealDeleted?: () => void;
 }
 
 const MemoizedDealCard = memo<MemoizedDealCardProps>(({ 
@@ -16,7 +17,8 @@ const MemoizedDealCard = memo<MemoizedDealCardProps>(({
   onViewDetails, 
   isSelected = false, 
   onToggleSelection,
-  showSelection = false 
+  showSelection = false,
+  onDealDeleted
 }) => {
   return (
     <DealCard
@@ -25,6 +27,7 @@ const MemoizedDealCard = memo<MemoizedDealCardProps>(({
       isSelected={isSelected}
       onToggleSelection={onToggleSelection}
       showSelection={showSelection}
+      onDealDeleted={onDealDeleted}
     />
   );
 }, (prevProps, nextProps) => {
