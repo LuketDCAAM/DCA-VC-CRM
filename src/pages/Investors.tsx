@@ -149,6 +149,7 @@ export default function Investors() {
     // Active filters
     const matchesFilters = Object.entries(activeFilters).every(([key, value]) => {
       if (!value || value === 'all' || value === '') return true;
+      if (Array.isArray(value) && value.length === 0) return true;
       
       if (key === 'created_at') {
         const investorDate = new Date(investor.created_at).toISOString().split('T')[0];
@@ -156,14 +157,24 @@ export default function Investors() {
       }
       
       if (key === 'average_check_size_min') {
-        return !investor.average_check_size || investor.average_check_size >= parseInt(value) * 100;
+        const minValue = parseInt(value);
+        if (isNaN(minValue)) return true;
+        return !investor.average_check_size || investor.average_check_size >= minValue * 100;
       }
       
       if (key === 'average_check_size_max') {
-        return !investor.average_check_size || investor.average_check_size <= parseInt(value) * 100;
+        const maxValue = parseInt(value);
+        if (isNaN(maxValue)) return true;
+        return !investor.average_check_size || investor.average_check_size <= maxValue * 100;
       }
       
-      return investor[key as keyof typeof investor] === value;
+      // Handle direct property matches
+      const investorValue = investor[key as keyof typeof investor];
+      if (Array.isArray(value)) {
+        return value.some(v => investorValue === v);
+      }
+      
+      return investorValue === value;
     });
 
     return matchesSearch && matchesFilters;
