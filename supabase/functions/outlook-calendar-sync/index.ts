@@ -68,6 +68,8 @@ Deno.serve(async (req) => {
       });
     }
 
+    console.log(`🚀 Starting calendar sync for user ${user_id}, type: ${sync_type}`);
+
     // Create sync log entry
     const { data: syncLog, error: logError } = await supabase
       .from('outlook_calendar_sync_logs')
@@ -88,6 +90,8 @@ Deno.serve(async (req) => {
       });
     }
 
+    console.log(`📝 Created sync log with ID: ${syncLog.id}`);
+
     // Get user's Microsoft token
     const { data: tokenData, error: tokenError } = await supabase
       .from('microsoft_tokens')
@@ -96,12 +100,15 @@ Deno.serve(async (req) => {
       .single();
 
     if (tokenError || !tokenData) {
+      console.log(`❌ No Microsoft token found for user ${user_id}:`, tokenError);
       await updateSyncLog(supabase, syncLog.id, 'failed', 'No Microsoft token found');
       return new Response(JSON.stringify({ error: 'Microsoft token not found' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    console.log(`🔑 Found Microsoft token for user, expires at: ${tokenData.expires_at}`);
 
     // Check if token needs refresh
     let accessToken = tokenData.access_token;
