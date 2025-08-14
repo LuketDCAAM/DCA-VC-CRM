@@ -1,8 +1,10 @@
 import { useState, useMemo } from 'react';
 import { Deal } from '@/types/deal';
 import { ViewMode } from '@/components/deals/views/DealsViewRenderer';
+import { useToast } from '@/hooks/use-toast';
 
 export function useDealsPageState() {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -53,7 +55,41 @@ export function useDealsPageState() {
 
   const handleBulkAction = useMemo(() => async (actionId: string, selectedIds: string[]): Promise<void> => {
     console.log(`Bulk action ${actionId} on deals:`, selectedIds);
-    setSelectedDeals([]);
+    
+    try {
+      if (actionId === 'delete') {
+        // Import supabase client dynamically to avoid circular dependencies
+        const { supabase } = await import('@/integrations/supabase/client');
+        
+        const { error } = await supabase
+          .from('deals')
+          .delete()
+          .in('id', selectedIds);
+
+        if (error) {
+          throw error;
+        }
+
+        toast({
+          title: "Deals deleted",
+          description: `Successfully deleted ${selectedIds.length} deal(s).`,
+        });
+      }
+      // Add other bulk actions here (move-to-stage, archive, etc.)
+      
+    } catch (error) {
+      console.error(`Error performing bulk action ${actionId}:`, error);
+      
+      toast({
+        title: "Action failed",
+        description: `Failed to ${actionId} selected deals. Please try again.`,
+        variant: "destructive",
+      });
+      
+      throw error; // Re-throw to be handled by the calling component
+    } finally {
+      setSelectedDeals([]);
+    }
   }, []);
 
   return {

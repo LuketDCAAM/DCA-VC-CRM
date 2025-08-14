@@ -201,7 +201,7 @@ export default function Portfolio() {
     setSearchTerm('');
   };
 
-  const handleBulkAction = (actionId: string, selectedIds: string[]) => {
+  const handleBulkAction = async (actionId: string, selectedIds: string[]) => {
     console.log(`Bulk action ${actionId} on portfolio companies:`, selectedIds);
     // TODO: Implement actual bulk actions
     setSelectedCompanies([]);

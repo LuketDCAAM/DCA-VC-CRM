@@ -234,7 +234,7 @@ export default function Investors() {
     setSearchTerm('');
   };
 
-  const handleBulkAction = (actionId: string, selectedIds: string[]) => {
+  const handleBulkAction = async (actionId: string, selectedIds: string[]) => {
     console.log(`Bulk action ${actionId} on investors:`, selectedIds);
     // TODO: Implement actual bulk actions
     setSelectedInvestors([]);

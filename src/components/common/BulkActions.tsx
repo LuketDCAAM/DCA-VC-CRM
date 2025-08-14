@@ -26,7 +26,7 @@ interface BulkActionsProps {
   onSelectAll: () => void;
   onDeselectAll: () => void;
   actions: BulkAction[];
-  onAction: (actionId: string, selectedIds: string[]) => void;
+  onAction: (actionId: string, selectedIds: string[]) => Promise<void>;
   isAllSelected: boolean;
 }
 
@@ -43,14 +43,22 @@ export function BulkActions({
     return null;
   }
 
-  const handleAction = (actionId: string) => {
+  const handleAction = async (actionId: string) => {
     const action = actions.find(a => a.id === actionId);
     if (action?.requiresConfirmation) {
       if (confirm(`Are you sure you want to ${action.label.toLowerCase()} ${selectedItems.length} item(s)?`)) {
-        onAction(actionId, selectedItems);
+        try {
+          await onAction(actionId, selectedItems);
+        } catch (error) {
+          console.error('Bulk action failed:', error);
+        }
       }
     } else {
-      onAction(actionId, selectedItems);
+      try {
+        await onAction(actionId, selectedItems);
+      } catch (error) {
+        console.error('Bulk action failed:', error);
+      }
     }
   };
 

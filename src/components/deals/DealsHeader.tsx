@@ -1,12 +1,14 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { AddDealDialog } from './AddDealDialog';
 import { OutlookCalendarSyncButton } from '@/components/outlook/OutlookCalendarSyncButton';
 import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
 import { CSVImport } from '@/components/common/CSVImport';
 import { ExportData } from '@/components/common/ExportData';
+import { BulkDuplicateSearchDialog } from './duplicates/BulkDuplicateSearchDialog';
+import { Deal } from '@/types/deal';
 
 interface DealsHeaderProps {
   filteredDeals: any[];
@@ -15,6 +17,9 @@ interface DealsHeaderProps {
   csvTemplateColumns: any[];
   onCSVImport: (data: any[]) => Promise<any>;
   onDealAdded: () => void;
+  allDeals: Deal[];
+  selectedDeals: string[];
+  onBulkAction: (action: string, dealIds: string[]) => Promise<void>;
 }
 
 export function DealsHeader({ 
@@ -23,11 +28,19 @@ export function DealsHeader({
   loading, 
   csvTemplateColumns, 
   onCSVImport, 
-  onDealAdded 
+  onDealAdded,
+  allDeals,
+  selectedDeals,
+  onBulkAction
 }: DealsHeaderProps) {
   const { isAuthenticated, loading: authLoading } = useMicrosoftAuth();
+  const [showDuplicateSearch, setShowDuplicateSearch] = useState(false);
 
   console.log('DealsHeader - Microsoft auth status:', { isAuthenticated, authLoading });
+
+  const handleDealsDeleted = async () => {
+    onDealAdded(); // This will trigger a refetch
+  };
 
 
   return (
@@ -45,6 +58,13 @@ export function DealsHeader({
             size="default" 
             showLabel={true} 
           />
+          <Button
+            variant="outline"
+            onClick={() => setShowDuplicateSearch(true)}
+          >
+            <Search className="h-4 w-4 mr-2" />
+            Search Duplicates
+          </Button>
           <CSVImport
             title="Import Deals"
             description="Upload a CSV file to import deals into your pipeline"
@@ -69,6 +89,13 @@ export function DealsHeader({
           </AddDealDialog>
         </div>
       </div>
+
+      <BulkDuplicateSearchDialog
+        open={showDuplicateSearch}
+        onOpenChange={setShowDuplicateSearch}
+        deals={allDeals}
+        onDealsDeleted={handleDealsDeleted}
+      />
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { DealsViewRenderer, ViewMode } from './views/DealsViewRenderer';
 import { generateDealsFilterOptions } from './filters/DealsFilterConfig';
 import { DealStats } from '@/hooks/deals/dealStatsCalculator';
 import { ColumnSelector } from './table/ColumnSelector';
+import { DealsBulkActions } from './DealsBulkActions';
 
 interface DealsPageContentProps {
   filteredDeals: Deal[];
@@ -83,6 +84,9 @@ export function DealsPageContent({
         csvTemplateColumns={csvTemplateColumns}
         onCSVImport={onCSVImport}
         onDealAdded={onDealAdded}
+        allDeals={allDeals}
+        selectedDeals={selectedDeals}
+        onBulkAction={onBulkAction}
       />
       
       <div className="space-y-3">
@@ -111,6 +115,17 @@ export function DealsPageContent({
         onViewModeChange={onViewModeChange}
         dealCount={filteredDeals.length}
       />
+
+      {selectedDeals.length > 0 && (
+        <DealsBulkActions
+          selectedDeals={selectedDeals}
+          totalDeals={filteredDeals.length}
+          onSelectAll={onSelectAll}
+          onDeselectAll={onDeselectAll}
+          onBulkAction={onBulkAction}
+          isAllSelected={isAllSelected}
+        />
+      )}
 
       <DealsViewRenderer
         viewMode={viewMode}

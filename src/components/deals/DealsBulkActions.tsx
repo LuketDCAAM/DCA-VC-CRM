@@ -8,7 +8,7 @@ interface DealsBulkActionsProps {
   totalDeals: number;
   onSelectAll: () => void;
   onDeselectAll: () => void;
-  onBulkAction: (actionId: string, selectedIds: string[]) => void;
+  onBulkAction: (actionId: string, selectedIds: string[]) => Promise<void>;
   isAllSelected: boolean;
 }
 
