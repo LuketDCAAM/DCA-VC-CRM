@@ -30,8 +30,8 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
         <CardTitle>Deal Sourcing Trends</CardTitle>
         <CardDescription>Monthly deal sourcing activity based on source dates over the last 12 months</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-[400px]">
+      <CardContent className="flex justify-center">
+        <ChartContainer config={chartConfig} className="h-[400px] w-full max-w-4xl">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
               <XAxis 
