@@ -79,6 +79,13 @@ export function SimpleDealsTableHeader({
           </div>
         </TableHead>
         
+        <TableHead className="min-w-[120px] font-semibold">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Last Call
+          </div>
+        </TableHead>
+        
         <TableHead className="text-right min-w-[80px] font-semibold">
           Actions
         </TableHead>
