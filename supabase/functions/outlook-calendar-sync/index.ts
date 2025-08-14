@@ -194,25 +194,47 @@ Deno.serve(async (req) => {
         
         const eventDate = new Date(event.start.dateTime).toISOString().split('T')[0];
 
+        console.log(`Processing event: ${event.subject} on ${eventDate}`);
+        console.log(`Event emails: ${allEventEmails.join(', ')}`);
+
         // Match and update deals
         const matchingDeals = userDeals?.filter(deal => {
           if (!deal.contact_email) return false;
           
           const dealEmail = deal.contact_email.toLowerCase();
           
-          // Check for exact match or partial match
-          return allEventEmails.some(eventEmail => 
-            eventEmail === dealEmail || 
-            eventEmail.includes(dealEmail) || 
-            dealEmail.includes(eventEmail)
-          ) || eventSubject.includes(deal.company_name.toLowerCase());
+          // Enhanced matching logic
+          const emailMatch = allEventEmails.some(eventEmail => {
+            // Exact match
+            if (eventEmail === dealEmail) return true;
+            
+            // Domain matching for company emails
+            const eventDomain = eventEmail.split('@')[1];
+            const dealDomain = dealEmail.split('@')[1];
+            if (eventDomain === dealDomain) return true;
+            
+            // Partial email matching (name part)
+            const eventNamePart = eventEmail.split('@')[0];
+            const dealNamePart = dealEmail.split('@')[0];
+            if (eventNamePart.includes(dealNamePart) || dealNamePart.includes(eventNamePart)) return true;
+            
+            return false;
+          });
+          
+          // Company name matching in subject
+          const companyMatch = eventSubject.includes(deal.company_name.toLowerCase()) ||
+                             deal.company_name.toLowerCase().includes(eventSubject);
+          
+          return emailMatch || companyMatch;
         }) || [];
+
+        console.log(`Found ${matchingDeals.length} matching deals for event: ${event.subject}`);
 
         // Update matching deals with the event date as last_call_date
         for (const deal of matchingDeals) {
           // Only update if this event is more recent than the current last_call_date
           if (!deal.last_call_date || new Date(eventDate) > new Date(deal.last_call_date)) {
-            await supabase
+            const { error: updateError } = await supabase
               .from('deals')
               .update({ 
                 last_call_date: eventDate,
@@ -220,8 +242,14 @@ Deno.serve(async (req) => {
               })
               .eq('id', deal.id);
             
-            dealsUpdated++;
-            console.log(`Updated deal ${deal.company_name} with call date ${eventDate}`);
+            if (updateError) {
+              console.error(`Failed to update deal ${deal.company_name}:`, updateError);
+            } else {
+              dealsUpdated++;
+              console.log(`✓ Updated deal ${deal.company_name} (${deal.contact_email}) with call date ${eventDate}`);
+            }
+          } else {
+            console.log(`Skipping deal ${deal.company_name} - event date ${eventDate} is not newer than existing ${deal.last_call_date}`);
           }
         }
 
