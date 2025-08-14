@@ -31,13 +31,13 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
           event: '*',
           schema: 'public',
           table: 'deals',
-          filter: `created_by=eq.${userId}`,
         },
-        () => {
+        (payload) => {
+          console.log('🔄 Deals subscription triggered:', payload);
           try {
             queryClient.invalidateQueries({ queryKey });
           } catch (error) {
-            // Silently handle invalidation errors
+            console.error('Error invalidating queries:', error);
           }
         }
       )
