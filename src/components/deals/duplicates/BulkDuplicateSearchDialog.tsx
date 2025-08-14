@@ -52,32 +52,57 @@ export function BulkDuplicateSearchDialog({
       const groups: DuplicateGroup[] = [];
       const processedDeals = new Set<string>();
 
-      for (const deal of deals) {
-        if (processedDeals.has(deal.id)) continue;
+      // Process deals in batches for better performance
+      const batchSize = 5;
+      const batches = [];
+      for (let i = 0; i < deals.length; i += batchSize) {
+        batches.push(deals.slice(i, i + batchSize));
+      }
 
-        const duplicateResult = await checkForDuplicates({
-          company_name: deal.company_name,
-          website: deal.website,
-          linkedin_url: deal.linkedin_url,
-          contact_email: deal.contact_email,
-        });
-        
-        const duplicates = duplicateResult.duplicates || [];
-
-        // Filter out the current deal and already processed deals
-        const relevantDuplicates = duplicates.filter(
-          dup => dup.deal_id !== deal.id && !processedDeals.has(dup.deal_id)
-        );
-
-        if (relevantDuplicates.length > 0) {
-          groups.push({
-            mainDeal: deal,
-            duplicates: relevantDuplicates,
+      for (const batch of batches) {
+        // Process batch in parallel
+        const batchPromises = batch
+          .filter(deal => !processedDeals.has(deal.id))
+          .map(async (deal) => {
+            try {
+              const duplicateResult = await checkForDuplicates({
+                company_name: deal.company_name,
+                website: deal.website,
+                linkedin_url: deal.linkedin_url,
+                contact_email: deal.contact_email,
+              });
+              
+              return {
+                deal,
+                duplicates: duplicateResult.duplicates || []
+              };
+            } catch (error) {
+              console.error(`Error checking duplicates for ${deal.company_name}:`, error);
+              return { deal, duplicates: [] };
+            }
           });
 
-          // Mark all deals in this group as processed
-          processedDeals.add(deal.id);
-          relevantDuplicates.forEach(dup => processedDeals.add(dup.deal_id));
+        const batchResults = await Promise.all(batchPromises);
+
+        // Process results and build groups
+        for (const { deal, duplicates } of batchResults) {
+          if (processedDeals.has(deal.id)) continue;
+
+          // Filter out the current deal and already processed deals
+          const relevantDuplicates = duplicates.filter(
+            dup => dup.deal_id !== deal.id && !processedDeals.has(dup.deal_id)
+          );
+
+          if (relevantDuplicates.length > 0) {
+            groups.push({
+              mainDeal: deal,
+              duplicates: relevantDuplicates,
+            });
+
+            // Mark all deals in this group as processed
+            processedDeals.add(deal.id);
+            relevantDuplicates.forEach(dup => processedDeals.add(dup.deal_id));
+          }
         }
       }
 
