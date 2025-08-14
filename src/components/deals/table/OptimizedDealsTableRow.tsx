@@ -163,6 +163,17 @@ const OptimizedDealsTableRow = memo(({
         )}
       </TableCell>
       
+      {/* Last call date */}
+      <TableCell className="min-w-[120px] py-2">
+        {deal.last_call_date ? (
+          <div className="text-xs text-muted-foreground">
+            {formatDate(deal.last_call_date)}
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-xs">-</span>
+        )}
+      </TableCell>
+      
       {/* Actions */}
       <TableCell className="text-right min-w-[120px] py-2">
         <div className="flex items-center gap-1">
