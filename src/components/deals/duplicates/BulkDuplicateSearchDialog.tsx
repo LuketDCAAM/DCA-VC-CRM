@@ -259,59 +259,61 @@ export function BulkDuplicateSearchDialog({
                 </div>
               </div>
 
-              <ScrollArea className="max-h-[60vh]">
-                <div className="space-y-6">
-                  {duplicateGroups.map((group, groupIndex) => (
-                    <div key={groupIndex} className="border rounded-lg p-4">
-                      <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-medium">
-                          Main Deal: {group.mainDeal.company_name}
-                        </h3>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleSelectAllInGroup(group)}
-                          >
-                            Select All
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleDeselectAllInGroup(group)}
-                          >
-                            Deselect All
-                          </Button>
+              <div className="h-[60vh] overflow-hidden">
+                <ScrollArea className="h-full">
+                  <div className="space-y-6 pr-4">
+                    {duplicateGroups.map((group, groupIndex) => (
+                      <div key={groupIndex} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="font-medium">
+                            Main Deal: {group.mainDeal.company_name}
+                          </h3>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleSelectAllInGroup(group)}
+                            >
+                              Select All
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeselectAllInGroup(group)}
+                            >
+                              Deselect All
+                            </Button>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          {group.duplicates.map((duplicate) => (
+                            <div key={duplicate.deal_id} className="flex items-start gap-3">
+                              <Checkbox
+                                checked={selectedDuplicates.has(duplicate.deal_id)}
+                                onCheckedChange={() => handleToggleDuplicate(duplicate.deal_id)}
+                                className="mt-2"
+                              />
+                              <div className="flex-1">
+                                <DuplicateComparisonCard
+                                  duplicate={duplicate}
+                                  newDealData={{
+                                    company_name: group.mainDeal.company_name,
+                                    website: group.mainDeal.website,
+                                    linkedin_url: group.mainDeal.linkedin_url,
+                                    contact_email: group.mainDeal.contact_email,
+                                    contact_name: group.mainDeal.contact_name,
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </div>
-
-                      <div className="space-y-3">
-                        {group.duplicates.map((duplicate) => (
-                          <div key={duplicate.deal_id} className="flex items-start gap-3">
-                            <Checkbox
-                              checked={selectedDuplicates.has(duplicate.deal_id)}
-                              onCheckedChange={() => handleToggleDuplicate(duplicate.deal_id)}
-                              className="mt-2"
-                            />
-                            <div className="flex-1">
-                              <DuplicateComparisonCard
-                                duplicate={duplicate}
-                                newDealData={{
-                                  company_name: group.mainDeal.company_name,
-                                  website: group.mainDeal.website,
-                                  linkedin_url: group.mainDeal.linkedin_url,
-                                  contact_email: group.mainDeal.contact_email,
-                                  contact_name: group.mainDeal.contact_name,
-                                }}
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </div>
             </>
           )}
         </div>
