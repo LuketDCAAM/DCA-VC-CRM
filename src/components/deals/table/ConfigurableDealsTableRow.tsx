@@ -82,6 +82,15 @@ const ConfigurableDealsTableRow = memo(({
       case 'description':
         return <BasicCellContent deal={deal} type="description" />;
       
+      case 'last_call_date':
+        console.log('🐛 ConfigurableDealsTableRow - last_call_date case:', {
+          dealId: deal.id,
+          company: deal.company_name,
+          last_call_date: deal.last_call_date,
+          dealKeys: Object.keys(deal)
+        });
+        return <BasicCellContent deal={deal} type="last_call_date" />;
+      
       default:
         return <span className="text-muted-foreground text-sm">-</span>;
     }
