@@ -98,7 +98,7 @@ export const DEFAULT_COLUMNS: TableColumn[] = [
     icon: Calendar,
     width: 'min-w-[120px]',
     sortable: true,
-    visible: false,
+    visible: true,
     dataType: 'date'
   },
   {
