@@ -53,10 +53,14 @@ export function BasicCellContent({ deal, type }: BasicCellContentProps) {
       );
 
     case 'last_call_date':
+      console.log('🐛 BasicCellContent - last_call_date:', {
+        last_call_date: deal.last_call_date,
+        formatted: deal.last_call_date ? formatDate(deal.last_call_date) : 'null'
+      });
       return deal.last_call_date ? (
-        <Badge variant="outline" className="text-xs">
+        <div className="text-sm text-foreground">
           {formatDate(deal.last_call_date)}
-        </Badge>
+        </div>
       ) : (
         <span className="text-muted-foreground text-sm">-</span>
       );
