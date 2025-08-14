@@ -34,10 +34,13 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
         },
         (payload) => {
           console.log('🔄 Deals subscription triggered:', payload);
+          console.log('📋 Query key for invalidation:', queryKey);
+          console.log('🔄 Invalidating queries with key:', queryKey);
           try {
             queryClient.invalidateQueries({ queryKey });
+            console.log('✅ Successfully invalidated queries');
           } catch (error) {
-            console.error('Error invalidating queries:', error);
+            console.error('❌ Error invalidating queries:', error);
           }
         }
       )
