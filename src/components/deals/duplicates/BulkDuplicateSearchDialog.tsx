@@ -37,6 +37,7 @@ export function BulkDuplicateSearchDialog({
   onDealsDeleted,
 }: BulkDuplicateSearchDialogProps) {
   const [isSearching, setIsSearching] = useState(false);
+  const [searchProgress, setSearchProgress] = useState({ current: 0, total: 0 });
   const [duplicateGroups, setDuplicateGroups] = useState<DuplicateGroup[]>([]);
   const [selectedDuplicates, setSelectedDuplicates] = useState<Set<string>>(new Set());
   const [isDeleting, setIsDeleting] = useState(false);
@@ -47,62 +48,58 @@ export function BulkDuplicateSearchDialog({
     setIsSearching(true);
     setDuplicateGroups([]);
     setSelectedDuplicates(new Set());
+    setSearchProgress({ current: 0, total: deals.length });
 
     try {
       const groups: DuplicateGroup[] = [];
       const processedDeals = new Set<string>();
 
-      // Process deals in batches for better performance
-      const batchSize = 5;
-      const batches = [];
-      for (let i = 0; i < deals.length; i += batchSize) {
-        batches.push(deals.slice(i, i + batchSize));
-      }
+      // Create promises for all deals at once with progress tracking
+      const dealPromises = deals.map(async (deal, index) => {
+        try {
+          const duplicateResult = await checkForDuplicates({
+            company_name: deal.company_name,
+            website: deal.website,
+            linkedin_url: deal.linkedin_url,
+            contact_email: deal.contact_email,
+          });
+          
+          // Update progress
+          setSearchProgress(prev => ({ ...prev, current: prev.current + 1 }));
+          
+          return {
+            deal,
+            duplicates: duplicateResult.duplicates || [],
+            index
+          };
+        } catch (error) {
+          console.error(`Error checking duplicates for ${deal.company_name}:`, error);
+          setSearchProgress(prev => ({ ...prev, current: prev.current + 1 }));
+          return { deal, duplicates: [], index };
+        }
+      });
 
-      for (const batch of batches) {
-        // Process batch in parallel
-        const batchPromises = batch
-          .filter(deal => !processedDeals.has(deal.id))
-          .map(async (deal) => {
-            try {
-              const duplicateResult = await checkForDuplicates({
-                company_name: deal.company_name,
-                website: deal.website,
-                linkedin_url: deal.linkedin_url,
-                contact_email: deal.contact_email,
-              });
-              
-              return {
-                deal,
-                duplicates: duplicateResult.duplicates || []
-              };
-            } catch (error) {
-              console.error(`Error checking duplicates for ${deal.company_name}:`, error);
-              return { deal, duplicates: [] };
-            }
+      // Wait for all duplicate checks to complete
+      const allResults = await Promise.all(dealPromises);
+
+      // Process results in order to build groups
+      for (const { deal, duplicates } of allResults) {
+        if (processedDeals.has(deal.id)) continue;
+
+        // Filter out the current deal and already processed deals
+        const relevantDuplicates = duplicates.filter(
+          dup => dup.deal_id !== deal.id && !processedDeals.has(dup.deal_id)
+        );
+
+        if (relevantDuplicates.length > 0) {
+          groups.push({
+            mainDeal: deal,
+            duplicates: relevantDuplicates,
           });
 
-        const batchResults = await Promise.all(batchPromises);
-
-        // Process results and build groups
-        for (const { deal, duplicates } of batchResults) {
-          if (processedDeals.has(deal.id)) continue;
-
-          // Filter out the current deal and already processed deals
-          const relevantDuplicates = duplicates.filter(
-            dup => dup.deal_id !== deal.id && !processedDeals.has(dup.deal_id)
-          );
-
-          if (relevantDuplicates.length > 0) {
-            groups.push({
-              mainDeal: deal,
-              duplicates: relevantDuplicates,
-            });
-
-            // Mark all deals in this group as processed
-            processedDeals.add(deal.id);
-            relevantDuplicates.forEach(dup => processedDeals.add(dup.deal_id));
-          }
+          // Mark all deals in this group as processed
+          processedDeals.add(deal.id);
+          relevantDuplicates.forEach(dup => processedDeals.add(dup.deal_id));
         }
       }
 
@@ -128,6 +125,7 @@ export function BulkDuplicateSearchDialog({
       });
     } finally {
       setIsSearching(false);
+      setSearchProgress({ current: 0, total: 0 });
     }
   };
 
@@ -226,8 +224,11 @@ export function BulkDuplicateSearchDialog({
 
           {isSearching && (
             <div className="text-center py-8">
-              <div className="text-muted-foreground">
+              <div className="text-muted-foreground mb-2">
                 Searching for duplicate deals...
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Progress: {searchProgress.current} / {searchProgress.total} deals checked
               </div>
             </div>
           )}
