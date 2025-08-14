@@ -43,18 +43,23 @@ export function RoundStageChart({ data }: RoundStageChartProps) {
         <CardDescription>Deal distribution by funding round</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px]">
+        <ChartContainer config={chartConfig} className="h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={data}
                 cx="50%"
                 cy="50%"
-                outerRadius={80}
+                outerRadius={100}
+                innerRadius={40}
                 dataKey="count"
-                label={({ stage, percentage }) => 
-                  percentage > 8 ? `${stage}: ${percentage}%` : ''
-                }
+                label={({ stage, percentage, x, y }) => {
+                  // Only show label if percentage is above 5% to avoid overcrowding
+                  if (percentage < 5) return '';
+                  return `${stage}: ${percentage}%`;
+                }}
+                labelLine={false}
+                fontSize={12}
               >
                 {data.map((entry, index) => (
                   <Cell 
