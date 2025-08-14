@@ -6,7 +6,7 @@ import { useAllCallNotes } from '@/hooks/useAllCallNotes';
 import { useDealAnalytics } from '@/hooks/deals/useDealAnalytics';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics';
-import { RecentDealsCard } from '@/components/dashboard/RecentDealsCard';
+import { TopActiveDealsCard } from '@/components/dashboard/TopActiveDealsCard';
 import { RecentPortfolioCard } from '@/components/dashboard/RecentPortfolioCard';
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions';
 import { RemindersWidget } from '@/components/reminders/RemindersWidget';
@@ -72,7 +72,7 @@ export default function Dashboard() {
       {/* Activity & Quick Actions - Hide Quick Actions for viewers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
-          <RecentDealsCard deals={deals?.slice(0, 5) || []} />
+          <TopActiveDealsCard onViewDetails={() => {}} />
           {!isViewer && <RemindersWidget />}
         </div>
         <div className="space-y-6">

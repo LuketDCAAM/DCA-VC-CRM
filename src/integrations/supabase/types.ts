@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -375,6 +375,7 @@ export type Database = {
           founded_year: number | null
           headquarters_location: string | null
           id: string
+          is_priority_deal: boolean | null
           last_call_date: string | null
           last_funding_date: string | null
           linkedin_url: string | null
@@ -382,6 +383,7 @@ export type Database = {
           next_steps: string | null
           pipeline_stage: Database["public"]["Enums"]["pipeline_stage"]
           post_money_valuation: number | null
+          priority_rank: number | null
           relationship_owner: string | null
           revenue: number | null
           round_size: number | null
@@ -412,6 +414,7 @@ export type Database = {
           founded_year?: number | null
           headquarters_location?: string | null
           id?: string
+          is_priority_deal?: boolean | null
           last_call_date?: string | null
           last_funding_date?: string | null
           linkedin_url?: string | null
@@ -419,6 +422,7 @@ export type Database = {
           next_steps?: string | null
           pipeline_stage?: Database["public"]["Enums"]["pipeline_stage"]
           post_money_valuation?: number | null
+          priority_rank?: number | null
           relationship_owner?: string | null
           revenue?: number | null
           round_size?: number | null
@@ -449,6 +453,7 @@ export type Database = {
           founded_year?: number | null
           headquarters_location?: string | null
           id?: string
+          is_priority_deal?: boolean | null
           last_call_date?: string | null
           last_funding_date?: string | null
           linkedin_url?: string | null
@@ -456,6 +461,7 @@ export type Database = {
           next_steps?: string | null
           pipeline_stage?: Database["public"]["Enums"]["pipeline_stage"]
           post_money_valuation?: number | null
+          priority_rank?: number | null
           relationship_owner?: string | null
           revenue?: number | null
           round_size?: number | null
@@ -1148,49 +1154,49 @@ export type Database = {
       find_potential_duplicates: {
         Args: {
           p_company_name: string
-          p_website?: string
-          p_linkedin_url?: string
           p_contact_email?: string
+          p_linkedin_url?: string
           p_user_id?: string
+          p_website?: string
         }
         Returns: {
-          deal_id: string
           company_name: string
-          website: string
-          linkedin_url: string
-          contact_email: string
-          contact_name: string
-          pipeline_stage: string
-          created_at: string
           confidence_level: string
           confidence_score: number
+          contact_email: string
+          contact_name: string
+          created_at: string
+          deal_id: string
+          linkedin_url: string
           match_reasons: string[]
+          pipeline_stage: string
+          website: string
         }[]
       }
       get_all_users_with_roles: {
         Args: Record<PropertyKey, never>
         Returns: {
-          user_id: string
+          approval_status: string
+          created_at: string
           email: string
           name: string
           roles: string[]
-          approval_status: string
-          created_at: string
+          user_id: string
         }[]
       }
       get_task_assignees: {
         Args: { task_id: string }
         Returns: {
-          id: string
           email: string
+          id: string
           name: string
         }[]
       }
       get_user_profiles: {
         Args: Record<PropertyKey, never>
         Returns: {
-          id: string
           email: string
+          id: string
           name: string
         }[]
       }
@@ -1216,8 +1222,8 @@ export type Database = {
       }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
