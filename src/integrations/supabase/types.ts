@@ -391,6 +391,7 @@ export type Database = {
           sector: string | null
           source_date: string | null
           tags: string[] | null
+          total_calls: number | null
           total_funding_raised: number | null
           updated_at: string
           website: string | null
@@ -430,6 +431,7 @@ export type Database = {
           sector?: string | null
           source_date?: string | null
           tags?: string[] | null
+          total_calls?: number | null
           total_funding_raised?: number | null
           updated_at?: string
           website?: string | null
@@ -469,6 +471,7 @@ export type Database = {
           sector?: string | null
           source_date?: string | null
           tags?: string[] | null
+          total_calls?: number | null
           total_funding_raised?: number | null
           updated_at?: string
           website?: string | null
@@ -1183,6 +1186,10 @@ export type Database = {
           roles: string[]
           user_id: string
         }[]
+      }
+      get_first_call_date: {
+        Args: { deal_uuid: string }
+        Returns: string
       }
       get_task_assignees: {
         Args: { task_id: string }

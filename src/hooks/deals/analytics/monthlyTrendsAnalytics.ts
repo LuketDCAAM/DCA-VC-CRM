@@ -19,17 +19,30 @@ export function calculateMonthlyTrends(deals: Deal[], callNotes: CallNote[] = []
       deal.pipeline_stage === 'Invested'
     );
 
-    // Filter call notes by call_date for this month
-    const monthCalls = callNotes.filter(callNote => {
-      if (!callNote.call_date) return false;
-      return callNote.call_date.startsWith(monthKey);
+    // Calculate first calls per month
+    // For each deal, find the earliest call date and group by month
+    const firstCallsThisMonth = new Set();
+    
+    deals.forEach(deal => {
+      // Find the earliest call for this deal
+      const dealCalls = callNotes.filter(callNote => callNote.deal_id === deal.id);
+      if (dealCalls.length > 0) {
+        const earliestCall = dealCalls.reduce((earliest, current) => {
+          return current.call_date < earliest.call_date ? current : earliest;
+        });
+        
+        // Check if this earliest call happened in the current month
+        if (earliestCall.call_date && earliestCall.call_date.startsWith(monthKey)) {
+          firstCallsThisMonth.add(deal.id);
+        }
+      }
     });
 
     return {
       month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
       deals: monthDeals.length,
       invested: investedDeals.length,
-      calls: monthCalls.length
+      calls: firstCallsThisMonth.size // Renamed from firstCalls to maintain compatibility
     };
   }).reverse();
 }

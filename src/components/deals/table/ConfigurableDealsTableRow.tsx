@@ -85,6 +85,9 @@ const ConfigurableDealsTableRow = memo(({
       case 'last_call_date':
         return <BasicCellContent deal={deal} type="last_call_date" />;
       
+      case 'total_calls':
+        return <BasicCellContent deal={deal} type="total_calls" />;
+      
       default:
         return <span className="text-muted-foreground text-sm">-</span>;
     }

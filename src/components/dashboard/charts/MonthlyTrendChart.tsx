@@ -19,7 +19,7 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
       color: '#82ca9d'
     },
     calls: {
-      label: 'Calls Taken',
+      label: 'First Calls',
       color: '#ff7300'
     }
   };
@@ -66,7 +66,7 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
                 stroke="#ff7300" 
                 strokeWidth={2}
                 dot={{ r: 4 }}
-                name="Calls Taken"
+                name="First Calls"
               />
             </LineChart>
           </ResponsiveContainer>

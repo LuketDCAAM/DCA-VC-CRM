@@ -6,7 +6,7 @@ import { Deal } from '@/types/deal';
 
 interface BasicCellContentProps {
   deal: Deal;
-  type: 'location' | 'deal_lead' | 'created_at' | 'source_date' | 'description' | 'last_call_date';
+  type: 'location' | 'deal_lead' | 'created_at' | 'source_date' | 'description' | 'last_call_date' | 'total_calls';
 }
 
 export function BasicCellContent({ deal, type }: BasicCellContentProps) {
@@ -59,6 +59,13 @@ export function BasicCellContent({ deal, type }: BasicCellContentProps) {
         </div>
       ) : (
         <span className="text-muted-foreground text-sm">-</span>
+      );
+
+    case 'total_calls':
+      return (
+        <div className="text-sm font-medium text-foreground">
+          {deal.total_calls || 0}
+        </div>
       );
 
     case 'description':

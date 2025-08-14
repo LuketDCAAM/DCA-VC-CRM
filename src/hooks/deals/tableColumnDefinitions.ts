@@ -102,6 +102,14 @@ export const DEFAULT_COLUMNS: TableColumn[] = [
     dataType: 'date'
   },
   {
+    key: 'total_calls',
+    label: 'Total Calls',
+    width: 'min-w-[100px]',
+    sortable: true,
+    visible: true,
+    dataType: 'number'
+  },
+  {
     key: 'post_money_valuation',
     label: 'Valuation',
     icon: DollarSign,
