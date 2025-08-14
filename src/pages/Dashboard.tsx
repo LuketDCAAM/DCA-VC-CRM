@@ -9,12 +9,10 @@ import { RecentDealsCard } from '@/components/dashboard/RecentDealsCard';
 import { RecentPortfolioCard } from '@/components/dashboard/RecentPortfolioCard';
 import { DashboardQuickActions } from '@/components/dashboard/DashboardQuickActions';
 import { RemindersWidget } from '@/components/reminders/RemindersWidget';
-import { PipelineChart } from '@/components/dashboard/charts/PipelineChart';
 import { SectorChart } from '@/components/dashboard/charts/SectorChart';
 import { MonthlyTrendChart } from '@/components/dashboard/charts/MonthlyTrendChart';
 import { ValuationChart } from '@/components/dashboard/charts/ValuationChart';
 import { RoundStageChart } from '@/components/dashboard/charts/RoundStageChart';
-import { PortfolioPerformanceChart } from '@/components/dashboard/charts/PortfolioPerformanceChart';
 import { DealsLocationMap } from '@/components/dashboard/charts/DealsLocationMap';
 
 export default function Dashboard() {
@@ -57,19 +55,10 @@ export default function Dashboard() {
       {/* Geographic Distribution */}
       <DealsLocationMap deals={deals || []} />
 
-      {/* Primary Analytics - Deal Flow & Pipeline */}
+      {/* Analytics Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PipelineChart data={analytics.pipelineDistribution} />
         <SectorChart data={analytics.sectorDistribution} />
-      </div>
-
-      {/* Secondary Analytics - Round Stage & Portfolio */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <RoundStageChart data={analytics.roundStageDistribution} />
-        <PortfolioPerformanceChart 
-          portfolioCount={portfolioCompanies?.length || 0}
-          totalInvested={totalInvested}
-        />
       </div>
 
       {/* Detailed Analytics - Full Width */}
