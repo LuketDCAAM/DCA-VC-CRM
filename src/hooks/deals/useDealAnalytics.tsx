@@ -1,6 +1,7 @@
 
 import { useMemo } from 'react';
 import { Deal } from '@/types/deal';
+import { CallNote } from '@/hooks/useAllCallNotes';
 import { DealAnalytics } from './analytics/analyticsTypes';
 import { calculatePipelineDistribution } from './analytics/pipelineAnalytics';
 import { calculateSectorDistribution } from './analytics/sectorAnalytics';
@@ -11,7 +12,7 @@ import { calculateConversionMetrics } from './analytics/conversionAnalytics';
 
 export type { DealAnalytics };
 
-export function useDealAnalytics(deals: Deal[]): DealAnalytics {
+export function useDealAnalytics(deals: Deal[], callNotes: CallNote[] = []): DealAnalytics {
   return useMemo(() => {
     if (!deals.length) {
       return {
@@ -37,9 +38,9 @@ export function useDealAnalytics(deals: Deal[]): DealAnalytics {
       pipelineDistribution: calculatePipelineDistribution(deals),
       sectorDistribution: calculateSectorDistribution(deals),
       roundStageDistribution: calculateRoundStageDistribution(deals),
-      monthlyTrends: calculateMonthlyTrends(deals),
+      monthlyTrends: calculateMonthlyTrends(deals, callNotes),
       valuationAnalysis: calculateValuationAnalysis(deals),
       conversionMetrics: calculateConversionMetrics(deals)
     };
-  }, [deals]);
+  }, [deals, callNotes]);
 }

@@ -2,6 +2,7 @@
 import React from 'react';
 import { useDeals } from '@/hooks/useDeals';
 import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
+import { useAllCallNotes } from '@/hooks/useAllCallNotes';
 import { useDealAnalytics } from '@/hooks/deals/useDealAnalytics';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics';
@@ -18,8 +19,9 @@ import { DealsLocationMap } from '@/components/dashboard/charts/DealsLocationMap
 export default function Dashboard() {
   const { deals, loading: dealsLoading, dealStats } = useDeals();
   const { companies: portfolioCompanies, loading: portfolioLoading } = usePortfolioCompanies();
+  const { callNotes, isLoading: callNotesLoading } = useAllCallNotes();
   const { isViewer } = useUserRoles();
-  const analytics = useDealAnalytics(deals || []);
+  const analytics = useDealAnalytics(deals || [], callNotes || []);
 
   // Calculate total invested from portfolio companies
   const totalInvested = portfolioCompanies
@@ -28,7 +30,7 @@ export default function Dashboard() {
       return total + companyInvested;
     }, 0) || 0;
 
-  const isLoading = dealsLoading || portfolioLoading;
+  const isLoading = dealsLoading || portfolioLoading || callNotesLoading;
 
   if (isLoading) {
     return (

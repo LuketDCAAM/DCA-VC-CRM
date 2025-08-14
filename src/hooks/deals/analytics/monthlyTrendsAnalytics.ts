@@ -1,7 +1,8 @@
 
 import { Deal } from '@/types/deal';
+import { CallNote } from '@/hooks/useAllCallNotes';
 
-export function calculateMonthlyTrends(deals: Deal[]) {
+export function calculateMonthlyTrends(deals: Deal[], callNotes: CallNote[] = []) {
   // Monthly Trends (last 12 months) - Now using source_date instead of created_at
   return Array.from({ length: 12 }, (_, i) => {
     const date = new Date();
@@ -18,10 +19,17 @@ export function calculateMonthlyTrends(deals: Deal[]) {
       deal.pipeline_stage === 'Invested'
     );
 
+    // Filter call notes by call_date for this month
+    const monthCalls = callNotes.filter(callNote => {
+      if (!callNote.call_date) return false;
+      return callNote.call_date.startsWith(monthKey);
+    });
+
     return {
       month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
       deals: monthDeals.length,
-      invested: investedDeals.length
+      invested: investedDeals.length,
+      calls: monthCalls.length
     };
   }).reverse();
 }
