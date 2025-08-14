@@ -4,8 +4,10 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { User, Edit } from 'lucide-react';
+import { User, Edit, LogOut } from 'lucide-react';
 import { useProfiles } from '@/hooks/useProfiles';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProfileDialogProps {
   children: React.ReactNode;
@@ -13,12 +15,14 @@ interface ProfileDialogProps {
 
 export default function ProfileDialog({ children }: ProfileDialogProps) {
   const { profile, loading, updateProfile } = useProfiles();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -40,6 +44,34 @@ export default function ProfileDialog({ children }: ProfileDialogProps) {
       // Error is handled in the hook
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast({
+          title: "Sign out error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Signed out",
+          description: "You have been successfully signed out.",
+        });
+        setOpen(false);
+      }
+    } catch (error) {
+      toast({
+        title: "Sign out error", 
+        description: "An unexpected error occurred while signing out.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -85,18 +117,31 @@ export default function ProfileDialog({ children }: ProfileDialogProps) {
             />
           </div>
           
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex justify-between items-center pt-4 border-t">
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
-              disabled={isSubmitting}
+              onClick={handleLogout}
+              disabled={isSubmitting || isLoggingOut}
+              className="flex items-center gap-2"
             >
-              Cancel
+              <LogOut className="h-4 w-4" />
+              {isLoggingOut ? 'Signing out...' : 'Sign Out'}
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
+            
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                disabled={isSubmitting || isLoggingOut}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting || isLoggingOut}>
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>
