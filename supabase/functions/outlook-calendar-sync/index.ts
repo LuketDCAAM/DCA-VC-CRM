@@ -121,6 +121,8 @@ Deno.serve(async (req) => {
     startDate.setDate(startDate.getDate() - 30);
     const endDate = new Date();
     
+    console.log(`📅 Calendar sync window: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+    
     const calendarUrl = `https://graph.microsoft.com/v1.0/me/events?` +
       `$filter=start/dateTime ge '${startDate.toISOString()}' and start/dateTime le '${endDate.toISOString()}'&` +
       `$select=id,subject,start,end,attendees,organizer,body&` +
@@ -197,26 +199,49 @@ Deno.serve(async (req) => {
         console.log(`Processing event: ${event.subject} on ${eventDate}`);
         console.log(`Event emails: ${allEventEmails.join(', ')}`);
 
+        // Enhanced debugging for HLRBO specifically
+        const hlrboEmails = allEventEmails.filter(email => email.includes('hlrbo') || email.includes('heath'));
+        if (hlrboEmails.length > 0) {
+          console.log(`🔍 HLRBO DEBUG: Found HLRBO-related emails: ${hlrboEmails.join(', ')}`);
+        }
+
         // Match and update deals
         const matchingDeals = userDeals?.filter(deal => {
           if (!deal.contact_email) return false;
           
-          const dealEmail = deal.contact_email.toLowerCase();
+          const dealEmail = deal.contact_email.toLowerCase().trim();
+          
+          // Debug logging for HLRBO
+          if (deal.company_name === 'HLRBO') {
+            console.log(`🔍 HLRBO DEBUG: Checking deal email "${dealEmail}" against event emails: ${allEventEmails.join(', ')}`);
+            console.log(`🔍 HLRBO DEBUG: Event subject: "${eventSubject}"`);
+          }
           
           // Enhanced matching logic
           const emailMatch = allEventEmails.some(eventEmail => {
+            const normalizedEventEmail = eventEmail.toLowerCase().trim();
+            
             // Exact match
-            if (eventEmail === dealEmail) return true;
+            if (normalizedEventEmail === dealEmail) {
+              if (deal.company_name === 'HLRBO') console.log(`🔍 HLRBO DEBUG: Exact email match found!`);
+              return true;
+            }
             
             // Domain matching for company emails
-            const eventDomain = eventEmail.split('@')[1];
+            const eventDomain = normalizedEventEmail.split('@')[1];
             const dealDomain = dealEmail.split('@')[1];
-            if (eventDomain === dealDomain) return true;
+            if (eventDomain && dealDomain && eventDomain === dealDomain) {
+              if (deal.company_name === 'HLRBO') console.log(`🔍 HLRBO DEBUG: Domain match found!`);
+              return true;
+            }
             
             // Partial email matching (name part)
-            const eventNamePart = eventEmail.split('@')[0];
+            const eventNamePart = normalizedEventEmail.split('@')[0];
             const dealNamePart = dealEmail.split('@')[0];
-            if (eventNamePart.includes(dealNamePart) || dealNamePart.includes(eventNamePart)) return true;
+            if (eventNamePart && dealNamePart && (eventNamePart.includes(dealNamePart) || dealNamePart.includes(eventNamePart))) {
+              if (deal.company_name === 'HLRBO') console.log(`🔍 HLRBO DEBUG: Partial email match found!`);
+              return true;
+            }
             
             return false;
           });
@@ -224,6 +249,10 @@ Deno.serve(async (req) => {
           // Company name matching in subject
           const companyMatch = eventSubject.includes(deal.company_name.toLowerCase()) ||
                              deal.company_name.toLowerCase().includes(eventSubject);
+          
+          if (deal.company_name === 'HLRBO') {
+            console.log(`🔍 HLRBO DEBUG: Email match: ${emailMatch}, Company match: ${companyMatch}`);
+          }
           
           return emailMatch || companyMatch;
         }) || [];
