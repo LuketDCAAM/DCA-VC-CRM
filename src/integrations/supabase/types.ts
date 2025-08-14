@@ -1231,6 +1231,15 @@ export type Database = {
         Args: { _user_id: string }
         Returns: boolean
       }
+      log_security_event: {
+        Args: {
+          event_type: string
+          record_id: string
+          table_name: string
+          user_id?: string
+        }
+        Returns: undefined
+      }
       set_limit: {
         Args: { "": number }
         Returns: number
