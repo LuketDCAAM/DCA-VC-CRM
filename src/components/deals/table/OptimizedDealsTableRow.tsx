@@ -165,13 +165,21 @@ const OptimizedDealsTableRow = memo(({
       
       {/* Last call date */}
       <TableCell className="min-w-[120px] py-2">
-        {deal.last_call_date ? (
-          <div className="text-xs text-muted-foreground">
-            {formatDate(deal.last_call_date)}
-          </div>
-        ) : (
-          <span className="text-muted-foreground text-xs">-</span>
-        )}
+        {(() => {
+          console.log('🐛 Deal data for last_call_date:', {
+            dealId: deal.id,
+            company: deal.company_name,
+            last_call_date: deal.last_call_date,
+            dealKeys: Object.keys(deal)
+          });
+          return deal.last_call_date ? (
+            <div className="text-xs text-muted-foreground">
+              {formatDate(deal.last_call_date)}
+            </div>
+          ) : (
+            <span className="text-muted-foreground text-xs">-</span>
+          );
+        })()}
       </TableCell>
       
       {/* Actions */}
