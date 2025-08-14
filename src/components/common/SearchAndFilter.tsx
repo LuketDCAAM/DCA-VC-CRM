@@ -68,7 +68,10 @@ export function SearchAndFilter({
           <Button
             variant="outline"
             size="sm"
-            onClick={onToggleAdvanced}
+            onClick={() => {
+              console.log('Filter button clicked, current showAdvanced:', showAdvanced);
+              onToggleAdvanced?.();
+            }}
             className="flex items-center gap-2"
           >
             <Filter className="h-4 w-4" />
