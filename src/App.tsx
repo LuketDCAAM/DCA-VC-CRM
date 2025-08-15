@@ -18,6 +18,8 @@ import ExternalDataDashboard from "./pages/ExternalDataDashboard";
 import NotFound from "./pages/NotFound";
 import MicrosoftAuthCallback from "./pages/auth/microsoft/callback";
 import { useAuth } from "./hooks/useAuth";
+import { useUserRoles } from "./hooks/useUserRoles";
+import ApprovalStatus from "./components/auth/ApprovalStatus";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -33,9 +35,10 @@ const queryClient = new QueryClient({
 });
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { isApproved, isPending, isRejected, loading: rolesLoading } = useUserRoles();
 
-  if (loading) {
+  if (authLoading || rolesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -45,6 +48,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return <Index />;
+  }
+
+  // If user is authenticated but not approved, show approval status
+  if (user && (isPending || isRejected)) {
+    return <ApprovalStatus />;
+  }
+
+  // Only allow access to app if user is approved
+  if (!isApproved) {
+    return <ApprovalStatus />;
   }
 
   return <>{children}</>;
