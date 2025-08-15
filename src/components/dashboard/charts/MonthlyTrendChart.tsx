@@ -5,7 +5,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Legend } from 'recharts';
 
 interface MonthlyTrendChartProps {
-  data: Array<{ month: string; deals: number; invested: number; calls: number }>;
+  data: Array<{ month: string; deals: number; invested: number; firstCalls: number }>;
 }
 
 export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
@@ -18,7 +18,7 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
       label: 'Invested',
       color: '#82ca9d'
     },
-    calls: {
+    firstCalls: {
       label: 'First Calls',
       color: '#ff7300'
     }
@@ -62,7 +62,7 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
               />
               <Line 
                 type="monotone" 
-                dataKey="calls" 
+                dataKey="firstCalls" 
                 stroke="#ff7300" 
                 strokeWidth={2}
                 dot={{ r: 4 }}

@@ -42,7 +42,7 @@ export function calculateMonthlyTrends(deals: Deal[], callNotes: CallNote[] = []
       month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
       deals: monthDeals.length,
       invested: investedDeals.length,
-      calls: firstCallsThisMonth.size // Renamed from firstCalls to maintain compatibility
+      firstCalls: firstCallsThisMonth.size
     };
   }).reverse();
 }
