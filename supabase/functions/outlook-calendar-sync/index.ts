@@ -123,15 +123,15 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Fetch calendar events from Microsoft Graph (last 30 days)
+    // Fetch calendar events from Microsoft Graph (last 30 days, excluding future events)
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - 30);
-    const endDate = new Date();
+    const endDate = new Date(); // Only include events up to now, not future events
     
     console.log(`📅 Calendar sync window: ${startDate.toISOString()} to ${endDate.toISOString()}`);
     
     const calendarUrl = `https://graph.microsoft.com/v1.0/me/events?` +
-      `$filter=start/dateTime ge '${startDate.toISOString()}' and start/dateTime le '${endDate.toISOString()}'&` +
+      `$filter=start/dateTime ge '${startDate.toISOString()}' and end/dateTime le '${endDate.toISOString()}'&` +
       `$select=id,subject,start,end,attendees,organizer,body&` +
       `$orderby=start/dateTime desc&` +
       `$top=100`;
@@ -201,7 +201,19 @@ Deno.serve(async (req) => {
         const organizerEmail = event.organizer?.emailAddress.address.toLowerCase();
         const allEventEmails = [...attendeeEmails, organizerEmail].filter(Boolean);
         
-        const eventDate = new Date(event.start.dateTime).toISOString().split('T')[0];
+        // Process event date and ensure it's not in the future
+        const eventStartTime = new Date(event.start.dateTime);
+        const eventEndTime = new Date(event.end.dateTime);
+        const now = new Date();
+        
+        // Skip future events - only process events that have already ended
+        if (eventEndTime > now) {
+          console.log(`Skipping future event: ${event.subject} scheduled for ${eventStartTime.toISOString()}`);
+          continue;
+        }
+        
+        // Use the event start date for matching
+        const eventDate = eventStartTime.toISOString().split('T')[0];
 
         console.log(`Processing event: ${event.subject} on ${eventDate}`);
         console.log(`Event emails: ${allEventEmails.join(', ')}`);
