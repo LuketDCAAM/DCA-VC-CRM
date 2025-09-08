@@ -47,13 +47,14 @@ export function DealStatusForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Round Stage</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || ''}>
+              <Select onValueChange={(v) => field.onChange(v === '' ? undefined : v)} value={field.value ?? ''}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select round stage" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
+                  <SelectItem value="">None</SelectItem>
                   {roundStages.map((stage) => (
                     <SelectItem key={stage} value={stage}>
                       {stage}
