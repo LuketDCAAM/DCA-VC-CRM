@@ -44,14 +44,14 @@ export function DealEditStatusSection({ control }: DealEditStatusSectionProps) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Round Stage</FormLabel>
-            <Select onValueChange={(v) => field.onChange(v === '' ? undefined : v)} value={field.value ?? ''}>
+            <Select onValueChange={(v) => field.onChange(v === 'none' ? null : v)} value={field.value ?? 'none'}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select round stage" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="none">None</SelectItem>
                 {Constants.public.Enums.round_stage.map((stage) => (
                   <SelectItem key={stage} value={stage}>
                     {stage}
