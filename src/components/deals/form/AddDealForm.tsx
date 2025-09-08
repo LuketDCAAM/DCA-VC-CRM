@@ -23,7 +23,7 @@ const addDealFormSchema = z.object({
   contact_email: z.string().email({ message: "Invalid email address" }).or(z.literal('')).optional(),
   contact_phone: z.string().optional(),
   pipeline_stage: z.string(),
-  round_stage: z.string().optional(),
+  round_stage: z.string().nullable().optional(),
   deal_score: z.number().min(0).max(100).optional(),
   deal_lead: z.string().optional(),
   deal_source: z.string().optional(),
