@@ -1284,6 +1284,7 @@ export type Database = {
         | "Inactive"
         | "Initial Review"
         | "Scorecard"
+        | "Decision Making"
         | "One Pager"
         | "Due Diligence"
         | "Memo"
@@ -1451,6 +1452,7 @@ export const Constants = {
         "Inactive",
         "Initial Review",
         "Scorecard",
+        "Decision Making",
         "One Pager",
         "Due Diligence",
         "Memo",
