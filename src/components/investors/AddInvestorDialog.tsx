@@ -36,7 +36,10 @@ const investorSchema = z.object({
   linkedin_url: z.string().url('Invalid LinkedIn URL').nullable().optional().or(z.literal('')),
   location: z.string().nullable().optional(),
   preferred_investment_stage: z.enum(investmentStages).nullable().optional(),
-  average_check_size: z.coerce.number().positive().nullable().optional(),
+  average_check_size: z.preprocess(
+    (val) => val === '' || val === null || val === undefined ? null : Number(val),
+    z.number().positive().nullable().optional()
+  ),
   preferred_sectors: z.string().nullable().optional(),
   tags: z.string().nullable().optional(),
   last_call_date: z.string().nullable().optional(),
