@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Deal } from '@/types/deal';
+import { useAuth } from '@/hooks/useAuth';
 
 interface EditDealValues {
   company_name: string;
@@ -37,6 +38,7 @@ interface UseEditDealProps {
 export function useEditDeal({ deal, onSave }: UseEditDealProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleEditSubmit = async (values: EditDealValues) => {
     setIsUpdating(true);
@@ -106,7 +108,7 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
             file_url: urlData.publicUrl,
             file_type: 'file',
             file_size: values.pitchDeckFile.size,
-            uploaded_by: deal.created_by
+            uploaded_by: user?.id as string
           });
 
         if (attachmentError) {
@@ -115,20 +117,23 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
         }
       }
 
-      // Handle pitch deck URL - Update or insert
+      // Handle pitch deck URL - delete existing link and insert new
       if (values.pitch_deck_url) {
+        await supabase
+          .from('file_attachments')
+          .delete()
+          .eq('deal_id', deal.id)
+          .eq('file_type', 'link');
+
         const { error: linkError } = await supabase
           .from('file_attachments')
-          .upsert({
+          .insert({
             deal_id: deal.id,
             file_name: 'Pitch Deck Link',
             file_url: values.pitch_deck_url,
             file_type: 'link',
             file_size: 0,
-            uploaded_by: deal.created_by
-          }, {
-            onConflict: 'deal_id,file_type',
-            ignoreDuplicates: false
+            uploaded_by: user?.id as string
           });
 
         if (linkError) {
@@ -155,7 +160,7 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
             file_url: `investor:lead:${values.lead_investor}`,
             file_type: 'investor_info',
             file_size: 0,
-            uploaded_by: deal.created_by
+            uploaded_by: user?.id as string
           });
 
         if (leadError) {
@@ -181,7 +186,7 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
             file_url: `investor:other:${values.other_investors}`,
             file_type: 'investor_info',
             file_size: 0,
-            uploaded_by: deal.created_by
+            uploaded_by: user?.id as string
           });
 
         if (otherError) {
