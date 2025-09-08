@@ -202,8 +202,33 @@ export function DealsMap({ locationData }: DealsMapProps) {
         </div>
       </div>
 
-      {/* Selected location details */}
-      {selectedLocation && (
+      {/* Top 10 locations or selected location details */}
+      {!selectedLocation ? (
+        <div className="absolute top-4 right-4 bg-card/95 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-xs border border-border">
+          <h4 className="font-semibold text-sm mb-3">Top 10 Locations</h4>
+          <div className="space-y-2 max-h-80 overflow-y-auto">
+            {locationData
+              .slice()
+              .sort((a, b) => b.count - a.count)
+              .slice(0, 10)
+              .map((location, index) => (
+                <div key={location.region} className="flex items-center justify-between py-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-muted-foreground w-4">
+                      {index + 1}.
+                    </span>
+                    <span className="text-xs font-medium truncate max-w-24" title={location.region}>
+                      {location.region}
+                    </span>
+                  </div>
+                  <Badge variant="secondary" className="text-xs ml-2">
+                    {location.count}
+                  </Badge>
+                </div>
+              ))}
+          </div>
+        </div>
+      ) : (
         <div className="absolute top-4 right-4 bg-card/95 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-xs border border-border">
           {(() => {
             const location = locationData.find(l => l.region === selectedLocation);
