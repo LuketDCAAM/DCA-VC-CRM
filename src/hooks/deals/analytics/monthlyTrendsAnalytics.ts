@@ -6,10 +6,10 @@ export function calculateMonthlyTrends(deals: Deal[], callNotes: CallNote[] = []
   console.log('📊 Monthly Trends Calculation Started');
   console.log(`Total deals: ${deals.length}, Total call notes: ${callNotes.length}`);
   
-  // Extended range to include future months for first calls tracking
-  return Array.from({ length: 24 }, (_, i) => {
+  // Monthly Trends (last 12 months) - Now using source_date instead of created_at
+  return Array.from({ length: 12 }, (_, i) => {
     const date = new Date();
-    date.setMonth(date.getMonth() - 12 + i); // From 12 months ago to 12 months ahead
+    date.setMonth(date.getMonth() - i);
     const monthKey = date.toISOString().slice(0, 7); // YYYY-MM format
     
     console.log(`\n🗓️ Processing month: ${monthKey}`);
@@ -52,9 +52,14 @@ export function calculateMonthlyTrends(deals: Deal[], callNotes: CallNote[] = []
         const earliestCall = sortedCalls[0];
         
         // Check if this earliest call happened in the current month
-        if (earliestCall.call_date && earliestCall.call_date.startsWith(monthKey)) {
-          firstCallsThisMonth.add(deal.id);
-          console.log(`    First call for deal ${deal.company_name}: ${earliestCall.call_date}`);
+        if (earliestCall.call_date) {
+          const callMonthKey = typeof earliestCall.call_date === 'string'
+            ? earliestCall.call_date.slice(0, 7)
+            : new Date(earliestCall.call_date as any).toISOString().slice(0, 7);
+          if (callMonthKey === monthKey) {
+            firstCallsThisMonth.add(deal.id);
+            console.log(`    First call for deal ${deal.company_name}: ${earliestCall.call_date}`);
+          }
         }
       }
     });
@@ -70,8 +75,5 @@ export function calculateMonthlyTrends(deals: Deal[], callNotes: CallNote[] = []
     
     console.log(`  Final result for ${monthKey}:`, result);
     return result;
-  }).reverse().filter(month => {
-    // Only show months that have any activity (deals, invested, or first calls)
-    return month.deals > 0 || month.invested > 0 || month.firstCalls > 0;
-  });
+  }).reverse();
 }

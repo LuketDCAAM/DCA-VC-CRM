@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Legend } from 'recharts';
+import { ComposedChart, Line, Bar, XAxis, YAxis, ResponsiveContainer, Legend } from 'recharts';
 
 interface MonthlyTrendChartProps {
   data: Array<{ month: string; deals: number; invested: number; firstCalls: number }>;
@@ -33,7 +33,7 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
       <CardContent className="flex justify-center">
         <ChartContainer config={chartConfig} className="h-[400px] w-full max-w-4xl">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data}>
+            <ComposedChart data={data}>
               <XAxis 
                 dataKey="month" 
                 fontSize={12}
@@ -41,16 +41,16 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
                 textAnchor="end"
                 height={60}
               />
-              <YAxis />
+              <YAxis yAxisId="left" />
+              <YAxis yAxisId="right" orientation="right" />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Legend />
-              <Line 
-                type="monotone" 
+              <Bar 
                 dataKey="deals" 
-                stroke="#8884d8" 
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                name="Deals Sourced"
+                fill="#8884d8" 
+                name="Deals Sourced" 
+                yAxisId="left" 
+                radius={[4, 4, 0, 0]}
               />
               <Line 
                 type="monotone" 
@@ -59,6 +59,7 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
                 strokeWidth={2}
                 dot={{ r: 4 }}
                 name="Invested"
+                yAxisId="right"
               />
               <Line 
                 type="monotone" 
@@ -67,8 +68,9 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
                 strokeWidth={2}
                 dot={{ r: 4 }}
                 name="First Calls"
+                yAxisId="right"
               />
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
