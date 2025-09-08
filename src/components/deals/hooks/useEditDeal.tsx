@@ -115,17 +115,20 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
         }
       }
 
-      // Handle pitch deck URL
+      // Handle pitch deck URL - Update or insert
       if (values.pitch_deck_url) {
         const { error: linkError } = await supabase
           .from('file_attachments')
-          .insert({
+          .upsert({
             deal_id: deal.id,
             file_name: 'Pitch Deck Link',
             file_url: values.pitch_deck_url,
             file_type: 'link',
             file_size: 0,
             uploaded_by: deal.created_by
+          }, {
+            onConflict: 'deal_id,file_type',
+            ignoreDuplicates: false
           });
 
         if (linkError) {
@@ -134,8 +137,16 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
         }
       }
 
-      // Handle investor information
+      // Handle investor information - Update or insert lead investor
       if (values.lead_investor) {
+        // First, delete existing lead investor record for this deal
+        await supabase
+          .from('file_attachments')
+          .delete()
+          .eq('deal_id', deal.id)
+          .eq('file_type', 'investor_info')
+          .like('file_url', 'investor:lead:%');
+
         const { error: leadError } = await supabase
           .from('file_attachments')
           .insert({
@@ -154,6 +165,14 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
       }
 
       if (values.other_investors) {
+        // First, delete existing other investors record for this deal
+        await supabase
+          .from('file_attachments')
+          .delete()
+          .eq('deal_id', deal.id)
+          .eq('file_type', 'investor_info')
+          .like('file_url', 'investor:other:%');
+
         const { error: otherError } = await supabase
           .from('file_attachments')
           .insert({
