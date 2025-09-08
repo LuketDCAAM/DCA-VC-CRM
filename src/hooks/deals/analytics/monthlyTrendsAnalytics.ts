@@ -6,10 +6,10 @@ export function calculateMonthlyTrends(deals: Deal[], callNotes: CallNote[] = []
   console.log('📊 Monthly Trends Calculation Started');
   console.log(`Total deals: ${deals.length}, Total call notes: ${callNotes.length}`);
   
-  // Monthly Trends (last 12 months) - Now using source_date instead of created_at
-  return Array.from({ length: 12 }, (_, i) => {
+  // Extended range to include future months for first calls tracking
+  return Array.from({ length: 24 }, (_, i) => {
     const date = new Date();
-    date.setMonth(date.getMonth() - i);
+    date.setMonth(date.getMonth() - 12 + i); // From 12 months ago to 12 months ahead
     const monthKey = date.toISOString().slice(0, 7); // YYYY-MM format
     
     console.log(`\n🗓️ Processing month: ${monthKey}`);
@@ -70,5 +70,8 @@ export function calculateMonthlyTrends(deals: Deal[], callNotes: CallNote[] = []
     
     console.log(`  Final result for ${monthKey}:`, result);
     return result;
-  }).reverse();
+  }).reverse().filter(month => {
+    // Only show months that have any activity (deals, invested, or first calls)
+    return month.deals > 0 || month.invested > 0 || month.firstCalls > 0;
+  });
 }
