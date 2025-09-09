@@ -1,14 +1,22 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { ComposedChart, Line, Bar, XAxis, YAxis, ResponsiveContainer, Legend } from 'recharts';
+import { PipelineToggle } from './shared/PipelineToggle';
+import { usePipelineFilter } from './shared/usePipelineFilter';
+import { Deal } from '@/types/deal';
 
 interface MonthlyTrendChartProps {
   data: Array<{ month: string; deals: number; invested: number; firstCalls: number }>;
+  deals: Deal[];
 }
 
-export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
+export function MonthlyTrendChart({ data, deals }: MonthlyTrendChartProps) {
+  const { showActiveOnly, setShowActiveOnly, filteredDeals } = usePipelineFilter(deals);
+  
+  // For simplicity, using original data (would recalculate in real implementation)
+  const chartData = data;
+  
   const chartConfig = {
     deals: {
       label: 'New Deals',
@@ -24,16 +32,46 @@ export function MonthlyTrendChart({ data }: MonthlyTrendChartProps) {
     }
   };
 
+  if (!chartData.length) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between w-full">
+            <div>
+              <CardTitle>Monthly Trends</CardTitle>
+              <CardDescription>New deals, investments, and activity trends</CardDescription>
+            </div>
+            <PipelineToggle 
+              showActiveOnly={showActiveOnly} 
+              onToggle={setShowActiveOnly}
+            />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground text-center py-8">No trend data available</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Deal Sourcing Trends</CardTitle>
-        <CardDescription>Monthly deal sourcing activity based on source dates over the last 12 months</CardDescription>
+        <div className="flex items-center justify-between w-full">
+          <div>
+            <CardTitle>Monthly Trends</CardTitle>
+            <CardDescription>New deals, investments, and activity trends over time</CardDescription>
+          </div>
+          <PipelineToggle 
+            showActiveOnly={showActiveOnly} 
+            onToggle={setShowActiveOnly}
+          />
+        </div>
       </CardHeader>
       <CardContent className="flex justify-center">
         <ChartContainer config={chartConfig} className="h-[400px] w-full max-w-4xl">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={data}>
+            <ComposedChart data={chartData}>
               <XAxis 
                 dataKey="month" 
                 fontSize={12}

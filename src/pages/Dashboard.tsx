@@ -60,15 +60,15 @@ export default function Dashboard() {
 
       {/* Analytics Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SectorChart data={analytics.sectorDistribution} />
-        <RoundStageChart data={analytics.roundStageDistribution} />
+        <SectorChart data={analytics.sectorDistribution} deals={deals || []} />
+        <RoundStageChart data={analytics.roundStageDistribution} deals={deals || []} />
       </div>
 
       {/* Detailed Analytics - Full Width */}
       <div className="grid grid-cols-1 gap-6">
-        <ValuationChart data={analytics.valuationAnalysis} />
+        <ValuationChart data={analytics.valuationAnalysis} deals={deals || []} />
         <ValuationRevenueMultipleChart deals={deals || []} />
-        <MonthlyTrendChart data={analytics.monthlyTrends} />
+        <MonthlyTrendChart data={analytics.monthlyTrends} deals={deals || []} />
       </div>
 
       {/* Activity & Quick Actions - Hide Quick Actions for viewers */}

@@ -4,9 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 import { TrendingUp } from 'lucide-react';
+import { PipelineToggle } from './shared/PipelineToggle';
+import { usePipelineFilter } from './shared/usePipelineFilter';
+import { Deal } from '@/types/deal';
 
 interface SectorChartProps {
   data: Array<{ sector: string; count: number; percentage: number }>;
+  deals: Deal[];
 }
 
 // Modern color palette for sectors
@@ -23,11 +27,31 @@ const SECTOR_COLORS = [
   '#6366f1', // indigo-500
 ];
 
-export function SectorChart({ data }: SectorChartProps) {
-  console.log('=== SECTOR CHART REBUILD ===');
-  console.log('Received sector data:', data);
+export function SectorChart({ data, deals }: SectorChartProps) {
+  const { showActiveOnly, setShowActiveOnly, filteredDeals } = usePipelineFilter(deals);
+  
+  // Recalculate sector data based on filtered deals
+  const sectorCounts = filteredDeals.reduce((acc, deal) => {
+    const sector = deal.sector || 'Unknown';
+    acc[sector] = (acc[sector] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
-  const validData = data?.filter(item => 
+  const total = Object.values(sectorCounts).reduce((sum, count) => sum + count, 0);
+  const calculatedData = Object.entries(sectorCounts)
+    .map(([sector, count]) => ({
+      sector,
+      count,
+      percentage: total > 0 ? Math.round((count / total) * 100) : 0
+    }))
+    .sort((a, b) => b.count - a.count);
+
+  console.log('=== SECTOR CHART REBUILD ===');
+  console.log('Show active only:', showActiveOnly);
+  console.log('Filtered deals count:', filteredDeals.length);
+  console.log('Calculated sector data:', calculatedData);
+
+  const validData = calculatedData?.filter(item => 
     item && 
     typeof item.sector === 'string' && 
     item.sector.trim() !== '' &&
@@ -47,10 +71,18 @@ export function SectorChart({ data }: SectorChartProps) {
     return (
       <Card className="flex flex-col">
         <CardHeader className="items-center pb-0">
-          <CardTitle>Deal Distribution by Sector</CardTitle>
-          <CardDescription>
-            No sector data available
-          </CardDescription>
+          <div className="flex items-center justify-between w-full">
+            <div>
+              <CardTitle>Deal Distribution by Sector</CardTitle>
+              <CardDescription>
+                No sector data available
+              </CardDescription>
+            </div>
+            <PipelineToggle 
+              showActiveOnly={showActiveOnly} 
+              onToggle={setShowActiveOnly}
+            />
+          </div>
         </CardHeader>
         <CardContent className="flex-1 pb-0">
           <div className="flex items-center justify-center h-[300px] text-muted-foreground">
@@ -76,10 +108,18 @@ export function SectorChart({ data }: SectorChartProps) {
   return (
     <Card className="flex flex-col">
       <CardHeader className="items-center pb-0">
-        <CardTitle>Deal Distribution by Sector</CardTitle>
-        <CardDescription>
-          {chartData.length} sectors • {totalDeals} total deals
-        </CardDescription>
+        <div className="flex items-center justify-between w-full">
+          <div>
+            <CardTitle>Deal Distribution by Sector</CardTitle>
+            <CardDescription>
+              {chartData.length} sectors • {totalDeals} total deals
+            </CardDescription>
+          </div>
+          <PipelineToggle 
+            showActiveOnly={showActiveOnly} 
+            onToggle={setShowActiveOnly}
+          />
+        </div>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer
