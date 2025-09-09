@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Constants } from '@/integrations/supabase/types';
 import { useDuplicateDetection } from '@/hooks/useDuplicateDetection';
 import { PotentialDuplicate } from '@/types/duplicates';
+import { PIPELINE_STAGES } from '@/hooks/deals/dealStagesConfig';
 
 interface AddDealValues {
   company_name: string;
@@ -41,7 +42,7 @@ export function useAddDeal() {
   const { toast } = useToast();
   const { checkForDuplicates, isChecking } = useDuplicateDetection();
 
-  const pipelineStages = Constants.public.Enums.pipeline_stage;
+  const pipelineStages = PIPELINE_STAGES;
   const roundStages = Constants.public.Enums.round_stage;
 
   const checkDuplicatesAndProceed = async (values: AddDealValues): Promise<boolean> => {

@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Control } from 'react-hook-form';
 import { Constants } from '@/integrations/supabase/types';
 import { DealFormValues } from './dealEditFormSchema';
+import { PIPELINE_STAGES } from '@/hooks/deals/dealStagesConfig';
 
 interface DealEditStatusSectionProps {
   control: Control<DealFormValues>;
@@ -27,7 +28,7 @@ export function DealEditStatusSection({ control }: DealEditStatusSectionProps) {
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {Constants.public.Enums.pipeline_stage.map((stage) => (
+                {PIPELINE_STAGES.map((stage) => (
                   <SelectItem key={stage} value={stage}>
                     {stage}
                   </SelectItem>
