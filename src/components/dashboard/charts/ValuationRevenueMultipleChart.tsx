@@ -22,7 +22,7 @@ function calculateValuationRevenueMultiples(deals: Deal[]): QuarterlyMultiple[] 
     deal.revenue && 
     deal.post_money_valuation > 0 && 
     deal.revenue > 0 &&
-    deal.created_at
+    (deal.source_date || deal.created_at)
   );
 
   console.log('Total deals with valuation/revenue data:', dealsWithData.length);
@@ -30,16 +30,18 @@ function calculateValuationRevenueMultiples(deals: Deal[]): QuarterlyMultiple[] 
     name: d.company_name,
     valuation: d.post_money_valuation,
     revenue: d.revenue,
-    date: d.created_at
+    sourceDate: d.source_date,
+    createdAt: d.created_at,
+    usedDate: d.source_date || d.created_at
   })));
 
   // Show all available data instead of filtering by 2 years
   // This will help us see what quarters actually have data
   const allDeals = dealsWithData;
 
-  // Group by quarter
+  // Group by quarter using source_date or created_at as fallback
   const quarterlyData = allDeals.reduce((acc, deal) => {
-    const dealDate = parseISO(deal.created_at);
+    const dealDate = parseISO(deal.source_date || deal.created_at);
     const quarterStart = startOfQuarter(dealDate);
     const quarterKey = format(quarterStart, 'yyyy-QQQ');
     
