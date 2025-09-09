@@ -153,18 +153,18 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
               <Line 
                 type="monotone" 
                 dataKey="averageMultiple" 
-                stroke="hsl(var(--primary))" 
+                stroke="#22c55e" 
                 strokeWidth={2}
-                dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
+                dot={{ fill: '#22c55e', strokeWidth: 2, r: 4 }}
                 name="Average Multiple"
               />
               <Line 
                 type="monotone" 
                 dataKey="medianMultiple" 
-                stroke="hsl(var(--chart-2))" 
+                stroke="#a855f7" 
                 strokeWidth={2}
                 strokeDasharray="5 5"
-                dot={{ fill: 'hsl(var(--chart-2))', strokeWidth: 2, r: 4 }}
+                dot={{ fill: '#a855f7', strokeWidth: 2, r: 4 }}
                 name="Median Multiple"
               />
             </LineChart>
@@ -172,11 +172,11 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
         </div>
         <div className="flex items-center justify-center gap-6 mt-4 text-sm">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-0.5 bg-primary"></div>
+            <div className="w-3 h-0.5 bg-green-500"></div>
             <span className="text-muted-foreground">Average Multiple</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-0.5 bg-chart-2 border-dashed border-t-2"></div>
+            <div className="w-3 h-0.5 bg-purple-500 border-dashed border-t-2"></div>
             <span className="text-muted-foreground">Median Multiple</span>
           </div>
         </div>
