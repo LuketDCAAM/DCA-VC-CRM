@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { Constants } from '@/integrations/supabase/types';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,7 @@ const addDealFormSchema = z.object({
   contact_phone: z.string().optional(),
   pipeline_stage: z.string(),
   round_stage: z.string().nullable().optional(),
+  investment_vehicle: z.string().nullable().optional(),
   deal_score: z.number().min(0).max(100).optional(),
   deal_lead: z.string().optional(),
   deal_source: z.string().optional(),
@@ -50,6 +52,7 @@ interface AddDealValues {
   contact_phone?: string;
   pipeline_stage: string;
   round_stage?: string;
+  investment_vehicle?: string;
   deal_score?: number;
   deal_lead?: string;
   deal_source?: string;
@@ -96,6 +99,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
       contact_phone: '',
       pipeline_stage: 'Inactive',
       round_stage: '',
+      investment_vehicle: '',
       deal_score: undefined,
       deal_lead: '',
       deal_source: '',
@@ -129,6 +133,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
       contact_phone: values.contact_phone,
       pipeline_stage: values.pipeline_stage,
       round_stage: values.round_stage,
+      investment_vehicle: values.investment_vehicle,
       deal_score: values.deal_score,
       deal_lead: values.deal_lead,
       deal_source: values.deal_source,
@@ -351,6 +356,30 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
                         {roundStages.map((stage) => (
                           <SelectItem key={stage} value={stage}>
                             {stage}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="investment_vehicle"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Investment Vehicle</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select investment vehicle" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Constants.public.Enums.investment_vehicle.map((vehicle) => (
+                          <SelectItem key={vehicle} value={vehicle}>
+                            {vehicle}
                           </SelectItem>
                         ))}
                       </SelectContent>
