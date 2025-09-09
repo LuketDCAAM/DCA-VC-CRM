@@ -49,6 +49,14 @@ export const DEFAULT_COLUMNS: TableColumn[] = [
     dataType: 'enum'
   },
   {
+    key: 'investment_vehicle',
+    label: 'Investment Vehicle',
+    width: 'min-w-[140px]',
+    sortable: true,
+    visible: true,
+    dataType: 'enum'
+  },
+  {
     key: 'round_size',
     label: 'Round Size',
     icon: DollarSign,

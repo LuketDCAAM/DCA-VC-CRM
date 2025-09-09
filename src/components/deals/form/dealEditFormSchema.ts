@@ -14,6 +14,7 @@ export const dealFormSchema = z.object({
   contact_phone: z.string().optional(),
   pipeline_stage: z.enum(Constants.public.Enums.pipeline_stage as readonly [string, ...string[]] as [string, ...string[]]),
   round_stage: z.enum(Constants.public.Enums.round_stage as readonly [string, ...string[]] as [string, ...string[]]).nullable().optional(),
+  investment_vehicle: z.enum(Constants.public.Enums.investment_vehicle as readonly [string, ...string[]] as [string, ...string[]]).nullable().optional(),
   deal_score: z.number().min(0).max(100).optional(),
   deal_lead: z.string().optional(),
   deal_source: z.string().optional(),

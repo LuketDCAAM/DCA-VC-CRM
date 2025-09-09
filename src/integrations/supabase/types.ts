@@ -375,6 +375,9 @@ export type Database = {
           founded_year: number | null
           headquarters_location: string | null
           id: string
+          investment_vehicle:
+            | Database["public"]["Enums"]["investment_vehicle"]
+            | null
           is_priority_deal: boolean | null
           last_call_date: string | null
           last_funding_date: string | null
@@ -415,6 +418,9 @@ export type Database = {
           founded_year?: number | null
           headquarters_location?: string | null
           id?: string
+          investment_vehicle?:
+            | Database["public"]["Enums"]["investment_vehicle"]
+            | null
           is_priority_deal?: boolean | null
           last_call_date?: string | null
           last_funding_date?: string | null
@@ -455,6 +461,9 @@ export type Database = {
           founded_year?: number | null
           headquarters_location?: string | null
           id?: string
+          investment_vehicle?:
+            | Database["public"]["Enums"]["investment_vehicle"]
+            | null
           is_priority_deal?: boolean | null
           last_call_date?: string | null
           last_funding_date?: string | null
@@ -1280,6 +1289,12 @@ export type Database = {
         | "Series C"
         | "Growth"
         | "Late Stage"
+      investment_vehicle:
+        | "Preferred Equity"
+        | "Common Equity"
+        | "Convertible Note"
+        | "SAFE Note"
+        | "Other"
       pipeline_stage:
         | "Inactive"
         | "Initial Review"
@@ -1447,6 +1462,13 @@ export const Constants = {
         "Series C",
         "Growth",
         "Late Stage",
+      ],
+      investment_vehicle: [
+        "Preferred Equity",
+        "Common Equity",
+        "Convertible Note",
+        "SAFE Note",
+        "Other",
       ],
       pipeline_stage: [
         "Inactive",
