@@ -25,15 +25,20 @@ function calculateValuationRevenueMultiples(deals: Deal[]): QuarterlyMultiple[] 
     deal.created_at
   );
 
-  // Filter deals to only include the last 2 years
-  const twoYearsAgo = subYears(new Date(), 2);
-  const recentDeals = dealsWithData.filter(deal => {
-    const dealDate = parseISO(deal.created_at);
-    return dealDate >= twoYearsAgo;
-  });
+  console.log('Total deals with valuation/revenue data:', dealsWithData.length);
+  console.log('Sample deals with data:', dealsWithData.slice(0, 5).map(d => ({
+    name: d.company_name,
+    valuation: d.post_money_valuation,
+    revenue: d.revenue,
+    date: d.created_at
+  })));
+
+  // Show all available data instead of filtering by 2 years
+  // This will help us see what quarters actually have data
+  const allDeals = dealsWithData;
 
   // Group by quarter
-  const quarterlyData = recentDeals.reduce((acc, deal) => {
+  const quarterlyData = allDeals.reduce((acc, deal) => {
     const dealDate = parseISO(deal.created_at);
     const quarterStart = startOfQuarter(dealDate);
     const quarterKey = format(quarterStart, 'yyyy-QQQ');
@@ -105,7 +110,7 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Revenue Multiple Trends (2 Years)</CardTitle>
+          <CardTitle>Revenue Multiple Trends (All Data)</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-[300px] text-muted-foreground">
@@ -122,7 +127,7 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Revenue Multiple Trends (2 Years)</CardTitle>
+        <CardTitle>Revenue Multiple Trends (All Data)</CardTitle>
         <p className="text-sm text-muted-foreground">
           Average and median valuation/revenue multiples by quarter (capped at 100x)
         </p>
