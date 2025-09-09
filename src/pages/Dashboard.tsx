@@ -15,6 +15,7 @@ import { MonthlyTrendChart } from '@/components/dashboard/charts/MonthlyTrendCha
 import { ValuationChart } from '@/components/dashboard/charts/ValuationChart';
 import { RoundStageChart } from '@/components/dashboard/charts/RoundStageChart';
 import { DealsLocationMap } from '@/components/dashboard/charts/DealsLocationMap';
+import { ValuationRevenueMultipleChart } from '@/components/dashboard/charts/ValuationRevenueMultipleChart';
 
 export default function Dashboard() {
   const { deals, loading: dealsLoading, dealStats } = useDeals();
@@ -66,6 +67,7 @@ export default function Dashboard() {
       {/* Detailed Analytics - Full Width */}
       <div className="grid grid-cols-1 gap-6">
         <ValuationChart data={analytics.valuationAnalysis} />
+        <ValuationRevenueMultipleChart deals={deals || []} />
         <MonthlyTrendChart data={analytics.monthlyTrends} />
       </div>
 
