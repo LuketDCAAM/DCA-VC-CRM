@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,15 +27,18 @@ interface DealPipelineBoardProps {
   onDealUpdated?: () => void;
 }
 
-export function DealPipelineBoard({ deals, onViewDetails, onDealUpdated }: DealPipelineBoardProps) {
+export const DealPipelineBoard = memo(function DealPipelineBoard({ deals, onViewDetails, onDealUpdated }: DealPipelineBoardProps) {
   const [isUpdating, setIsUpdating] = useState<string | null>(null);
 
-  const dealsByStage = PIPELINE_STAGES.reduce((acc, stage) => {
-    acc[stage] = deals.filter(deal => deal.pipeline_stage === stage);
-    return acc;
-  }, {} as Record<PipelineStage, Deal[]>);
+  // Memoize dealsByStage calculation to prevent recalculation on every render
+  const dealsByStage = useMemo(() => {
+    return PIPELINE_STAGES.reduce((acc, stage) => {
+      acc[stage] = deals.filter(deal => deal.pipeline_stage === stage);
+      return acc;
+    }, {} as Record<PipelineStage, Deal[]>);
+  }, [deals]);
 
-  const handleDragEnd = async (result: DropResult) => {
+  const handleDragEnd = useCallback(async (result: DropResult) => {
     const { destination, source, draggableId } = result;
 
     // If dropped outside a droppable area or in the same position
@@ -68,9 +71,9 @@ export function DealPipelineBoard({ deals, onViewDetails, onDealUpdated }: DealP
     } finally {
       setIsUpdating(null);
     }
-  };
+  }, [onDealUpdated]);
 
-  const DealCardMini = ({ deal, index }: { deal: Deal; index: number }) => (
+  const DealCardMini = memo(({ deal, index }: { deal: Deal; index: number }) => (
     <Draggable draggableId={deal.id} index={index}>
       {(provided, snapshot) => (
         <div
@@ -148,7 +151,7 @@ export function DealPipelineBoard({ deals, onViewDetails, onDealUpdated }: DealP
         </div>
       )}
     </Draggable>
-  );
+  ));
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
@@ -195,4 +198,4 @@ export function DealPipelineBoard({ deals, onViewDetails, onDealUpdated }: DealP
       </div>
     </DragDropContext>
   );
-}
+});
