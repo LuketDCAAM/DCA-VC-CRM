@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { X } from 'lucide-react';
 import { Deal } from '@/types/deal';
 import { format, startOfQuarter, parseISO, subYears } from 'date-fns';
 
@@ -161,6 +163,10 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
     );
   };
 
+  const removeLocation = (location: string) => {
+    setSelectedLocations(prev => prev.filter(l => l !== location));
+  };
+
   const clearAllFilters = () => {
     setSelectedRounds([]);
     setSelectedLocations([]);
@@ -206,19 +212,42 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
             </div>
             
             <div>
-              <h4 className="text-sm font-medium mb-2">Geography</h4>
-              <div className="flex flex-wrap gap-2">
-                {availableLocations.map(location => (
-                  <Badge
-                    key={location}
-                    variant={selectedLocations.includes(location) ? "default" : "outline"}
-                    className="cursor-pointer hover:bg-primary/10 transition-colors"
-                    onClick={() => toggleLocation(location)}
-                  >
-                    {location}
-                  </Badge>
-                ))}
+              <div className="flex items-center gap-2 mb-2">
+                <h4 className="text-sm font-medium">Geography</h4>
+                <Select onValueChange={toggleLocation}>
+                  <SelectTrigger className="w-[200px] h-8">
+                    <SelectValue placeholder="Select locations..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border border-border shadow-lg z-50">
+                    {availableLocations.map(location => (
+                      <SelectItem 
+                        key={location} 
+                        value={location}
+                        className="hover:bg-muted cursor-pointer"
+                      >
+                        {location}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+              {selectedLocations.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {selectedLocations.map(location => (
+                    <Badge
+                      key={location}
+                      variant="default"
+                      className="text-xs flex items-center gap-1"
+                    >
+                      {location}
+                      <X 
+                        className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                        onClick={() => removeLocation(location)}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -271,22 +300,45 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
               ))}
             </div>
           </div>
-          
-          <div>
-            <h4 className="text-sm font-medium mb-2">Geography</h4>
-            <div className="flex flex-wrap gap-2">
-              {availableLocations.map(location => (
-                <Badge
-                  key={location}
-                  variant={selectedLocations.includes(location) ? "default" : "outline"}
-                  className="cursor-pointer hover:bg-primary/10 transition-colors"
-                  onClick={() => toggleLocation(location)}
-                >
-                  {location}
-                </Badge>
-              ))}
+            
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <h4 className="text-sm font-medium">Geography</h4>
+                <Select onValueChange={toggleLocation}>
+                  <SelectTrigger className="w-[200px] h-8">
+                    <SelectValue placeholder="Select locations..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border border-border shadow-lg z-50">
+                    {availableLocations.map(location => (
+                      <SelectItem 
+                        key={location} 
+                        value={location}
+                        className="hover:bg-muted cursor-pointer"
+                      >
+                        {location}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {selectedLocations.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {selectedLocations.map(location => (
+                    <Badge
+                      key={location}
+                      variant="default"
+                      className="text-xs flex items-center gap-1"
+                    >
+                      {location}
+                      <X 
+                        className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                        onClick={() => removeLocation(location)}
+                      />
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
         </div>
       </CardHeader>
       <CardContent>
