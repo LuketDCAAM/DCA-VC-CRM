@@ -4,7 +4,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, DollarSign, Eye, Calendar, Star } from 'lucide-react';
+import { Building2, DollarSign, Eye, Calendar, Star, FileText } from 'lucide-react';
 import { Deal } from '@/types/deal'; 
 import { PIPELINE_STAGES, PipelineStage } from '@/hooks/deals/dealStagesConfig';
 import { getPipelineStageClasses, getPipelineStageBackground, getPipelineStageBorder } from './pipelineStageColors';
@@ -126,6 +126,16 @@ export function DealPipelineBoard({ deals, onViewDetails, onDealUpdated }: DealP
                 <div className="flex items-center gap-1 text-xs text-gray-600">
                   <DollarSign className="h-2.5 w-2.5 text-green-600" />
                   <span className="font-medium">{formatCurrency(deal.round_size)}</span>
+                </div>
+              )}
+
+              {deal.next_steps && (
+                <div className="flex items-start gap-1 p-1.5 bg-blue-50 rounded text-xs">
+                  <FileText className="h-2.5 w-2.5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-blue-800 font-medium text-xs">Next Steps</p>
+                    <p className="text-blue-700 text-xs line-clamp-2 break-words">{deal.next_steps}</p>
+                  </div>
                 </div>
               )}
               
