@@ -136,6 +136,15 @@ export const DEFAULT_COLUMNS: TableColumn[] = [
     dataType: 'currency'
   },
   {
+    key: 'revenue_multiple',
+    label: 'Revenue Multiple',
+    icon: DollarSign,
+    width: 'min-w-[140px]',
+    sortable: true,
+    visible: false,
+    dataType: 'number'
+  },
+  {
     key: 'sector',
     label: 'Sector',
     icon: Building,

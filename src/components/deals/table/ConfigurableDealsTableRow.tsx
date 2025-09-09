@@ -91,6 +91,9 @@ const ConfigurableDealsTableRow = memo(({
       case 'investment_vehicle':
         return <BasicCellContent deal={deal} type="investment_vehicle" />;
       
+      case 'revenue_multiple':
+        return <FinancialCellContent deal={deal} type="revenue_multiple" />;
+      
       default:
         return <span className="text-muted-foreground text-sm">-</span>;
     }

@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Deal } from '@/types/deal';
-import { format, startOfQuarter, parseISO } from 'date-fns';
+import { format, startOfQuarter, parseISO, subYears } from 'date-fns';
 
 interface ValuationRevenueMultipleChartProps {
   deals: Deal[];
@@ -25,8 +25,15 @@ function calculateValuationRevenueMultiples(deals: Deal[]): QuarterlyMultiple[] 
     deal.created_at
   );
 
+  // Filter deals to only include the last 2 years
+  const twoYearsAgo = subYears(new Date(), 2);
+  const recentDeals = dealsWithData.filter(deal => {
+    const dealDate = parseISO(deal.created_at);
+    return dealDate >= twoYearsAgo;
+  });
+
   // Group by quarter
-  const quarterlyData = dealsWithData.reduce((acc, deal) => {
+  const quarterlyData = recentDeals.reduce((acc, deal) => {
     const dealDate = parseISO(deal.created_at);
     const quarterStart = startOfQuarter(dealDate);
     const quarterKey = format(quarterStart, 'yyyy-QQQ');
@@ -98,7 +105,7 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Valuation/Revenue Multiple by Quarter</CardTitle>
+          <CardTitle>Revenue Multiple Trends (2 Years)</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-[300px] text-muted-foreground">
@@ -115,9 +122,9 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Valuation/Revenue Multiple by Quarter</CardTitle>
+        <CardTitle>Revenue Multiple Trends (2 Years)</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Tracks post-money valuation to revenue ratios over time (capped at 100x)
+          Average and median valuation/revenue multiples by quarter (capped at 100x)
         </p>
       </CardHeader>
       <CardContent>

@@ -7,7 +7,7 @@ import { formatCurrency, getDealScoreColor } from '../tableUtils';
 
 interface FinancialCellContentProps {
   deal: Deal;
-  type: 'round_size' | 'post_money_valuation' | 'revenue' | 'deal_score';
+  type: 'round_size' | 'post_money_valuation' | 'revenue' | 'deal_score' | 'revenue_multiple';
 }
 
 export function FinancialCellContent({ deal, type }: FinancialCellContentProps) {
@@ -56,6 +56,17 @@ export function FinancialCellContent({ deal, type }: FinancialCellContentProps) 
       ) : (
         <span className="text-muted-foreground text-sm">-</span>
       );
+
+    case 'revenue_multiple':
+      if (deal.post_money_valuation && deal.revenue && Number(deal.revenue) > 0) {
+        const multiple = Number(deal.post_money_valuation) / Number(deal.revenue);
+        return (
+          <div className="font-semibold text-sm text-foreground">
+            {multiple.toFixed(1)}x
+          </div>
+        );
+      }
+      return <span className="text-muted-foreground text-sm">-</span>;
 
     default:
       return <span className="text-muted-foreground text-sm">-</span>;
