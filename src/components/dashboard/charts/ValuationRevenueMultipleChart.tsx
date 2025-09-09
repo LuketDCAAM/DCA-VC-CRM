@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Deal } from '@/types/deal';
 import { format, startOfQuarter, parseISO, subYears } from 'date-fns';
 
@@ -15,15 +17,28 @@ interface QuarterlyMultiple {
   dealsCount: number;
 }
 
-function calculateValuationRevenueMultiples(deals: Deal[]): QuarterlyMultiple[] {
+function calculateValuationRevenueMultiples(deals: Deal[], selectedRounds: string[], selectedLocations: string[]): QuarterlyMultiple[] {
   // Filter deals that have both valuation and revenue data
-  const dealsWithData = deals.filter(deal => 
+  let dealsWithData = deals.filter(deal => 
     deal.post_money_valuation && 
     deal.revenue && 
     deal.post_money_valuation > 0 && 
     deal.revenue > 0 &&
     (deal.source_date || deal.created_at)
   );
+
+  // Apply filters
+  if (selectedRounds.length > 0) {
+    dealsWithData = dealsWithData.filter(deal => 
+      deal.round_stage && selectedRounds.includes(deal.round_stage)
+    );
+  }
+
+  if (selectedLocations.length > 0) {
+    dealsWithData = dealsWithData.filter(deal => 
+      deal.location && selectedLocations.includes(deal.location)
+    );
+  }
 
   console.log('Total deals with valuation/revenue data:', dealsWithData.length);
   console.log('Sample deals with data:', dealsWithData.slice(0, 5).map(d => ({
@@ -106,19 +121,112 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipleChartProps) {
-  const data = calculateValuationRevenueMultiples(deals);
+  const [selectedRounds, setSelectedRounds] = useState<string[]>([]);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+
+  // Get unique rounds and locations from deals with valuation/revenue data
+  const availableRounds = useMemo(() => {
+    const rounds = deals
+      .filter(deal => deal.post_money_valuation && deal.revenue && deal.round_stage)
+      .map(deal => deal.round_stage!)
+      .filter((value, index, self) => self.indexOf(value) === index)
+      .sort();
+    return rounds;
+  }, [deals]);
+
+  const availableLocations = useMemo(() => {
+    const locations = deals
+      .filter(deal => deal.post_money_valuation && deal.revenue && deal.location)
+      .map(deal => deal.location!)
+      .filter((value, index, self) => self.indexOf(value) === index)
+      .sort();
+    return locations;
+  }, [deals]);
+
+  const data = calculateValuationRevenueMultiples(deals, selectedRounds, selectedLocations);
+
+  const toggleRound = (round: string) => {
+    setSelectedRounds(prev => 
+      prev.includes(round) 
+        ? prev.filter(r => r !== round)
+        : [...prev, round]
+    );
+  };
+
+  const toggleLocation = (location: string) => {
+    setSelectedLocations(prev => 
+      prev.includes(location) 
+        ? prev.filter(l => l !== location)
+        : [...prev, location]
+    );
+  };
+
+  const clearAllFilters = () => {
+    setSelectedRounds([]);
+    setSelectedLocations([]);
+  };
 
   if (data.length === 0) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Revenue Multiple Trends (All Data)</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Average and median valuation/revenue multiples by quarter (capped at 100x)
+          </p>
+          
+          {/* Filter Controls */}
+          <div className="space-y-4 pt-4 border-t">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium">Round Stage</h4>
+                {(selectedRounds.length > 0 || selectedLocations.length > 0) && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={clearAllFilters}
+                    className="text-xs"
+                  >
+                    Clear All
+                  </Button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {availableRounds.map(round => (
+                  <Badge
+                    key={round}
+                    variant={selectedRounds.includes(round) ? "default" : "outline"}
+                    className="cursor-pointer hover:bg-primary/10 transition-colors"
+                    onClick={() => toggleRound(round)}
+                  >
+                    {round}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="text-sm font-medium mb-2">Geography</h4>
+              <div className="flex flex-wrap gap-2">
+                {availableLocations.map(location => (
+                  <Badge
+                    key={location}
+                    variant={selectedLocations.includes(location) ? "default" : "outline"}
+                    className="cursor-pointer hover:bg-primary/10 transition-colors"
+                    onClick={() => toggleLocation(location)}
+                  >
+                    {location}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-[300px] text-muted-foreground">
             <div className="text-center">
-              <p>No deals with both valuation and revenue data</p>
-              <p className="text-sm mt-1">Add deals with valuation and revenue to see multiples</p>
+              <p>No deals with both valuation and revenue data match your filters</p>
+              <p className="text-sm mt-1">Try adjusting your filters or add more deals with valuation and revenue</p>
             </div>
           </div>
         </CardContent>
@@ -133,6 +241,53 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
         <p className="text-sm text-muted-foreground">
           Average and median valuation/revenue multiples by quarter (capped at 100x)
         </p>
+        
+        {/* Filter Controls */}
+        <div className="space-y-4 pt-4 border-t">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-sm font-medium">Round Stage</h4>
+              {(selectedRounds.length > 0 || selectedLocations.length > 0) && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={clearAllFilters}
+                  className="text-xs"
+                >
+                  Clear All
+                </Button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {availableRounds.map(round => (
+                <Badge
+                  key={round}
+                  variant={selectedRounds.includes(round) ? "default" : "outline"}
+                  className="cursor-pointer hover:bg-primary/10 transition-colors"
+                  onClick={() => toggleRound(round)}
+                >
+                  {round}
+                </Badge>
+              ))}
+            </div>
+          </div>
+          
+          <div>
+            <h4 className="text-sm font-medium mb-2">Geography</h4>
+            <div className="flex flex-wrap gap-2">
+              {availableLocations.map(location => (
+                <Badge
+                  key={location}
+                  variant={selectedLocations.includes(location) ? "default" : "outline"}
+                  className="cursor-pointer hover:bg-primary/10 transition-colors"
+                  onClick={() => toggleLocation(location)}
+                >
+                  {location}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="h-[300px]">
