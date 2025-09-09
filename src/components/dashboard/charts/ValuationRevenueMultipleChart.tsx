@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X } from 'lucide-react';
+import { PipelineToggle } from './shared/PipelineToggle';
+import { usePipelineFilter } from './shared/usePipelineFilter';
 import { Deal } from '@/types/deal';
 import { format, startOfQuarter, parseISO, subYears } from 'date-fns';
 
@@ -123,29 +125,30 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipleChartProps) {
+  const { showActiveOnly, setShowActiveOnly, filteredDeals } = usePipelineFilter(deals);
   const [selectedRounds, setSelectedRounds] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
 
-  // Get unique rounds and locations from deals with valuation/revenue data
+  // Get unique rounds and locations from filtered deals with valuation/revenue data
   const availableRounds = useMemo(() => {
-    const rounds = deals
+    const rounds = filteredDeals
       .filter(deal => deal.post_money_valuation && deal.revenue && deal.round_stage)
       .map(deal => deal.round_stage!)
       .filter((value, index, self) => self.indexOf(value) === index)
       .sort();
     return rounds;
-  }, [deals]);
+  }, [filteredDeals]);
 
   const availableLocations = useMemo(() => {
-    const locations = deals
+    const locations = filteredDeals
       .filter(deal => deal.post_money_valuation && deal.revenue && deal.location)
       .map(deal => deal.location!)
       .filter((value, index, self) => self.indexOf(value) === index)
       .sort();
     return locations;
-  }, [deals]);
+  }, [filteredDeals]);
 
-  const data = calculateValuationRevenueMultiples(deals, selectedRounds, selectedLocations);
+  const data = calculateValuationRevenueMultiples(filteredDeals, selectedRounds, selectedLocations);
 
   const toggleRound = (round: string) => {
     setSelectedRounds(prev => 
@@ -176,10 +179,18 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Revenue Multiple Trends (All Data)</CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Average and median valuation/revenue multiples by quarter (capped at 100x)
-          </p>
+          <div className="flex items-center justify-between w-full">
+            <div>
+              <CardTitle>Revenue Multiple Trends (All Data)</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Average and median valuation/revenue multiples by quarter (capped at 100x)
+              </p>
+            </div>
+            <PipelineToggle 
+              showActiveOnly={showActiveOnly} 
+              onToggle={setShowActiveOnly}
+            />
+          </div>
           
           {/* Filter Controls */}
           <div className="space-y-4 pt-4 border-t">
@@ -266,10 +277,18 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Revenue Multiple Trends (All Data)</CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Average and median valuation/revenue multiples by quarter (capped at 100x)
-        </p>
+        <div className="flex items-center justify-between w-full">
+          <div>
+            <CardTitle>Revenue Multiple Trends (All Data)</CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Average and median valuation/revenue multiples by quarter (capped at 100x)
+            </p>
+          </div>
+          <PipelineToggle 
+            showActiveOnly={showActiveOnly} 
+            onToggle={setShowActiveOnly}
+          />
+        </div>
         
         {/* Filter Controls */}
         <div className="space-y-4 pt-4 border-t">
