@@ -2,6 +2,7 @@
 // Pipeline stage configurations - Updated to match new database schema
 export const PIPELINE_STAGES = [
   'Inactive',
+  'Watchlist',
   'Initial Review',    // Previously 'Initial Review' 
   'Scorecard',      // Previously 'Initial Contact'
   'Decision Making',    // New stage between Scorecard and One Pager
@@ -28,7 +29,8 @@ export const ACTIVE_PIPELINE_STAGES: PipelineStage[] = [
 
 // Screening stages are early pipeline stages
 export const SCREENING_STAGES: PipelineStage[] = [
-  'Inactive'
+  'Inactive',
+  'Watchlist'
 ];
 
 // Final outcome stages

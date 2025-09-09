@@ -55,7 +55,7 @@ export const DealPipelineBoard = memo(function DealPipelineBoard({
       const {
         error
       } = await supabase.from('deals').update({
-        pipeline_stage: newStage,
+        pipeline_stage: newStage as any, // Type assertion needed for new stages not yet in DB enum
         updated_at: new Date().toISOString()
       }).eq('id', dealId);
       if (error) throw error;

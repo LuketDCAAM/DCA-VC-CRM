@@ -9,6 +9,13 @@ export const PIPELINE_STAGE_COLORS = {
     border: 'border-stone-200',
     text: 'text-stone-700'
   },
+  'Watchlist': {
+    badge: 'bg-slate-100 text-slate-800 border-slate-200',
+    variant: 'secondary' as const,
+    background: 'bg-slate-50',
+    border: 'border-slate-200',
+    text: 'text-slate-700'
+  },
   'Initial Review': {
     badge: 'bg-gray-100 text-gray-800 border-gray-200',
     variant: 'secondary' as const,
@@ -24,6 +31,13 @@ export const PIPELINE_STAGE_COLORS = {
     background: 'bg-sky-50',
     border: 'border-sky-200',
     text: 'text-sky-700'
+  },
+  'Decision Making': {
+    badge: 'bg-cyan-100 text-cyan-800 border-cyan-200',
+    variant: 'default' as const,
+    background: 'bg-cyan-50',
+    border: 'border-cyan-200',
+    text: 'text-cyan-700'
   },
   'One Pager': {
     badge: 'bg-blue-100 text-blue-800 border-blue-200',
