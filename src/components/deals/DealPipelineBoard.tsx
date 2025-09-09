@@ -82,16 +82,16 @@ export const DealPipelineBoard = memo(function DealPipelineBoard({ deals, onView
           {...provided.dragHandleProps}
           className={`mb-2 ${snapshot.isDragging ? 'rotate-2 scale-105' : ''} transition-transform`}
         >
-          <Card 
+           <Card 
             className={`
-              hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing bg-white border border-gray-200
+              hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing bg-card border border-border
               ${snapshot.isDragging ? 'shadow-lg ring-2 ring-primary ring-opacity-50' : ''}
               ${isUpdating === deal.id ? 'opacity-50 pointer-events-none' : ''}
             `}
           >
             <CardHeader className="pb-1 px-3 pt-2">
               <div className="flex justify-between items-start">
-                <CardTitle className="text-xs font-semibold flex items-center gap-1 text-gray-900">
+                <CardTitle className="text-xs font-semibold flex items-center gap-1 text-card-foreground">
                   <Building2 className="h-3 w-3" />
                   <span className="truncate">{deal.company_name}</span>
                 </CardTitle>
@@ -118,7 +118,7 @@ export const DealPipelineBoard = memo(function DealPipelineBoard({ deals, onView
                   </Badge>
                 )}
                 {typeof deal.deal_score === 'number' && (
-                  <div className="flex items-center gap-0.5 text-xs text-gray-600 font-medium">
+                  <div className="flex items-center gap-0.5 text-xs text-muted-foreground font-medium">
                     <Star className="h-2.5 w-2.5 text-yellow-400 fill-yellow-400" />
                     <span className="text-xs">{deal.deal_score}</span>
                   </div>
@@ -126,23 +126,23 @@ export const DealPipelineBoard = memo(function DealPipelineBoard({ deals, onView
               </div>
               
               {deal.round_size && (
-                <div className="flex items-center gap-1 text-xs text-gray-600">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <DollarSign className="h-2.5 w-2.5 text-green-600" />
                   <span className="font-medium">{formatCurrency(deal.round_size)}</span>
                 </div>
               )}
 
               {deal.next_steps && (
-                <div className="flex items-start gap-1 p-1.5 bg-blue-50 rounded text-xs">
-                  <FileText className="h-2.5 w-2.5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="flex items-start gap-1 p-1.5 bg-accent rounded text-xs">
+                  <FileText className="h-2.5 w-2.5 text-primary mt-0.5 flex-shrink-0" />
                   <div className="min-w-0">
-                    <p className="text-blue-800 font-medium text-xs">Next Steps</p>
-                    <p className="text-blue-700 text-xs line-clamp-2 break-words">{deal.next_steps}</p>
+                    <p className="text-accent-foreground font-medium text-xs">Next Steps</p>
+                    <p className="text-accent-foreground text-xs line-clamp-2 break-words">{deal.next_steps}</p>
                   </div>
                 </div>
               )}
               
-              <div className="flex items-center gap-1 text-xs text-gray-500">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Calendar className="h-2.5 w-2.5" />
                 <span>{new Date(deal.updated_at).toLocaleDateString()}</span>
               </div>
@@ -162,7 +162,7 @@ export const DealPipelineBoard = memo(function DealPipelineBoard({ deals, onView
               <CardHeader className="pb-2 px-3 pt-3">
                 <CardTitle className="text-sm font-semibold flex items-center justify-between">
                   <span className="truncate">{stage}</span>
-                  <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-white/70">
+                  <Badge variant="secondary" className="text-xs px-2 py-0.5">
                     {dealsByStage[stage].length}
                   </Badge>
                 </CardTitle>
@@ -183,7 +183,7 @@ export const DealPipelineBoard = memo(function DealPipelineBoard({ deals, onView
                           <DealCardMini key={deal.id} deal={deal} index={index} />
                         ))
                       ) : (
-                        <div className="text-center py-6 text-gray-500 text-xs">
+                        <div className="text-center py-6 text-muted-foreground text-xs">
                           {snapshot.isDraggingOver ? 'Drop here to move to this stage' : 'No deals in this stage'}
                         </div>
                       )}
