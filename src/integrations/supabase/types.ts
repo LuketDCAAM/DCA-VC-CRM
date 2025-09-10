@@ -1297,6 +1297,7 @@ export type Database = {
         | "Other"
       pipeline_stage:
         | "Inactive"
+        | "Watchlist"
         | "Initial Review"
         | "Scorecard"
         | "Decision Making"
@@ -1472,6 +1473,7 @@ export const Constants = {
       ],
       pipeline_stage: [
         "Inactive",
+        "Watchlist",
         "Initial Review",
         "Scorecard",
         "Decision Making",
