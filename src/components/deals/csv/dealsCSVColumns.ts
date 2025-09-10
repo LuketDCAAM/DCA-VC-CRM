@@ -7,6 +7,7 @@ export const csvTemplateColumns = [
   { key: 'contact_email', label: 'Contact Email' },
   { key: 'contact_phone', label: 'Contact Phone' },
   { key: 'website', label: 'Website' },
+  { key: 'linkedin_url', label: 'LinkedIn URL' },
   { key: 'location', label: 'Location' },
   { key: 'sector', label: 'Sector' },
   { key: 'pipeline_stage', label: 'Pipeline Stage' },
@@ -19,6 +20,15 @@ export const csvTemplateColumns = [
   { key: 'deal_lead', label: 'Deal Lead' },
   { key: 'deal_source', label: 'Deal Source' },
   { key: 'source_date', label: 'Source Date (YYYY-MM-DD)' },
+  { key: 'last_call_date', label: 'Last Call Date (YYYY-MM-DD)' },
+  { key: 'next_steps', label: 'Next Steps' },
+  { key: 'company_type', label: 'Company Type' },
+  { key: 'headquarters_location', label: 'Headquarters Location' },
+  { key: 'crunchbase_url', label: 'Crunchbase URL' },
+  { key: 'employee_count_range', label: 'Employee Count Range' },
+  { key: 'founded_year', label: 'Founded Year' },
+  { key: 'total_funding_raised', label: 'Total Funding Raised ($)' },
+  { key: 'last_funding_date', label: 'Last Funding Date (YYYY-MM-DD)' },
 ];
 
 export const exportColumns = [
