@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAddDeal } from '../hooks/useAddDeal';
-import { Paperclip, FileText, Calendar } from 'lucide-react';
+import { Paperclip, FileText, Calendar, File, X, Upload } from 'lucide-react';
 import { DuplicateDetectionDialog } from '../duplicates/DuplicateDetectionDialog';
 
 const addDealFormSchema = z.object({
@@ -64,6 +64,7 @@ interface AddDealValues {
   next_steps?: string;
   last_call_date?: string;
   pitchDeckFile?: File | null;
+  additionalFiles?: File[];
 }
 
 interface AddDealFormProps {
@@ -73,6 +74,7 @@ interface AddDealFormProps {
 
 export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
   const [pitchDeckFile, setPitchDeckFile] = useState<File | null>(null);
+  const [additionalFiles, setAdditionalFiles] = useState<File[]>([]);
   const { 
     handleAddSubmit, 
     isLoading, 
@@ -121,6 +123,25 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
     }
   };
 
+  const handleAdditionalFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setAdditionalFiles(prev => [...prev, ...newFiles]);
+    }
+  };
+
+  const removeAdditionalFile = (index: number) => {
+    setAdditionalFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   const onSubmit = async (values: AddDealFormValues) => {
     const submitValues: AddDealValues = {
       company_name: values.company_name, // Explicitly assign required field
@@ -144,7 +165,8 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
       pitch_deck_url: values.pitch_deck_url,
       next_steps: values.next_steps,
       last_call_date: values.last_call_date,
-      pitchDeckFile
+      pitchDeckFile,
+      additionalFiles
     };
     
     const success = await handleAddSubmit(submitValues);
@@ -550,14 +572,49 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
                   </FormItem>
                 )}
               />
-              <FormItem>
+                <FormItem>
                 <FormLabel className="flex items-center gap-1">
                   <Paperclip className="h-4 w-4" /> Pitch Deck File
                 </FormLabel>
                 <FormControl>
-                  <Input type="file" accept=".pdf,.doc,.docx" onChange={handleFileChange} />
+                  <Input type="file" accept=".pdf,.doc,.docx,.ppt,.pptx" onChange={handleFileChange} />
                 </FormControl>
+                {pitchDeckFile && <p className="text-sm text-muted-foreground mt-1">Selected: {pitchDeckFile.name}</p>}
               </FormItem>
+
+              {/* Other Attachments Section */}
+              <div className="space-y-3 mt-6">
+                <FormLabel className="flex items-center gap-1">
+                  <File className="h-4 w-4" /> Other Attachments
+                </FormLabel>
+                
+                <Input
+                  type="file"
+                  multiple
+                  accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.jpg,.jpeg,.png"
+                  onChange={handleAdditionalFileChange}
+                />
+
+                {/* Show selected files */}
+                {additionalFiles.length > 0 && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-muted-foreground">Selected files:</p>
+                    {additionalFiles.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-muted rounded">
+                        <span className="text-sm">{file.name} ({formatFileSize(file.size)})</span>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeAdditionalFile(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>

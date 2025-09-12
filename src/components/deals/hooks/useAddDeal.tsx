@@ -31,6 +31,7 @@ interface AddDealValues {
   next_steps?: string;
   last_call_date?: string;
   pitchDeckFile?: File | null;
+  additionalFiles?: File[];
 }
 
 export function useAddDeal() {
@@ -210,6 +211,46 @@ export function useAddDeal() {
         if (linkError) {
           console.error('useAddDeal - Error saving pitch deck link:', linkError);
           throw linkError;
+        }
+      }
+
+      // Handle additional files
+      if (values.additionalFiles && values.additionalFiles.length > 0 && dealData) {
+        console.log('useAddDeal - Uploading additional files');
+        for (const file of values.additionalFiles) {
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${dealData.id}_${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('pitch-decks')
+            .upload(fileName, file);
+
+          if (uploadError) {
+            console.error('useAddDeal - Error uploading additional file:', uploadError);
+            throw uploadError;
+          }
+
+          // Get public URL
+          const { data: urlData } = supabase.storage
+            .from('pitch-decks')
+            .getPublicUrl(fileName);
+
+          // Save file attachment record
+          const { error: attachmentError } = await supabase
+            .from('file_attachments')
+            .insert({
+              deal_id: dealData.id,
+              file_name: file.name,
+              file_url: urlData.publicUrl,
+              file_type: 'file',
+              file_size: file.size,
+              uploaded_by: user.id
+            });
+
+          if (attachmentError) {
+            console.error('useAddDeal - Error saving additional file attachment:', attachmentError);
+            throw attachmentError;
+          }
         }
       }
 
