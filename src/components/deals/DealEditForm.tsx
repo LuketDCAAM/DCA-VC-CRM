@@ -115,6 +115,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
           <DealEditInvestorSection control={form.control} />
           <DealEditAttachmentsSection 
             control={form.control}
+            dealId={deal.id}
             pitchDeckFile={pitchDeckFile}
             onFileChange={handleFileChange}
           />
