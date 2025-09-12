@@ -1,10 +1,12 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useDeals } from '@/hooks/useDeals';
 import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
 import { useAllCallNotes } from '@/hooks/useAllCallNotes';
 import { useDealAnalytics } from '@/hooks/deals/useDealAnalytics';
 import { useUserRoles } from '@/hooks/useUserRoles';
+import { Deal } from '@/types/deal';
 import { DashboardMetrics } from '@/components/dashboard/DashboardMetrics';
 import { TopActiveDealsCard } from '@/components/dashboard/TopActiveDealsCard';
 import { RecentPortfolioCard } from '@/components/dashboard/RecentPortfolioCard';
@@ -18,11 +20,16 @@ import { DealsLocationMap } from '@/components/dashboard/charts/DealsLocationMap
 import { ValuationRevenueMultipleChart } from '@/components/dashboard/charts/ValuationRevenueMultipleChart';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { deals, loading: dealsLoading, dealStats } = useDeals();
   const { companies: portfolioCompanies, loading: portfolioLoading } = usePortfolioCompanies();
   const { callNotes, isLoading: callNotesLoading } = useAllCallNotes();
   const { isViewer } = useUserRoles();
   const analytics = useDealAnalytics(deals || [], callNotes || []);
+
+  const handleViewDealDetails = (deal: Deal) => {
+    navigate('/deals', { state: { selectedDeal: deal } });
+  };
 
   // Calculate total invested from portfolio companies
   const totalInvested = portfolioCompanies
@@ -74,7 +81,7 @@ export default function Dashboard() {
       {/* Activity & Quick Actions - Hide Quick Actions for viewers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-6">
-          <TopActiveDealsCard onViewDetails={() => {}} />
+          <TopActiveDealsCard onViewDetails={handleViewDealDetails} />
           {!isViewer && <RemindersWidget />}
         </div>
         <div className="space-y-6">

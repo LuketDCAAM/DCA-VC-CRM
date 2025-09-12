@@ -1,10 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Deal } from '@/types/deal';
 import { ViewMode } from '@/components/deals/views/DealsViewRenderer';
 import { useToast } from '@/hooks/use-toast';
 
 export function useDealsPageState() {
   const { toast } = useToast();
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -12,6 +14,17 @@ export function useDealsPageState() {
   const [selectedDeals, setSelectedDeals] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+
+  // Handle navigation state for deal details
+  useEffect(() => {
+    const state = location.state as { selectedDeal?: Deal } | null;
+    if (state?.selectedDeal) {
+      setSelectedDeal(state.selectedDeal);
+      setShowDetailDialog(true);
+      // Clear the navigation state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Memoized event handlers to prevent unnecessary re-renders
   const handleViewDetails = useMemo(() => (deal: Deal) => {
