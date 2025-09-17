@@ -175,7 +175,7 @@ export function DealsMap({ locationData }: DealsMapProps) {
       </ComposableMap>
 
       {/* Legend */}
-      <div className="absolute bottom-4 left-4 bg-card/95 backdrop-blur-sm rounded-lg p-3 shadow-sm border border-border">
+      <div className="absolute bottom-4 right-4 bg-card/95 backdrop-blur-sm rounded-lg p-3 shadow-sm border border-border">
         <h4 className="font-semibold text-xs mb-2">Deal Count</h4>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
@@ -204,7 +204,7 @@ export function DealsMap({ locationData }: DealsMapProps) {
 
       {/* Top 10 locations or selected location details */}
       {!selectedLocation ? (
-        <div className="absolute top-4 right-4 bg-card/95 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-xs border border-border">
+        <div className="absolute bottom-4 left-4 bg-card/95 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-xs border border-border">
           <h4 className="font-semibold text-sm mb-3">Top 10 Locations</h4>
           <div className="space-y-2 max-h-80 overflow-y-auto">
             {locationData
@@ -229,7 +229,7 @@ export function DealsMap({ locationData }: DealsMapProps) {
           </div>
         </div>
       ) : (
-        <div className="absolute top-4 right-4 bg-card/95 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-xs border border-border">
+        <div className="absolute bottom-4 left-4 bg-card/95 backdrop-blur-sm rounded-lg p-4 shadow-lg max-w-xs border border-border">
           {(() => {
             const location = locationData.find(l => l.region === selectedLocation);
             if (!location) return null;
@@ -274,7 +274,7 @@ export function DealsMap({ locationData }: DealsMapProps) {
       )}
 
       {/* Total locations indicator */}
-      <div className="absolute bottom-4 right-4 bg-card/95 backdrop-blur-sm rounded px-3 py-2 border border-border">
+      <div className="absolute top-4 right-4 bg-card/95 backdrop-blur-sm rounded px-3 py-2 border border-border">
         <span className="text-xs font-medium">
           {locationData.length} {locationData.length === 1 ? 'Location' : 'Locations'}
         </span>
