@@ -274,7 +274,7 @@ export function DealsMap({ locationData }: DealsMapProps) {
       )}
 
       {/* Total locations indicator */}
-      <div className="absolute bottom-4 right-4 bg-card/95 backdrop-blur-sm rounded px-3 py-2 border border-border">
+      <div className="absolute bottom-4 right-1/2 translate-x-1/2 bg-card/95 backdrop-blur-sm rounded px-3 py-2 border border-border">
         <span className="text-xs font-medium">
           {locationData.length} {locationData.length === 1 ? 'Location' : 'Locations'}
         </span>
