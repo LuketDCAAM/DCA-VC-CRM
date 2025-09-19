@@ -156,9 +156,29 @@ export function SectorChart({ data, deals }: SectorChartProps) {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ sector, percentage }) => 
-                  percentage > 5 ? `${sector} (${percentage}%)` : ''
-                }
+                label={({ cx, cy, midAngle, innerRadius, outerRadius, sector, percentage }) => {
+                  if (percentage < 8) return null; // Only show labels for larger segments
+                  
+                  const RADIAN = Math.PI / 180;
+                  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                  
+                  return (
+                    <text 
+                      x={x} 
+                      y={y} 
+                      fill="white" 
+                      textAnchor={x > cx ? 'start' : 'end'} 
+                      dominantBaseline="central"
+                      fontSize="12"
+                      fontWeight="500"
+                      style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+                    >
+                      {`${percentage}%`}
+                    </text>
+                  );
+                }}
                 outerRadius={80}
                 fill="#8884d8"
                 dataKey="count"
