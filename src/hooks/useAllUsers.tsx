@@ -170,71 +170,116 @@ export function useAllUsers() {
   };
 
   // Function to update a user's approval status and send email
-  const updateUserApprovalStatus = async (userId: string, newStatus: Tables<'user_approvals'>['status'], rejectedReason: string | null = null, role?: string) => {
+  const updateUserApprovalStatus = async (
+    userId: string, 
+    status: 'approved' | 'rejected',
+    role?: Tables<'user_roles'>['role'],
+    rejectionReason?: string
+  ) => {
     setLoading(true);
+    console.log('Starting approval process for user:', userId, 'status:', status);
+    
     try {
-      // Find the user to get email and name for notification
-      const user = users.find(u => u.user_id === userId);
-      if (!user) throw new Error('User not found');
-
-      // Update approval status
-      const updateData: Partial<TablesUpdate<'user_approvals'>> = { 
-        status: newStatus, 
-        updated_at: new Date().toISOString(),
-        approved_at: newStatus === 'approved' ? new Date().toISOString() : null,
-        rejected_reason: newStatus === 'rejected' ? rejectedReason : null,
-      };
-
+      // First update the approval status
+      console.log('Updating approval status...');
       const { error: approvalError } = await supabase
         .from('user_approvals')
-        .update(updateData)
-        .eq('user_id', userId);
+        .upsert({ 
+          user_id: userId, 
+          status,
+          rejection_reason: rejectionReason 
+        });
 
-      if (approvalError) throw approvalError;
+      if (approvalError) {
+        console.error('Approval status update failed:', approvalError);
+        throw new Error(`Failed to update approval status: ${approvalError.message}`);
+      }
+      
+      console.log('Approval status updated successfully');
 
-      // If approved, assign the role
-      if (newStatus === 'approved' && role) {
+      // If approved and role provided, assign the role
+      if (status === 'approved' && role) {
+        console.log('Assigning role:', role);
+        
+        // Delete existing roles first
+        const { error: deleteError } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', userId);
+        
+        if (deleteError) {
+          console.error('Role deletion failed:', deleteError);
+          throw new Error(`Failed to clear existing roles: ${deleteError.message}`);
+        }
+
+        // Insert new role
         const { error: roleError } = await supabase
           .from('user_roles')
-          .insert({
-            user_id: userId,
-            role: role as any
-          });
-
-        if (roleError) throw roleError;
+          .insert({ user_id: userId, role });
+        
+        if (roleError) {
+          console.error('Role assignment failed:', roleError);
+          throw new Error(`Failed to assign role: ${roleError.message}`);
+        }
+        
+        console.log('Role assigned successfully');
       }
 
-      // Send email notification
-      try {
+      // Find user details for email
+      const user = users.find(u => u.user_id === userId);
+      if (user) {
+        console.log('Sending approval email to:', user.email);
+        
+        // Send approval email via edge function
         const { error: emailError } = await supabase.functions.invoke('send-approval-email', {
           body: {
             email: user.email,
-            name: user.name || 'User',
-            status: newStatus,
-            role: role,
-            rejectionReason: rejectedReason
+            name: user.name,
+            status,
+            role,
+            rejectionReason
           }
         });
 
+        // Log email error but don't fail the approval process
         if (emailError) {
-          console.warn('Email sending failed:', emailError);
-          // Don't fail the entire operation if email fails
+          console.warn('Failed to send approval email:', emailError);
+          toast({
+            title: `User ${status} successfully`,
+            description: `Approval completed but email notification failed. Please notify the user manually.`,
+            variant: 'default'
+          });
+        } else {
+          console.log('Email sent successfully');
+          toast({
+            title: `User ${status} successfully`,
+            description: `User has been ${status} and notified via email.`,
+          });
         }
-      } catch (emailError) {
-        console.warn('Email sending failed:', emailError);
-        // Don't fail the entire operation if email fails
+      } else {
+        console.log('User not found for email notification');
+        toast({
+          title: `User ${status} successfully`,
+          description: `User has been ${status}.`,
+        });
       }
 
-      toast({
-        title: 'User approval updated',
-        description: `User ${newStatus === 'approved' ? 'approved' : 'rejected'} and notification email sent.`,
-      });
+      console.log('Refetching users...');
       fetchUsers(); // Refetch to show immediate update
     } catch (error: any) {
-      console.error('Error updating user approval status:', error);
+      console.error('Error in approval process:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = 'An unexpected error occurred';
+      if (error.message?.includes('permission denied') || error.message?.includes('RLS')) {
+        errorMessage = 'You do not have permission to perform this action. Please ensure you have admin privileges.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: 'Error updating approval status',
-        description: error.message,
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {

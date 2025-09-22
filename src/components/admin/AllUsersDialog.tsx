@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAllUsers } from '@/hooks/useAllUsers';
 import { useUserRoles } from '@/hooks/useUserRoles';
+import { Tables } from '@/integrations/supabase/types';
 import {
   Dialog,
   DialogContent,
@@ -33,13 +34,13 @@ export function AllUsersDialog() {
     await updateUserRole(userId, newRole as Parameters<typeof updateUserRole>[1]);
   };
 
-  const handleApproveUser = async (userId: string, role: string) => {
-    await updateUserApprovalStatus(userId, 'approved', null, role);
+  const handleApproveUser = async (userId: string, role: Tables<'user_roles'>['role']) => {
+    await updateUserApprovalStatus(userId, 'approved', role);
   };
 
   const handleRejectUser = async (userId: string) => {
     // Use updateUserApprovalStatus
-    await updateUserApprovalStatus(userId, 'rejected', rejectionReason);
+    await updateUserApprovalStatus(userId, 'rejected', undefined, rejectionReason);
     setRejectingUserId(null);
     setRejectionReason('');
   };

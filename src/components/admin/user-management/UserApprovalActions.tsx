@@ -3,19 +3,22 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { UserCheck, UserX } from 'lucide-react';
+import { UserCheck, UserX, Loader2 } from 'lucide-react';
+import { Tables } from '@/integrations/supabase/types';
 
 interface UserApprovalActionsProps {
   userId: string;
   userEmail: string;
   userName: string;
-  onApprove: (userId: string, role: string) => Promise<void>;
+  onApprove: (userId: string, role: Tables<'user_roles'>['role']) => Promise<void>;
   onReject: (userId: string) => void;
+  isLoading?: boolean;
 }
 
-export function UserApprovalActions({ userId, userEmail, userName, onApprove, onReject }: UserApprovalActionsProps) {
-  const [selectedRole, setSelectedRole] = useState<string>('user');
+export function UserApprovalActions({ userId, userEmail, userName, onApprove, onReject, isLoading }: UserApprovalActionsProps) {
+  const [selectedRole, setSelectedRole] = useState<Tables<'user_roles'>['role']>('user');
   const [isApproving, setIsApproving] = useState(false);
+  const [isRejecting, setIsRejecting] = useState(false);
 
   const handleApprove = async () => {
     setIsApproving(true);
@@ -26,13 +29,28 @@ export function UserApprovalActions({ userId, userEmail, userName, onApprove, on
     }
   };
 
+  const handleReject = async () => {
+    setIsRejecting(true);
+    try {
+      onReject(userId);
+    } finally {
+      setIsRejecting(false);
+    }
+  };
+
+  const isDisabled = isLoading || isApproving || isRejecting;
+
+  const handleRoleChange = (value: string) => {
+    setSelectedRole(value as Tables<'user_roles'>['role']);
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <Label htmlFor={`role-${userId}`} className="text-sm font-medium">
           Assign Role:
         </Label>
-        <Select value={selectedRole} onValueChange={setSelectedRole}>
+        <Select value={selectedRole} onValueChange={handleRoleChange} disabled={isDisabled}>
           <SelectTrigger className="w-32">
             <SelectValue placeholder="Select role" />
           </SelectTrigger>
@@ -47,18 +65,27 @@ export function UserApprovalActions({ userId, userEmail, userName, onApprove, on
         <Button
           size="sm"
           onClick={handleApprove}
-          disabled={isApproving}
+          disabled={isDisabled}
         >
-          <UserCheck className="h-4 w-4 mr-1" />
+          {isApproving ? (
+            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+          ) : (
+            <UserCheck className="h-4 w-4 mr-1" />
+          )}
           {isApproving ? 'Approving...' : 'Approve & Email'}
         </Button>
         <Button
           size="sm"
           variant="destructive"
-          onClick={() => onReject(userId)}
+          onClick={handleReject}
+          disabled={isDisabled}
         >
-          <UserX className="h-4 w-4 mr-1" />
-          Reject
+          {isRejecting ? (
+            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+          ) : (
+            <UserX className="h-4 w-4 mr-1" />
+          )}
+          {isRejecting ? 'Rejecting...' : 'Reject'}
         </Button>
       </div>
     </div>
