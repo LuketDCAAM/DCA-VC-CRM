@@ -34,6 +34,10 @@ export function UserManagementDialog() {
     await updateUserRole(userId, newRole as Parameters<typeof updateUserRole>[1]);
   };
 
+  const handleApproveUser = async (userId: string, role: string) => {
+    await updateUserApprovalStatus(userId, 'approved', null, role);
+  };
+
   const handleRejectUser = async (userId: string) => {
     await updateUserApprovalStatus(userId, 'rejected', rejectionReason);
     setRejectingUserId(null);
@@ -96,7 +100,9 @@ export function UserManagementDialog() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <UserApprovalActions
                       userId={user.user_id}
-                      onApprove={(userId) => updateUserApprovalStatus(userId, 'approved')}
+                      userEmail={user.email}
+                      userName={user.name || 'User'}
+                      onApprove={handleApproveUser}
                       onReject={setRejectingUserId}
                     />
                   </div>
@@ -126,7 +132,9 @@ export function UserManagementDialog() {
                       {user.approval_status === 'pending' && (
                         <UserApprovalActions
                           userId={user.user_id}
-                          onApprove={(userId) => updateUserApprovalStatus(userId, 'approved')}
+                          userEmail={user.email}
+                          userName={user.name || 'User'}
+                          onApprove={handleApproveUser}
                           onReject={setRejectingUserId}
                         />
                       )}

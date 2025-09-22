@@ -33,6 +33,10 @@ export function AllUsersDialog() {
     await updateUserRole(userId, newRole as Parameters<typeof updateUserRole>[1]);
   };
 
+  const handleApproveUser = async (userId: string, role: string) => {
+    await updateUserApprovalStatus(userId, 'approved', null, role);
+  };
+
   const handleRejectUser = async (userId: string) => {
     // Use updateUserApprovalStatus
     await updateUserApprovalStatus(userId, 'rejected', rejectionReason);
@@ -71,8 +75,9 @@ export function AllUsersDialog() {
                   {user.approval_status === 'pending' && (
                     <UserApprovalActions
                       userId={user.user_id}
-                      // Use updateUserApprovalStatus
-                      onApprove={(userId) => updateUserApprovalStatus(userId, 'approved')}
+                      userEmail={user.email || 'No email'}
+                      userName={user.name || 'User'}
+                      onApprove={handleApproveUser}
                       onReject={setRejectingUserId}
                     />
                   )}

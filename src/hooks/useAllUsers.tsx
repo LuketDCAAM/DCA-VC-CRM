@@ -162,11 +162,15 @@ export function useAllUsers() {
     }
   };
 
-  // Function to update a user's approval status
-  const updateUserApprovalStatus = async (userId: string, newStatus: Tables<'user_approvals'>['status'], rejectedReason: string | null = null) => {
+  // Function to update a user's approval status and send email
+  const updateUserApprovalStatus = async (userId: string, newStatus: Tables<'user_approvals'>['status'], rejectedReason: string | null = null, role?: string) => {
     setLoading(true);
     try {
-      // Correctly use TablesUpdate for the update type
+      // Find the user to get email and name for notification
+      const user = users.find(u => u.user_id === userId);
+      if (!user) throw new Error('User not found');
+
+      // Update approval status
       const updateData: Partial<TablesUpdate<'user_approvals'>> = { 
         status: newStatus, 
         updated_at: new Date().toISOString(),
@@ -174,16 +178,49 @@ export function useAllUsers() {
         rejected_reason: newStatus === 'rejected' ? rejectedReason : null,
       };
 
-      const { error } = await supabase
+      const { error: approvalError } = await supabase
         .from('user_approvals')
         .update(updateData)
         .eq('user_id', userId);
 
-      if (error) throw error;
+      if (approvalError) throw approvalError;
+
+      // If approved, assign the role
+      if (newStatus === 'approved' && role) {
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert({
+            user_id: userId,
+            role: role as any
+          });
+
+        if (roleError) throw roleError;
+      }
+
+      // Send email notification
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-approval-email', {
+          body: {
+            email: user.email,
+            name: user.name || 'User',
+            status: newStatus,
+            role: role,
+            rejectionReason: rejectedReason
+          }
+        });
+
+        if (emailError) {
+          console.warn('Email sending failed:', emailError);
+          // Don't fail the entire operation if email fails
+        }
+      } catch (emailError) {
+        console.warn('Email sending failed:', emailError);
+        // Don't fail the entire operation if email fails
+      }
 
       toast({
-        title: 'User approval status updated',
-        description: `Status for user ${userId} set to ${newStatus}.`,
+        title: 'User approval updated',
+        description: `User ${newStatus === 'approved' ? 'approved' : 'rejected'} and notification email sent.`,
       });
       fetchUsers(); // Refetch to show immediate update
     } catch (error: any) {
