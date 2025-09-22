@@ -180,22 +180,60 @@ export function useAllUsers() {
     console.log('Starting approval process for user:', userId, 'status:', status);
     
     try {
-      // First update the approval status
+      // First update the approval status without using UPSERT (to avoid RLS issues on INSERT ... ON CONFLICT)
       console.log('Updating approval status...');
-      const { error: approvalError } = await supabase
-        .from('user_approvals')
-        .upsert({ 
-          user_id: userId, 
-          status,
-          rejection_reason: rejectionReason 
-        });
 
-      if (approvalError) {
-        console.error('Approval status update failed:', approvalError);
-        throw new Error(`Failed to update approval status: ${approvalError.message}`);
+      // Find user details for potential insert/email
+      const targetUser = users.find(u => u.user_id === userId);
+
+      // Check if an approval row already exists
+      const { data: existingApproval, error: existingCheckError } = await supabase
+        .from('user_approvals')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (existingCheckError) {
+        console.error('Failed to check existing approval row:', existingCheckError);
+        throw new Error(`Failed to check existing approval: ${existingCheckError.message}`);
+      }
+
+      if (existingApproval?.id) {
+        // Update path (covered by UPDATE policy)
+        const { error: updateError } = await supabase
+          .from('user_approvals')
+          .update({ 
+            status,
+            rejected_reason: status === 'rejected' ? rejectionReason ?? null : null,
+            approved_at: status === 'approved' ? new Date().toISOString() : null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('user_id', userId);
+
+        if (updateError) {
+          console.error('Approval status update failed:', updateError);
+          throw new Error(`Failed to update approval status: ${updateError.message}`);
+        }
+      } else {
+        // Insert path (covered by INSERT policy for admins)
+        const { error: insertError } = await supabase
+          .from('user_approvals')
+          .insert({ 
+            user_id: userId, 
+            status,
+            rejected_reason: status === 'rejected' ? rejectionReason ?? null : null,
+            approved_at: status === 'approved' ? new Date().toISOString() : null,
+            name: targetUser?.name ?? null,
+            email: targetUser?.email ?? null,
+          });
+
+        if (insertError) {
+          console.error('Approval status insert failed:', insertError);
+          throw new Error(`Failed to create approval record: ${insertError.message}`);
+        }
       }
       
-      console.log('Approval status updated successfully');
+      console.log('Approval status saved successfully');
 
       // If approved and role provided, assign the role
       if (status === 'approved' && role) {
