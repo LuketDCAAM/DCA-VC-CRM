@@ -138,18 +138,25 @@ export function useAllUsers() {
   const updateUserRole = async (userId: string, newRole: Tables<'user_roles'>['role']) => {
     setLoading(true);
     try {
-      const { error } = await supabase
+      // Ensure a single, authoritative role assignment
+      // 1) Remove existing roles for this user
+      const { error: deleteError } = await supabase
         .from('user_roles')
-        .update({ role: newRole })
+        .delete()
         .eq('user_id', userId);
+      if (deleteError) throw deleteError;
 
-      if (error) throw error;
+      // 2) Insert the selected role
+      const { error: insertError } = await supabase
+        .from('user_roles')
+        .insert({ user_id: userId, role: newRole as any });
+      if (insertError) throw insertError;
 
       toast({
         title: 'User role updated',
         description: `Role for user ${userId} set to ${newRole}.`,
       });
-      fetchUsers(); // Refetch to show immediate update
+      fetchUsers();
     } catch (error: any) {
       console.error('Error updating user role:', error);
       toast({
