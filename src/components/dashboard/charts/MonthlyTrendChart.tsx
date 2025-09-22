@@ -5,6 +5,7 @@ import { ComposedChart, Line, Bar, XAxis, YAxis, ResponsiveContainer, Legend } f
 import { PipelineToggle } from './shared/PipelineToggle';
 import { usePipelineFilter } from './shared/usePipelineFilter';
 import { Deal } from '@/types/deal';
+import { useUserRoles } from '@/hooks/useUserRoles';
 
 interface MonthlyTrendChartProps {
   data: Array<{ month: string; deals: number; invested: number; firstCalls: number }>;
@@ -13,6 +14,7 @@ interface MonthlyTrendChartProps {
 
 export function MonthlyTrendChart({ data, deals }: MonthlyTrendChartProps) {
   const { showActiveOnly, setShowActiveOnly, filteredDeals } = usePipelineFilter(deals);
+  const { isViewer } = useUserRoles();
   
   // For simplicity, using original data (would recalculate in real implementation)
   const chartData = data;
@@ -90,24 +92,28 @@ export function MonthlyTrendChart({ data, deals }: MonthlyTrendChartProps) {
                 yAxisId="left" 
                 radius={[4, 4, 0, 0]}
               />
-              <Line 
-                type="monotone" 
-                dataKey="invested" 
-                stroke="#82ca9d" 
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                name="Invested"
-                yAxisId="right"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="firstCalls" 
-                stroke="#ff7300" 
-                strokeWidth={2}
-                dot={{ r: 4 }}
-                name="First Calls"
-                yAxisId="right"
-              />
+              {!isViewer && (
+                <Line 
+                  type="monotone" 
+                  dataKey="invested" 
+                  stroke="#82ca9d" 
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                  name="Invested"
+                  yAxisId="right"
+                />
+              )}
+              {!isViewer && (
+                <Line 
+                  type="monotone" 
+                  dataKey="firstCalls" 
+                  stroke="#ff7300" 
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                  name="First Calls"
+                  yAxisId="right"
+                />
+              )}
             </ComposedChart>
           </ResponsiveContainer>
         </ChartContainer>
