@@ -1083,6 +1083,33 @@ export type Database = {
           },
         ]
       }
+      user_approval_logs: {
+        Row: {
+          approval_status: string
+          created_at: string | null
+          id: string
+          rejection_reason: string | null
+          user_email: string
+          user_name: string | null
+        }
+        Insert: {
+          approval_status: string
+          created_at?: string | null
+          id?: string
+          rejection_reason?: string | null
+          user_email: string
+          user_name?: string | null
+        }
+        Update: {
+          approval_status?: string
+          created_at?: string | null
+          id?: string
+          rejection_reason?: string | null
+          user_email?: string
+          user_name?: string | null
+        }
+        Relationships: []
+      }
       user_approvals: {
         Row: {
           approved_at: string | null
@@ -1240,6 +1267,15 @@ export type Database = {
           user_id?: string
         }
         Returns: undefined
+      }
+      send_user_approval_email: {
+        Args: {
+          approval_status: string
+          rejection_reason?: string
+          user_email: string
+          user_name: string
+        }
+        Returns: Json
       }
       set_limit: {
         Args: { "": number }
