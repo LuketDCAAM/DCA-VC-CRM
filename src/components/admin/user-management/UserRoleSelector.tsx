@@ -23,7 +23,7 @@ export function UserRoleSelector({ userId, currentRoles, onRoleChange }: UserRol
           <SelectValue placeholder="Select role" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="user">User</SelectItem>
+          <SelectItem value="user">Editor</SelectItem>
           <SelectItem value="viewer">Viewer</SelectItem>
           <SelectItem value="admin">Admin</SelectItem>
         </SelectContent>
