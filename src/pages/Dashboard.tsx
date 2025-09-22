@@ -60,6 +60,7 @@ export default function Dashboard() {
         portfolioCount={portfolioCompanies?.length || 0}
         totalDeals={dealStats.totalDeals}
         totalInvested={totalInvested}
+        isViewer={isViewer}
       />
 
       {/* Geographic Distribution */}
@@ -78,20 +79,28 @@ export default function Dashboard() {
         <MonthlyTrendChart data={analytics.monthlyTrends} deals={deals || []} />
       </div>
 
-      {/* Activity & Quick Actions - Hide Quick Actions for viewers */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
+      {/* Activity Section - Conditional layout for viewers */}
+      {isViewer ? (
+        // Viewer layout - only show active deals, no portfolio or actions
+        <div className="grid grid-cols-1 gap-6">
           <TopActiveDealsCard onViewDetails={handleViewDealDetails} />
-          {!isViewer && <RemindersWidget />}
         </div>
-        <div className="space-y-6">
-          <RecentPortfolioCard 
-            companies={portfolioCompanies?.slice(0, 5) || []} 
-            onViewDetails={() => {}} 
-          />
-          {!isViewer && <DashboardQuickActions />}
+      ) : (
+        // Editor/Admin layout - full functionality
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            <TopActiveDealsCard onViewDetails={handleViewDealDetails} />
+            <RemindersWidget />
+          </div>
+          <div className="space-y-6">
+            <RecentPortfolioCard 
+              companies={portfolioCompanies?.slice(0, 5) || []} 
+              onViewDetails={() => {}} 
+            />
+            <DashboardQuickActions />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

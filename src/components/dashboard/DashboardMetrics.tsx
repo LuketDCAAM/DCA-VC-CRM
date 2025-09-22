@@ -8,13 +8,15 @@ interface DashboardMetricsProps {
   portfolioCount: number;
   totalDeals: number;
   totalInvested: number;
+  isViewer?: boolean;
 }
 
 export function DashboardMetrics({ 
   activeDeals, 
   portfolioCount, 
   totalDeals, 
-  totalInvested 
+  totalInvested,
+  isViewer = false
 }: DashboardMetricsProps) {
   console.log('=== DASHBOARD METRICS RENDER ===');
   console.log('DashboardMetrics received props:', {
@@ -33,7 +35,7 @@ export function DashboardMetrics({
     }).format(amount / 100);
   };
 
-  const metrics = [
+  const allMetrics = [
     {
       title: "Active Pipeline",
       value: activeDeals,
@@ -64,8 +66,15 @@ export function DashboardMetrics({
     },
   ];
 
+  // Filter metrics for viewers - remove portfolio companies and total invested
+  const metrics = isViewer 
+    ? allMetrics.filter(metric => 
+        metric.title !== "Portfolio Companies" && metric.title !== "Total Invested"
+      )
+    : allMetrics;
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className={`grid grid-cols-1 sm:grid-cols-2 ${isViewer ? 'lg:grid-cols-2' : 'lg:grid-cols-4'} gap-4`}>
       {metrics.map((metric) => (
         <Card key={metric.title} className="relative overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
