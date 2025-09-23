@@ -110,6 +110,15 @@ export const DEFAULT_COLUMNS: TableColumn[] = [
     dataType: 'date'
   },
   {
+    key: 'ic_review_date',
+    label: 'IC Review Date',
+    icon: Calendar,
+    width: 'min-w-[140px]',
+    sortable: true,
+    visible: false,
+    dataType: 'date'
+  },
+  {
     key: 'total_calls',
     label: 'Total Calls',
     width: 'min-w-[100px]',

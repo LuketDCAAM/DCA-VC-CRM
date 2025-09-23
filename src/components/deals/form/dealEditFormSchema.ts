@@ -27,6 +27,7 @@ export const dealFormSchema = z.object({
   other_investors: z.string().optional(),
   next_steps: z.string().optional(),
   last_call_date: z.string().optional(),
+  ic_review_date: z.string().optional(),
 });
 
 export type DealFormValues = z.infer<typeof dealFormSchema>;

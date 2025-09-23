@@ -374,6 +374,7 @@ export type Database = {
           external_data_sync_status: string | null
           founded_year: number | null
           headquarters_location: string | null
+          ic_review_date: string | null
           id: string
           investment_vehicle:
             | Database["public"]["Enums"]["investment_vehicle"]
@@ -417,6 +418,7 @@ export type Database = {
           external_data_sync_status?: string | null
           founded_year?: number | null
           headquarters_location?: string | null
+          ic_review_date?: string | null
           id?: string
           investment_vehicle?:
             | Database["public"]["Enums"]["investment_vehicle"]
@@ -460,6 +462,7 @@ export type Database = {
           external_data_sync_status?: string | null
           founded_year?: number | null
           headquarters_location?: string | null
+          ic_review_date?: string | null
           id?: string
           investment_vehicle?:
             | Database["public"]["Enums"]["investment_vehicle"]
