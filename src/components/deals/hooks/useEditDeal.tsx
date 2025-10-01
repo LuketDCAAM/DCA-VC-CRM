@@ -16,6 +16,7 @@ interface EditDealValues {
   contact_phone?: string;
   pipeline_stage: string;
   round_stage?: string | null;
+  investment_vehicle?: string | null;
   deal_score?: number;
   deal_lead?: string;
   deal_source?: string;
@@ -63,6 +64,7 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
           contact_phone: values.contact_phone || null,
           pipeline_stage: values.pipeline_stage as any,
           round_stage: values.round_stage as any || null,
+          investment_vehicle: values.investment_vehicle as any || null,
           deal_score: values.deal_score || null,
           deal_lead: values.deal_lead || null,
           deal_source: values.deal_source || null,

@@ -97,6 +97,31 @@ export function DealEditStatusSection({ control }: DealEditStatusSectionProps) {
       />
       <FormField
         control={control}
+        name="investment_vehicle"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Investment Vehicle</FormLabel>
+            <Select onValueChange={(v) => field.onChange(v === 'none' ? null : v)} value={field.value ?? 'none'}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select investment vehicle" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {Constants.public.Enums.investment_vehicle.map((vehicle) => (
+                  <SelectItem key={vehicle} value={vehicle}>
+                    {vehicle}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={control}
         name="deal_source"
         render={({ field }) => (
           <FormItem>
