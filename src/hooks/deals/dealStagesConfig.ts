@@ -18,6 +18,7 @@ export type PipelineStage = typeof PIPELINE_STAGES[number];
 
 // Active stages are those where deals are being actively worked on
 export const ACTIVE_PIPELINE_STAGES: PipelineStage[] = [
+  'Watchlist',
   'Initial Review',    // Updated from 'Initial Review'
   'Scorecard',      // Updated from 'Initial Contact'
   'Decision Making',    // New active stage
@@ -29,8 +30,7 @@ export const ACTIVE_PIPELINE_STAGES: PipelineStage[] = [
 
 // Screening stages are early pipeline stages
 export const SCREENING_STAGES: PipelineStage[] = [
-  'Inactive',
-  'Watchlist'
+  'Inactive'
 ];
 
 // Final outcome stages
