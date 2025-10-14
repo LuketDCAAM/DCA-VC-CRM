@@ -1,6 +1,7 @@
 
 import { useMemo } from 'react';
 import { Deal } from '@/types/deal';
+import { normalizeLocationToFilterKey } from '@/utils/locationUtils';
 
 export interface FilteredDealsConfig {
   searchTerm: string;
@@ -22,6 +23,9 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
     filtered = filtered.filter(deal => 
       deal.company_name?.toLowerCase().includes(searchLower) ||
       deal.contact_name?.toLowerCase().includes(searchLower) ||
+      deal.city?.toLowerCase().includes(searchLower) ||
+      deal.state_province?.toLowerCase().includes(searchLower) ||
+      deal.country?.toLowerCase().includes(searchLower) ||
       deal.location?.toLowerCase().includes(searchLower) ||
       deal.description?.toLowerCase().includes(searchLower) ||
       deal.sector?.toLowerCase().includes(searchLower) ||
@@ -58,9 +62,42 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
           break;
         case 'location':
           if (Array.isArray(value)) {
-            filtered = filtered.filter(deal => value.length === 0 || value.includes(deal.location || ''));
+            filtered = filtered.filter(deal => {
+              if (value.length === 0) return true;
+              
+              let normalizedDealLocation = '';
+              
+              // Try new three-column format first
+              if (deal.city || deal.state_province || deal.country) {
+                normalizedDealLocation = normalizeLocationToFilterKey({
+                  city: deal.city,
+                  state_province: deal.state_province,
+                  country: deal.country
+                });
+              }
+              // Fall back to legacy location field
+              else if (deal.location) {
+                normalizedDealLocation = normalizeLocationToFilterKey(deal.location);
+              }
+              
+              return value.includes(normalizedDealLocation);
+            });
           } else {
-            filtered = filtered.filter(deal => deal.location === value);
+            filtered = filtered.filter(deal => {
+              let normalizedDealLocation = '';
+              
+              if (deal.city || deal.state_province || deal.country) {
+                normalizedDealLocation = normalizeLocationToFilterKey({
+                  city: deal.city,
+                  state_province: deal.state_province,
+                  country: deal.country
+                });
+              } else if (deal.location) {
+                normalizedDealLocation = normalizeLocationToFilterKey(deal.location);
+              }
+              
+              return normalizedDealLocation === value;
+            });
           }
           break;
         case 'deal_source':

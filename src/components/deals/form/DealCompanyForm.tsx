@@ -54,19 +54,47 @@ export function DealCompanyForm() {
             </FormItem>
           )}
         />
-        <FormField
-          control={control}
-          name="location"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Location</FormLabel>
-              <FormControl>
-                <Input {...field} value={field.value || ''} placeholder="City, State/Country" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField
+            control={control}
+            name="city"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>City</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value || ''} placeholder="e.g. San Francisco" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="state_province"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>State/Province</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value || ''} placeholder="e.g. California" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name="country"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Country</FormLabel>
+                <FormControl>
+                  <Input {...field} value={field.value || ''} placeholder="e.g. USA" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <FormField
           control={control}
           name="sector"

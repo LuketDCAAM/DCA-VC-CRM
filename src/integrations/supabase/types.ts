@@ -357,11 +357,13 @@ export type Database = {
       }
       deals: {
         Row: {
+          city: string | null
           company_name: string
           company_type: string | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
+          country: string | null
           created_at: string
           created_by: string
           crunchbase_url: string | null
@@ -394,6 +396,7 @@ export type Database = {
           round_stage: Database["public"]["Enums"]["round_stage"] | null
           sector: string | null
           source_date: string | null
+          state_province: string | null
           tags: string[] | null
           total_calls: number | null
           total_funding_raised: number | null
@@ -401,11 +404,13 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          city?: string | null
           company_name: string
           company_type?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          country?: string | null
           created_at?: string
           created_by: string
           crunchbase_url?: string | null
@@ -438,6 +443,7 @@ export type Database = {
           round_stage?: Database["public"]["Enums"]["round_stage"] | null
           sector?: string | null
           source_date?: string | null
+          state_province?: string | null
           tags?: string[] | null
           total_calls?: number | null
           total_funding_raised?: number | null
@@ -445,11 +451,13 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          city?: string | null
           company_name?: string
           company_type?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          country?: string | null
           created_at?: string
           created_by?: string
           crunchbase_url?: string | null
@@ -482,6 +490,7 @@ export type Database = {
           round_stage?: Database["public"]["Enums"]["round_stage"] | null
           sector?: string | null
           source_date?: string | null
+          state_province?: string | null
           tags?: string[] | null
           total_calls?: number | null
           total_funding_raised?: number | null
@@ -631,9 +640,11 @@ export type Database = {
       investors: {
         Row: {
           average_check_size: number | null
+          city: string | null
           contact_email: string | null
           contact_name: string
           contact_phone: string | null
+          country: string | null
           created_at: string
           created_by: string
           firm_name: string | null
@@ -647,14 +658,17 @@ export type Database = {
             | null
           preferred_sectors: string[] | null
           relationship_owner: string | null
+          state_province: string | null
           tags: string[] | null
           updated_at: string
         }
         Insert: {
           average_check_size?: number | null
+          city?: string | null
           contact_email?: string | null
           contact_name: string
           contact_phone?: string | null
+          country?: string | null
           created_at?: string
           created_by: string
           firm_name?: string | null
@@ -668,14 +682,17 @@ export type Database = {
             | null
           preferred_sectors?: string[] | null
           relationship_owner?: string | null
+          state_province?: string | null
           tags?: string[] | null
           updated_at?: string
         }
         Update: {
           average_check_size?: number | null
+          city?: string | null
           contact_email?: string | null
           contact_name?: string
           contact_phone?: string | null
+          country?: string | null
           created_at?: string
           created_by?: string
           firm_name?: string | null
@@ -689,6 +706,7 @@ export type Database = {
             | null
           preferred_sectors?: string[] | null
           relationship_owner?: string | null
+          state_province?: string | null
           tags?: string[] | null
           updated_at?: string
         }
@@ -698,11 +716,13 @@ export type Database = {
         Row: {
           capital_called: number | null
           capital_returned: number | null
+          city: string | null
           commitment_amount: number | null
           committed_date: string | null
           contact_email: string | null
           contact_name: string | null
           contact_phone: string | null
+          country: string | null
           created_at: string
           created_by: string
           engagement_stage:
@@ -718,6 +738,7 @@ export type Database = {
           next_steps: string | null
           notes: string | null
           relationship_owner: string | null
+          state_province: string | null
           tags: string[] | null
           ticket_size_max: number | null
           ticket_size_min: number | null
@@ -726,11 +747,13 @@ export type Database = {
         Insert: {
           capital_called?: number | null
           capital_returned?: number | null
+          city?: string | null
           commitment_amount?: number | null
           committed_date?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          country?: string | null
           created_at?: string
           created_by: string
           engagement_stage?:
@@ -746,6 +769,7 @@ export type Database = {
           next_steps?: string | null
           notes?: string | null
           relationship_owner?: string | null
+          state_province?: string | null
           tags?: string[] | null
           ticket_size_max?: number | null
           ticket_size_min?: number | null
@@ -754,11 +778,13 @@ export type Database = {
         Update: {
           capital_called?: number | null
           capital_returned?: number | null
+          city?: string | null
           commitment_amount?: number | null
           committed_date?: string | null
           contact_email?: string | null
           contact_name?: string | null
           contact_phone?: string | null
+          country?: string | null
           created_at?: string
           created_by?: string
           engagement_stage?:
@@ -774,6 +800,7 @@ export type Database = {
           next_steps?: string | null
           notes?: string | null
           relationship_owner?: string | null
+          state_province?: string | null
           tags?: string[] | null
           ticket_size_max?: number | null
           ticket_size_min?: number | null
@@ -1270,6 +1297,10 @@ export type Database = {
           user_id?: string
         }
         Returns: undefined
+      }
+      parse_location: {
+        Args: { location_str: string }
+        Returns: Record<string, unknown>
       }
       send_user_approval_email: {
         Args: {

@@ -2,6 +2,7 @@
 import { useMemo } from 'react';
 import { Deal } from '@/types/deal';
 import { useDebouncedSearch } from './useDebounce';
+import { normalizeLocationToFilterKey } from '@/utils/locationUtils';
 
 export function useFilteredDeals(deals: Deal[], searchTerm: string, activeFilters: Record<string, any>) {
   const debouncedSearchTerm = useDebouncedSearch(searchTerm, 300);
@@ -12,13 +13,17 @@ export function useFilteredDeals(deals: Deal[], searchTerm: string, activeFilter
 
     return deals.filter(deal => {
       // Search filter with debounced term
+      const searchLower = debouncedSearchTerm.toLowerCase();
       const matchesSearch = !debouncedSearchTerm || 
-        deal.company_name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
-        (deal.contact_name && deal.contact_name.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
-        (deal.location && deal.location.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
-        (deal.description && deal.description.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
-        (deal.deal_lead && deal.deal_lead.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) ||
-        (deal.deal_source && deal.deal_source.toLowerCase().includes(debouncedSearchTerm.toLowerCase()));
+        deal.company_name.toLowerCase().includes(searchLower) ||
+        (deal.contact_name && deal.contact_name.toLowerCase().includes(searchLower)) ||
+        (deal.city && deal.city.toLowerCase().includes(searchLower)) ||
+        (deal.state_province && deal.state_province.toLowerCase().includes(searchLower)) ||
+        (deal.country && deal.country.toLowerCase().includes(searchLower)) ||
+        (deal.location && deal.location.toLowerCase().includes(searchLower)) ||
+        (deal.description && deal.description.toLowerCase().includes(searchLower)) ||
+        (deal.deal_lead && deal.deal_lead.toLowerCase().includes(searchLower)) ||
+        (deal.deal_source && deal.deal_source.toLowerCase().includes(searchLower));
 
       // Active filters - optimized with early returns
       const matchesFilters = Object.entries(activeFilters).every(([key, value]) => {
@@ -45,6 +50,30 @@ export function useFilteredDeals(deals: Deal[], searchTerm: string, activeFilter
             
           case 'deal_score_max':
             return typeof deal.deal_score !== 'number' || deal.deal_score <= parseInt(value, 10);
+          
+          case 'location':
+            // Handle location filter for both new three-column and legacy single-column
+            if (Array.isArray(value)) {
+              if (value.length === 0) return true;
+              
+              let normalizedDealLocation = '';
+              
+              // Try new three-column format first
+              if (deal.city || deal.state_province || deal.country) {
+                normalizedDealLocation = normalizeLocationToFilterKey({
+                  city: deal.city,
+                  state_province: deal.state_province,
+                  country: deal.country
+                });
+              }
+              // Fall back to legacy location field
+              else if (deal.location) {
+                normalizedDealLocation = normalizeLocationToFilterKey(deal.location);
+              }
+              
+              return value.includes(normalizedDealLocation);
+            }
+            return true;
             
           default:
             // Handle array values for multi-select filters

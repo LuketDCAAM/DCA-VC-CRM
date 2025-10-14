@@ -20,14 +20,25 @@ function expandStateAbbreviation(state: string): string {
 }
 
 /**
- * Formats a location string by expanding state abbreviations
+ * Formats a location from separate components or a location string
  * Examples:
- * - "San Francisco, CA, USA" -> "San Francisco, California, USA"
- * - "Phoenix, AZ" -> "Phoenix, Arizona"
- * - "NY" -> "New York"
+ * - formatLocation({ city: 'San Francisco', state_province: 'California', country: 'USA' }) -> "San Francisco, California, USA"
+ * - formatLocation({ state_province: 'Texas', country: 'USA' }) -> "Texas, USA"
+ * - formatLocation({ country: 'Germany' }) -> "Germany"
  */
-export function formatLocation(location: string | null | undefined): string {
-  if (!location) return '';
+export function formatLocation(
+  location: string | null | undefined | { city?: string | null; state_province?: string | null; country?: string | null }
+): string {
+  // Handle object input (new three-column format)
+  if (typeof location === 'object' && location !== null) {
+    const parts = [location.city, location.state_province, location.country]
+      .filter(Boolean)
+      .map(p => p!.trim());
+    return parts.join(', ');
+  }
+  
+  // Handle string input (legacy single-column format)
+  if (!location || typeof location !== 'string') return '';
   
   const parts = location.split(',').map(p => p.trim()).filter(Boolean);
   
@@ -36,7 +47,6 @@ export function formatLocation(location: string | null | undefined): string {
   // Expand any state abbreviations in the parts
   const expandedParts = parts.map(part => {
     const upperPart = part.toUpperCase();
-    // Check if this is a standalone state abbreviation or part of the location
     if (STATE_ABBREVIATIONS[upperPart]) {
       return STATE_ABBREVIATIONS[upperPart];
     }
@@ -48,12 +58,30 @@ export function formatLocation(location: string | null | undefined): string {
 
 /**
  * Normalizes location to state/country level for filtering
+ * Handles both object format (new) and string format (legacy)
  * Examples:
+ * - { city: 'San Francisco', state_province: 'California', country: 'USA' } -> "California, USA"
+ * - { state_province: 'Texas', country: 'USA' } -> "Texas, USA"
  * - "San Francisco, CA, USA" -> "California, USA"
- * - "Phoenix, AZ" -> "Arizona"
- * - "London, UK" -> "UK"
  */
-export function normalizeLocationToFilterKey(location: string): string {
+export function normalizeLocationToFilterKey(
+  location: string | { city?: string | null; state_province?: string | null; country?: string | null }
+): string {
+  // Handle object input (new three-column format)
+  if (typeof location === 'object' && location !== null) {
+    const { state_province, country } = location;
+    if (state_province && country) {
+      const normalizedCountry = US_ALIASES.has(country) ? 'USA' : country;
+      return `${state_province}, ${normalizedCountry}`;
+    }
+    if (state_province) return state_province;
+    if (country) return country;
+    return '';
+  }
+  
+  // Handle string input (legacy single-column format)
+  if (typeof location !== 'string') return '';
+  
   const parts = location.split(',').map(p => p.trim()).filter(Boolean);
   
   if (parts.length >= 3) {
