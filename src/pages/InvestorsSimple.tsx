@@ -12,6 +12,7 @@ import { InvestorListView } from '@/components/investors/InvestorListView';
 import { InvestorsPageHeader } from '@/components/investors/InvestorsPageHeader';
 import { InvestorStats } from '@/components/investors/InvestorStats';
 import { NoInvestorsFound } from '@/components/investors/NoInvestorsFound';
+import { InvestorDetailDialog } from '@/components/investors/InvestorDetailDialog';
 import { Investor } from '@/types/investor';
 
 export default function InvestorsSimple() {
@@ -22,6 +23,7 @@ export default function InvestorsSimple() {
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [isContactDialogOpen, setIsContactDialogOpen] = useState(false);
   const [investorForNewContact, setInvestorForNewContact] = useState<Investor | null>(null);
 
@@ -126,6 +128,11 @@ export default function InvestorsSimple() {
   });
 
   const handleViewDetails = (investor: Investor) => {
+    setSelectedInvestor(investor);
+    setIsDetailDialogOpen(true);
+  };
+
+  const handleEdit = (investor: Investor) => {
     setSelectedInvestor(investor);
     setIsDialogOpen(true);
   };
@@ -234,7 +241,7 @@ export default function InvestorsSimple() {
                 <CardContent>
                     <InvestorListView 
                         investors={filteredInvestors}
-                        onEdit={handleViewDetails}
+                        onEdit={handleEdit}
                         onDelete={handleDelete}
                         selectedInvestors={[]}
                         onToggleInvestorSelection={() => {}}
@@ -246,6 +253,13 @@ export default function InvestorsSimple() {
             </Card>
         )}
       </div>
+
+      {/* Investor Detail Dialog */}
+      <InvestorDetailDialog
+        investor={selectedInvestor}
+        open={isDetailDialogOpen}
+        onOpenChange={setIsDetailDialogOpen}
+      />
 
       {/* Add/Edit Investor Dialog */}
       <AddInvestorDialog
