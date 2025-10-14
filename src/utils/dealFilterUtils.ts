@@ -1,6 +1,5 @@
 
 import { Deal } from '@/types/deal';
-import { normalizeLocationToFilterKey } from './locationUtils';
 
 export function getUniqueSectors(deals: Deal[]): { label: string; value: string }[] {
   console.log('Extracting unique sectors from deals:', deals.length);
@@ -24,28 +23,48 @@ export function getUniqueSectors(deals: Deal[]): { label: string; value: string 
   return uniqueSectors;
 }
 
-export function getUniqueLocations(deals: Deal[]): { label: string; value: string }[] {
-  console.log('Extracting unique locations from deals:', deals.length);
+export function getUniqueStateProvinces(deals: Deal[]): { label: string; value: string }[] {
+  console.log('Extracting unique states/provinces from deals:', deals.length);
   
-  const locationSet = new Set<string>();
+  const stateSet = new Set<string>();
   
   deals.forEach(deal => {
-    // Use new structured location fields
-    const normalized = normalizeLocationToFilterKey(deal.city, deal.state_province, deal.country);
-    if (normalized.trim() !== '') {
-      locationSet.add(normalized);
+    if (deal.state_province && deal.state_province.trim() !== '') {
+      stateSet.add(deal.state_province.trim());
     }
   });
   
-  const uniqueLocations = Array.from(locationSet)
+  const uniqueStates = Array.from(stateSet)
     .sort()
-    .map(location => ({
-      label: location,
-      value: location
+    .map(state => ({
+      label: state,
+      value: state
     }));
   
-  console.log('Unique locations found:', uniqueLocations);
-  return uniqueLocations;
+  console.log('Unique states/provinces found:', uniqueStates);
+  return uniqueStates;
+}
+
+export function getUniqueCountries(deals: Deal[]): { label: string; value: string }[] {
+  console.log('Extracting unique countries from deals:', deals.length);
+  
+  const countrySet = new Set<string>();
+  
+  deals.forEach(deal => {
+    if (deal.country && deal.country.trim() !== '') {
+      countrySet.add(deal.country.trim());
+    }
+  });
+  
+  const uniqueCountries = Array.from(countrySet)
+    .sort()
+    .map(country => ({
+      label: country,
+      value: country
+    }));
+  
+  console.log('Unique countries found:', uniqueCountries);
+  return uniqueCountries;
 }
 
 export function getUniqueDealSources(deals: Deal[]): { label: string; value: string }[] {

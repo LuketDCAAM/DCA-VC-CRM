@@ -1,7 +1,7 @@
 
 import { FilterOption } from '@/components/common/SearchAndFilter';
 import { Deal } from '@/types/deal';
-import { getUniqueSectors, getUniqueLocations, getUniqueDealSources } from '@/utils/dealFilterUtils';
+import { getUniqueSectors, getUniqueStateProvinces, getUniqueCountries, getUniqueDealSources } from '@/utils/dealFilterUtils';
 
 export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
   console.log('Generating dynamic filter options from deals:', deals.length);
@@ -14,9 +14,9 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
       type: 'multiselect',
       options: [
         { label: 'Inactive', value: 'Inactive' },
-        { label: 'Initial Review', value: 'Initial Review' },    // Updated from 'Initial Review'
-        { label: 'Scorecard', value: 'Scorecard' },        // Updated from 'Initial Contact'
-        { label: 'One Pager', value: 'One Pager' },               // Previously 'Scorecard'
+        { label: 'Initial Review', value: 'Initial Review' },
+        { label: 'Scorecard', value: 'Scorecard' },
+        { label: 'One Pager', value: 'One Pager' },
         { label: 'Due Diligence', value: 'Due Diligence' },
         { label: 'Term Sheet', value: 'Term Sheet' },
         { label: 'Memo', value: 'Memo' },
@@ -46,11 +46,18 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
       options: getUniqueSectors(deals)
     },
     {
-      key: 'location',
-      label: 'Location',
-      value: 'location',
+      key: 'state_province',
+      label: 'State/Province',
+      value: 'state_province',
       type: 'multiselect',
-      options: getUniqueLocations(deals)
+      options: getUniqueStateProvinces(deals)
+    },
+    {
+      key: 'country',
+      label: 'Country',
+      value: 'country',
+      type: 'multiselect',
+      options: getUniqueCountries(deals)
     },
     {
       key: 'round_size',

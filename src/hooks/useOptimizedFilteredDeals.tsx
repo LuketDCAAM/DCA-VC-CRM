@@ -60,29 +60,19 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
             filtered = filtered.filter(deal => deal.sector === value);
           }
           break;
-        case 'location':
+        case 'state_province':
           if (Array.isArray(value)) {
-            filtered = filtered.filter(deal => {
-              if (value.length === 0) return true;
-              
-              const normalizedDealLocation = normalizeLocationToFilterKey(
-                deal.city,
-                deal.state_province,
-                deal.country
-              );
-              
-              return value.includes(normalizedDealLocation);
-            });
+            filtered = filtered.filter(deal => value.length === 0 || value.includes(deal.state_province || ''));
           } else {
-            filtered = filtered.filter(deal => {
-              const normalizedDealLocation = normalizeLocationToFilterKey(
-                deal.city,
-                deal.state_province,
-                deal.country
-              );
-              
-              return normalizedDealLocation === value;
-            });
+            filtered = filtered.filter(deal => deal.state_province === value);
+          }
+          break;
+
+        case 'country':
+          if (Array.isArray(value)) {
+            filtered = filtered.filter(deal => value.length === 0 || value.includes(deal.country || ''));
+          } else {
+            filtered = filtered.filter(deal => deal.country === value);
           }
           break;
         case 'deal_source':

@@ -51,20 +51,17 @@ export function useFilteredDeals(deals: Deal[], searchTerm: string, activeFilter
           case 'deal_score_max':
             return typeof deal.deal_score !== 'number' || deal.deal_score <= parseInt(value, 10);
           
-          case 'location':
-            // Handle location filter using new three-column structure
+          case 'state_province':
             if (Array.isArray(value)) {
-              if (value.length === 0) return true;
-              
-              const normalizedDealLocation = normalizeLocationToFilterKey(
-                deal.city,
-                deal.state_province,
-                deal.country
-              );
-              
-              return value.includes(normalizedDealLocation);
+              return value.length === 0 || value.includes(deal.state_province || '');
             }
-            return true;
+            return deal.state_province === value;
+
+          case 'country':
+            if (Array.isArray(value)) {
+              return value.length === 0 || value.includes(deal.country || '');
+            }
+            return deal.country === value;
             
           default:
             // Handle array values for multi-select filters

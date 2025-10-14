@@ -76,17 +76,18 @@ export function DealsFilters({
       ]
     },
     {
-      key: 'location',
-      label: 'Location',
-      value: 'location',
+      key: 'state_province',
+      label: 'State/Province',
+      value: 'state_province',
       type: 'select',
-      options: [
-        { label: 'San Francisco', value: 'San Francisco' },
-        { label: 'New York', value: 'New York' },
-        { label: 'Los Angeles', value: 'Los Angeles' },
-        { label: 'Austin', value: 'Austin' },
-        { label: 'Remote', value: 'Remote' },
-      ]
+      options: []
+    },
+    {
+      key: 'country',
+      label: 'Country',
+      value: 'country',
+      type: 'select',
+      options: []
     },
     {
       key: 'round_size',
