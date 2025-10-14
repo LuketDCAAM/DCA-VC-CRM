@@ -4,6 +4,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { ComposedChart, Line, Bar, XAxis, YAxis, ResponsiveContainer, Legend } from 'recharts';
 import { PipelineToggle } from './shared/PipelineToggle';
 import { usePipelineFilter } from './shared/usePipelineFilter';
+import { getChartColor } from './shared/chartConfig';
 import { Deal } from '@/types/deal';
 import { useUserRoles } from '@/hooks/useUserRoles';
 
@@ -22,15 +23,15 @@ export function MonthlyTrendChart({ data, deals }: MonthlyTrendChartProps) {
   const chartConfig = {
     deals: {
       label: 'New Deals',
-      color: '#8884d8'
+      color: getChartColor(0)
     },
     invested: {
       label: 'Invested',
-      color: '#82ca9d'
+      color: getChartColor(1)
     },
     firstCalls: {
       label: 'First Calls',
-      color: '#ff7300'
+      color: getChartColor(2)
     }
   };
 
@@ -76,18 +77,18 @@ export function MonthlyTrendChart({ data, deals }: MonthlyTrendChartProps) {
             <ComposedChart data={chartData}>
               <XAxis 
                 dataKey="month" 
-                fontSize={12}
+                tick={{ fontSize: 11 }}
                 angle={-45}
                 textAnchor="end"
-                height={60}
+                height={80}
               />
-              <YAxis yAxisId="left" />
-              <YAxis yAxisId="right" orientation="right" />
+              <YAxis yAxisId="left" tick={{ fontSize: 11 }} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Legend />
               <Bar 
                 dataKey="deals" 
-                fill="#8884d8" 
+                fill={getChartColor(0)}
                 name="Deals Sourced" 
                 yAxisId="left" 
                 radius={[4, 4, 0, 0]}
@@ -96,7 +97,7 @@ export function MonthlyTrendChart({ data, deals }: MonthlyTrendChartProps) {
                 <Line 
                   type="monotone" 
                   dataKey="invested" 
-                  stroke="#82ca9d" 
+                  stroke={getChartColor(1)}
                   strokeWidth={2}
                   dot={{ r: 4 }}
                   name="Invested"
@@ -107,7 +108,7 @@ export function MonthlyTrendChart({ data, deals }: MonthlyTrendChartProps) {
                 <Line 
                   type="monotone" 
                   dataKey="firstCalls" 
-                  stroke="#ff7300" 
+                  stroke={getChartColor(2)}
                   strokeWidth={2}
                   dot={{ r: 4 }}
                   name="First Calls"

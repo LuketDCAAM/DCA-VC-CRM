@@ -15,11 +15,11 @@ export const CHART_COLORS = {
     'hsl(var(--chart-3))',
     'hsl(var(--chart-4))',
     'hsl(var(--chart-5))',
-    'hsl(350 80% 58%)',  // Extended pink
-    'hsl(270 70% 62%)',  // Extended purple
-    'hsl(300 75% 58%)',  // Extended magenta
-    'hsl(250 65% 60%)',  // Extended indigo
-    'hsl(330 75% 60%)',  // Extended rose
+    'hsl(350 60% 70%)',  /* Extended soft pink */
+    'hsl(280 55% 68%)',  /* Extended soft purple */
+    'hsl(310 58% 72%)',  /* Extended soft magenta */
+    'hsl(260 52% 70%)',  /* Extended soft indigo */
+    'hsl(330 60% 70%)',  /* Extended soft rose */
   ]
 };
 

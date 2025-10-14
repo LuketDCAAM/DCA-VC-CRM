@@ -36,11 +36,11 @@
 
     --radius: 0.5rem;
 
-    --chart-1: 340.8 82.2% 60.4%;  /* Pink/Magenta */
-    --chart-2: 262.1 83.3% 57.8%;  /* Purple/Violet */
-    --chart-3: 280 65% 60%;         /* Mid Purple */
-    --chart-4: 320 70% 55%;         /* Pink-Purple */
-    --chart-5: 240 60% 65%;         /* Light Purple */
+    --chart-1: 340 65% 68%;  /* Soft Pink */
+    --chart-2: 270 55% 70%;  /* Soft Purple */
+    --chart-3: 300 60% 72%;  /* Soft Magenta */
+    --chart-4: 250 50% 68%;  /* Soft Violet */
+    --chart-5: 320 58% 70%;  /* Soft Rose */
 
     --sidebar-background: 0 0% 98%;
 
@@ -88,11 +88,11 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
 
-    --chart-1: 340.8 82.2% 60.4%;  /* Pink/Magenta */
-    --chart-2: 262.1 83.3% 57.8%;  /* Purple/Violet */
-    --chart-3: 280 65% 60%;         /* Mid Purple */
-    --chart-4: 320 70% 55%;         /* Pink-Purple */
-    --chart-5: 240 60% 65%;         /* Light Purple */
+    --chart-1: 340 65% 68%;  /* Soft Pink */
+    --chart-2: 270 55% 70%;  /* Soft Purple */
+    --chart-3: 300 60% 72%;  /* Soft Magenta */
+    --chart-4: 250 50% 68%;  /* Soft Violet */
+    --chart-5: 320 58% 70%;  /* Soft Rose */
 
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;

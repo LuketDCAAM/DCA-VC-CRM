@@ -2,6 +2,7 @@
 import React from 'react';
 import { ChartContainer } from '@/components/ui/chart';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { getChartColor } from '../shared/chartConfig';
 
 interface ValuationRangesChartProps {
   data: Array<{ range: string; count: number }>;
@@ -11,7 +12,7 @@ export function ValuationRangesChart({ data }: ValuationRangesChartProps) {
   const chartConfig = {
     count: {
       label: 'Number of Deals',
-      color: '#8884d8'
+      color: getChartColor(0)
     }
   };
 
@@ -23,15 +24,15 @@ export function ValuationRangesChart({ data }: ValuationRangesChartProps) {
           <BarChart data={data}>
             <XAxis 
               dataKey="range" 
-              fontSize={12}
+              tick={{ fontSize: 11 }}
               angle={-45}
               textAnchor="end"
-              height={60}
+              height={80}
             />
-            <YAxis />
+            <YAxis tick={{ fontSize: 11 }} />
             <Bar 
               dataKey="count" 
-              fill="#8884d8"
+              fill={getChartColor(0)}
               radius={[4, 4, 0, 0]}
             />
           </BarChart>

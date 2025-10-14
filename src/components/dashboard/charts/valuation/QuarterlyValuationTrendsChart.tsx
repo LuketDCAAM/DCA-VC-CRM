@@ -3,6 +3,7 @@ import React from 'react';
 import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Legend } from 'recharts';
 import { formatCurrency, formatCurrencyCompact } from './valuationUtils';
+import { getChartColor } from '../shared/chartConfig';
 
 interface QuarterlyTrendData {
   quarter: string;
@@ -19,11 +20,11 @@ export function QuarterlyValuationTrendsChart({ data }: QuarterlyValuationTrends
   const trendsChartConfig = {
     averageValuation: {
       label: 'Average Valuation',
-      color: '#8884d8'
+      color: getChartColor(0)
     },
     medianValuation: {
       label: 'Median Valuation',
-      color: '#82ca9d'
+      color: getChartColor(1)
     }
   };
 
@@ -39,14 +40,14 @@ export function QuarterlyValuationTrendsChart({ data }: QuarterlyValuationTrends
           <LineChart data={data}>
             <XAxis 
               dataKey="quarter" 
-              fontSize={12}
+              tick={{ fontSize: 11 }}
               angle={-45}
               textAnchor="end"
-              height={60}
+              height={80}
             />
             <YAxis 
               tickFormatter={formatCurrencyCompact}
-              fontSize={12}
+              tick={{ fontSize: 11 }}
             />
             <ChartTooltip 
               content={({ active, payload, label }) => {
@@ -57,10 +58,10 @@ export function QuarterlyValuationTrendsChart({ data }: QuarterlyValuationTrends
                       <p className="font-medium mb-2">{label}</p>
                       <div className="space-y-1">
                         <p className="text-sm">
-                          <span className="text-[#8884d8]">●</span> Average: {formatCurrency(data.averageValuation)}
+                          <span style={{ color: getChartColor(0) }}>●</span> Average: {formatCurrency(data.averageValuation)}
                         </p>
                         <p className="text-sm">
-                          <span className="text-[#82ca9d]">●</span> Median: {formatCurrency(data.medianValuation)}
+                          <span style={{ color: getChartColor(1) }}>●</span> Median: {formatCurrency(data.medianValuation)}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {data.dealCount} deals
@@ -76,7 +77,7 @@ export function QuarterlyValuationTrendsChart({ data }: QuarterlyValuationTrends
             <Line 
               type="monotone" 
               dataKey="averageValuation" 
-              stroke="#8884d8" 
+              stroke={getChartColor(0)}
               strokeWidth={2}
               dot={{ r: 4 }}
               name="Average Valuation"
@@ -84,7 +85,7 @@ export function QuarterlyValuationTrendsChart({ data }: QuarterlyValuationTrends
             <Line 
               type="monotone" 
               dataKey="medianValuation" 
-              stroke="#82ca9d" 
+              stroke={getChartColor(1)}
               strokeWidth={2}
               dot={{ r: 4 }}
               name="Median Valuation"
