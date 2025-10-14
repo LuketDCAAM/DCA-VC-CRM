@@ -21,6 +21,28 @@ interface QuarterlyMultiple {
   dealsCount: number;
 }
 
+const US_ALIASES = new Set<string>(['USA','US','United States','United States of America','U.S.','U.S.A.']);
+
+function normalizeLocationToFilterKey(location: string): string {
+  const parts = location.split(',').map(p => p.trim()).filter(Boolean);
+  if (parts.length >= 3) {
+    const country = parts[2];
+    if (US_ALIASES.has(country)) {
+      return `${parts[1]}, USA`;
+    }
+    return parts[2];
+  } else if (parts.length === 2) {
+    const country = parts[1];
+    if (US_ALIASES.has(country)) {
+      return `${parts[0]}, USA`;
+    }
+    return parts[1];
+  } else if (parts.length === 1) {
+    return parts[0];
+  }
+  return location;
+}
+
 function calculateValuationRevenueMultiples(deals: Deal[], selectedRounds: string[], selectedLocations: string[]): QuarterlyMultiple[] {
   // Filter deals that have both valuation and revenue data
   let dealsWithData = deals.filter(deal => 
@@ -41,20 +63,7 @@ function calculateValuationRevenueMultiples(deals: Deal[], selectedRounds: strin
   if (selectedLocations.length > 0) {
     dealsWithData = dealsWithData.filter(deal => {
       if (!deal.location) return false;
-      
-      const location = deal.location;
-      const parts = location.split(',').map(p => p.trim());
-      
-      // Normalize deal location to state/country format
-      let normalizedLocation;
-      if (parts.length >= 3) {
-        normalizedLocation = `${parts[1]}, ${parts[2]}`;
-      } else if (parts.length === 2) {
-        normalizedLocation = location;
-      } else {
-        normalizedLocation = location;
-      }
-      
+      const normalizedLocation = normalizeLocationToFilterKey(deal.location);
       return selectedLocations.includes(normalizedLocation);
     });
   }
@@ -157,23 +166,7 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
   const availableLocations = useMemo(() => {
     const locations = filteredDeals
       .filter(deal => deal.post_money_valuation && deal.revenue && deal.location)
-      .map(deal => {
-        const location = deal.location!;
-        // Extract state or country (remove city details)
-        // Format: "City, State, Country" or "City, Country" or "State, Country" or "Country"
-        const parts = location.split(',').map(p => p.trim());
-        
-        if (parts.length >= 3) {
-          // Has city, state, country - return "State, Country"
-          return `${parts[1]}, ${parts[2]}`;
-        } else if (parts.length === 2) {
-          // Could be "City, Country" or "State, Country" - return as is
-          return location;
-        } else {
-          // Just country
-          return location;
-        }
-      })
+      .map(deal => normalizeLocationToFilterKey(deal.location!))
       .filter((value, index, self) => self.indexOf(value) === index)
       .sort();
     return locations;
