@@ -23,18 +23,39 @@ interface QuarterlyMultiple {
 
 const US_ALIASES = new Set<string>(['USA','US','United States','United States of America','U.S.','U.S.A.']);
 
+const STATE_ABBREVIATIONS: Record<string, string> = {
+  'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California',
+  'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'FL': 'Florida', 'GA': 'Georgia',
+  'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana', 'IA': 'Iowa',
+  'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine', 'MD': 'Maryland',
+  'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi', 'MO': 'Missouri',
+  'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire', 'NJ': 'New Jersey',
+  'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota', 'OH': 'Ohio',
+  'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island', 'SC': 'South Carolina',
+  'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah', 'VT': 'Vermont',
+  'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin', 'WY': 'Wyoming',
+  'DC': 'District of Columbia'
+};
+
+function expandStateAbbreviation(state: string): string {
+  const upperState = state.trim().toUpperCase();
+  return STATE_ABBREVIATIONS[upperState] || state;
+}
+
 function normalizeLocationToFilterKey(location: string): string {
   const parts = location.split(',').map(p => p.trim()).filter(Boolean);
   if (parts.length >= 3) {
     const country = parts[2];
     if (US_ALIASES.has(country)) {
-      return `${parts[1]}, USA`;
+      const state = expandStateAbbreviation(parts[1]);
+      return `${state}, USA`;
     }
     return parts[2];
   } else if (parts.length === 2) {
     const country = parts[1];
     if (US_ALIASES.has(country)) {
-      return `${parts[0]}, USA`;
+      const state = expandStateAbbreviation(parts[0]);
+      return `${state}, USA`;
     }
     return parts[1];
   } else if (parts.length === 1) {
