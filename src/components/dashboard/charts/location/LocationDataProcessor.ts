@@ -16,13 +16,22 @@ export interface ProcessedLocation {
 
 export class LocationDataProcessor {
   private static normalizeLocationString(location: string): string {
-    return location
+    let normalized = location
       .trim()
       .replace(/[.,]/g, ' ') // Replace commas and periods with spaces
       .replace(/\s+/g, ' ') // Replace multiple spaces with single space
       .replace(/\b(USA|US|United States)\b/gi, '') // Remove country references
       .replace(/\b(Inc|LLC|Corp|Corporation|Ltd|Limited)\b/gi, '') // Remove business suffixes
       .trim();
+    
+    // Expand state abbreviations in the normalized string
+    const parts = normalized.split(/\s+/);
+    const expandedParts = parts.map(part => {
+      const upper = part.toUpperCase();
+      return STATE_ABBREVIATIONS[upper] || part;
+    });
+    
+    return expandedParts.join(' ');
   }
 
   private static extractLocationParts(location: string): string[] {
