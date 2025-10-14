@@ -5,6 +5,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { Briefcase } from 'lucide-react';
 import { PipelineToggle } from './shared/PipelineToggle';
 import { usePipelineFilter } from './shared/usePipelineFilter';
+import { QuarterFilter } from './shared/QuarterFilter';
+import { useQuarterFilter } from './shared/useQuarterFilter';
 import { Deal } from '@/types/deal';
 
 interface InvestmentVehicleChartProps {
@@ -21,7 +23,8 @@ const VEHICLE_COLORS = [
 ];
 
 export function InvestmentVehicleChart({ deals }: InvestmentVehicleChartProps) {
-  const { showActiveOnly, setShowActiveOnly, filteredDeals } = usePipelineFilter(deals);
+  const { selectedQuarter, setSelectedQuarter, availableQuarters, filteredDeals: quarterFiltered } = useQuarterFilter(deals);
+  const { showActiveOnly, setShowActiveOnly, filteredDeals } = usePipelineFilter(quarterFiltered);
   
   // Calculate investment vehicle distribution - only include deals with specified vehicles
   const vehicleCounts = filteredDeals.reduce((acc, deal) => {
@@ -65,10 +68,17 @@ export function InvestmentVehicleChart({ deals }: InvestmentVehicleChartProps) {
                 No investment vehicle data available
               </CardDescription>
             </div>
-            <PipelineToggle 
-              showActiveOnly={showActiveOnly} 
-              onToggle={setShowActiveOnly}
-            />
+            <div className="flex items-center gap-2">
+              <QuarterFilter
+                selectedQuarter={selectedQuarter}
+                onQuarterChange={setSelectedQuarter}
+                availableQuarters={availableQuarters}
+              />
+              <PipelineToggle 
+                showActiveOnly={showActiveOnly} 
+                onToggle={setShowActiveOnly}
+              />
+            </div>
           </div>
         </CardHeader>
         <CardContent className="flex-1 pb-0">
@@ -101,10 +111,17 @@ export function InvestmentVehicleChart({ deals }: InvestmentVehicleChartProps) {
               {chartData.length} vehicle{chartData.length !== 1 ? 's' : ''} • {totalDeals} total deals
             </CardDescription>
           </div>
-          <PipelineToggle 
-            showActiveOnly={showActiveOnly} 
-            onToggle={setShowActiveOnly}
-          />
+          <div className="flex items-center gap-2">
+            <QuarterFilter
+              selectedQuarter={selectedQuarter}
+              onQuarterChange={setSelectedQuarter}
+              availableQuarters={availableQuarters}
+            />
+            <PipelineToggle 
+              showActiveOnly={showActiveOnly} 
+              onToggle={setShowActiveOnly}
+            />
+          </div>
         </div>
       </CardHeader>
       <CardContent className="flex-1 pb-0">

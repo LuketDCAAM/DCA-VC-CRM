@@ -6,6 +6,8 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 import { PipelineToggle } from './shared/PipelineToggle';
 import { usePipelineFilter } from './shared/usePipelineFilter';
+import { QuarterFilter } from './shared/QuarterFilter';
+import { useQuarterFilter } from './shared/useQuarterFilter';
 import { Deal } from '@/types/deal';
 
 interface SectorChartProps {
@@ -28,7 +30,8 @@ const SECTOR_COLORS = [
 ];
 
 export function SectorChart({ data, deals }: SectorChartProps) {
-  const { showActiveOnly, setShowActiveOnly, filteredDeals } = usePipelineFilter(deals);
+  const { selectedQuarter, setSelectedQuarter, availableQuarters, filteredDeals: quarterFiltered } = useQuarterFilter(deals);
+  const { showActiveOnly, setShowActiveOnly, filteredDeals } = usePipelineFilter(quarterFiltered);
   
   // Recalculate sector data based on filtered deals
   const sectorCounts = filteredDeals.reduce((acc, deal) => {
@@ -78,10 +81,17 @@ export function SectorChart({ data, deals }: SectorChartProps) {
                 No sector data available
               </CardDescription>
             </div>
-            <PipelineToggle 
-              showActiveOnly={showActiveOnly} 
-              onToggle={setShowActiveOnly}
-            />
+            <div className="flex items-center gap-2">
+              <QuarterFilter
+                selectedQuarter={selectedQuarter}
+                onQuarterChange={setSelectedQuarter}
+                availableQuarters={availableQuarters}
+              />
+              <PipelineToggle 
+                showActiveOnly={showActiveOnly} 
+                onToggle={setShowActiveOnly}
+              />
+            </div>
           </div>
         </CardHeader>
         <CardContent className="flex-1 pb-0">
@@ -115,10 +125,17 @@ export function SectorChart({ data, deals }: SectorChartProps) {
               {chartData.length} sectors • {totalDeals} total deals
             </CardDescription>
           </div>
-          <PipelineToggle 
-            showActiveOnly={showActiveOnly} 
-            onToggle={setShowActiveOnly}
-          />
+          <div className="flex items-center gap-2">
+            <QuarterFilter
+              selectedQuarter={selectedQuarter}
+              onQuarterChange={setSelectedQuarter}
+              availableQuarters={availableQuarters}
+            />
+            <PipelineToggle 
+              showActiveOnly={showActiveOnly} 
+              onToggle={setShowActiveOnly}
+            />
+          </div>
         </div>
       </CardHeader>
       <CardContent className="flex-1 pb-0">

@@ -4,6 +4,8 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { PipelineToggle } from './shared/PipelineToggle';
 import { usePipelineFilter } from './shared/usePipelineFilter';
+import { QuarterFilter } from './shared/QuarterFilter';
+import { useQuarterFilter } from './shared/useQuarterFilter';
 import { Deal } from '@/types/deal';
 
 interface RoundStageChartProps {
@@ -17,7 +19,8 @@ const ROUND_STAGE_COLORS = [
 ];
 
 export function RoundStageChart({ data, deals }: RoundStageChartProps) {
-  const { showActiveOnly, setShowActiveOnly, filteredDeals } = usePipelineFilter(deals);
+  const { selectedQuarter, setSelectedQuarter, availableQuarters, filteredDeals: quarterFiltered } = useQuarterFilter(deals);
+  const { showActiveOnly, setShowActiveOnly, filteredDeals } = usePipelineFilter(quarterFiltered);
   
   // Recalculate round stage data based on filtered deals
   const roundCounts = filteredDeals.reduce((acc, deal) => {
@@ -48,18 +51,25 @@ export function RoundStageChart({ data, deals }: RoundStageChartProps) {
   if (!chartData.length) {
     return (
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between w-full">
-            <div>
-              <CardTitle>Round Stage Distribution</CardTitle>
-              <CardDescription>Deal distribution by funding round</CardDescription>
-            </div>
+      <CardHeader>
+        <div className="flex items-center justify-between w-full">
+          <div>
+            <CardTitle>Round Stage Distribution</CardTitle>
+            <CardDescription>Deal distribution by funding round</CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <QuarterFilter
+              selectedQuarter={selectedQuarter}
+              onQuarterChange={setSelectedQuarter}
+              availableQuarters={availableQuarters}
+            />
             <PipelineToggle 
               showActiveOnly={showActiveOnly} 
               onToggle={setShowActiveOnly}
             />
           </div>
-        </CardHeader>
+        </div>
+      </CardHeader>
         <CardContent>
           <p className="text-muted-foreground text-center py-8">No data available</p>
         </CardContent>
@@ -75,10 +85,17 @@ export function RoundStageChart({ data, deals }: RoundStageChartProps) {
             <CardTitle>Round Stage Distribution</CardTitle>
             <CardDescription>Deal distribution by funding round</CardDescription>
           </div>
-          <PipelineToggle 
-            showActiveOnly={showActiveOnly} 
-            onToggle={setShowActiveOnly}
-          />
+          <div className="flex items-center gap-2">
+            <QuarterFilter
+              selectedQuarter={selectedQuarter}
+              onQuarterChange={setSelectedQuarter}
+              availableQuarters={availableQuarters}
+            />
+            <PipelineToggle 
+              showActiveOnly={showActiveOnly} 
+              onToggle={setShowActiveOnly}
+            />
+          </div>
         </div>
       </CardHeader>
       <CardContent>
