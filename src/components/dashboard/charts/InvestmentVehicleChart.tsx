@@ -23,10 +23,11 @@ const VEHICLE_COLORS = [
 export function InvestmentVehicleChart({ deals }: InvestmentVehicleChartProps) {
   const { showActiveOnly, setShowActiveOnly, filteredDeals } = usePipelineFilter(deals);
   
-  // Calculate investment vehicle distribution
+  // Calculate investment vehicle distribution - only include deals with specified vehicles
   const vehicleCounts = filteredDeals.reduce((acc, deal) => {
-    const vehicle = deal.investment_vehicle || 'Not Specified';
-    acc[vehicle] = (acc[vehicle] || 0) + 1;
+    if (deal.investment_vehicle && deal.investment_vehicle.trim() !== '') {
+      acc[deal.investment_vehicle] = (acc[deal.investment_vehicle] || 0) + 1;
+    }
     return acc;
   }, {} as Record<string, number>);
 
