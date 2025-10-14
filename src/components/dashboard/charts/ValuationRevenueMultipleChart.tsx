@@ -10,6 +10,7 @@ import { usePipelineFilter } from './shared/usePipelineFilter';
 import { Deal } from '@/types/deal';
 import { format, startOfQuarter, parseISO, subYears } from 'date-fns';
 import { normalizeLocationToFilterKey } from '@/utils/locationUtils';
+import { getChartColor, CHART_TYPOGRAPHY, CHART_DIMENSIONS } from './shared/chartConfig';
 
 interface ValuationRevenueMultipleChartProps {
   deals: Deal[];
@@ -111,10 +112,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return (
       <div className="bg-background border border-border rounded-lg shadow-lg p-3">
         <p className="font-medium text-foreground">{label}</p>
-        <p className="text-sm text-blue-600">
+        <p className="text-sm" style={{ color: getChartColor(0) }}>
           Average Multiple: {data.averageMultiple}x
         </p>
-        <p className="text-sm text-green-600">
+        <p className="text-sm" style={{ color: getChartColor(1) }}>
           Median Multiple: {data.medianMultiple}x
         </p>
         <p className="text-sm text-muted-foreground">
@@ -370,29 +371,29 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
               <XAxis 
                 dataKey="quarter" 
                 className="text-xs"
-                tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: CHART_TYPOGRAPHY.axisLabel.fontSize }}
               />
               <YAxis 
                 className="text-xs"
-                tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                label={{ value: 'Multiple (x)', angle: -90, position: 'insideLeft' }}
+                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: CHART_TYPOGRAPHY.axisLabel.fontSize }}
+                label={{ value: 'Multiple (x)', angle: -90, position: 'insideLeft', fontSize: CHART_TYPOGRAPHY.label.fontSize }}
               />
               <Tooltip content={<CustomTooltip />} />
               <Line 
                 type="monotone" 
                 dataKey="averageMultiple" 
-                stroke="#22c55e" 
-                strokeWidth={2}
-                dot={{ fill: '#22c55e', strokeWidth: 2, r: 4 }}
+                stroke={getChartColor(0)}
+                strokeWidth={CHART_DIMENSIONS.strokeWidth}
+                dot={{ fill: getChartColor(0), strokeWidth: 2, r: 4 }}
                 name="Average Multiple"
               />
               <Line 
                 type="monotone" 
                 dataKey="medianMultiple" 
-                stroke="#a855f7" 
-                strokeWidth={2}
+                stroke={getChartColor(1)}
+                strokeWidth={CHART_DIMENSIONS.strokeWidth}
                 strokeDasharray="5 5"
-                dot={{ fill: '#a855f7', strokeWidth: 2, r: 4 }}
+                dot={{ fill: getChartColor(1), strokeWidth: 2, r: 4 }}
                 name="Median Multiple"
               />
             </LineChart>
@@ -400,11 +401,11 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
         </div>
         <div className="flex items-center justify-center gap-6 mt-4 text-sm">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-0.5 bg-green-500"></div>
+            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: getChartColor(0) }}></div>
             <span className="text-muted-foreground">Average Multiple</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-0.5 bg-purple-500 border-dashed border-t-2"></div>
+            <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: getChartColor(1) }}></div>
             <span className="text-muted-foreground">Median Multiple</span>
           </div>
         </div>
