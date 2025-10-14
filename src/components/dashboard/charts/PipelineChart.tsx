@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from 'recharts';
 
 interface PipelineChartProps {
@@ -63,18 +63,17 @@ export function PipelineChart({ data, type = 'pie' }: PipelineChartProps) {
         <CardDescription>Deal distribution across pipeline stages</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[300px]">
+        <ChartContainer config={chartConfig} className="h-[350px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={data}
                 cx="50%"
-                cy="50%"
-                outerRadius={80}
+                cy="45%"
+                outerRadius={90}
                 dataKey="count"
-                label={({ stage, percentage }) => 
-                  percentage > 5 ? `${stage}: ${percentage}%` : ''
-                }
+                nameKey="stage"
+                label={false}
               >
                 {data.map((entry, index) => (
                   <Cell 
@@ -98,6 +97,11 @@ export function PipelineChart({ data, type = 'pie' }: PipelineChartProps) {
                   }
                   return null;
                 }}
+              />
+              <ChartLegend 
+                content={<ChartLegendContent />}
+                verticalAlign="bottom"
+                height={36}
               />
             </PieChart>
           </ResponsiveContainer>
