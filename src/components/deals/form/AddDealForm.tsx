@@ -17,7 +17,9 @@ const addDealFormSchema = z.object({
   company_name: z.string().min(1, 'Company name is required'),
   website: z.string().url({ message: "Invalid URL" }).or(z.literal('')).optional(),
   linkedin_url: z.string().url({ message: "Invalid URL" }).or(z.literal('')).optional(),
-  location: z.string().optional(),
+  city: z.string().optional(),
+  state_province: z.string().optional(),
+  country: z.string().optional(),
   description: z.string().optional(),
   sector: z.string().optional(),
   contact_name: z.string().optional(),
@@ -44,7 +46,9 @@ interface AddDealValues {
   company_name: string;
   website?: string;
   linkedin_url?: string;
-  location?: string;
+  city?: string;
+  state_province?: string;
+  country?: string;
   description?: string;
   sector?: string;
   contact_name?: string;
@@ -93,7 +97,9 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
       company_name: '',
       website: '',
       linkedin_url: '',
-      location: '',
+      city: '',
+      state_province: '',
+      country: '',
       description: '',
       sector: '',
       contact_name: '',
@@ -147,7 +153,9 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
       company_name: values.company_name, // Explicitly assign required field
       website: values.website,
       linkedin_url: values.linkedin_url,
-      location: values.location,
+      city: values.city,
+      state_province: values.state_province,
+      country: values.country,
       sector: values.sector,
       contact_name: values.contact_name,
       contact_email: values.contact_email,
@@ -226,19 +234,47 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="location"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Location</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="city"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>City</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="San Francisco" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="state_province"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>State/Province</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="California" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="country"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Country</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="USA" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               <FormField
                 control={form.control}
                 name="sector"
