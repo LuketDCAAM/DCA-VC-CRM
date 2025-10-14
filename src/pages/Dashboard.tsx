@@ -19,6 +19,7 @@ import { RoundStageChart } from '@/components/dashboard/charts/RoundStageChart';
 import { DealsLocationMap } from '@/components/dashboard/charts/DealsLocationMap';
 import { ValuationRevenueMultipleChart } from '@/components/dashboard/charts/ValuationRevenueMultipleChart';
 import { InvestmentVehicleChart } from '@/components/dashboard/charts/InvestmentVehicleChart';
+import { PipelineChart } from '@/components/dashboard/charts/PipelineChart';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -72,6 +73,7 @@ export default function Dashboard() {
         <SectorChart data={analytics.sectorDistribution} deals={deals || []} />
         <RoundStageChart data={analytics.roundStageDistribution} deals={deals || []} />
         <InvestmentVehicleChart deals={deals || []} />
+        <PipelineChart data={analytics.pipelineDistribution} />
       </div>
 
       {/* Detailed Analytics - Full Width */}
