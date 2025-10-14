@@ -88,10 +88,11 @@ export function DealsTableRow({
       <FinancialCell deal={deal} type="roundSize" />
       
       <TableCell>
-        {deal.location ? (
-          <div className="flex items-center gap-1">
-            <MapPin className="h-3 w-3 text-muted-foreground" />
-            <span className="text-foreground text-sm">{formatLocation(deal.location)}</span>
+        {(deal.city || deal.state_province || deal.country) ? (
+          <div className="flex flex-col gap-0.5">
+            {deal.city && <div className="text-sm font-medium">{deal.city}</div>}
+            {deal.state_province && <div className="text-xs text-muted-foreground">{deal.state_province}</div>}
+            {deal.country && <div className="text-xs text-muted-foreground">{deal.country}</div>}
           </div>
         ) : (
           <span className="text-muted-foreground text-sm">-</span>

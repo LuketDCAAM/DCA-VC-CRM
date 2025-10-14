@@ -18,6 +18,31 @@ export function DealCompanyDetailsCard({ deal }: DealCompanyDetailsCardProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        {(deal.city || deal.state_province || deal.country) && (
+          <div>
+            <div className="text-sm text-gray-500 mb-1">Location</div>
+            <div className="space-y-1">
+              {deal.city && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500 w-20">City:</span>
+                  <span className="font-medium">{deal.city}</span>
+                </div>
+              )}
+              {deal.state_province && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500 w-20">State:</span>
+                  <span className="font-medium">{deal.state_province}</span>
+                </div>
+              )}
+              {deal.country && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500 w-20">Country:</span>
+                  <span className="font-medium">{deal.country}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
         {deal.sector && (
           <div>
             <div className="text-sm text-gray-500 mb-1">Sector</div>
