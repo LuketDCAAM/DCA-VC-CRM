@@ -65,36 +65,21 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
             filtered = filtered.filter(deal => {
               if (value.length === 0) return true;
               
-              let normalizedDealLocation = '';
-              
-              // Try new three-column format first
-              if (deal.city || deal.state_province || deal.country) {
-                normalizedDealLocation = normalizeLocationToFilterKey({
-                  city: deal.city,
-                  state_province: deal.state_province,
-                  country: deal.country
-                });
-              }
-              // Fall back to legacy location field
-              else if (deal.location) {
-                normalizedDealLocation = normalizeLocationToFilterKey(deal.location);
-              }
+              const normalizedDealLocation = normalizeLocationToFilterKey(
+                deal.city,
+                deal.state_province,
+                deal.country
+              );
               
               return value.includes(normalizedDealLocation);
             });
           } else {
             filtered = filtered.filter(deal => {
-              let normalizedDealLocation = '';
-              
-              if (deal.city || deal.state_province || deal.country) {
-                normalizedDealLocation = normalizeLocationToFilterKey({
-                  city: deal.city,
-                  state_province: deal.state_province,
-                  country: deal.country
-                });
-              } else if (deal.location) {
-                normalizedDealLocation = normalizeLocationToFilterKey(deal.location);
-              }
+              const normalizedDealLocation = normalizeLocationToFilterKey(
+                deal.city,
+                deal.state_province,
+                deal.country
+              );
               
               return normalizedDealLocation === value;
             });

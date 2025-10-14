@@ -52,24 +52,15 @@ export function useFilteredDeals(deals: Deal[], searchTerm: string, activeFilter
             return typeof deal.deal_score !== 'number' || deal.deal_score <= parseInt(value, 10);
           
           case 'location':
-            // Handle location filter for both new three-column and legacy single-column
+            // Handle location filter using new three-column structure
             if (Array.isArray(value)) {
               if (value.length === 0) return true;
               
-              let normalizedDealLocation = '';
-              
-              // Try new three-column format first
-              if (deal.city || deal.state_province || deal.country) {
-                normalizedDealLocation = normalizeLocationToFilterKey({
-                  city: deal.city,
-                  state_province: deal.state_province,
-                  country: deal.country
-                });
-              }
-              // Fall back to legacy location field
-              else if (deal.location) {
-                normalizedDealLocation = normalizeLocationToFilterKey(deal.location);
-              }
+              const normalizedDealLocation = normalizeLocationToFilterKey(
+                deal.city,
+                deal.state_province,
+                deal.country
+              );
               
               return value.includes(normalizedDealLocation);
             }

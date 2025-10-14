@@ -30,18 +30,9 @@ export function getUniqueLocations(deals: Deal[]): { label: string; value: strin
   const locationSet = new Set<string>();
   
   deals.forEach(deal => {
-    // Try new three-column format first
-    if (deal.city || deal.state_province || deal.country) {
-      const normalized = normalizeLocationToFilterKey({
-        city: deal.city,
-        state_province: deal.state_province,
-        country: deal.country
-      });
-      if (normalized) locationSet.add(normalized);
-    }
-    // Fall back to legacy location field
-    else if (deal.location && deal.location.trim() !== '') {
-      const normalized = normalizeLocationToFilterKey(deal.location.trim());
+    // Use new structured location fields
+    const normalized = normalizeLocationToFilterKey(deal.city, deal.state_province, deal.country);
+    if (normalized.trim() !== '') {
       locationSet.add(normalized);
     }
   });

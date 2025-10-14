@@ -54,7 +54,7 @@ export function DealCompanyForm() {
             </FormItem>
           )}
         />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <FormField
             control={control}
             name="city"
@@ -62,7 +62,7 @@ export function DealCompanyForm() {
               <FormItem>
                 <FormLabel>City</FormLabel>
                 <FormControl>
-                  <Input {...field} value={field.value || ''} placeholder="e.g. San Francisco" />
+                  <Input {...field} value={field.value || ''} placeholder="San Francisco" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -75,7 +75,7 @@ export function DealCompanyForm() {
               <FormItem>
                 <FormLabel>State/Province</FormLabel>
                 <FormControl>
-                  <Input {...field} value={field.value || ''} placeholder="e.g. California" />
+                  <Input {...field} value={field.value || ''} placeholder="California" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -88,7 +88,7 @@ export function DealCompanyForm() {
               <FormItem>
                 <FormLabel>Country</FormLabel>
                 <FormControl>
-                  <Input {...field} value={field.value || ''} placeholder="e.g. USA" />
+                  <Input {...field} value={field.value || ''} placeholder="USA" />
                 </FormControl>
                 <FormMessage />
               </FormItem>

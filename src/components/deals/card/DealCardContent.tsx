@@ -20,10 +20,10 @@ export function DealCardContent({ deal }: DealCardContentProps) {
       )}
       
       <div className="flex flex-wrap gap-2">
-        {(deal.city || deal.state_province || deal.country || deal.location) && (
+        {(deal.city || deal.state_province || deal.country) && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <MapPin className="h-3 w-3" />
-            <span>{formatLocation({ city: deal.city, state_province: deal.state_province, country: deal.country }) || formatLocation(deal.location)}</span>
+            <span>{formatLocation(deal.city, deal.state_province, deal.country)}</span>
           </div>
         )}
         
