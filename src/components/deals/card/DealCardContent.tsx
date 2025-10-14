@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { MapPin, Calendar, Users, FileText } from 'lucide-react';
 import { Deal } from '@/types/deal';
 import { formatDate } from '@/lib/utils';
+import { formatLocation } from '@/utils/locationUtils';
 
 interface DealCardContentProps {
   deal: Deal;
@@ -22,7 +23,7 @@ export function DealCardContent({ deal }: DealCardContentProps) {
         {deal.location && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <MapPin className="h-3 w-3" />
-            <span>{deal.location}</span>
+            <span>{formatLocation(deal.location)}</span>
           </div>
         )}
         

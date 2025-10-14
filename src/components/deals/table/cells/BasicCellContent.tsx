@@ -3,6 +3,7 @@ import React from 'react';
 import { MapPin, User, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Deal } from '@/types/deal';
+import { formatLocation } from '@/utils/locationUtils';
 
 interface BasicCellContentProps {
   deal: Deal;
@@ -20,7 +21,7 @@ export function BasicCellContent({ deal, type }: BasicCellContentProps) {
       return deal.location ? (
         <div className="flex items-center gap-1">
           <MapPin className="h-3 w-3 text-muted-foreground" />
-          <span className="text-foreground text-sm">{deal.location}</span>
+          <span className="text-foreground text-sm">{formatLocation(deal.location)}</span>
         </div>
       ) : (
         <span className="text-muted-foreground text-sm">-</span>

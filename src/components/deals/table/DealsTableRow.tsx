@@ -12,6 +12,7 @@ import { PipelineStageDropdown } from './PipelineStageDropdown';
 import { ExternalDataSyncButton } from '@/components/external-data/ExternalDataSyncButton';
 import { formatDate } from './tableUtils';
 import { useDeleteDeal } from '@/hooks/useDeleteDeal';
+import { formatLocation } from '@/utils/locationUtils';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -90,7 +91,7 @@ export function DealsTableRow({
         {deal.location ? (
           <div className="flex items-center gap-1">
             <MapPin className="h-3 w-3 text-muted-foreground" />
-            <span className="text-foreground text-sm">{deal.location}</span>
+            <span className="text-foreground text-sm">{formatLocation(deal.location)}</span>
           </div>
         ) : (
           <span className="text-muted-foreground text-sm">-</span>
