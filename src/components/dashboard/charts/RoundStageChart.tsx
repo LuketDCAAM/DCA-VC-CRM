@@ -1,22 +1,18 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { PipelineToggle } from './shared/PipelineToggle';
 import { usePipelineFilter } from './shared/usePipelineFilter';
 import { QuarterFilter } from './shared/QuarterFilter';
 import { useQuarterFilter } from './shared/useQuarterFilter';
+import { getChartColor, CHART_DIMENSIONS } from './shared/chartConfig';
 import { Deal } from '@/types/deal';
 
 interface RoundStageChartProps {
   data: Array<{ stage: string; count: number; percentage: number }>;
   deals: Deal[];
 }
-
-const ROUND_STAGE_COLORS = [
-  '#0088FE', '#00C49F', '#FFBB28', '#FF8042', 
-  '#8884D8', '#82CA9D', '#FFC658', '#FF7300'
-];
 
 export function RoundStageChart({ data, deals }: RoundStageChartProps) {
   const { selectedQuarter, setSelectedQuarter, availableQuarters, filteredDeals: quarterFiltered } = useQuarterFilter(deals);
@@ -43,7 +39,7 @@ export function RoundStageChart({ data, deals }: RoundStageChartProps) {
   const chartConfig = chartData.reduce((config, item, index) => {
     config[item.stage] = {
       label: item.stage,
-      color: ROUND_STAGE_COLORS[index % ROUND_STAGE_COLORS.length]
+      color: getChartColor(index, chartData.length > 5)
     };
     return config;
   }, {} as any);
@@ -99,28 +95,25 @@ export function RoundStageChart({ data, deals }: RoundStageChartProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[400px]">
+        <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={chartData}
                 cx="50%"
                 cy="50%"
-                outerRadius={100}
-                innerRadius={40}
+                outerRadius={CHART_DIMENSIONS.pieOuterRadius}
+                innerRadius={CHART_DIMENSIONS.donutInnerRadius}
                 dataKey="count"
-                label={({ stage, percentage, x, y }) => {
-                  // Only show label if percentage is above 5% to avoid overcrowding
-                  if (percentage < 5) return '';
-                  return `${stage}: ${percentage}%`;
-                }}
+                label={({ percentage }) => percentage >= 5 ? `${percentage}%` : ''}
                 labelLine={false}
-                fontSize={12}
+                stroke="hsl(var(--background))"
+                strokeWidth={CHART_DIMENSIONS.strokeWidth}
               >
                 {chartData.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 
-                    fill={ROUND_STAGE_COLORS[index % ROUND_STAGE_COLORS.length]} 
+                    fill={getChartColor(index, chartData.length > 5)}
                   />
                 ))}
               </Pie>
@@ -143,6 +136,22 @@ export function RoundStageChart({ data, deals }: RoundStageChartProps) {
             </PieChart>
           </ResponsiveContainer>
         </ChartContainer>
+        
+        {/* Legend */}
+        <div className="mt-4">
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            {chartData.map((item, index) => (
+              <div key={item.stage} className="flex items-center gap-2">
+                <div 
+                  className="w-3 h-3 rounded-full flex-shrink-0" 
+                  style={{ backgroundColor: getChartColor(index, chartData.length > 5) }}
+                />
+                <span className="truncate">{item.stage}</span>
+                <span className="text-muted-foreground ml-auto">{item.count}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

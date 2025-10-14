@@ -2,32 +2,19 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { TrendingUp } from 'lucide-react';
 import { PipelineToggle } from './shared/PipelineToggle';
 import { usePipelineFilter } from './shared/usePipelineFilter';
 import { QuarterFilter } from './shared/QuarterFilter';
 import { useQuarterFilter } from './shared/useQuarterFilter';
+import { getChartColor, CHART_DIMENSIONS } from './shared/chartConfig';
 import { Deal } from '@/types/deal';
 
 interface SectorChartProps {
   data: Array<{ sector: string; count: number; percentage: number }>;
   deals: Deal[];
 }
-
-// Modern color palette for sectors
-const SECTOR_COLORS = [
-  '#3b82f6', // blue-500
-  '#ef4444', // red-500
-  '#10b981', // emerald-500
-  '#f59e0b', // amber-500
-  '#8b5cf6', // violet-500
-  '#06b6d4', // cyan-500
-  '#f97316', // orange-500
-  '#84cc16', // lime-500
-  '#ec4899', // pink-500
-  '#6366f1', // indigo-500
-];
 
 export function SectorChart({ data, deals }: SectorChartProps) {
   const { selectedQuarter, setSelectedQuarter, availableQuarters, filteredDeals: quarterFiltered } = useQuarterFilter(deals);
@@ -110,7 +97,7 @@ export function SectorChart({ data, deals }: SectorChartProps) {
   // Prepare data for pie chart with colors
   const chartData = validData.slice(0, 10).map((item, index) => ({
     ...item,
-    fill: SECTOR_COLORS[index % SECTOR_COLORS.length]
+    fill: getChartColor(index, validData.length > 5)
   }));
 
   const totalDeals = chartData.reduce((sum, item) => sum + item.count, 0);
@@ -173,34 +160,12 @@ export function SectorChart({ data, deals }: SectorChartProps) {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ cx, cy, midAngle, innerRadius, outerRadius, sector, percentage }) => {
-                  if (percentage < 8) return null; // Only show labels for larger segments
-                  
-                  const RADIAN = Math.PI / 180;
-                  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                  
-                  return (
-                    <text 
-                      x={x} 
-                      y={y} 
-                      fill="white" 
-                      textAnchor={x > cx ? 'start' : 'end'} 
-                      dominantBaseline="central"
-                      fontSize="12"
-                      fontWeight="500"
-                      style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
-                    >
-                      {`${percentage}%`}
-                    </text>
-                  );
-                }}
-                outerRadius={80}
+                label={({ percentage }) => percentage >= 8 ? `${percentage}%` : ''}
+                outerRadius={CHART_DIMENSIONS.pieOuterRadius}
                 fill="#8884d8"
                 dataKey="count"
-                stroke="#ffffff"
-                strokeWidth={2}
+                stroke="hsl(var(--background))"
+                strokeWidth={CHART_DIMENSIONS.strokeWidth}
               >
                 {chartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.fill} />

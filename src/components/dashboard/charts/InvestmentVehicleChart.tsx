@@ -7,20 +7,12 @@ import { PipelineToggle } from './shared/PipelineToggle';
 import { usePipelineFilter } from './shared/usePipelineFilter';
 import { QuarterFilter } from './shared/QuarterFilter';
 import { useQuarterFilter } from './shared/useQuarterFilter';
+import { getChartColor, CHART_DIMENSIONS } from './shared/chartConfig';
 import { Deal } from '@/types/deal';
 
 interface InvestmentVehicleChartProps {
   deals: Deal[];
 }
-
-const VEHICLE_COLORS = [
-  '#3b82f6', // blue-500
-  '#10b981', // emerald-500
-  '#f59e0b', // amber-500
-  '#8b5cf6', // violet-500
-  '#06b6d4', // cyan-500
-  '#ec4899', // pink-500
-];
 
 export function InvestmentVehicleChart({ deals }: InvestmentVehicleChartProps) {
   const { selectedQuarter, setSelectedQuarter, availableQuarters, filteredDeals: quarterFiltered } = useQuarterFilter(deals);
@@ -96,7 +88,7 @@ export function InvestmentVehicleChart({ deals }: InvestmentVehicleChartProps) {
 
   const chartData = validData.map((item, index) => ({
     ...item,
-    fill: VEHICLE_COLORS[index % VEHICLE_COLORS.length]
+    fill: getChartColor(index, validData.length > 5)
   }));
 
   const totalDeals = chartData.reduce((sum, item) => sum + item.count, 0);
@@ -159,34 +151,12 @@ export function InvestmentVehicleChart({ deals }: InvestmentVehicleChartProps) {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ cx, cy, midAngle, innerRadius, outerRadius, percentage }) => {
-                  if (percentage < 8) return null;
-                  
-                  const RADIAN = Math.PI / 180;
-                  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                  const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                  
-                  return (
-                    <text 
-                      x={x} 
-                      y={y} 
-                      fill="white" 
-                      textAnchor={x > cx ? 'start' : 'end'} 
-                      dominantBaseline="central"
-                      fontSize="12"
-                      fontWeight="500"
-                      style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
-                    >
-                      {`${percentage}%`}
-                    </text>
-                  );
-                }}
-                outerRadius={80}
+                label={({ percentage }) => percentage >= 8 ? `${percentage}%` : ''}
+                outerRadius={CHART_DIMENSIONS.pieOuterRadius}
                 fill="#8884d8"
                 dataKey="count"
-                stroke="#ffffff"
-                strokeWidth={2}
+                stroke="hsl(var(--background))"
+                strokeWidth={CHART_DIMENSIONS.strokeWidth}
               >
                 {chartData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.fill} />
