@@ -41,9 +41,8 @@ function calculateValuationRevenueMultiples(deals: Deal[], selectedRounds: strin
 
   if (selectedLocations.length > 0) {
     dealsWithData = dealsWithData.filter(deal => {
-      if (!deal.location) return false;
-      const normalizedLocation = normalizeLocationToFilterKey(deal.location);
-      return selectedLocations.includes(normalizedLocation);
+      const normalizedLocation = normalizeLocationToFilterKey(deal.city, deal.state_province, deal.country);
+      return normalizedLocation && selectedLocations.includes(normalizedLocation);
     });
   }
 
@@ -144,9 +143,9 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
 
   const availableLocations = useMemo(() => {
     const locations = filteredDeals
-      .filter(deal => deal.post_money_valuation && deal.revenue && deal.location)
-      .map(deal => normalizeLocationToFilterKey(deal.location!))
-      .filter((value, index, self) => self.indexOf(value) === index)
+      .filter(deal => deal.post_money_valuation && deal.revenue && (deal.city || deal.state_province || deal.country))
+      .map(deal => normalizeLocationToFilterKey(deal.city, deal.state_province, deal.country))
+      .filter((value, index, self) => value && self.indexOf(value) === index)
       .sort();
     return locations;
   }, [filteredDeals]);
