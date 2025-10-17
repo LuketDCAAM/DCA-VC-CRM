@@ -23,12 +23,34 @@ export default function ResetPassword() {
       }
     });
 
+    // Handle PKCE recovery links like ?code=...
+    const search = window.location.search;
+    const hasCode = !!search && search.includes("code=");
+    if (hasCode) {
+      supabase.auth.exchangeCodeForSession(window.location.href)
+        .then(({ data, error }) => {
+          if (error) {
+            console.error("Exchange code error:", error);
+            toast({
+              title: "Invalid or expired link",
+              description: "Please request a new password reset link.",
+              variant: "destructive",
+            });
+            return;
+          }
+          if (data?.session) {
+            setCanReset(true);
+          }
+        });
+    }
+
+    // Also check existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) setCanReset(true);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [toast]);
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
