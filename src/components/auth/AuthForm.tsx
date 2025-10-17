@@ -10,10 +10,12 @@ import { useToast } from '@/hooks/use-toast';
 export default function AuthForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [resetEmailSent, setResetEmailSent] = useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,7 +23,18 @@ export default function AuthForm() {
     setIsLoading(true);
 
     try {
-      if (isSignUp) {
+      if (isForgotPassword) {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/`,
+        });
+        if (error) throw error;
+        
+        setResetEmailSent(true);
+        toast({
+          title: "Password reset email sent",
+          description: "Check your email for a link to reset your password.",
+        });
+      } else if (isSignUp) {
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -56,6 +69,39 @@ export default function AuthForm() {
       setIsLoading(false);
     }
   };
+
+  if (resetEmailSent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-green-600">Password Reset Email Sent!</CardTitle>
+            <CardDescription>
+              Check your email for instructions to reset your password.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="p-4 bg-green-50 border border-green-200 rounded-md">
+              <p className="text-sm text-green-800">
+                We've sent a password reset link to {email}. Click the link in the email to create a new password.
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                setResetEmailSent(false);
+                setIsForgotPassword(false);
+                setEmail('');
+              }}
+              variant="outline"
+              className="w-full"
+            >
+              Back to Sign In
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (registrationSuccess) {
     return (
@@ -97,17 +143,21 @@ export default function AuthForm() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{isSignUp ? 'Create Account' : 'Sign In'}</CardTitle>
+          <CardTitle>
+            {isForgotPassword ? 'Reset Password' : isSignUp ? 'Create Account' : 'Sign In'}
+          </CardTitle>
           <CardDescription>
-            {isSignUp 
-              ? 'Create your account to request access to DCA VC CRM'
-              : 'Sign in to your DCA VC CRM account'
+            {isForgotPassword
+              ? 'Enter your email to receive a password reset link'
+              : isSignUp 
+                ? 'Create your account to request access to DCA VC CRM'
+                : 'Sign in to your DCA VC CRM account'
             }
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            {isSignUp && (
+            {isSignUp && !isForgotPassword && (
               <div>
                 <Label htmlFor="name">Full Name</Label>
                 <Input
@@ -130,17 +180,19 @@ export default function AuthForm() {
                 required
               />
             </div>
-            <div>
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            {isSignUp && (
+            {!isForgotPassword && (
+              <div>
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+            {isSignUp && !isForgotPassword && (
               <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
                 <p className="text-sm text-blue-800">
                   <strong>Note:</strong> New accounts require administrator approval before accessing the CRM.
@@ -148,17 +200,45 @@ export default function AuthForm() {
               </div>
             )}
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Loading...' : isSignUp ? 'Request Access' : 'Sign In'}
+              {isLoading 
+                ? 'Loading...' 
+                : isForgotPassword 
+                  ? 'Send Reset Link' 
+                  : isSignUp 
+                    ? 'Request Access' 
+                    : 'Sign In'
+              }
             </Button>
           </form>
-          <div className="mt-4 text-center">
+          <div className="mt-4 space-y-2 text-center">
+            {!isForgotPassword && !isSignUp && (
+              <button
+                type="button"
+                onClick={() => setIsForgotPassword(true)}
+                className="text-sm text-blue-600 hover:underline block w-full"
+              >
+                Forgot password?
+              </button>
+            )}
             <button
               type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => {
+                setIsSignUp(!isSignUp);
+                setIsForgotPassword(false);
+              }}
               className="text-sm text-blue-600 hover:underline"
             >
               {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Request access"}
             </button>
+            {isForgotPassword && (
+              <button
+                type="button"
+                onClick={() => setIsForgotPassword(false)}
+                className="text-sm text-blue-600 hover:underline block w-full"
+              >
+                Back to Sign In
+              </button>
+            )}
           </div>
         </CardContent>
       </Card>
