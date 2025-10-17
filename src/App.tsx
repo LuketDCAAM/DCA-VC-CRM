@@ -21,6 +21,7 @@ import ResetPassword from "./pages/auth/ResetPassword";
 import { useAuth } from "./hooks/useAuth";
 import { useUserRoles } from "./hooks/useUserRoles";
 import ApprovalStatus from "./components/auth/ApprovalStatus";
+import RecoveryRedirect from "./components/auth/RecoveryRedirect";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,6 +73,7 @@ function App() {
           <Toaster />
           <Sonner />
           <BrowserRouter>
+            <RecoveryRedirect />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth/microsoft/callback" element={<MicrosoftAuthCallback />} />
