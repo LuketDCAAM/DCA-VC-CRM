@@ -43,21 +43,21 @@ export function DashboardQuickActions() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Quick Actions</CardTitle>
-        <CardDescription>Common tasks to get started</CardDescription>
+      <CardHeader className="px-4 sm:px-6">
+        <CardTitle className="text-lg sm:text-xl">Quick Actions</CardTitle>
+        <CardDescription className="text-xs sm:text-sm">Common tasks to get started</CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <CardContent className="px-4 sm:px-6">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-4">
           {actions.map((action) => (
             <Button
               key={action.title}
               onClick={action.onClick}
               variant={action.variant}
-              className="h-14 flex flex-col items-center justify-center gap-2 p-4"
+              className="h-16 sm:h-14 flex flex-col items-center justify-center gap-1 sm:gap-2 p-2 sm:p-4"
             >
-              <action.icon className="h-5 w-5" />
-              <span className="text-sm font-medium text-center leading-tight">
+              <action.icon className="h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="text-[10px] sm:text-sm font-medium text-center leading-tight">
                 {action.title}
               </span>
             </Button>

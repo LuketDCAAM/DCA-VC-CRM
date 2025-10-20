@@ -51,9 +51,9 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h1>
       </div>
 
       {/* Key Metrics */}
@@ -69,7 +69,7 @@ export default function Dashboard() {
       <DealsLocationMap deals={deals || []} />
 
       {/* Analytics Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <SectorChart data={analytics.sectorDistribution} deals={deals || []} />
         <RoundStageChart data={analytics.roundStageDistribution} deals={deals || []} />
         <InvestmentVehicleChart deals={deals || []} />
@@ -77,7 +77,7 @@ export default function Dashboard() {
       </div>
 
       {/* Detailed Analytics - Full Width */}
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6">
         <ValuationChart data={analytics.valuationAnalysis} deals={deals || []} />
         <ValuationRevenueMultipleChart deals={deals || []} />
         <MonthlyTrendChart data={analytics.monthlyTrends} deals={deals || []} />
@@ -86,17 +86,17 @@ export default function Dashboard() {
       {/* Activity Section - Conditional layout for viewers */}
       {isViewer ? (
         // Viewer layout - only show active deals, no portfolio or actions
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-4 sm:gap-6">
           <TopActiveDealsCard onViewDetails={handleViewDealDetails} />
         </div>
       ) : (
         // Editor/Admin layout - full functionality
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="space-y-4 sm:space-y-6">
             <TopActiveDealsCard onViewDetails={handleViewDealDetails} />
             <RemindersWidget />
           </div>
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <RecentPortfolioCard 
               companies={portfolioCompanies?.slice(0, 5) || []} 
               onViewDetails={() => {}} 
