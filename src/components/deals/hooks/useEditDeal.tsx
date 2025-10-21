@@ -9,7 +9,11 @@ interface EditDealValues {
   company_name: string;
   website?: string;
   linkedin_url?: string;
+  city?: string;
+  state_province?: string;
+  country?: string;
   location?: string;
+  description?: string;
   sector?: string;
   contact_name?: string;
   contact_email?: string;
@@ -28,6 +32,8 @@ interface EditDealValues {
   lead_investor?: string;
   other_investors?: string;
   next_steps?: string;
+  last_call_date?: string;
+  ic_review_date?: string;
   pitchDeckFile?: File | null;
 }
 
@@ -57,7 +63,11 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
           company_name: values.company_name,
           website: values.website || null,
           linkedin_url: values.linkedin_url || null,
+          city: values.city || null,
+          state_province: values.state_province || null,
+          country: values.country || null,
           location: values.location || null,
+          description: values.description || null,
           sector: values.sector || null,
           contact_name: values.contact_name || null,
           contact_email: values.contact_email || null,
@@ -69,6 +79,8 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
           deal_lead: values.deal_lead || null,
           deal_source: values.deal_source || null,
           source_date: values.source_date || null,
+          last_call_date: values.last_call_date || null,
+          ic_review_date: values.ic_review_date || null,
           round_size,
           post_money_valuation,
           revenue,
