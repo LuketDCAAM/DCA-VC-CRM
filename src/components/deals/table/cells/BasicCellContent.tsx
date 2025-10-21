@@ -3,7 +3,7 @@ import React from 'react';
 import { MapPin, User, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Deal } from '@/types/deal';
-import { formatLocation } from '@/utils/locationUtils';
+import { formatLocation, formatLocationString } from '@/utils/locationUtils';
 
 interface BasicCellContentProps {
   deal: Deal;
@@ -17,15 +17,20 @@ export function BasicCellContent({ deal, type }: BasicCellContentProps) {
   };
 
   switch (type) {
-    case 'location':
-      return deal.location ? (
+    case 'location': {
+      const hasComponents = Boolean(deal.city || deal.state_province || deal.country);
+      const display = hasComponents
+        ? formatLocation(deal.city, deal.state_province, deal.country)
+        : (deal.location ? formatLocationString(deal.location) : '');
+      return display ? (
         <div className="flex items-center gap-1">
           <MapPin className="h-3 w-3 text-muted-foreground" />
-          <span className="text-foreground text-sm">{formatLocation(deal.location)}</span>
+          <span className="text-foreground text-sm">{display}</span>
         </div>
       ) : (
         <span className="text-muted-foreground text-sm">-</span>
       );
+    }
 
     case 'deal_lead':
       return deal.deal_lead ? (
