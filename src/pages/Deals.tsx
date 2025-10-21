@@ -115,11 +115,14 @@ export default function Deals() {
         <DealDetailDialog
           deal={selectedDeal}
           open={showDetailDialog}
-          onOpenChange={setShowDetailDialog}
+          onOpenChange={(open) => {
+            setShowDetailDialog(open);
+            if (!open) {
+              setSelectedDeal(null);
+            }
+          }}
           onDealUpdated={() => {
             refetch();
-            setShowDetailDialog(false);
-            setSelectedDeal(null);
           }}
         />
       )}
