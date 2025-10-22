@@ -44,12 +44,26 @@ export function useDealsCSVProcessor() {
           warnings.push(`Row ${rowNum}: Potential duplicate company "${row.company_name}" (similar to: ${companyValidation.potentialDuplicates.join(', ')})`);
         }
 
-        // Validate location with enhanced processing
-        const locationValidation = validateLocation(row.location);
-        if (row.location && !locationValidation.isValid) {
-          warnings.push(`Row ${rowNum}: Location "${row.location}" could not be mapped to a known region`);
-        } else if (row.location && locationValidation.confidence === 'low') {
-          warnings.push(`Row ${rowNum}: Location "${row.location}" mapped with low confidence to ${locationValidation.suggestions[0]}`);
+        // Process location fields - prioritize individual city/state/country over location string
+        let city = row.city ? String(row.city).trim() : null;
+        let state_province = row.state_province ? String(row.state_province).trim() : null;
+        let country = row.country ? String(row.country).trim() : null;
+        let location = null;
+
+        // If city/state/country are provided, construct location from them
+        if (city || state_province || country) {
+          const parts = [city, state_province, country].filter(Boolean);
+          location = parts.join(', ');
+        } 
+        // Otherwise use the location field
+        else if (row.location) {
+          const locationValidation = validateLocation(row.location);
+          if (row.location && !locationValidation.isValid) {
+            warnings.push(`Row ${rowNum}: Location "${row.location}" could not be mapped to a known region`);
+          } else if (row.location && locationValidation.confidence === 'low') {
+            warnings.push(`Row ${rowNum}: Location "${row.location}" mapped with low confidence to ${locationValidation.suggestions[0]}`);
+          }
+          location = locationValidation.isValid ? locationValidation.normalizedLocation : String(row.location).trim();
         }
 
         // Process all the data with proper validation
@@ -60,10 +74,10 @@ export function useDealsCSVProcessor() {
           contact_email: row.contact_email ? String(row.contact_email).trim() : null,
           contact_phone: row.contact_phone ? String(row.contact_phone).trim() : null,
           website: row.website ? String(row.website).trim() : null,
-          location: locationValidation.isValid ? locationValidation.normalizedLocation : (row.location ? String(row.location).trim() : null),
-          city: row.city ? String(row.city).trim() : null,
-          state_province: row.state_province ? String(row.state_province).trim() : null,
-          country: row.country ? String(row.country).trim() : null,
+          location,
+          city,
+          state_province,
+          country,
           sector: row.sector ? String(row.sector).trim() : null,
           pipeline_stage: validatePipelineStage(row.pipeline_stage),
           round_stage: validateRoundStage(row.round_stage),
