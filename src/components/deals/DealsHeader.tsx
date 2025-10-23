@@ -80,6 +80,7 @@ export function DealsHeader({
             filename="deals"
             columns={exportColumns}
             loading={loading}
+            selectedIds={selectedDeals}
           />
           <AddDealDialog onDealAdded={onDealAdded}>
             <Button>

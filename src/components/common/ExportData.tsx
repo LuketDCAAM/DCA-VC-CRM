@@ -15,15 +15,21 @@ interface ExportDataProps {
   filename: string;
   columns: { key: string; label: string }[];
   loading?: boolean;
+  selectedIds?: string[];
 }
 
-export function ExportData({ data, filename, columns, loading = false }: ExportDataProps) {
+export function ExportData({ data, filename, columns, loading = false, selectedIds = [] }: ExportDataProps) {
   const { toast } = useToast();
+
+  // Filter data based on selection
+  const dataToExport = selectedIds.length > 0 
+    ? data.filter(item => selectedIds.includes(item.id))
+    : data;
 
   const exportToCSV = () => {
     try {
       const headers = columns.map(col => col.label).join(',');
-      const rows = data.map(item => 
+      const rows = dataToExport.map(item =>
         columns.map(col => {
           let value = item[col.key];
           if (value === null || value === undefined) value = '';
@@ -49,7 +55,7 @@ export function ExportData({ data, filename, columns, loading = false }: ExportD
 
       toast({
         title: "Export successful",
-        description: `${data.length} records exported to CSV`,
+        description: `${dataToExport.length} records exported to CSV`,
       });
     } catch (error) {
       toast({
@@ -62,7 +68,7 @@ export function ExportData({ data, filename, columns, loading = false }: ExportD
 
   const exportToJSON = () => {
     try {
-      const jsonData = data.map(item => {
+      const jsonData = dataToExport.map(item => {
         const exportItem: any = {};
         columns.forEach(col => {
           exportItem[col.label] = item[col.key];
@@ -84,7 +90,7 @@ export function ExportData({ data, filename, columns, loading = false }: ExportD
 
       toast({
         title: "Export successful",
-        description: `${data.length} records exported to JSON`,
+        description: `${dataToExport.length} records exported to JSON`,
       });
     } catch (error) {
       toast({
@@ -99,12 +105,16 @@ export function ExportData({ data, filename, columns, loading = false }: ExportD
     return null;
   }
 
+  const exportLabel = selectedIds.length > 0 
+    ? `Export Selected (${selectedIds.length})` 
+    : `Export All (${data.length})`;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" disabled={loading}>
           <Download className="h-4 w-4 mr-2" />
-          Export ({data.length} records)
+          {exportLabel}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
