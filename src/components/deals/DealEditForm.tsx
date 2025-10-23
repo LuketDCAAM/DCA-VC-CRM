@@ -56,6 +56,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
       lead_investor: values.lead_investor || '',
       other_investors: values.other_investors || '',
       next_steps: values.next_steps || '',
+      reason_for_passing: values.reason_for_passing || '',
       pitchDeckFile
     };
     

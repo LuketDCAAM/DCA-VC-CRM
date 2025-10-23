@@ -188,5 +188,14 @@ export const DEFAULT_COLUMNS: TableColumn[] = [
     sortable: false,
     visible: false,
     dataType: 'string'
+  },
+  {
+    key: 'reason_for_passing',
+    label: 'Reason for Passing',
+    icon: FileText,
+    width: 'min-w-[180px]',
+    sortable: false,
+    visible: false,
+    dataType: 'string'
   }
 ];

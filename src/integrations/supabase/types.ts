@@ -390,6 +390,7 @@ export type Database = {
           pipeline_stage: Database["public"]["Enums"]["pipeline_stage"]
           post_money_valuation: number | null
           priority_rank: number | null
+          reason_for_passing: string | null
           relationship_owner: string | null
           revenue: number | null
           round_size: number | null
@@ -437,6 +438,7 @@ export type Database = {
           pipeline_stage?: Database["public"]["Enums"]["pipeline_stage"]
           post_money_valuation?: number | null
           priority_rank?: number | null
+          reason_for_passing?: string | null
           relationship_owner?: string | null
           revenue?: number | null
           round_size?: number | null
@@ -484,6 +486,7 @@ export type Database = {
           pipeline_stage?: Database["public"]["Enums"]["pipeline_stage"]
           post_money_valuation?: number | null
           priority_rank?: number | null
+          reason_for_passing?: string | null
           relationship_owner?: string | null
           revenue?: number | null
           round_size?: number | null
@@ -1228,7 +1231,7 @@ export type Database = {
         }[]
       }
       get_all_users_with_roles: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           approval_status: string
           created_at: string
@@ -1238,10 +1241,7 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_first_call_date: {
-        Args: { deal_uuid: string }
-        Returns: string
-      }
+      get_first_call_date: { Args: { deal_uuid: string }; Returns: string }
       get_task_assignees: {
         Args: { task_id: string }
         Returns: {
@@ -1251,32 +1251,12 @@ export type Database = {
         }[]
       }
       get_user_profiles: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           email: string
           id: string
           name: string
         }[]
-      }
-      gtrgm_compress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_decompress: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_in: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      gtrgm_options: {
-        Args: { "": unknown }
-        Returns: undefined
-      }
-      gtrgm_out: {
-        Args: { "": unknown }
-        Returns: unknown
       }
       has_role: {
         Args: {
@@ -1285,10 +1265,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_user_approved: {
-        Args: { _user_id: string }
-        Returns: boolean
-      }
+      is_user_approved: { Args: { _user_id: string }; Returns: boolean }
       log_security_event: {
         Args: {
           event_type: string
@@ -1311,18 +1288,8 @@ export type Database = {
         }
         Returns: Json
       }
-      set_limit: {
-        Args: { "": number }
-        Returns: number
-      }
-      show_limit: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      show_trgm: {
-        Args: { "": string }
-        Returns: string[]
-      }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
     }
     Enums: {
       app_role: "admin" | "user" | "viewer"

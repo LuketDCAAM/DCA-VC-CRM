@@ -32,6 +32,7 @@ export const csvTemplateColumns = [
   { key: 'founded_year', label: 'Founded Year' },
   { key: 'total_funding_raised', label: 'Total Funding Raised ($)' },
   { key: 'last_funding_date', label: 'Last Funding Date (YYYY-MM-DD)' },
+  { key: 'reason_for_passing', label: 'Reason for Passing' },
 ];
 
 export const exportColumns = [
@@ -70,6 +71,7 @@ export const exportColumns = [
   { key: 'total_calls', label: 'Total Calls' },
   { key: 'is_priority_deal', label: 'Priority Deal' },
   { key: 'priority_rank', label: 'Priority Rank' },
+  { key: 'reason_for_passing', label: 'Reason for Passing' },
   { key: 'created_at', label: 'Date Added' },
   { key: 'updated_at', label: 'Last Updated' },
 ];

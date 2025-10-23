@@ -146,6 +146,19 @@ export function DealEditStatusSection({ control }: DealEditStatusSectionProps) {
           </FormItem>
         )}
       />
+      <FormField
+        control={control}
+        name="reason_for_passing"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Reason for Passing</FormLabel>
+            <FormControl>
+              <Input {...field} placeholder="Enter reason if deal was passed" />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </div>
   );
 }
