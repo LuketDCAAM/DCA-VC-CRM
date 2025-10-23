@@ -21,9 +21,7 @@ export function BasicCellContent({ deal, type }: BasicCellContentProps) {
       const hasComponents = Boolean(deal.city || deal.state_province || deal.country);
       const display = hasComponents
         ? formatLocation(deal.city, deal.state_province, deal.country)
-        : (deal.location
-            ? formatLocationString(deal.location)
-            : (deal.headquarters_location ? formatLocationString(deal.headquarters_location) : ''));
+        : (deal.location ? formatLocationString(deal.location) : '');
       return display ? (
         <div className="flex items-center gap-1">
           <MapPin className="h-3 w-3 text-muted-foreground" />

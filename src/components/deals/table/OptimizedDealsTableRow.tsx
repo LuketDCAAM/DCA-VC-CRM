@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Deal } from '@/types/deal';
 import { ExternalDataSyncButton } from '@/components/external-data/ExternalDataSyncButton';
 import { formatCurrency, formatDate, getPipelineStageColor, getDealScoreColor } from './tableUtils';
-import { formatLocation, formatLocationString } from '@/utils/locationUtils';
+import { formatLocation } from '@/utils/locationUtils';
 
 interface OptimizedDealsTableRowProps {
   deal: Deal;
@@ -117,22 +117,14 @@ const OptimizedDealsTableRow = memo(({
       
       {/* Location */}
       <TableCell className="min-w-[130px] py-2">
-        {(() => {
-          const hasComponents = Boolean(deal.city || deal.state_province || deal.country);
-          const display = hasComponents
-            ? formatLocation(deal.city, deal.state_province, deal.country)
-            : (deal.location
-                ? formatLocationString(deal.location)
-                : (deal.headquarters_location ? formatLocationString(deal.headquarters_location) : ''));
-          return display ? (
-            <div className="flex items-center gap-1">
-              <MapPin className="h-2.5 w-2.5 text-muted-foreground" />
-              <span className="text-foreground text-sm">{display}</span>
-            </div>
-          ) : (
-            <span className="text-muted-foreground text-xs">-</span>
-          );
-        })()}
+        {deal.location ? (
+          <div className="flex items-center gap-1">
+            <MapPin className="h-2.5 w-2.5 text-muted-foreground" />
+            <span className="text-foreground text-sm">{formatLocation(deal.location)}</span>
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-xs">-</span>
+        )}
       </TableCell>
       
       {/* Deal score */}
