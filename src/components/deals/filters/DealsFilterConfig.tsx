@@ -98,6 +98,7 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
       label: 'Call with Founder',
       value: 'call_with_founder',
       type: 'select',
+      placeholder: 'Yes/No',
       options: [
         { label: 'Yes', value: 'yes' },
         { label: 'No', value: 'no' },
