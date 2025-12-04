@@ -79,6 +79,14 @@ export function useFilteredDeals(deals: Deal[], searchTerm: string, activeFilter
               return deal.last_call_date === null && (deal.total_calls === null || deal.total_calls === 0);
             }
             return true;
+
+          case 'has_scorecard':
+            if (value === 'yes') {
+              return deal.deal_score !== null;
+            } else if (value === 'no') {
+              return deal.deal_score === null;
+            }
+            return true;
             
           default:
             // Handle array values for multi-select filters
