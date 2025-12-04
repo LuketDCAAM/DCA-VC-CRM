@@ -69,7 +69,10 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
       key: 'deal_score',
       label: 'Deal Score',
       value: 'deal_score',
-      type: 'range',
+      type: 'slider',
+      min: 0,
+      max: 100,
+      step: 1,
     },
     {
       key: 'created_at',
@@ -167,7 +170,10 @@ export const DEALS_FILTER_OPTIONS: FilterOption[] = [
     key: 'deal_score',
     label: 'Deal Score',
     value: 'deal_score',
-    type: 'range',
+    type: 'slider',
+    min: 0,
+    max: 100,
+    step: 1,
   },
   {
     key: 'created_at',
