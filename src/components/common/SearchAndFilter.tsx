@@ -7,13 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, Filter, X, Calendar, DollarSign, Building2, Users } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Slider } from '@/components/ui/slider';
 
 export interface FilterOption {
   key: string;
   label: string;
   value: string;
-  type: 'select' | 'range' | 'date' | 'daterange' | 'multiselect';
+  type: 'select' | 'range' | 'date' | 'daterange' | 'multiselect' | 'slider';
   options?: { label: string; value: string }[];
+  min?: number;
+  max?: number;
+  step?: number;
 }
 
 interface SearchAndFilterProps {
@@ -189,6 +193,29 @@ export function SearchAndFilter({
                           onFilterChange(`${filter.key}_max`, e.target.value);
                         }}
                       />
+                    </div>
+                  )}
+                  {filter.type === 'slider' && (
+                    <div className="space-y-3 pt-2">
+                      <Slider
+                        min={filter.min ?? 0}
+                        max={filter.max ?? 100}
+                        step={filter.step ?? 1}
+                        value={[
+                          activeFilters[`${filter.key}_min`] ?? filter.min ?? 0,
+                          activeFilters[`${filter.key}_max`] ?? filter.max ?? 100
+                        ]}
+                        onValueChange={(values) => {
+                          console.log(`Slider filter change - ${filter.key}:`, values);
+                          onFilterChange(`${filter.key}_min`, values[0]);
+                          onFilterChange(`${filter.key}_max`, values[1]);
+                        }}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>{activeFilters[`${filter.key}_min`] ?? filter.min ?? 0}</span>
+                        <span>{activeFilters[`${filter.key}_max`] ?? filter.max ?? 100}</span>
+                      </div>
                     </div>
                   )}
                 </div>
