@@ -140,6 +140,13 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
             );
           }
           break;
+        case 'has_scorecard':
+          if (value === 'yes') {
+            filtered = filtered.filter(deal => deal.deal_score !== null);
+          } else if (value === 'no') {
+            filtered = filtered.filter(deal => deal.deal_score === null);
+          }
+          break;
         default:
           break;
       }

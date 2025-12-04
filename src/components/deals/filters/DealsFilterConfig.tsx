@@ -103,6 +103,17 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
         { label: 'Yes', value: 'yes' },
         { label: 'No', value: 'no' },
       ]
+    },
+    {
+      key: 'has_scorecard',
+      label: 'Scorecard',
+      value: 'has_scorecard',
+      type: 'select',
+      placeholder: 'Yes/No',
+      options: [
+        { label: 'Yes', value: 'yes' },
+        { label: 'No', value: 'no' },
+      ]
     }
   ];
 }
