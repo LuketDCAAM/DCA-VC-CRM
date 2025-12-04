@@ -91,14 +91,17 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
             );
           }
           break;
-        case 'deal_score':
-          if (Array.isArray(value) && value.length === 2) {
-            filtered = filtered.filter(deal => 
-              deal.deal_score && 
-              deal.deal_score >= value[0] && 
-              deal.deal_score <= value[1]
-            );
-          }
+        case 'deal_score_min':
+          filtered = filtered.filter(deal => 
+            deal.deal_score !== null && deal.deal_score !== undefined && 
+            deal.deal_score >= Number(value)
+          );
+          break;
+        case 'deal_score_max':
+          filtered = filtered.filter(deal => 
+            deal.deal_score !== null && deal.deal_score !== undefined && 
+            deal.deal_score <= Number(value)
+          );
           break;
         case 'created_at_from':
           filtered = filtered.filter(deal => {
