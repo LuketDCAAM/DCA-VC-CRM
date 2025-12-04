@@ -18,6 +18,7 @@ export interface FilterOption {
   min?: number;
   max?: number;
   step?: number;
+  placeholder?: string;
 }
 
 interface SearchAndFilterProps {
@@ -118,10 +119,10 @@ export function SearchAndFilter({
                       }}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder={`All ${filter.label}`} />
+                        <SelectValue placeholder={filter.placeholder || `All ${filter.label}`} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">All {filter.label}</SelectItem>
+                        <SelectItem value="all">{filter.placeholder || `All ${filter.label}`}</SelectItem>
                         {filter.options?.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
