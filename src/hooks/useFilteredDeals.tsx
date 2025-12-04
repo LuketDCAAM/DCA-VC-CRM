@@ -30,14 +30,23 @@ export function useFilteredDeals(deals: Deal[], searchTerm: string, activeFilter
         if (!value || value === 'all' || value === '') return true;
         
         switch (key) {
-          case 'created_at':
-            const dealDate = new Date(deal.created_at).toISOString().split('T')[0];
-            return dealDate >= value;
+          case 'created_at_from':
+            const dealDateFrom = new Date(deal.created_at).toISOString().split('T')[0];
+            return dealDateFrom >= value;
+          
+          case 'created_at_to':
+            const dealDateTo = new Date(deal.created_at).toISOString().split('T')[0];
+            return dealDateTo <= value;
             
-          case 'source_date':
+          case 'source_date_from':
             if (!deal.source_date) return false;
-            const sourceDateValue = new Date(deal.source_date).toISOString().split('T')[0];
-            return sourceDateValue >= value;
+            const sourceDateFromValue = new Date(deal.source_date).toISOString().split('T')[0];
+            return sourceDateFromValue >= value;
+          
+          case 'source_date_to':
+            if (!deal.source_date) return false;
+            const sourceDateToValue = new Date(deal.source_date).toISOString().split('T')[0];
+            return sourceDateToValue <= value;
             
           case 'round_size_min':
             return !deal.round_size || deal.round_size >= parseInt(value, 10) * 100;
