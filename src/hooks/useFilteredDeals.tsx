@@ -71,6 +71,14 @@ export function useFilteredDeals(deals: Deal[], searchTerm: string, activeFilter
               return value.length === 0 || value.includes(deal.country || '');
             }
             return deal.country === value;
+
+          case 'call_with_founder':
+            if (value === 'yes') {
+              return deal.last_call_date !== null || (deal.total_calls !== null && deal.total_calls > 0);
+            } else if (value === 'no') {
+              return deal.last_call_date === null && (deal.total_calls === null || deal.total_calls === 0);
+            }
+            return true;
             
           default:
             // Handle array values for multi-select filters

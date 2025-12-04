@@ -129,6 +129,17 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
             return dealDate <= value;
           });
           break;
+        case 'call_with_founder':
+          if (value === 'yes') {
+            filtered = filtered.filter(deal => 
+              deal.last_call_date !== null || (deal.total_calls !== null && deal.total_calls > 0)
+            );
+          } else if (value === 'no') {
+            filtered = filtered.filter(deal => 
+              deal.last_call_date === null && (deal.total_calls === null || deal.total_calls === 0)
+            );
+          }
+          break;
         default:
           break;
       }

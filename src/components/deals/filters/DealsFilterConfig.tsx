@@ -92,6 +92,16 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
       label: 'Source Date',
       value: 'source_date',
       type: 'daterange'
+    },
+    {
+      key: 'call_with_founder',
+      label: 'Call with Founder',
+      value: 'call_with_founder',
+      type: 'select',
+      options: [
+        { label: 'Yes', value: 'yes' },
+        { label: 'No', value: 'no' },
+      ]
     }
   ];
 }
