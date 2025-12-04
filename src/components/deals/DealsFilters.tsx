@@ -105,7 +105,7 @@ export function DealsFilters({
       key: 'created_at',
       label: 'Date Added',
       value: 'created_at',
-      type: 'date'
+      type: 'daterange'
     },
     {
       key: 'deal_source',
@@ -124,7 +124,7 @@ export function DealsFilters({
       key: 'source_date',
       label: 'Source Date',
       value: 'source_date',
-      type: 'date'
+      type: 'daterange'
     }
   ];
 

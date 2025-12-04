@@ -75,7 +75,7 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
       key: 'created_at',
       label: 'Date Added',
       value: 'created_at',
-      type: 'date'
+      type: 'daterange'
     },
     {
       key: 'deal_source',
@@ -88,7 +88,7 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
       key: 'source_date',
       label: 'Source Date',
       value: 'source_date',
-      type: 'date'
+      type: 'daterange'
     }
   ];
 }
@@ -173,7 +173,7 @@ export const DEALS_FILTER_OPTIONS: FilterOption[] = [
     key: 'created_at',
     label: 'Date Added',
     value: 'created_at',
-    type: 'date'
+    type: 'daterange'
   },
   {
     key: 'deal_source',
@@ -192,6 +192,6 @@ export const DEALS_FILTER_OPTIONS: FilterOption[] = [
     key: 'source_date',
     label: 'Source Date',
     value: 'source_date',
-    type: 'date'
+    type: 'daterange'
   }
 ];

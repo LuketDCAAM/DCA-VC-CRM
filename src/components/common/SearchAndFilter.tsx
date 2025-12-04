@@ -12,7 +12,7 @@ export interface FilterOption {
   key: string;
   label: string;
   value: string;
-  type: 'select' | 'range' | 'date' | 'multiselect';
+  type: 'select' | 'range' | 'date' | 'daterange' | 'multiselect';
   options?: { label: string; value: string }[];
 }
 
@@ -146,6 +146,28 @@ export function SearchAndFilter({
                         onFilterChange(filter.key, e.target.value);
                       }}
                     />
+                  )}
+                  {filter.type === 'daterange' && (
+                    <div className="flex gap-2">
+                      <Input
+                        type="date"
+                        placeholder="From"
+                        value={activeFilters[`${filter.key}_from`] || ''}
+                        onChange={(e) => {
+                          console.log(`Date range from filter change - ${filter.key}_from:`, e.target.value);
+                          onFilterChange(`${filter.key}_from`, e.target.value);
+                        }}
+                      />
+                      <Input
+                        type="date"
+                        placeholder="To"
+                        value={activeFilters[`${filter.key}_to`] || ''}
+                        onChange={(e) => {
+                          console.log(`Date range to filter change - ${filter.key}_to:`, e.target.value);
+                          onFilterChange(`${filter.key}_to`, e.target.value);
+                        }}
+                      />
+                    </div>
                   )}
                   {filter.type === 'range' && (
                     <div className="flex gap-2">

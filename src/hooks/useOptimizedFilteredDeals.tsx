@@ -100,26 +100,31 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
             );
           }
           break;
-        case 'created_at':
-          if (value.from || value.to) {
-            filtered = filtered.filter(deal => {
-              const dealDate = new Date(deal.created_at);
-              const fromDate = value.from ? new Date(value.from) : new Date('1900-01-01');
-              const toDate = value.to ? new Date(value.to) : new Date('2100-12-31');
-              return dealDate >= fromDate && dealDate <= toDate;
-            });
-          }
+        case 'created_at_from':
+          filtered = filtered.filter(deal => {
+            const dealDate = new Date(deal.created_at).toISOString().split('T')[0];
+            return dealDate >= value;
+          });
           break;
-        case 'source_date':
-          if (value.from || value.to) {
-            filtered = filtered.filter(deal => {
-              if (!deal.source_date) return false;
-              const dealDate = new Date(deal.source_date);
-              const fromDate = value.from ? new Date(value.from) : new Date('1900-01-01');
-              const toDate = value.to ? new Date(value.to) : new Date('2100-12-31');
-              return dealDate >= fromDate && dealDate <= toDate;
-            });
-          }
+        case 'created_at_to':
+          filtered = filtered.filter(deal => {
+            const dealDate = new Date(deal.created_at).toISOString().split('T')[0];
+            return dealDate <= value;
+          });
+          break;
+        case 'source_date_from':
+          filtered = filtered.filter(deal => {
+            if (!deal.source_date) return false;
+            const dealDate = new Date(deal.source_date).toISOString().split('T')[0];
+            return dealDate >= value;
+          });
+          break;
+        case 'source_date_to':
+          filtered = filtered.filter(deal => {
+            if (!deal.source_date) return false;
+            const dealDate = new Date(deal.source_date).toISOString().split('T')[0];
+            return dealDate <= value;
+          });
           break;
         default:
           break;
