@@ -18,9 +18,13 @@ export function RoundStageChart({ data, deals }: RoundStageChartProps) {
   const { selectedQuarter, setSelectedQuarter, availableQuarters, filteredDeals: quarterFiltered } = useQuarterFilter(deals);
   const { showActiveOnly, setShowActiveOnly, filteredDeals } = usePipelineFilter(quarterFiltered);
   
-  // Recalculate round stage data based on filtered deals
+  // Recalculate round stage data based on filtered deals - exclude unknown/null values
   const roundCounts = filteredDeals.reduce((acc, deal) => {
-    const stage = deal.round_stage || 'Unknown';
+    const stage = deal.round_stage;
+    // Skip null, undefined, empty, 'Unknown', 'N/A' values
+    if (!stage || stage.trim() === '' || stage.toLowerCase() === 'unknown' || stage.toLowerCase() === 'n/a') {
+      return acc;
+    }
     acc[stage] = (acc[stage] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
