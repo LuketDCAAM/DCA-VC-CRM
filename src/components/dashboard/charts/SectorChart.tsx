@@ -20,9 +20,13 @@ export function SectorChart({ data, deals }: SectorChartProps) {
   const { selectedQuarter, setSelectedQuarter, availableQuarters, filteredDeals: quarterFiltered } = useQuarterFilter(deals);
   const { showActiveOnly, setShowActiveOnly, filteredDeals } = usePipelineFilter(quarterFiltered);
   
-  // Recalculate sector data based on filtered deals
+  // Recalculate sector data based on filtered deals - exclude unknown/null values
   const sectorCounts = filteredDeals.reduce((acc, deal) => {
-    const sector = deal.sector || 'Unknown';
+    const sector = deal.sector;
+    // Skip null, undefined, empty, 'Unknown', 'N/A' values
+    if (!sector || sector.trim() === '' || sector.toLowerCase() === 'unknown' || sector.toLowerCase() === 'n/a') {
+      return acc;
+    }
     acc[sector] = (acc[sector] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
