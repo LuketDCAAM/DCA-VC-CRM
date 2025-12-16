@@ -21,6 +21,7 @@ export function useDealEditForm({ deal }: UseDealEditFormProps) {
     resolver: zodResolver(dealFormSchema),
     defaultValues: {
       company_name: deal.company_name,
+      description: deal.description || '',
       contact_name: deal.contact_name || '',
       contact_email: deal.contact_email || '',
       contact_phone: deal.contact_phone || '',
@@ -30,7 +31,7 @@ export function useDealEditForm({ deal }: UseDealEditFormProps) {
       state_province: deal.state_province || '',
       country: deal.country || '',
       sector: deal.sector || '',
-      pipeline_stage: deal.pipeline_stage, // This should be required and not optional
+      pipeline_stage: deal.pipeline_stage,
       round_stage: deal.round_stage, 
       deal_score: deal.deal_score || undefined,
       source_date: deal.source_date ? deal.source_date.split('T')[0] : '', 
