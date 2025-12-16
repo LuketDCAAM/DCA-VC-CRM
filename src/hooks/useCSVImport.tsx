@@ -44,11 +44,15 @@ export function useCSVImport() {
               contact_phone: row.contact_phone,
               website: row.website,
               location: row.location,
+              city: row.city,
+              state_province: row.state_province,
+              country: row.country,
+              sector: row.sector,
               pipeline_stage: row.pipeline_stage,
               round_stage: row.round_stage,
-              round_size: row.round_size, // Already in cents from processing
-              post_money_valuation: row.post_money_valuation, // Already in cents
-              revenue: row.revenue, // Already in cents
+              round_size: row.round_size,
+              post_money_valuation: row.post_money_valuation,
+              revenue: row.revenue,
               deal_score: row.deal_score,
               deal_lead: row.deal_lead,
               deal_source: row.deal_source,
