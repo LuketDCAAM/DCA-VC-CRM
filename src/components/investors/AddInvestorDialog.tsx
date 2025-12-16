@@ -165,12 +165,20 @@ export function AddInvestorDialog({ investor, onSuccess, open, onOpenChange, ini
   };
   
   const onSubmit = async (data: InvestorFormData) => {
+    // Convert empty strings to null for optional fields
     const investorData = {
-        ...data,
-        preferred_sectors: data.preferred_sectors?.split(';').map(s => s.trim()).filter(Boolean) || null,
-        tags: data.tags?.split(';').map(t => t.trim()).filter(Boolean) || null,
-        average_check_size: data.average_check_size ? data.average_check_size * 100 : null,
-        last_call_date: data.last_call_date || null,
+      contact_name: data.contact_name,
+      contact_email: data.contact_email?.trim() || null,
+      contact_phone: data.contact_phone?.trim() || null,
+      firm_name: data.firm_name?.trim() || null,
+      firm_website: data.firm_website?.trim() || null,
+      linkedin_url: data.linkedin_url?.trim() || null,
+      location: data.location?.trim() || null,
+      preferred_investment_stage: data.preferred_investment_stage || null,
+      preferred_sectors: data.preferred_sectors?.split(';').map(s => s.trim()).filter(Boolean) || null,
+      tags: data.tags?.split(';').map(t => t.trim()).filter(Boolean) || null,
+      average_check_size: data.average_check_size ? data.average_check_size * 100 : null,
+      last_call_date: data.last_call_date || null,
     };
 
     try {
