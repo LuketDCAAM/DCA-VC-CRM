@@ -25,11 +25,21 @@ interface Task {
   priority: string | null;
   status: string | null;
   assignees?: UserProfile[];
+  creator?: UserProfile;
 }
 
 interface TasksByUser {
   user: UserProfile;
   tasks: Task[];
+}
+
+interface TaskUpdateData {
+  title: string;
+  description?: string | null;
+  reminder_date: string;
+  priority: string;
+  status: string;
+  assignees?: string[];
 }
 
 export function useTasks() {
@@ -65,8 +75,8 @@ export function useTasks() {
       
       setUsers(usersData || []);
 
-      // Map assignments to tasks
-      const tasksWithAssignees = (tasksData || []).map(task => {
+      // Map assignments and creators to tasks
+      const tasksWithDetails = (tasksData || []).map(task => {
         const taskAssignments = assignmentsData?.filter(a => a.task_id === task.id) || [];
         const assigneeIds = taskAssignments.map(a => a.assigned_to);
         
@@ -76,14 +86,16 @@ export function useTasks() {
         }
         
         const assignees = usersData?.filter((u: UserProfile) => assigneeIds.includes(u.id)) || [];
+        const creator = usersData?.find((u: UserProfile) => u.id === task.created_by);
         
         return {
           ...task,
           assignees,
+          creator,
         };
       });
 
-      setTasks(tasksWithAssignees);
+      setTasks(tasksWithDetails);
     } catch (error: any) {
       console.error('Error fetching tasks:', error);
       toast({
@@ -116,6 +128,93 @@ export function useTasks() {
       console.error('Error updating task:', error);
       toast({
         title: "Error updating task",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const updateTask = async (taskId: string, data: TaskUpdateData) => {
+    try {
+      // Update the task in reminders table
+      const { error: taskError } = await supabase
+        .from('reminders')
+        .update({
+          title: data.title,
+          description: data.description || null,
+          reminder_date: data.reminder_date,
+          priority: data.priority,
+          status: data.status,
+          assigned_to: data.assignees?.[0] || null,
+        })
+        .eq('id', taskId);
+
+      if (taskError) throw taskError;
+
+      // Update task assignments if provided
+      if (data.assignees !== undefined) {
+        // Delete existing assignments
+        const { error: deleteError } = await supabase
+          .from('task_assignments')
+          .delete()
+          .eq('task_id', taskId);
+
+        if (deleteError) throw deleteError;
+
+        // Insert new assignments
+        if (data.assignees.length > 0) {
+          const assignments = data.assignees.map(assigneeId => ({
+            task_id: taskId,
+            assigned_to: assigneeId,
+          }));
+
+          const { error: insertError } = await supabase
+            .from('task_assignments')
+            .insert(assignments);
+
+          if (insertError) throw insertError;
+        }
+      }
+
+      toast({
+        title: "Task updated",
+        description: "Task has been updated successfully.",
+      });
+
+      fetchTasks();
+      return true;
+    } catch (error: any) {
+      console.error('Error updating task:', error);
+      toast({
+        title: "Error updating task",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  const deleteTask = async (taskId: string) => {
+    try {
+      const { error } = await supabase
+        .from('reminders')
+        .delete()
+        .eq('id', taskId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Task deleted",
+        description: "Task has been deleted successfully.",
+      });
+
+      fetchTasks();
+      return true;
+    } catch (error: any) {
+      console.error('Error deleting task:', error);
+      toast({
+        title: "Error deleting task",
         description: error.message,
         variant: "destructive",
       });
@@ -167,6 +266,8 @@ export function useTasks() {
     users,
     loading,
     updateTaskStatus,
+    updateTask,
+    deleteTask,
     getTasksByUser,
     refetch: fetchTasks,
   };

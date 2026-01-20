@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { useTasks } from '@/hooks/useTasks';
+import { TaskEditDialog } from '@/components/tasks/TaskEditDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,9 +14,36 @@ import {
   Calendar,
   AlertCircle,
   XCircle,
-  PlayCircle
+  PlayCircle,
+  Pencil,
+  UserCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
+
+interface UserProfile {
+  id: string;
+  email: string;
+  name: string | null;
+}
+
+interface Task {
+  id: string;
+  title: string;
+  description: string | null;
+  reminder_date: string;
+  is_completed: boolean;
+  deal_id: string | null;
+  portfolio_company_id: string | null;
+  investor_id: string | null;
+  created_by: string;
+  created_at: string;
+  assigned_to: string | null;
+  task_type: string | null;
+  priority: string | null;
+  status: string | null;
+  assignees?: UserProfile[];
+  creator?: UserProfile;
+}
 
 const priorityConfig: Record<string, { color: string; label: string }> = {
   low: { color: 'bg-muted text-muted-foreground', label: 'Low' },
@@ -32,8 +60,9 @@ const statusConfig: Record<string, { icon: React.ReactNode; color: string; label
 };
 
 export default function Tasks() {
-  const { tasks, loading, updateTaskStatus, getTasksByUser } = useTasks();
+  const { tasks, users, loading, updateTaskStatus, updateTask, deleteTask, getTasksByUser } = useTasks();
   const [view, setView] = useState<'by-person' | 'all'>('by-person');
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const tasksByUser = getTasksByUser();
 
@@ -43,6 +72,25 @@ export default function Tasks() {
 
   const handleStatusChange = async (taskId: string, newStatus: string) => {
     await updateTaskStatus(taskId, newStatus);
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+  };
+
+  const handleSaveTask = async (taskId: string, data: {
+    title: string;
+    description: string | null;
+    reminder_date: string;
+    priority: string;
+    status: string;
+    assignees: string[];
+  }) => {
+    return await updateTask(taskId, data);
+  };
+
+  const handleDeleteTask = async (taskId: string) => {
+    return await deleteTask(taskId);
   };
 
   if (loading) {
@@ -55,7 +103,7 @@ export default function Tasks() {
     );
   }
 
-  const renderTaskCard = (task: any) => {
+  const renderTaskCard = (task: Task) => {
     const priority = priorityConfig[task.priority || 'medium'];
     const status = statusConfig[task.status || 'pending'];
     const isOverdue = new Date(task.reminder_date) < new Date() && task.status !== 'completed' && task.status !== 'cancelled';
@@ -90,15 +138,31 @@ export default function Tasks() {
                 </Badge>
               </div>
 
-              {task.assignees && task.assignees.length > 0 && view === 'all' && (
+              {/* Creator info */}
+              {task.creator && (
                 <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+                  <UserCircle className="h-3 w-3" />
+                  <span>Created by {task.creator.name || task.creator.email}</span>
+                </div>
+              )}
+
+              {task.assignees && task.assignees.length > 0 && view === 'all' && (
+                <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
                   <User className="h-3 w-3" />
-                  <span>{task.assignees.map((a: any) => a.name || a.email).join(', ')}</span>
+                  <span>Assigned to {task.assignees.map((a) => a.name || a.email).join(', ')}</span>
                 </div>
               )}
             </div>
 
             <div className="flex flex-col gap-1">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 w-7 p-0"
+                onClick={() => handleEditTask(task)}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </Button>
               {task.status !== 'completed' && task.status !== 'cancelled' && (
                 <>
                   {task.status === 'pending' && (
@@ -251,6 +315,15 @@ export default function Tasks() {
           </TabsContent>
         </Tabs>
       )}
+
+      <TaskEditDialog
+        open={!!editingTask}
+        onOpenChange={(open) => !open && setEditingTask(null)}
+        task={editingTask}
+        users={users}
+        onSave={handleSaveTask}
+        onDelete={handleDeleteTask}
+      />
     </div>
   );
 }
