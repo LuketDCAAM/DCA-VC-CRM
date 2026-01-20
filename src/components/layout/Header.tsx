@@ -11,7 +11,8 @@ import {
   Building2, 
   Users, 
   Contact,
-  HandCoins
+  HandCoins,
+  ClipboardList
 } from 'lucide-react';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 
@@ -22,6 +23,7 @@ const navigation = [
   { name: 'Venture Investors', href: '/investors', icon: Users },
   { name: 'LP Engagements', href: '/lp-engagements', icon: HandCoins },
   { name: 'Contacts', href: '/contacts', icon: Contact },
+  { name: 'Tasks', href: '/tasks', icon: ClipboardList },
 ];
 
 export default function Header() {
