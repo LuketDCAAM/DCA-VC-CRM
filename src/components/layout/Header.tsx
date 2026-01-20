@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate, useLocation } from 'react-router-dom';
 import ProfileButton from '@/components/profile/ProfileButton';
 import { useUserRoles } from '@/hooks/useUserRoles';
+import { useOpenTaskCount } from '@/hooks/useOpenTaskCount';
 import { UserManagementDialog } from '@/components/admin/UserManagementDialog';
 import { 
   BarChart3, 
@@ -30,6 +31,7 @@ export default function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const { isViewer, isAdmin } = useUserRoles();
+  const { count: openTaskCount } = useOpenTaskCount();
 
   // Filter navigation for viewers
   const filteredNavigation = isViewer 
@@ -52,16 +54,23 @@ export default function Header() {
               {filteredNavigation.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.href;
+                const showBadge = item.name === 'Tasks' && openTaskCount > 0;
+                
                 return (
                   <Button
                     key={item.name}
                     variant={isActive ? "default" : "ghost"}
                     size="sm"
                     onClick={() => navigate(item.href)}
-                    className="flex items-center gap-1.5 text-sm font-medium px-3 py-2 h-9"
+                    className="flex items-center gap-1.5 text-sm font-medium px-3 py-2 h-9 relative"
                   >
                     <Icon className="h-4 w-4" />
                     <span className="hidden xl:inline">{item.name}</span>
+                    {showBadge && (
+                      <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                        {openTaskCount > 99 ? '99+' : openTaskCount}
+                      </span>
+                    )}
                   </Button>
                 );
               })}
