@@ -14,6 +14,7 @@ import InvestorsSimple from "./pages/InvestorsSimple";
 import Contacts from "./pages/Contacts";
 import Reminders from "./pages/Reminders";
 import LPEngagements from "./pages/LPEngagements";
+import Tasks from "./pages/Tasks";
 import ExternalDataDashboard from "./pages/ExternalDataDashboard";
 import NotFound from "./pages/NotFound";
 import MicrosoftAuthCallback from "./pages/auth/microsoft/callback";
@@ -89,6 +90,7 @@ function App() {
                       <Route path="/contacts" element={<Contacts />} />
                       <Route path="/reminders" element={<Reminders />} />
                       <Route path="/lp-engagements" element={<LPEngagements />} />
+                      <Route path="/tasks" element={<Tasks />} />
                       <Route path="/external-data" element={<ExternalDataDashboard />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
