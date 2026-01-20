@@ -51,6 +51,8 @@ export function useTaskAssignment() {
 
   const assignTask = async (taskData: TaskAssignment) => {
     try {
+      const currentUser = (await supabase.auth.getUser()).data.user;
+      
       // First, create the task in the reminders table
       const { data: task, error: taskError } = await supabase
         .from('reminders')
@@ -66,7 +68,7 @@ export function useTaskAssignment() {
           priority: taskData.priority,
           status: taskData.status,
           send_email_reminder: taskData.send_email_reminder || false,
-          created_by: (await supabase.auth.getUser()).data.user?.id,
+          created_by: currentUser?.id,
         })
         .select()
         .single();
@@ -85,6 +87,52 @@ export function useTaskAssignment() {
           .insert(assignments);
 
         if (assignmentsError) throw assignmentsError;
+      }
+
+      // Send email notifications if enabled
+      if (taskData.send_email_reminder && taskData.assignees && taskData.assignees.length > 0) {
+        try {
+          // Get assignee details
+          const assigneeDetails = users.filter(u => taskData.assignees?.includes(u.id));
+          const assigneeEmails = assigneeDetails.map(u => u.email);
+          const assigneeNames = assigneeDetails.map(u => u.name || u.email.split('@')[0]);
+
+          // Get creator details
+          const { data: creatorProfile } = await supabase
+            .from('profiles')
+            .select('name, email')
+            .eq('id', currentUser?.id)
+            .single();
+
+          // Call edge function to send emails
+          const { error: emailError } = await supabase.functions.invoke('send-task-email', {
+            body: {
+              task_id: task.id,
+              task_title: taskData.title,
+              task_description: taskData.description,
+              due_date: taskData.reminder_date,
+              priority: taskData.priority,
+              assignee_emails: assigneeEmails,
+              assignee_names: assigneeNames,
+              creator_name: creatorProfile?.name || creatorProfile?.email || 'A team member',
+              creator_email: creatorProfile?.email || currentUser?.email,
+            },
+          });
+
+          if (emailError) {
+            console.error('Error sending task email:', emailError);
+            // Don't throw - task was created successfully, just email failed
+            toast({
+              title: "Task assigned",
+              description: `Task created but email notification failed to send.`,
+              variant: "default",
+            });
+            return true;
+          }
+        } catch (emailErr) {
+          console.error('Error sending task email:', emailErr);
+          // Don't throw - task was created successfully
+        }
       }
 
       toast({
