@@ -53,11 +53,10 @@ export function UserManagementDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Users className="h-4 w-4 mr-2" />
-          User Management
+        <Button variant="outline" size="icon" className="h-9 w-9 relative">
+          <Users className="h-4 w-4" />
           {pendingUsers.length > 0 && (
-            <Badge variant="destructive" className="ml-2">
+            <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 min-w-5 px-1.5 text-[10px] font-bold">
               {pendingUsers.length}
             </Badge>
           )}
