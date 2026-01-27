@@ -76,14 +76,10 @@ export default function Header() {
               })}
             </nav>
             
-            {isAdmin && (
-              <div className="ml-2">
-                <UserManagementDialog />
-              </div>
-            )}
           </div>
           
           <div className="flex items-center gap-2">
+            {isAdmin && <UserManagementDialog />}
             <ThemeToggle />
             <ProfileButton />
           </div>
