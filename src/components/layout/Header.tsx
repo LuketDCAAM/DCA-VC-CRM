@@ -77,7 +77,7 @@ export default function Header() {
             </nav>
             
             {isAdmin && (
-              <div className="ml-6">
+              <div className="ml-2">
                 <UserManagementDialog />
               </div>
             )}
