@@ -35,28 +35,32 @@ export function useCSVImport() {
           const originalIndex = i + j + 1;
           
           try {
+            // Extract pitch deck URL before inserting deal
+            const pitchDeckUrl = row._pitch_deck_url;
+            const { _pitch_deck_url, ...dealFields } = row;
+
             // Prepare the deal data according to the database schema
             const dealData = {
-              company_name: row.company_name,
-              description: row.description,
-              contact_name: row.contact_name,
-              contact_email: row.contact_email,
-              contact_phone: row.contact_phone,
-              website: row.website,
-              location: row.location,
-              city: row.city,
-              state_province: row.state_province,
-              country: row.country,
-              sector: row.sector,
-              pipeline_stage: row.pipeline_stage,
-              round_stage: row.round_stage,
-              round_size: row.round_size,
-              post_money_valuation: row.post_money_valuation,
-              revenue: row.revenue,
-              deal_score: row.deal_score,
-              deal_lead: row.deal_lead,
-              deal_source: row.deal_source,
-              source_date: row.source_date,
+              company_name: dealFields.company_name,
+              description: dealFields.description,
+              contact_name: dealFields.contact_name,
+              contact_email: dealFields.contact_email,
+              contact_phone: dealFields.contact_phone,
+              website: dealFields.website,
+              location: dealFields.location,
+              city: dealFields.city,
+              state_province: dealFields.state_province,
+              country: dealFields.country,
+              sector: dealFields.sector,
+              pipeline_stage: dealFields.pipeline_stage,
+              round_stage: dealFields.round_stage,
+              round_size: dealFields.round_size,
+              post_money_valuation: dealFields.post_money_valuation,
+              revenue: dealFields.revenue,
+              deal_score: dealFields.deal_score,
+              deal_lead: dealFields.deal_lead,
+              deal_source: dealFields.deal_source,
+              source_date: dealFields.source_date,
               created_by: user.id,
             };
 
@@ -73,6 +77,24 @@ export function useCSVImport() {
             } else {
               console.log(`Successfully inserted deal ${originalIndex}:`, insertedData);
               imported++;
+
+              // Insert pitch deck URL as file_attachment if provided
+              if (pitchDeckUrl && insertedData?.[0]?.id) {
+                const { error: attachError } = await supabase
+                  .from('file_attachments')
+                  .insert({
+                    deal_id: insertedData[0].id,
+                    file_name: 'Pitch Deck',
+                    file_url: pitchDeckUrl,
+                    file_type: 'link',
+                    file_size: 0,
+                    uploaded_by: user.id,
+                  });
+                if (attachError) {
+                  console.error(`Failed to attach pitch deck for row ${originalIndex}:`, attachError);
+                  errors.push(`Row ${originalIndex}: Deal imported but pitch deck link failed: ${attachError.message}`);
+                }
+              }
             }
           } catch (err) {
             console.error(`Processing error for row ${originalIndex}:`, err);

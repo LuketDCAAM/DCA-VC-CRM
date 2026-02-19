@@ -67,7 +67,7 @@ export function useDealsCSVProcessor() {
         }
 
         // Process all the data with proper validation
-        const processedRow = {
+        const processedRow: any = {
           company_name: companyValidation.normalizedName,
           description: row.description ? String(row.description).trim() : null,
           contact_name: row.contact_name ? String(row.contact_name).trim() : null,
@@ -90,6 +90,11 @@ export function useDealsCSVProcessor() {
           source_date: parseDate(row.source_date),
           created_by: user.id,
         };
+
+        // Include pitch deck URL if provided (stored separately as file_attachment)
+        if (row.pitch_deck_url && String(row.pitch_deck_url).trim() !== '') {
+          processedRow._pitch_deck_url = String(row.pitch_deck_url).trim();
+        }
 
         // Validate required fields
         if (processedRow.company_name.length === 0) {
