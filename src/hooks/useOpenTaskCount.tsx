@@ -1,27 +1,54 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 export function useOpenTaskCount() {
+  const { user } = useAuth();
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const fetchCount = useCallback(async () => {
+    if (!user) {
+      setCount(0);
+      setLoading(false);
+      return;
+    }
+
     try {
-      const { count: taskCount, error } = await supabase
+      // Count tasks directly assigned to user
+      const { count: directCount } = await supabase
         .from('reminders')
         .select('*', { count: 'exact', head: true })
         .eq('task_type', 'task')
+        .eq('assigned_to', user.id)
         .in('status', ['pending', 'in_progress']);
 
-      if (error) throw error;
-      setCount(taskCount || 0);
+      // Count tasks via task_assignments
+      const { data: assignments } = await supabase
+        .from('task_assignments')
+        .select('task_id')
+        .eq('assigned_to', user.id);
+
+      let assignmentCount = 0;
+      if (assignments && assignments.length > 0) {
+        const taskIds = assignments.map(a => a.task_id);
+        const { count: c } = await supabase
+          .from('reminders')
+          .select('*', { count: 'exact', head: true })
+          .eq('task_type', 'task')
+          .in('id', taskIds)
+          .in('status', ['pending', 'in_progress']);
+        assignmentCount = c || 0;
+      }
+
+      setCount(Math.max(directCount || 0, assignmentCount));
     } catch (error) {
       console.error('Error fetching open task count:', error);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     fetchCount();

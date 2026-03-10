@@ -61,7 +61,7 @@ const statusConfig: Record<string, { icon: React.ReactNode; color: string; label
 
 export default function Tasks() {
   const { tasks, users, loading, updateTaskStatus, updateTask, deleteTask, getTasksByUser } = useTasks();
-  const [view, setView] = useState<'by-person' | 'all'>('by-person');
+  const [view, setView] = useState<'by-person' | 'all'>('all');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const tasksByUser = getTasksByUser();
@@ -206,26 +206,10 @@ export default function Tasks() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Tasks</h1>
+          <h1 className="text-3xl font-bold">My Tasks</h1>
           <p className="text-muted-foreground mt-1">
             {pendingTasks.length} active tasks, {completedTasks.length} completed
           </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant={view === 'by-person' ? 'default' : 'outline'}
-            onClick={() => setView('by-person')}
-          >
-            <User className="h-4 w-4 mr-2" />
-            By Person
-          </Button>
-          <Button
-            variant={view === 'all' ? 'default' : 'outline'}
-            onClick={() => setView('all')}
-          >
-            <Clock className="h-4 w-4 mr-2" />
-            All Tasks
-          </Button>
         </div>
       </div>
 

@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface UserProfile {
   id: string;
@@ -43,16 +44,31 @@ interface TaskUpdateData {
 }
 
 export function useTasks() {
+  const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   const fetchTasks = async () => {
+    if (!user) {
+      setTasks([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      
-      // Fetch all tasks (task_type = 'task')
+
+      // Fetch task assignments for current user
+      const { data: myAssignments } = await supabase
+        .from('task_assignments')
+        .select('task_id')
+        .eq('assigned_to', user.id);
+
+      const assignedTaskIds = myAssignments?.map(a => a.task_id) || [];
+
+      // Fetch all tasks where user is creator, directly assigned, or via task_assignments
       const { data: tasksData, error: tasksError } = await supabase
         .from('reminders')
         .select('*')
@@ -61,26 +77,35 @@ export function useTasks() {
 
       if (tasksError) throw tasksError;
 
-      // Fetch all task assignments
-      const { data: assignmentsData, error: assignmentsError } = await supabase
-        .from('task_assignments')
-        .select('*');
+      // Filter to only tasks relevant to the current user
+      const userTasks = (tasksData || []).filter(task =>
+        task.created_by === user.id ||
+        task.assigned_to === user.id ||
+        assignedTaskIds.includes(task.id)
+      );
 
-      if (assignmentsError) throw assignmentsError;
+      // Fetch all task assignments for user's tasks
+      const userTaskIds = userTasks.map(t => t.id);
+      let assignmentsData: any[] = [];
+      if (userTaskIds.length > 0) {
+        const { data, error: assignmentsError } = await supabase
+          .from('task_assignments')
+          .select('*')
+          .in('task_id', userTaskIds);
+        if (assignmentsError) throw assignmentsError;
+        assignmentsData = data || [];
+      }
 
       // Fetch all users
       const { data: usersData, error: usersError } = await supabase.rpc('get_user_profiles');
-      
       if (usersError) throw usersError;
-      
       setUsers(usersData || []);
 
       // Map assignments and creators to tasks
-      const tasksWithDetails = (tasksData || []).map(task => {
-        const taskAssignments = assignmentsData?.filter(a => a.task_id === task.id) || [];
+      const tasksWithDetails = userTasks.map(task => {
+        const taskAssignments = assignmentsData.filter(a => a.task_id === task.id);
         const assigneeIds = taskAssignments.map(a => a.assigned_to);
         
-        // Also include the assigned_to field for backward compatibility
         if (task.assigned_to && !assigneeIds.includes(task.assigned_to)) {
           assigneeIds.push(task.assigned_to);
         }
@@ -88,11 +113,7 @@ export function useTasks() {
         const assignees = usersData?.filter((u: UserProfile) => assigneeIds.includes(u.id)) || [];
         const creator = usersData?.find((u: UserProfile) => u.id === task.created_by);
         
-        return {
-          ...task,
-          assignees,
-          creator,
-        };
+        return { ...task, assignees, creator };
       });
 
       setTasks(tasksWithDetails);
@@ -259,7 +280,7 @@ export function useTasks() {
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [user]);
 
   return {
     tasks,
