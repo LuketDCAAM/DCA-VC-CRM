@@ -61,7 +61,7 @@ const statusConfig: Record<string, { icon: React.ReactNode; color: string; label
 
 export default function Tasks() {
   const { tasks, users, loading, updateTaskStatus, updateTask, deleteTask, getTasksByUser } = useTasks();
-  const [view, setView] = useState<'by-person' | 'all'>('by-person');
+  const [view, setView] = useState<'by-person' | 'all'>('all');
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const tasksByUser = getTasksByUser();
