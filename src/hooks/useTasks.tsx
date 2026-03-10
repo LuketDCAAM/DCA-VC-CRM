@@ -280,7 +280,7 @@ export function useTasks() {
 
   useEffect(() => {
     fetchTasks();
-  }, []);
+  }, [user]);
 
   return {
     tasks,
