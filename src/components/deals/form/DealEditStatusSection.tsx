@@ -84,6 +84,19 @@ export function DealEditStatusSection({ control }: DealEditStatusSectionProps) {
       />
       <FormField
         control={control}
+        name="scored_at"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Score Date</FormLabel>
+            <FormControl>
+              <Input type="date" {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={control}
         name="deal_lead"
         render={({ field }) => (
           <FormItem>

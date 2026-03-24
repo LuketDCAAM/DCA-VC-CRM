@@ -58,6 +58,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
       next_steps: values.next_steps || '',
       last_call_date: values.last_call_date || '',
       reason_for_passing: values.reason_for_passing || '',
+      scored_at: values.scored_at || '',
       pitchDeckFile
     };
     
