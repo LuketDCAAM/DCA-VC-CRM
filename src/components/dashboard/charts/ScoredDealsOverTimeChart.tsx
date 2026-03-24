@@ -113,7 +113,7 @@ export function ScoredDealsOverTimeChart({ deals }: ScoredDealsOverTimeChartProp
         <div className="flex items-center justify-between w-full flex-wrap gap-2">
           <div>
             <CardTitle>Scored Deals Over Time</CardTitle>
-            <CardDescription>Number of deals with a scorecard by date created</CardDescription>
+            <CardDescription>Number of deals with a scorecard by date scored</CardDescription>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <Select value={timeRange} onValueChange={(v) => setTimeRange(v as TimeRange)}>
