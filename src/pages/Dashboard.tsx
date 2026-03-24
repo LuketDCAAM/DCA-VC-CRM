@@ -20,6 +20,7 @@ import { DealsLocationMap } from '@/components/dashboard/charts/DealsLocationMap
 import { ValuationRevenueMultipleChart } from '@/components/dashboard/charts/ValuationRevenueMultipleChart';
 import { InvestmentVehicleChart } from '@/components/dashboard/charts/InvestmentVehicleChart';
 import { PipelineChart } from '@/components/dashboard/charts/PipelineChart';
+import { ScoredDealsOverTimeChart } from '@/components/dashboard/charts/ScoredDealsOverTimeChart';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -75,6 +76,9 @@ export default function Dashboard() {
         <InvestmentVehicleChart deals={deals || []} />
         <PipelineChart data={analytics.pipelineDistribution} />
       </div>
+
+      {/* Scored Deals Over Time */}
+      <ScoredDealsOverTimeChart deals={deals || []} />
 
       {/* Detailed Analytics - Full Width */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6">
