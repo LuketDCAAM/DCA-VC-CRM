@@ -77,6 +77,9 @@ export default function Dashboard() {
         <PipelineChart data={analytics.pipelineDistribution} />
       </div>
 
+      {/* Scored Deals Over Time */}
+      <ScoredDealsOverTimeChart deals={deals || []} />
+
       {/* Detailed Analytics - Full Width */}
       <div className="grid grid-cols-1 gap-4 sm:gap-6">
         <ValuationChart data={analytics.valuationAnalysis} deals={deals || []} />
