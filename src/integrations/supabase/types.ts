@@ -395,6 +395,7 @@ export type Database = {
           revenue: number | null
           round_size: number | null
           round_stage: Database["public"]["Enums"]["round_stage"] | null
+          scored_at: string | null
           sector: string | null
           source_date: string | null
           state_province: string | null
@@ -443,6 +444,7 @@ export type Database = {
           revenue?: number | null
           round_size?: number | null
           round_stage?: Database["public"]["Enums"]["round_stage"] | null
+          scored_at?: string | null
           sector?: string | null
           source_date?: string | null
           state_province?: string | null
@@ -491,6 +493,7 @@ export type Database = {
           revenue?: number | null
           round_size?: number | null
           round_stage?: Database["public"]["Enums"]["round_stage"] | null
+          scored_at?: string | null
           sector?: string | null
           source_date?: string | null
           state_province?: string | null

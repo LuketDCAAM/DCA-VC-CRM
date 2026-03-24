@@ -75,23 +75,25 @@ export function ScoredDealsOverTimeChart({ deals }: ScoredDealsOverTimeChartProp
     const scored = deals.filter(d => {
       if (d.deal_score == null) return false;
       if (d.deal_score < scoreRange[0] || d.deal_score > scoreRange[1]) return false;
-      if (!d.created_at) return false;
-      const created = parseISO(d.created_at);
-      if (startDate && !isAfter(created, startDate)) return false;
-      if (endDate && !isBefore(created, endDate)) return false;
+      const dateStr = d.scored_at || d.created_at;
+      if (!dateStr) return false;
+      const date = parseISO(dateStr);
+      if (startDate && !isAfter(date, startDate)) return false;
+      if (endDate && !isBefore(date, endDate)) return false;
       return true;
     });
 
     const grouped: Record<string, number> = {};
     scored.forEach(d => {
-      const key = format(parseISO(d.created_at), fmt);
+      const dateStr = d.scored_at || d.created_at;
+      const key = format(parseISO(dateStr), fmt);
       grouped[key] = (grouped[key] || 0) + 1;
     });
 
     const entries = Object.entries(grouped).map(([period, count]) => ({ period, count }));
     entries.sort((a, b) => {
-      const dateA = scored.find(d => format(parseISO(d.created_at), fmt) === a.period)?.created_at || '';
-      const dateB = scored.find(d => format(parseISO(d.created_at), fmt) === b.period)?.created_at || '';
+      const dateA = scored.find(d => format(parseISO(d.scored_at || d.created_at), fmt) === a.period)?.scored_at || scored.find(d => format(parseISO(d.scored_at || d.created_at), fmt) === a.period)?.created_at || '';
+      const dateB = scored.find(d => format(parseISO(d.scored_at || d.created_at), fmt) === b.period)?.scored_at || scored.find(d => format(parseISO(d.scored_at || d.created_at), fmt) === b.period)?.created_at || '';
       return dateA.localeCompare(dateB);
     });
 

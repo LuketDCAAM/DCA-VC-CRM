@@ -16,7 +16,7 @@ export type BaseDeal = Database['public']['Tables']['deals']['Row'];
 // Enhanced Deal type - just use the base type directly since it already includes all the fields
 // The database migration has already added all the external data fields to the deals table
 export interface Deal extends BaseDeal {
-  // No need to override anything - BaseDeal already has the correct types from the database
+  scored_at?: string | null;
 }
 
 // You can also create types for Insert and Update operations for consistency:
