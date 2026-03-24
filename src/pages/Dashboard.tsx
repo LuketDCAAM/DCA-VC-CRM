@@ -20,6 +20,7 @@ import { DealsLocationMap } from '@/components/dashboard/charts/DealsLocationMap
 import { ValuationRevenueMultipleChart } from '@/components/dashboard/charts/ValuationRevenueMultipleChart';
 import { InvestmentVehicleChart } from '@/components/dashboard/charts/InvestmentVehicleChart';
 import { PipelineChart } from '@/components/dashboard/charts/PipelineChart';
+import { ScoredDealsOverTimeChart } from '@/components/dashboard/charts/ScoredDealsOverTimeChart';
 
 export default function Dashboard() {
   const navigate = useNavigate();
