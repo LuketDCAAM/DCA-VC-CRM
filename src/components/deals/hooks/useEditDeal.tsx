@@ -35,6 +35,7 @@ interface EditDealValues {
   last_call_date?: string;
   ic_review_date?: string;
   reason_for_passing?: string;
+  scored_at?: string;
   pitchDeckFile?: File | null;
 }
 
@@ -87,6 +88,7 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
           revenue,
           next_steps: values.next_steps || null,
           reason_for_passing: values.reason_for_passing || null,
+          scored_at: values.scored_at ? new Date(values.scored_at).toISOString() : null,
           updated_at: new Date().toISOString()
         })
         .eq('id', deal.id);

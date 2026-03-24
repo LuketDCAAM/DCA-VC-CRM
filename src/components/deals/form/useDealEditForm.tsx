@@ -46,6 +46,7 @@ export function useDealEditForm({ deal }: UseDealEditFormProps) {
       next_steps: deal.next_steps || '',
       last_call_date: deal.last_call_date ? deal.last_call_date.split('T')[0] : '',
       reason_for_passing: deal.reason_for_passing || '',
+      scored_at: deal.scored_at ? deal.scored_at.split('T')[0] : '',
     },
   });
 

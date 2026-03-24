@@ -31,6 +31,7 @@ export const dealFormSchema = z.object({
   last_call_date: z.string().optional(),
   ic_review_date: z.string().optional(),
   reason_for_passing: z.string().optional(),
+  scored_at: z.string().optional(),
 });
 
 export type DealFormValues = z.infer<typeof dealFormSchema>;
