@@ -35,6 +35,7 @@ interface EditDealValues {
   last_call_date?: string;
   ic_review_date?: string;
   reason_for_passing?: string;
+  scored_at?: string;
   pitchDeckFile?: File | null;
 }
 
