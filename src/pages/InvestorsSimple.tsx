@@ -259,6 +259,7 @@ export default function InvestorsSimple() {
         investor={selectedInvestor}
         open={isDetailDialogOpen}
         onOpenChange={setIsDetailDialogOpen}
+        onInvestorUpdated={refetch}
       />
 
       {/* Add/Edit Investor Dialog */}
