@@ -94,6 +94,15 @@ const ConfigurableDealsTableRow = memo(({
       case 'revenue_multiple':
         return <FinancialCellContent deal={deal} type="revenue_multiple" />;
       
+      case 'scored_at':
+        return <BasicCellContent deal={deal} type="scored_at" />;
+      
+      case 'ic_review_date':
+        return <BasicCellContent deal={deal} type="ic_review_date" />;
+      
+      case 'reason_for_passing':
+        return <BasicCellContent deal={deal} type="reason_for_passing" />;
+      
       default:
         return <span className="text-muted-foreground text-sm">-</span>;
     }
