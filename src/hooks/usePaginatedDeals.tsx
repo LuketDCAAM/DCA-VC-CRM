@@ -19,6 +19,7 @@ export interface DealFilters {
   deal_score?: [number, number];
   created_at?: { from?: Date; to?: Date };
   source_date?: { from?: Date; to?: Date };
+  scored_at?: { from?: Date; to?: Date };
 }
 
 export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFilters = {}) {
