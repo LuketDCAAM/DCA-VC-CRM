@@ -1,0 +1,1 @@
+UPDATE deals SET deal_score = NULL, scored_at = NULL WHERE deal_score = 0;
