@@ -34,6 +34,7 @@ export const csvTemplateColumns = [
   { key: 'last_funding_date', label: 'Last Funding Date (YYYY-MM-DD)' },
   { key: 'reason_for_passing', label: 'Reason for Passing' },
   { key: 'pitch_deck_url', label: 'Pitch Deck URL' },
+  { key: 'scored_at', label: 'Date Scored (YYYY-MM-DD)' },
 ];
 
 export const exportColumns = [
@@ -74,6 +75,7 @@ export const exportColumns = [
   { key: 'priority_rank', label: 'Priority Rank' },
   { key: 'reason_for_passing', label: 'Reason for Passing' },
   { key: 'pitch_deck_url', label: 'Pitch Deck URL' },
+  { key: 'scored_at', label: 'Date Scored' },
   { key: 'created_at', label: 'Date Added' },
   { key: 'updated_at', label: 'Last Updated' },
 ];

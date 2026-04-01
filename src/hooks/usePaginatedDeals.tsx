@@ -19,6 +19,7 @@ export interface DealFilters {
   deal_score?: [number, number];
   created_at?: { from?: Date; to?: Date };
   source_date?: { from?: Date; to?: Date };
+  scored_at?: { from?: Date; to?: Date };
 }
 
 export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFilters = {}) {
@@ -127,6 +128,14 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
 
       if (filters.source_date?.to) {
         query = query.lte('source_date', filters.source_date.to.toISOString().split('T')[0]);
+      }
+
+      if (filters.scored_at?.from) {
+        query = query.gte('scored_at', filters.scored_at.from.toISOString());
+      }
+
+      if (filters.scored_at?.to) {
+        query = query.lte('scored_at', filters.scored_at.to.toISOString());
       }
 
       const { data, error, count } = await query

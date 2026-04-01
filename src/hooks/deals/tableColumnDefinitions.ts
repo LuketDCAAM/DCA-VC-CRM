@@ -197,5 +197,14 @@ export const DEFAULT_COLUMNS: TableColumn[] = [
     sortable: false,
     visible: false,
     dataType: 'string'
+  },
+  {
+    key: 'scored_at',
+    label: 'Date Scored',
+    icon: Calendar,
+    width: 'min-w-[130px]',
+    sortable: true,
+    visible: false,
+    dataType: 'date'
   }
 ];

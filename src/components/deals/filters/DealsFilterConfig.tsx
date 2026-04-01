@@ -114,6 +114,12 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
         { label: 'Yes', value: 'yes' },
         { label: 'No', value: 'no' },
       ]
+    },
+    {
+      key: 'scored_at',
+      label: 'Date Scored',
+      value: 'scored_at',
+      type: 'daterange'
     }
   ];
 }
