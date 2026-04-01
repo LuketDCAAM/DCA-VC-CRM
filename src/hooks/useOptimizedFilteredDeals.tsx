@@ -129,6 +129,20 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
             return dealDate <= value;
           });
           break;
+        case 'scored_at_from':
+          filtered = filtered.filter(deal => {
+            if (!deal.scored_at) return false;
+            const dealDate = new Date(deal.scored_at).toISOString().split('T')[0];
+            return dealDate >= value;
+          });
+          break;
+        case 'scored_at_to':
+          filtered = filtered.filter(deal => {
+            if (!deal.scored_at) return false;
+            const dealDate = new Date(deal.scored_at).toISOString().split('T')[0];
+            return dealDate <= value;
+          });
+          break;
         case 'call_with_founder':
           if (value === 'yes') {
             filtered = filtered.filter(deal => 
