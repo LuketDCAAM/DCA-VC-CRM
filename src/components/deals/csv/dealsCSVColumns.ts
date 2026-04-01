@@ -75,6 +75,7 @@ export const exportColumns = [
   { key: 'priority_rank', label: 'Priority Rank' },
   { key: 'reason_for_passing', label: 'Reason for Passing' },
   { key: 'pitch_deck_url', label: 'Pitch Deck URL' },
+  { key: 'scored_at', label: 'Date Scored' },
   { key: 'created_at', label: 'Date Added' },
   { key: 'updated_at', label: 'Last Updated' },
 ];

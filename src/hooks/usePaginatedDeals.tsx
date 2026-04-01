@@ -129,6 +129,14 @@ export function usePaginatedDeals(pagination: PaginationConfig, filters: DealFil
         query = query.lte('source_date', filters.source_date.to.toISOString().split('T')[0]);
       }
 
+      if (filters.scored_at?.from) {
+        query = query.gte('scored_at', filters.scored_at.from.toISOString());
+      }
+
+      if (filters.scored_at?.to) {
+        query = query.lte('scored_at', filters.scored_at.to.toISOString());
+      }
+
       const { data, error, count } = await query
         .order('created_at', { ascending: false });
 
