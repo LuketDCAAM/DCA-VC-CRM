@@ -7,7 +7,7 @@ import { formatLocation, formatLocationString } from '@/utils/locationUtils';
 
 interface BasicCellContentProps {
   deal: Deal;
-  type: 'location' | 'deal_lead' | 'created_at' | 'source_date' | 'description' | 'last_call_date' | 'total_calls' | 'investment_vehicle';
+  type: 'location' | 'deal_lead' | 'created_at' | 'source_date' | 'description' | 'last_call_date' | 'total_calls' | 'investment_vehicle' | 'scored_at' | 'ic_review_date' | 'reason_for_passing';
 }
 
 export function BasicCellContent({ deal, type }: BasicCellContentProps) {
