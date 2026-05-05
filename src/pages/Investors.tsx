@@ -69,6 +69,17 @@ export default function Investors() {
     return result;
   };
 
+  // Build location options dynamically from actual investor data
+  const locationOptions = Array.from(
+    new Set(
+      investors
+        .map(inv => inv.location)
+        .filter((loc): loc is string => !!loc && loc.trim() !== '')
+    )
+  )
+    .sort((a, b) => a.localeCompare(b))
+    .map(loc => ({ label: loc, value: loc }));
+
   // Filter options for investors
   const filterOptions: FilterOption[] = [
     {
@@ -82,18 +93,12 @@ export default function Investors() {
       key: 'location',
       label: 'Location',
       value: 'location',
-      type: 'select',
-      options: [
-        { label: 'San Francisco', value: 'San Francisco' },
-        { label: 'New York', value: 'New York' },
-        { label: 'Los Angeles', value: 'Los Angeles' },
-        { label: 'Austin', value: 'Austin' },
-        { label: 'Remote', value: 'Remote' },
-      ]
+      type: 'multiselect',
+      options: locationOptions,
     },
     {
       key: 'average_check_size',
-      label: 'Check Size',
+      label: 'Check Size ($)',
       value: 'average_check_size',
       type: 'range'
     },
@@ -101,7 +106,7 @@ export default function Investors() {
       key: 'created_at',
       label: 'Date Added',
       value: 'created_at',
-      type: 'date'
+      type: 'daterange'
     }
   ];
 
