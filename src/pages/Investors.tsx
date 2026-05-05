@@ -69,6 +69,17 @@ export default function Investors() {
     return result;
   };
 
+  // Build location options dynamically from actual investor data
+  const locationOptions = Array.from(
+    new Set(
+      investors
+        .map(inv => inv.location)
+        .filter((loc): loc is string => !!loc && loc.trim() !== '')
+    )
+  )
+    .sort((a, b) => a.localeCompare(b))
+    .map(loc => ({ label: loc, value: loc }));
+
   // Filter options for investors
   const filterOptions: FilterOption[] = [
     {
@@ -82,18 +93,12 @@ export default function Investors() {
       key: 'location',
       label: 'Location',
       value: 'location',
-      type: 'select',
-      options: [
-        { label: 'San Francisco', value: 'San Francisco' },
-        { label: 'New York', value: 'New York' },
-        { label: 'Los Angeles', value: 'Los Angeles' },
-        { label: 'Austin', value: 'Austin' },
-        { label: 'Remote', value: 'Remote' },
-      ]
+      type: 'multiselect',
+      options: locationOptions,
     },
     {
       key: 'average_check_size',
-      label: 'Check Size',
+      label: 'Check Size ($)',
       value: 'average_check_size',
       type: 'range'
     },
@@ -101,7 +106,7 @@ export default function Investors() {
       key: 'created_at',
       label: 'Date Added',
       value: 'created_at',
-      type: 'date'
+      type: 'daterange'
     }
   ];
 
@@ -151,29 +156,38 @@ export default function Investors() {
       if (!value || value === 'all' || value === '') return true;
       if (Array.isArray(value) && value.length === 0) return true;
       
-      if (key === 'created_at') {
+      if (key === 'created_at_from') {
+        if (!investor.created_at) return false;
         const investorDate = new Date(investor.created_at).toISOString().split('T')[0];
         return investorDate >= value;
       }
-      
+
+      if (key === 'created_at_to') {
+        if (!investor.created_at) return false;
+        const investorDate = new Date(investor.created_at).toISOString().split('T')[0];
+        return investorDate <= value;
+      }
+
       if (key === 'average_check_size_min') {
-        const minValue = parseInt(value);
+        const minValue = parseFloat(value);
         if (isNaN(minValue)) return true;
-        return !investor.average_check_size || investor.average_check_size >= minValue * 100;
+        if (!investor.average_check_size) return false;
+        return investor.average_check_size >= minValue * 100;
       }
-      
+
       if (key === 'average_check_size_max') {
-        const maxValue = parseInt(value);
+        const maxValue = parseFloat(value);
         if (isNaN(maxValue)) return true;
-        return !investor.average_check_size || investor.average_check_size <= maxValue * 100;
+        if (!investor.average_check_size) return false;
+        return investor.average_check_size <= maxValue * 100;
       }
-      
+
       // Handle direct property matches
       const investorValue = investor[key as keyof typeof investor];
       if (Array.isArray(value)) {
         return value.some(v => investorValue === v);
       }
-      
+
       return investorValue === value;
     });
 
