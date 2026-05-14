@@ -10,6 +10,7 @@ import {
 import { createOpenAICompatible } from "npm:@ai-sdk/openai-compatible@2.0.47";
 import { z } from "npm:zod@4.4.3";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { researchTools } from "../_shared/research-tools.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -118,6 +119,20 @@ Deno.serve(async (req) => {
 
     // ---------- Tools ----------
     const tools = {
+      ...researchTools(),
+      get_investment_thesis: tool({
+        description: "Read the fund's investment thesis (sectors, stages, check size, must-haves, etc).",
+        inputSchema: z.object({}),
+        execute: async () => {
+          const { data } = await supabase
+            .from("investment_thesis")
+            .select("*")
+            .order("created_at", { ascending: true })
+            .limit(1)
+            .maybeSingle();
+          return data ?? { error: "No thesis configured" };
+        },
+      }),
       search_deals: tool({
         description:
           "Search the user's deals by company name, sector, pipeline stage, or text. Returns up to 25 matches.",
