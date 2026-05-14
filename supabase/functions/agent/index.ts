@@ -70,8 +70,36 @@ Deno.serve(async (req) => {
     const userId = claimsData.claims.sub as string;
 
     const body = await req.json();
-    const messages = body.messages as UIMessage[];
+    console.log("agent request body keys:", Object.keys(body), "messages type:", Array.isArray(body.messages) ? `array(${body.messages.length})` : typeof body.messages);
+    let messages = body.messages as UIMessage[] | undefined;
     const threadId = body.threadId as string | undefined;
+
+    // ai-sdk v5/v6 DefaultChatTransport may send a single `message` instead of full `messages`.
+    if (!Array.isArray(messages)) {
+      const single = (body as { message?: UIMessage }).message;
+      if (single) {
+        // Load prior thread history from DB to provide full context
+        let history: UIMessage[] = [];
+        if (threadId) {
+          const { data } = await supabase
+            .from("agent_messages")
+            .select("role,parts")
+            .eq("thread_id", threadId)
+            .order("created_at", { ascending: true });
+          history = (data ?? []).map((m, i) => ({
+            id: `hist-${i}`,
+            role: m.role as UIMessage["role"],
+            parts: (m.parts as unknown) as UIMessage["parts"],
+          }));
+        }
+        messages = [...history, single];
+      } else {
+        return new Response(JSON.stringify({ error: "Missing messages" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     // Create an agent_runs row for this turn
     const { data: runRow } = await supabase
