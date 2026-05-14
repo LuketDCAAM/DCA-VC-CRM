@@ -55,7 +55,7 @@ export default function Header() {
             <nav className="hidden lg:flex space-x-1">
               {filteredNavigation.map((item) => {
                 const Icon = item.icon;
-                const isActive = location.pathname === item.href;
+                const isActive = location.pathname === item.href || location.pathname.startsWith(item.href + '/');
                 const showBadge = item.name === 'Tasks' && openTaskCount > 0;
                 
                 return (
