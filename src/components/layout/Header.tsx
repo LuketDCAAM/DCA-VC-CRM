@@ -14,7 +14,8 @@ import {
   Contact,
   HandCoins,
   ClipboardList,
-  Sparkles
+  Sparkles,
+  Target
 } from 'lucide-react';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 
@@ -27,6 +28,7 @@ const navigation = [
   { name: 'Contacts', href: '/contacts', icon: Contact },
   { name: 'Tasks', href: '/tasks', icon: ClipboardList },
   { name: 'Assistant', href: '/assistant', icon: Sparkles },
+  { name: 'Thesis', href: '/settings/thesis', icon: Target },
 ];
 
 export default function Header() {

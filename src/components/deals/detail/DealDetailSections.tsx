@@ -4,6 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import { CallNotesManager } from '../CallNotesManager';
 import { DealInvestorsManager } from '../DealInvestorsManager';
 import { DealContactsManager } from '../DealContactsManager';
+import { AnalystPanel } from '@/components/agent/AnalystPanel';
 import { Deal } from '@/types/deal';
 
 interface DealDetailSectionsProps {
@@ -13,6 +14,12 @@ interface DealDetailSectionsProps {
 export function DealDetailSections({ deal }: DealDetailSectionsProps) {
   return (
     <>
+      <div className="my-6">
+        <Separator />
+      </div>
+
+      <AnalystPanel dealId={deal.id} />
+
       <div className="my-6">
         <Separator />
       </div>
@@ -33,3 +40,4 @@ export function DealDetailSections({ deal }: DealDetailSectionsProps) {
     </>
   );
 }
+
