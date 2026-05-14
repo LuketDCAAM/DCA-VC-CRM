@@ -30,7 +30,7 @@ export function useAnalystRuns(dealId?: string) {
       .eq("deal_id", dealId)
       .order("created_at", { ascending: false })
       .limit(10);
-    setRuns((data ?? []) as AnalystRun[]);
+    setRuns((data ?? []) as unknown as AnalystRun[]);
     setLoading(false);
   }, [dealId]);
 
