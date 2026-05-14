@@ -23,7 +23,7 @@ import { CallNote } from '@/hooks/useCallNotes';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
-  call_date: z.date({ required_error: 'Call date is required' }),
+  call_date: z.date({ message: 'Call date is required' }),
   content: z.string().optional(),
 });
 
