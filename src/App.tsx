@@ -17,6 +17,7 @@ import LPEngagements from "./pages/LPEngagements";
 import Tasks from "./pages/Tasks";
 import ExternalDataDashboard from "./pages/ExternalDataDashboard";
 import Assistant from "./pages/Assistant";
+import ThesisSettings from "./pages/ThesisSettings";
 import NotFound from "./pages/NotFound";
 import MicrosoftAuthCallback from "./pages/auth/microsoft/callback";
 import ResetPassword from "./pages/auth/ResetPassword";
@@ -95,6 +96,7 @@ function App() {
                       <Route path="/external-data" element={<ExternalDataDashboard />} />
                       <Route path="/assistant" element={<Assistant />} />
                       <Route path="/assistant/:threadId" element={<Assistant />} />
+                      <Route path="/settings/thesis" element={<ThesisSettings />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Layout>
