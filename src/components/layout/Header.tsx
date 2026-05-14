@@ -13,7 +13,8 @@ import {
   Users, 
   Contact,
   HandCoins,
-  ClipboardList
+  ClipboardList,
+  Sparkles
 } from 'lucide-react';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 
@@ -25,6 +26,7 @@ const navigation = [
   { name: 'LP Engagements', href: '/lp-engagements', icon: HandCoins },
   { name: 'Contacts', href: '/contacts', icon: Contact },
   { name: 'Tasks', href: '/tasks', icon: ClipboardList },
+  { name: 'Assistant', href: '/assistant', icon: Sparkles },
 ];
 
 export default function Header() {
@@ -53,7 +55,7 @@ export default function Header() {
             <nav className="hidden lg:flex space-x-1">
               {filteredNavigation.map((item) => {
                 const Icon = item.icon;
-                const isActive = location.pathname === item.href;
+                const isActive = location.pathname === item.href || location.pathname.startsWith(item.href + '/');
                 const showBadge = item.name === 'Tasks' && openTaskCount > 0;
                 
                 return (
