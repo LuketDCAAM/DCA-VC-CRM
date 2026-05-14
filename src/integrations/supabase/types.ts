@@ -177,6 +177,57 @@ export type Database = {
         }
         Relationships: []
       }
+      analyst_runs: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          deal_id: string
+          error: string | null
+          id: string
+          key_findings: string[] | null
+          proposed_actions: Json | null
+          rubric: Json | null
+          score: number | null
+          sources: Json | null
+          status: string
+          summary: string | null
+          trigger: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          deal_id: string
+          error?: string | null
+          id?: string
+          key_findings?: string[] | null
+          proposed_actions?: Json | null
+          rubric?: Json | null
+          score?: number | null
+          sources?: Json | null
+          status?: string
+          summary?: string | null
+          trigger?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          deal_id?: string
+          error?: string | null
+          id?: string
+          key_findings?: string[] | null
+          proposed_actions?: Json | null
+          rubric?: Json | null
+          score?: number | null
+          sources?: Json | null
+          status?: string
+          summary?: string | null
+          trigger?: string
+        }
+        Relationships: []
+      }
       api_configurations: {
         Row: {
           api_key_encrypted: string
@@ -761,6 +812,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      investment_thesis: {
+        Row: {
+          auto_run_on_create: boolean
+          business_models: string[] | null
+          check_size_max: number | null
+          check_size_min: number | null
+          created_at: string
+          deal_breakers: string[] | null
+          geographies: string[] | null
+          id: string
+          must_haves: string[] | null
+          narrative: string | null
+          notion_transcripts_db_id: string | null
+          sectors: string[] | null
+          stages: string[] | null
+          updated_at: string
+          updated_by: string | null
+          weight_market: number
+          weight_sector_fit: number
+          weight_stage_fit: number
+          weight_team: number
+          weight_traction: number
+        }
+        Insert: {
+          auto_run_on_create?: boolean
+          business_models?: string[] | null
+          check_size_max?: number | null
+          check_size_min?: number | null
+          created_at?: string
+          deal_breakers?: string[] | null
+          geographies?: string[] | null
+          id?: string
+          must_haves?: string[] | null
+          narrative?: string | null
+          notion_transcripts_db_id?: string | null
+          sectors?: string[] | null
+          stages?: string[] | null
+          updated_at?: string
+          updated_by?: string | null
+          weight_market?: number
+          weight_sector_fit?: number
+          weight_stage_fit?: number
+          weight_team?: number
+          weight_traction?: number
+        }
+        Update: {
+          auto_run_on_create?: boolean
+          business_models?: string[] | null
+          check_size_max?: number | null
+          check_size_min?: number | null
+          created_at?: string
+          deal_breakers?: string[] | null
+          geographies?: string[] | null
+          id?: string
+          must_haves?: string[] | null
+          narrative?: string | null
+          notion_transcripts_db_id?: string | null
+          sectors?: string[] | null
+          stages?: string[] | null
+          updated_at?: string
+          updated_by?: string | null
+          weight_market?: number
+          weight_sector_fit?: number
+          weight_stage_fit?: number
+          weight_team?: number
+          weight_traction?: number
+        }
+        Relationships: []
       }
       investments: {
         Row: {
