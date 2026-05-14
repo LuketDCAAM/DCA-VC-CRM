@@ -14,6 +14,169 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_actions: {
+        Row: {
+          action_type: string
+          applied_at: string | null
+          created_at: string
+          error: string | null
+          id: string
+          payload: Json
+          rationale: string | null
+          reviewer_id: string | null
+          run_id: string
+          status: string
+          target_id: string | null
+          target_table: string | null
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          applied_at?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          payload?: Json
+          rationale?: string | null
+          reviewer_id?: string | null
+          run_id: string
+          status?: string
+          target_id?: string | null
+          target_table?: string | null
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          applied_at?: string | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          payload?: Json
+          rationale?: string | null
+          reviewer_id?: string | null
+          run_id?: string
+          status?: string
+          target_id?: string | null
+          target_table?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_actions_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "agent_runs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_messages: {
+        Row: {
+          created_at: string
+          id: string
+          parts: Json
+          role: string
+          thread_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          parts: Json
+          role: string
+          thread_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parts?: Json
+          role?: string
+          thread_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "agent_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_runs: {
+        Row: {
+          agent_type: string
+          completed_at: string | null
+          completion_tokens: number | null
+          created_at: string
+          error: string | null
+          id: string
+          input: Json | null
+          model: string | null
+          prompt_tokens: number | null
+          status: string
+          thread_id: string | null
+          trigger: string
+          user_id: string
+        }
+        Insert: {
+          agent_type: string
+          completed_at?: string | null
+          completion_tokens?: number | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          input?: Json | null
+          model?: string | null
+          prompt_tokens?: number | null
+          status?: string
+          thread_id?: string | null
+          trigger: string
+          user_id: string
+        }
+        Update: {
+          agent_type?: string
+          completed_at?: string | null
+          completion_tokens?: number | null
+          created_at?: string
+          error?: string | null
+          id?: string
+          input?: Json | null
+          model?: string | null
+          prompt_tokens?: number | null
+          status?: string
+          thread_id?: string | null
+          trigger?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      agent_threads: {
+        Row: {
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       api_configurations: {
         Row: {
           api_key_encrypted: string
