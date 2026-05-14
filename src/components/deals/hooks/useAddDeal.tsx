@@ -260,6 +260,26 @@ export function useAddDeal() {
         description: "Deal created successfully",
       });
 
+      // Auto-run Analyst if enabled in thesis
+      try {
+        const { data: thesis } = await supabase
+          .from('investment_thesis')
+          .select('auto_run_on_create')
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        if (thesis?.auto_run_on_create && dealData?.id) {
+          // Fire-and-forget — don't block deal creation UI
+          supabase.functions.invoke('analyst-run', {
+            body: { dealId: dealData.id, trigger: 'auto' },
+          }).then(() => {
+            toast({ title: "Analyst", description: `Analyst is reviewing ${values.company_name}…` });
+          }).catch((err) => console.warn('analyst auto-run failed', err));
+        }
+      } catch (err) {
+        console.warn('thesis lookup failed', err);
+      }
+
       return true;
     } catch (error) {
       console.error('useAddDeal - Error creating deal:', error);
