@@ -130,14 +130,15 @@ export function useDealScorecard(dealId: string) {
       const inputs = { ...inputsFromRow(row), ...inputsFromRow(patch as DealScorecardRow) };
       const ratings = (patch.qualitative_ratings ?? row.qualitative_ratings ?? {}) as QualitativeRatings;
       const computed = computeSnapshot(inputs, ratings, benchmarkMap);
+      const update: Record<string, unknown> = {
+        ...(patch as Record<string, unknown>),
+        computed,
+        blended_score: computed.blended_score,
+        classification: computed.classification,
+      };
       const { data, error } = await supabase
         .from("deal_scorecards")
-        .update({
-          ...(patch as never),
-          computed: computed as unknown as never,
-          blended_score: computed.blended_score,
-          classification: computed.classification,
-        })
+        .update(update as never)
         .eq("id", row.id)
         .select("*")
         .single();
