@@ -1,77 +1,59 @@
-# Let the agent edit its own instruction markdown (with approval)
+## Goal
 
-Today the prompts live as files inside the deployed edge function (`supabase/functions/agent/prompts/*.md` and `playbooks/*.md`). Those files are read-only at runtime — they only change on redeploy. To let the agent itself propose edits that you approve, we move the markdown into the database and add a new `propose_*` tool that flows through the existing Approvals panel.
+Replicate the pasted lavender / soft-purple theme across the entire app — light + dark, all components, charts, sidebar, fonts, radius, and shadows — without breaking the existing Tailwind v3 setup.
 
-## What you'll be able to do after
+## Key compatibility note
 
-- Ask the agent: "Update the bulk-import playbook to also dedupe by company name" → it drafts the new markdown, creates a pending action, you click Approve, the next chat turn uses the new instructions.
-- Edit prompts yourself from a simple admin page (Settings → Agent Instructions) without touching code or redeploying.
-- See full version history of every prompt edit.
+The pasted snippet is **Tailwind v4 syntax** (`@import "tailwindcss"`, `@theme inline`, `@custom-variant`). This project is **Tailwind v3** with the `hsl(var(--token))` wrapper pattern. We will keep v3 and port the theme by:
 
-## Data model
+1. Storing the raw `oklch(...)` values in the CSS variables.
+2. Changing `tailwind.config.ts` color wrappers from `hsl(var(--x))` → `var(--x)` so any color space (oklch, hsl, hex) works.
 
-New table `agent_prompts`:
+This is the cleanest way to replicate the look without a framework upgrade.
 
-| column | type | notes |
-| --- | --- | --- |
-| `id` uuid pk | | |
-| `slug` text unique | e.g. `prompts/system`, `playbooks/weekly-review` | |
-| `kind` text | `prompt` or `playbook` | |
-| `title` text | human label | |
-| `body` text | the markdown | |
-| `updated_at` timestamptz | | |
-| `updated_by` uuid | references `auth.users` | |
+## Plan
 
-New table `agent_prompt_versions` (append-only history): `id, prompt_id, body, created_at, created_by, change_note`.
+### 1. Rewrite `src/index.css`
+- Replace `:root` and `.dark` blocks with the pasted oklch tokens (background, foreground, card, popover, primary, secondary, muted, accent, destructive, border, input, ring, chart-1…5, sidebar-* tokens, fonts, radius, shadows).
+- Rename `--sidebar` → `--sidebar-background` (our config expects that name) — keep both for safety.
+- Add the shadow tokens (`--shadow-sm` … `--shadow-2xl`) and font tokens (`--font-sans`, `--font-serif`, `--font-mono`).
+- Keep `@tailwind base/components/utilities` directives (v3).
+- Keep the `@layer base` body/border rules.
 
-RLS: readable by any authenticated user in the workspace; writes only via the `apply-actions` edge function (service role).
+### 2. Update `tailwind.config.ts`
+- Swap every `hsl(var(--token))` to `var(--token)` so oklch resolves correctly.
+- Add `fontFamily`: `sans: ['var(--font-sans)']`, `serif: ['var(--font-serif)']`, `mono: ['var(--font-mono)']`.
+- Add `boxShadow` entries mapping to `var(--shadow-*)`.
+- Keep existing chart-1…5, sidebar, keyframes, animations.
 
-Seed migration copies the current 6 markdown files into `agent_prompts` rows so behavior is unchanged on day one.
+### 3. Load the fonts
+- Add Geist, Lora, Fira Code via `<link>` tags in `index.html` (Google Fonts).
 
-## Agent changes
+### 4. Audit hard-coded colors
+- Grep the codebase for raw hex / `text-white` / `bg-black` / `text-green-600` / chart hardcodes and replace with semantic tokens where they slipped in (memory rule: never use raw colors).
+- Known offender: `ThesisSettings.tsx` uses `text-green-600` / `text-destructive` — normalize.
 
-1. **Loader switch** — `prompt-loader.ts` queries `agent_prompts` (ordered: prompts first, then playbooks) instead of reading files. Same `{{PIPELINE_STAGES}}` substitution. Cached per cold-start with a 60s TTL so approved edits show up quickly without spamming the DB.
-2. **New tool** `propose_edit_prompt({ slug, new_body, change_note })`:
-   - Validates the slug exists.
-   - Inserts an `agent_actions` row with `kind = 'edit_prompt'`, payload `{ slug, new_body, change_note, old_body_preview }`.
-   - Returns `{ proposed: true }`. Agent tells user it's in the Approvals panel.
-3. **System prompt addendum** — new short section telling the agent: "You may propose edits to your own instructions via `propose_edit_prompt`. Use it when the user asks you to remember a rule, add a playbook step, or change how you handle a task. Always pass the FULL new body, not a diff."
+### 5. Verify charts & gradients
+- Project memory: pink→purple gradient lives in `--chart-1` … `--chart-5`. The new palette is purple/rose/teal/amber/blue — confirm with you before swapping, since this changes dashboard chart colors meaningfully.
 
-## Approvals flow
+### 6. QA pass
+- Visit: Dashboard, Deals table, Assistant (chat + inline approvals + sidebar), Approvals, Thesis settings, Auth pages, Settings — confirm contrast and that no component renders unstyled.
+- Light + dark mode toggle check.
 
-- `apply-actions` edge function gets a new branch for `kind = 'edit_prompt'`:
-  1. Update `agent_prompts.body` for the matching slug.
-  2. Insert a row in `agent_prompt_versions` with the prior body.
-  3. Invalidate the in-process prompt cache (best-effort; 60s TTL guarantees pickup on next cold-start).
-- Existing Approvals panel renders the action; we add a custom preview that shows a diff (old vs new) using a lightweight inline diff component. Approve / Reject buttons reuse the current handlers.
+## Technical details
 
-## Admin UI (small)
+```text
+src/index.css          → replace token blocks, add shadows + font vars
+tailwind.config.ts     → hsl(var(--x)) → var(--x); add fontFamily + boxShadow
+index.html             → <link> Geist / Lora / Fira Code
+components             → fix any remaining literal color classes
+```
 
-New route `/settings/agent-instructions`:
+## One question before I build
 
-- Left: list of prompts + playbooks (grouped).
-- Right: monaco-lite textarea with markdown preview tab and a "Save" button.
-- Save → also inserts into `agent_prompt_versions`. No approval required for direct human edits (you're already authenticated).
-- "History" drawer lists prior versions with restore button.
+The new palette replaces the existing **pink→purple chart gradient** (a core brand rule in memory) with `purple / rose / teal / amber / blue`. Do you want me to:
 
-## Migration steps
+- **(A)** Apply the new palette literally as pasted (charts become multi-hue), or
+- **(B)** Keep charts on the pink→purple gradient and only apply the new theme to UI chrome (background, primary, sidebar, etc.)?
 
-1. DB migration: create `agent_prompts` + `agent_prompt_versions`, RLS policies, seed rows from current markdown.
-2. Update `prompt-loader.ts` to query the table; delete the file-reading path. Keep the markdown files in the repo for one release as a backup, then remove.
-3. Add `propose_edit_prompt` tool definition in `agent/index.ts` and a one-paragraph addition to `prompts/system.md` (which the seed then carries into the DB).
-4. Extend `apply-actions/index.ts` with the `edit_prompt` branch.
-5. Add the Approvals panel renderer for `edit_prompt` (diff preview).
-6. Build `/settings/agent-instructions` page + route + nav entry.
-7. Smoke test: ask the agent "remember that we never invest in crypto" → approve → confirm next turn refuses a crypto deal.
-
-## Out of scope
-
-- Per-user prompt overrides (everyone in the workspace shares one set).
-- Branching / A-B testing of prompts.
-- Letting the agent create brand-new playbook slugs on its own (v1: agent can only edit existing slugs; humans create new ones from the admin UI).
-
-## Technical notes
-
-- The 60s loader cache means an approved edit takes up to a minute to take effect on warm instances. We can drop this to 10s or invalidate via a Postgres NOTIFY if you want instant pickup.
-- Diff rendering uses `diff` (npm) — small dep, ~5KB.
-- `agent_prompt_versions` is append-only; no delete UI. Good for auditability.
+If you don't answer, I'll default to **(A)** since you pasted the theme verbatim and update the memory accordingly.
