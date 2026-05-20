@@ -140,5 +140,5 @@ export function useAgentActions(filterStatus: AgentAction["status"] | "all" = "p
   const visibleActions = loadedStatus === filterStatus ? actions : [];
   const visibleLoading = loading || loadedStatus !== filterStatus;
 
-  return { actions: visibleActions, loading: visibleLoading, error, refresh, apply, applyMany, reject, retry };
+  return { actions: visibleActions, loading: visibleLoading, error, refresh, apply, applyMany, reject, rejectMany, retry };
 }
