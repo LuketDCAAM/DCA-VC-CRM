@@ -39,10 +39,10 @@ const DealFieldsSchema = z.object({
   sector: z.string().optional(),
   pipeline_stage: z.enum(PIPELINE_STAGES).optional(),
   round_stage: z.enum(ROUND_STAGES).optional(),
-  round_size: z.number().optional(),
-  post_money_valuation: z.number().optional(),
-  revenue: z.number().optional(),
-  website: z.string().optional(),
+  round_size: z.number().int().optional().describe("Round size in WHOLE USD DOLLARS (not cents). $10M = 10000000."),
+  post_money_valuation: z.number().int().optional().describe("Post-money valuation in WHOLE USD DOLLARS (not cents)."),
+  revenue: z.number().int().optional().describe("Annual revenue in WHOLE USD DOLLARS (not cents)."),
+  website: z.string().optional().describe("Canonical URL with https://. Domain must be unique across deals."),
   linkedin_url: z.string().optional(),
   crunchbase_url: z.string().optional(),
   location: z.string().optional(),
@@ -56,7 +56,7 @@ const DealFieldsSchema = z.object({
   deal_source: z.string().optional(),
   source_date: z.string().optional().describe("YYYY-MM-DD"),
   deal_lead: z.string().optional(),
-  next_steps: z.string().optional(),
+  next_steps: z.string().optional().describe("Use for pitch deck links and immediate follow-ups."),
   tags: z.array(z.string()).optional(),
   founded_year: z.number().int().optional(),
   employee_count_range: z.string().optional(),
@@ -64,6 +64,17 @@ const DealFieldsSchema = z.object({
   investment_vehicle: z.enum(INVESTMENT_VEHICLES).optional(),
   reason_for_passing: z.string().optional(),
 }).partial();
+
+function normalizeDomain(url?: string | null): string | null {
+  if (!url) return null;
+  try {
+    const u = url.includes("://") ? url : `https://${url}`;
+    const host = new URL(u).hostname.toLowerCase().replace(/^www\./, "");
+    return host || null;
+  } catch {
+    return url.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0] || null;
+  }
+}
 
 const SYSTEM_PROMPT = `You are the AI assistant inside a venture-capital CRM.
 
@@ -76,13 +87,22 @@ For ANY mutating action you MUST call the corresponding "propose_*" tool:
   - propose_create_task
   - propose_draft_email
 
-Deal field rules — only use these enum values exactly:
+CRITICAL — duplicate prevention:
+Before propose_create_deal, ALWAYS call search_deals (and find_deal_by_website if you have a URL)
+to check for an existing record. The deals table has a UNIQUE constraint on website domain —
+duplicates WILL fail. If a match exists, call propose_update_deal against the existing deal_id
+instead. Never invent suffixes like "Acme 2.0" to work around duplicates. If propose_create_deal
+returns { duplicate: true, existing_deal_id }, immediately call propose_update_deal on that id.
+
+Deal field rules — use these enum values exactly:
   - pipeline_stage: ${PIPELINE_STAGES.join(", ")}
   - round_stage: ${ROUND_STAGES.join(", ")}
   - investment_vehicle: ${INVESTMENT_VEHICLES.join(", ")}
-Use round_stage for the funding round (NOT a "stage" field). Numeric fields
-(round_size, post_money_valuation, revenue) must be integers in USD, never strings.
+
+Numeric fields (round_size, post_money_valuation, revenue) are WHOLE USD DOLLARS as integers.
+$10M => 10000000. $1.5M => 1500000. NEVER use cents. NEVER use scientific-notation strings.
 Dates must be YYYY-MM-DD. Do NOT invent column names — stick to the documented fields.
+Pitch deck links and follow-ups belong in next_steps, not description.
 
 NEVER claim something was created, updated, or sent unless the matching propose_* tool
 returned { proposed: true }. After proposing, tell the user the items are waiting in the
