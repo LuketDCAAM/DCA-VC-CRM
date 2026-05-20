@@ -461,19 +461,26 @@ Deno.serve(async (req) => {
         execute: async ({ website }) => {
           const domain = normalizeDomain(website);
           if (!domain) return { found: false };
+          // Uses deals_website_domain_idx for O(log n) lookup.
           const { data, error } = await supabase
-            .from("deals")
-            .select("id,company_name,website,pipeline_stage,deal_score")
-            .or(`website.ilike.%${domain}%`)
+            .rpc("find_potential_duplicates", { p_company_name: "", p_website: domain })
             .limit(5);
-          if (error) return { error: error.message };
+          if (error) {
+            // Fallback: filter client-side after a small fetch (still indexed via lower())
+            const { data: fallback } = await supabase
+              .from("deals")
+              .select("id,company_name,website,pipeline_stage,deal_score")
+              .ilike("website", `%${domain}%`)
+              .limit(5);
+            return { found: (fallback?.length ?? 0) > 0, matches: fallback ?? [] };
+          }
           return { found: (data?.length ?? 0) > 0, matches: data ?? [] };
         },
       }),
 
       propose_create_deal: tool({
         description:
-          "Propose creating a new deal. Lands in the approval queue. ALWAYS call search_deals + find_deal_by_website first — duplicate websites WILL fail. If a duplicate is returned, use propose_update_deal on the existing_deal_id instead.",
+          "Propose creating ONE deal. For 2+ deals, use propose_create_deals_bulk instead. Server checks for duplicates by website domain and company name; if a duplicate is returned use propose_update_deal on existing_deal_id.",
         inputSchema: z.object({
           company_name: z.string(),
           fields: DealFieldsSchema.optional().describe(
@@ -483,39 +490,16 @@ Deno.serve(async (req) => {
         }),
         execute: async ({ company_name, fields, rationale }) => {
           if (!runId) return { error: "No run id" };
-          const payload = { company_name, ...(fields ?? {}) };
-
-          // Server-side duplicate check — by website domain and by company_name (case-insensitive)
-          const domain = normalizeDomain(fields?.website as string | undefined);
-          if (domain) {
-            const { data: byDomain } = await supabase
-              .from("deals")
-              .select("id,company_name,website")
-              .ilike("website", `%${domain}%`)
-              .limit(1);
-            if (byDomain && byDomain.length > 0) {
-              return {
-                duplicate: true,
-                existing_deal_id: byDomain[0].id,
-                existing_company_name: byDomain[0].company_name,
-                hint: "Call propose_update_deal against existing_deal_id instead of creating a duplicate.",
-              };
-            }
-          }
-          const { data: byName } = await supabase
-            .from("deals")
-            .select("id,company_name,website")
-            .ilike("company_name", company_name)
-            .limit(1);
-          if (byName && byName.length > 0) {
+          const dup = await findDuplicate(supabase, company_name, fields?.website as string | undefined);
+          if (dup) {
             return {
               duplicate: true,
-              existing_deal_id: byName[0].id,
-              existing_company_name: byName[0].company_name,
+              existing_deal_id: dup.id,
+              existing_company_name: dup.company_name,
               hint: "Call propose_update_deal against existing_deal_id instead of creating a duplicate.",
             };
           }
-
+          const payload = { company_name, ...(fields ?? {}) };
           const { data, error } = await supabase
             .from("agent_actions")
             .insert({
@@ -531,6 +515,79 @@ Deno.serve(async (req) => {
             .single();
           if (error) return { error: error.message };
           return { proposed: true, action_id: data.id };
+        },
+      }),
+
+      propose_create_deals_bulk: tool({
+        description:
+          "Propose creating MANY deals in one shot. Use this whenever the user asks for 2+ deals. Server-side duplicate checks run for each entry; duplicates are reported back but do not block the others.",
+        inputSchema: z.object({
+          deals: z.array(z.object({
+            company_name: z.string(),
+            fields: DealFieldsSchema.optional(),
+          })).min(1).max(50),
+          rationale: z.string().describe("One-sentence reason covering the whole batch"),
+        }),
+        execute: async ({ deals, rationale }) => {
+          if (!runId) return { error: "No run id" };
+          const proposed: string[] = [];
+          const duplicates: { company_name: string; existing_deal_id: string }[] = [];
+          const rows: Record<string, unknown>[] = [];
+          for (const d of deals) {
+            const dup = await findDuplicate(supabase, d.company_name, d.fields?.website as string | undefined);
+            if (dup) {
+              duplicates.push({ company_name: d.company_name, existing_deal_id: dup.id });
+              continue;
+            }
+            rows.push({
+              run_id: runId,
+              user_id: userId,
+              action_type: "create_deal",
+              target_table: "deals",
+              payload: { company_name: d.company_name, ...(d.fields ?? {}) },
+              rationale,
+              status: "pending",
+            });
+          }
+          if (rows.length) {
+            const { data, error } = await supabase
+              .from("agent_actions")
+              .insert(rows)
+              .select("id");
+            if (error) return { error: error.message, duplicates };
+            for (const r of data ?? []) proposed.push(r.id as string);
+          }
+          return { proposed: proposed.length, duplicates, action_ids: proposed };
+        },
+      }),
+
+      propose_create_tasks_bulk: tool({
+        description: "Propose MANY tasks/reminders in one shot. Use for 2+ tasks.",
+        inputSchema: z.object({
+          tasks: z.array(z.object({
+            title: z.string(),
+            description: z.string().optional(),
+            reminder_date: z.string().describe("YYYY-MM-DD"),
+            priority: z.enum(["low", "medium", "high"]).default("medium"),
+            deal_id: z.string().uuid().optional(),
+            investor_id: z.string().uuid().optional(),
+          })).min(1).max(50),
+          rationale: z.string(),
+        }),
+        execute: async ({ tasks, rationale }) => {
+          if (!runId) return { error: "No run id" };
+          const rows = tasks.map((t) => ({
+            run_id: runId,
+            user_id: userId,
+            action_type: "create_task",
+            target_table: "reminders",
+            payload: t,
+            rationale,
+            status: "pending",
+          }));
+          const { data, error } = await supabase.from("agent_actions").insert(rows).select("id");
+          if (error) return { error: error.message };
+          return { proposed: data?.length ?? 0, action_ids: (data ?? []).map((r) => r.id) };
         },
       }),
 
