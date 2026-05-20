@@ -12,6 +12,7 @@ import { z } from "npm:zod@4.4.3";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { researchTools } from "../_shared/research-tools.ts";
 import { normalizeDomain as normalizeDomainShared } from "../_shared/action-schemas.ts";
+import { loadPrompt } from "./prompt-loader.ts";
 
 const HISTORY_LIMIT = 20; // last N messages sent to the model
 const TOOL_PART_DETAIL_TURNS = 2; // keep full tool output for the last N turns
@@ -133,7 +134,13 @@ function shrinkOlderToolParts(msgs: UIMessage[]): UIMessage[] {
   });
 }
 
-const SYSTEM_PROMPT = `You are the AI assistant inside a venture-capital CRM.
+const SYSTEM_PROMPT = await loadPrompt({
+  PIPELINE_STAGES: PIPELINE_STAGES.join(", "),
+  ROUND_STAGES: ROUND_STAGES.join(", "),
+  INVESTMENT_VEHICLES: INVESTMENT_VEHICLES.join(", "),
+});
+
+const _LEGACY_PROMPT_REMOVED = `removed — see ./prompts/*.md and ./playbooks/*.md
 
 You can read deals, investors, contacts, call notes, and tasks for the signed-in user.
 
