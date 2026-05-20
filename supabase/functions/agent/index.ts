@@ -73,6 +73,27 @@ function normalizeDomain(url?: string | null): string | null {
   return normalizeDomainShared(url ?? null);
 }
 
+// Indexed duplicate lookup: uses deals_website_domain_idx and deals_company_name_lower_idx.
+// deno-lint-ignore no-explicit-any
+async function findDuplicate(db: any, companyName: string, website?: string) {
+  const domain = normalizeDomain(website);
+  if (domain) {
+    const { data } = await db
+      .from("deals")
+      .select("id,company_name,website")
+      .ilike("website", `%${domain}%`) // index speeds the lower() comparison; ilike still scans but is now backed by trgm
+      .limit(1);
+    if (data && data.length > 0) return data[0];
+  }
+  const { data: byName } = await db
+    .from("deals")
+    .select("id,company_name,website")
+    .ilike("company_name", companyName)
+    .limit(1);
+  if (byName && byName.length > 0) return byName[0];
+  return null;
+}
+
 // Strip large tool outputs from older messages to keep prompts small.
 // Keeps user/assistant text intact; replaces older tool outputs with a summary.
 function trimHistory(msgs: UIMessage[]): UIMessage[] {
