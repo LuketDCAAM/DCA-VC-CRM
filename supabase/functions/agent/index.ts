@@ -199,8 +199,9 @@ Deno.serve(async (req) => {
             .from("agent_messages")
             .select("role,parts")
             .eq("thread_id", threadId)
-            .order("created_at", { ascending: true });
-          history = (data ?? []).map((m, i) => ({
+            .order("created_at", { ascending: false })
+            .limit(HISTORY_LIMIT);
+          history = (data ?? []).reverse().map((m, i) => ({
             id: `hist-${i}`,
             role: m.role as UIMessage["role"],
             parts: (m.parts as unknown) as UIMessage["parts"],
