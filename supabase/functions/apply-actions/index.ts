@@ -198,6 +198,34 @@ async function applyOne(
     }
     case "draft_email":
       return; // drafts stay on the action row
+    case "edit_prompt": {
+      const slug = (raw as { slug?: string }).slug;
+      const newBody = (raw as { new_body?: string }).new_body;
+      const changeNote = (raw as { change_note?: string }).change_note ?? null;
+      if (!slug || !newBody) throw new Error("edit_prompt requires slug and new_body");
+      const { data: existing, error: lookupErr } = await db
+        .from("agent_prompts")
+        .select("id,body")
+        .eq("slug", slug)
+        .maybeSingle();
+      if (lookupErr) throw lookupErr;
+      if (!existing) throw new Error(`No prompt with slug "${slug}"`);
+      // Snapshot previous body
+      const { error: histErr } = await db.from("agent_prompt_versions").insert({
+        prompt_id: existing.id,
+        slug,
+        body: existing.body,
+        change_note: changeNote,
+        created_by: userId,
+      });
+      if (histErr) throw histErr;
+      const { error: updErr } = await db
+        .from("agent_prompts")
+        .update({ body: newBody, updated_by: userId })
+        .eq("id", existing.id);
+      if (updErr) throw updErr;
+      return;
+    }
     default:
       throw new Error(`Unsupported action type: ${action.action_type}`);
   }
