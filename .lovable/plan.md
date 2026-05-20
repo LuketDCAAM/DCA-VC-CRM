@@ -1,52 +1,77 @@
-# Externalize agent instructions to Markdown
+# Let the agent edit its own instruction markdown (with approval)
 
-Today the agent's behavior is hard-coded in a single TypeScript template literal at the top of `supabase/functions/agent/index.ts`. Editing it requires touching code and redeploying. This plan moves the instructions into versioned markdown files that are easier for you to read, edit, and grow over time — and adds room for task-specific "playbooks" (e.g. bulk imports, weekly reviews, company research).
+Today the prompts live as files inside the deployed edge function (`supabase/functions/agent/prompts/*.md` and `playbooks/*.md`). Those files are read-only at runtime — they only change on redeploy. To let the agent itself propose edits that you approve, we move the markdown into the database and add a new `propose_*` tool that flows through the existing Approvals panel.
 
 ## What you'll be able to do after
 
-- Open a `.md` file, edit the agent's rules in plain English, and the next chat turn picks them up.
-- Add new playbooks (e.g. `playbooks/weekly-review.md`) without touching agent code.
-- See the full prompt in one place, with proper formatting, headings, and diff-friendly history.
+- Ask the agent: "Update the bulk-import playbook to also dedupe by company name" → it drafts the new markdown, creates a pending action, you click Approve, the next chat turn uses the new instructions.
+- Edit prompts yourself from a simple admin page (Settings → Agent Instructions) without touching code or redeploying.
+- See full version history of every prompt edit.
 
-## File layout
+## Data model
 
-```text
-supabase/functions/agent/
-  index.ts
-  prompts/
-    system.md              # core identity, tools, mutation/duplicate rules
-    field-rules.md         # enums, numeric/date formatting, column hygiene
-    bulk-operations.md     # when to use *_bulk tools
-  playbooks/
-    bulk-import-deals.md   # step-by-step recipe
-    research-company.md
-    weekly-review.md
-    (add more over time)
-```
+New table `agent_prompts`:
 
-## How it loads
+| column | type | notes |
+| --- | --- | --- |
+| `id` uuid pk | | |
+| `slug` text unique | e.g. `prompts/system`, `playbooks/weekly-review` | |
+| `kind` text | `prompt` or `playbook` | |
+| `title` text | human label | |
+| `body` text | the markdown | |
+| `updated_at` timestamptz | | |
+| `updated_by` uuid | references `auth.users` | |
 
-- A new helper `loadPrompt()` in `supabase/functions/agent/prompt-loader.ts` reads the markdown files at function cold-start using `Deno.readTextFile(new URL("./prompts/system.md", import.meta.url))`.
-- Dynamic values that today are interpolated into the template (the pipeline/round/vehicle enum lists) are injected via simple `{{PIPELINE_STAGES}}` placeholders so the markdown stays readable.
-- Playbooks are concatenated under a `## Playbooks` section so the model sees them as reference recipes it can follow when the user's request matches.
-- Edge functions bundle adjacent files automatically on deploy — no config changes needed.
+New table `agent_prompt_versions` (append-only history): `id, prompt_id, body, created_at, created_by, change_note`.
+
+RLS: readable by any authenticated user in the workspace; writes only via the `apply-actions` edge function (service role).
+
+Seed migration copies the current 6 markdown files into `agent_prompts` rows so behavior is unchanged on day one.
+
+## Agent changes
+
+1. **Loader switch** — `prompt-loader.ts` queries `agent_prompts` (ordered: prompts first, then playbooks) instead of reading files. Same `{{PIPELINE_STAGES}}` substitution. Cached per cold-start with a 60s TTL so approved edits show up quickly without spamming the DB.
+2. **New tool** `propose_edit_prompt({ slug, new_body, change_note })`:
+   - Validates the slug exists.
+   - Inserts an `agent_actions` row with `kind = 'edit_prompt'`, payload `{ slug, new_body, change_note, old_body_preview }`.
+   - Returns `{ proposed: true }`. Agent tells user it's in the Approvals panel.
+3. **System prompt addendum** — new short section telling the agent: "You may propose edits to your own instructions via `propose_edit_prompt`. Use it when the user asks you to remember a rule, add a playbook step, or change how you handle a task. Always pass the FULL new body, not a diff."
+
+## Approvals flow
+
+- `apply-actions` edge function gets a new branch for `kind = 'edit_prompt'`:
+  1. Update `agent_prompts.body` for the matching slug.
+  2. Insert a row in `agent_prompt_versions` with the prior body.
+  3. Invalidate the in-process prompt cache (best-effort; 60s TTL guarantees pickup on next cold-start).
+- Existing Approvals panel renders the action; we add a custom preview that shows a diff (old vs new) using a lightweight inline diff component. Approve / Reject buttons reuse the current handlers.
+
+## Admin UI (small)
+
+New route `/settings/agent-instructions`:
+
+- Left: list of prompts + playbooks (grouped).
+- Right: monaco-lite textarea with markdown preview tab and a "Save" button.
+- Save → also inserts into `agent_prompt_versions`. No approval required for direct human edits (you're already authenticated).
+- "History" drawer lists prior versions with restore button.
 
 ## Migration steps
 
-1. Create `prompts/system.md`, `prompts/field-rules.md`, `prompts/bulk-operations.md` containing the exact text from the current `SYSTEM_PROMPT` constant, split by topic. No behavior change.
-2. Create three starter playbooks (`bulk-import-deals.md`, `research-company.md`, `weekly-review.md`) capturing patterns you already rely on.
-3. Add `prompt-loader.ts` that reads + concatenates the files, substitutes `{{PIPELINE_STAGES}}` / `{{ROUND_STAGES}}` / `{{INVESTMENT_VEHICLES}}`, and caches the result per cold-start.
-4. Replace the inline `SYSTEM_PROMPT` constant in `index.ts` with `const SYSTEM_PROMPT = await loadPrompt();` and remove the old template literal.
-5. Smoke-test in the Approvals/Assistant flow: send "create 3 deals", verify bulk tool still fires; send "update deal X", verify duplicate rules still apply.
+1. DB migration: create `agent_prompts` + `agent_prompt_versions`, RLS policies, seed rows from current markdown.
+2. Update `prompt-loader.ts` to query the table; delete the file-reading path. Keep the markdown files in the repo for one release as a backup, then remove.
+3. Add `propose_edit_prompt` tool definition in `agent/index.ts` and a one-paragraph addition to `prompts/system.md` (which the seed then carries into the DB).
+4. Extend `apply-actions/index.ts` with the `edit_prompt` branch.
+5. Add the Approvals panel renderer for `edit_prompt` (diff preview).
+6. Build `/settings/agent-instructions` page + route + nav entry.
+7. Smoke test: ask the agent "remember that we never invest in crypto" → approve → confirm next turn refuses a crypto deal.
 
-## Out of scope (can be follow-ups)
+## Out of scope
 
-- A UI in the app to edit the markdown (would need an admin page + storage).
-- Per-user or per-fund prompt overrides.
-- Versioning/A-B testing of prompts.
+- Per-user prompt overrides (everyone in the workspace shares one set).
+- Branching / A-B testing of prompts.
+- Letting the agent create brand-new playbook slugs on its own (v1: agent can only edit existing slugs; humans create new ones from the admin UI).
 
 ## Technical notes
 
-- Markdown is included verbatim in the model's `system` message; headings and bullets are fine, the model handles them well.
-- File reads happen once per cold-start (cached in a module-level variable), so there's no per-request latency cost.
-- Keeping placeholders (`{{...}}`) instead of importing TS constants into markdown means the enum lists stay the single source of truth in `_shared/action-schemas.ts` style files.
+- The 60s loader cache means an approved edit takes up to a minute to take effect on warm instances. We can drop this to 10s or invalidate via a Postgres NOTIFY if you want instant pickup.
+- Diff rendering uses `diff` (npm) — small dep, ~5KB.
+- `agent_prompt_versions` is append-only; no delete UI. Good for auditability.
