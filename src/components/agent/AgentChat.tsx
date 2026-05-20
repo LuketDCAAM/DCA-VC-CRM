@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Send, ChevronDown, ChevronRight, Wrench, StopCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { InlineApprovalCards } from "@/components/agent/InlineApprovalCards";
 
 interface AgentChatProps {
   threadId: string;
@@ -114,26 +115,45 @@ function MessageBubble({ message }: { message: UIMessage }) {
     <div className={cn("flex gap-3", isUser && "justify-end")}>
       <div
         className={cn(
-          "rounded-lg px-4 py-2 max-w-[85%]",
-          isUser ? "bg-primary text-primary-foreground" : "bg-muted",
+          isUser
+            ? "rounded-lg px-4 py-2 max-w-[85%] bg-primary text-primary-foreground"
+            : "max-w-[85%] w-full space-y-1",
         )}
       >
         {message.parts.map((part, i) => {
           if (part.type === "text") {
             return (
-              <div key={i} className="prose prose-sm dark:prose-invert max-w-none">
+              <div key={i} className={cn("prose prose-sm dark:prose-invert max-w-none", !isUser && "text-foreground")}>
                 <ReactMarkdown>{part.text}</ReactMarkdown>
               </div>
             );
           }
           if (part.type.startsWith("tool-")) {
-            return <ToolPart key={i} part={part as never} />;
+            const tp = part as ToolPartShape;
+            const ids = extractActionIds(tp);
+            return (
+              <div key={i}>
+                <ToolPart part={tp} />
+                {ids.length > 0 && <InlineApprovalCards ids={ids} />}
+              </div>
+            );
           }
           return null;
         })}
       </div>
     </div>
   );
+}
+
+function extractActionIds(part: ToolPartShape): string[] {
+  const out = part.output as Record<string, unknown> | undefined;
+  if (!out || typeof out !== "object") return [];
+  const ids: string[] = [];
+  if (typeof out.action_id === "string") ids.push(out.action_id);
+  if (Array.isArray(out.action_ids)) {
+    for (const v of out.action_ids) if (typeof v === "string") ids.push(v);
+  }
+  return ids;
 }
 
 interface ToolPartShape {
