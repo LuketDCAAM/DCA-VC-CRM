@@ -58,6 +58,13 @@ export default function Assistant() {
     toast({ title: `Approved ${ok}`, description: failed ? `${failed} failed` : undefined });
   };
 
+  const rejectAll = async () => {
+    setBulkReject(true);
+    const { ok, failed } = await rejectMany(actions.map((a) => a.id));
+    setBulkReject(false);
+    toast({ title: `Rejected ${ok}`, description: failed ? `${failed} failed` : undefined });
+  };
+
   return (
     <div className="flex h-[calc(100vh-3.5rem)]">
       {/* Sidebar */}
