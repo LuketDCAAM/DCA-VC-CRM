@@ -133,7 +133,7 @@ export function useDealScorecard(dealId: string) {
       const { data, error } = await supabase
         .from("deal_scorecards")
         .update({
-          ...patch,
+          ...(patch as never),
           computed: computed as unknown as never,
           blended_score: computed.blended_score,
           classification: computed.classification,
