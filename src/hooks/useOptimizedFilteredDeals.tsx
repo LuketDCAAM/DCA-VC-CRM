@@ -9,12 +9,6 @@ export interface FilteredDealsConfig {
 }
 
 function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<string, any>): Deal[] {
-  console.log('🔍 FILTERING DEALS:', {
-    totalDeals: deals.length,
-    searchTerm,
-    activeFilters,
-  });
-
   let filtered = deals;
 
   // Apply search term filter
