@@ -8,10 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle2, AlertTriangle, XCircle, Loader2, FileSpreadsheet } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, Loader2, FileSpreadsheet, Sparkles } from "lucide-react";
 import { useDealScorecard, inputsFromRow, type DealScorecardRow } from "@/hooks/useDealScorecard";
 import { computeSnapshot } from "@/lib/scorecard/engine";
 import type { QualitativeRating, QualitativeRatings, ScorecardInputs } from "@/lib/scorecard/types";
+import { UploadsPanel } from "./UploadsPanel";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Props {
   dealId: string;
@@ -106,8 +109,26 @@ function bandColor(band: string): string {
 }
 
 export function ScorecardPanel({ dealId }: Props) {
-  const { row, loading, saving, ensureDraft, save, approve, benchmarkMap } = useDealScorecard(dealId);
+  const { row, loading, saving, load, ensureDraft, save, approve, benchmarkMap } = useDealScorecard(dealId);
   const [tab, setTab] = useState("inputs");
+  const [drafting, setDrafting] = useState(false);
+
+  const runAiDraft = async () => {
+    const r = await ensureDraft();
+    if (!r) return;
+    setDrafting(true);
+    const { data, error } = await supabase.functions.invoke("score-deal", {
+      body: { scorecard_id: r.id, deal_id: dealId },
+    });
+    setDrafting(false);
+    if (error || (data as { error?: string })?.error) {
+      toast.error((data as { error?: string })?.error ?? error?.message ?? "AI draft failed");
+      return;
+    }
+    toast.success("AI draft ready — review & approve");
+    load();
+  };
+
 
   const inputs = useMemo(() => inputsFromRow(row), [row]);
   const ratings = (row?.qualitative_ratings ?? {}) as QualitativeRatings;
@@ -159,7 +180,13 @@ export function ScorecardPanel({ dealId }: Props) {
             </Button>
           )}
           {row && !isApproved && (
-            <Button onClick={approve} disabled={saving}>Approve</Button>
+            <>
+              <Button variant="outline" onClick={runAiDraft} disabled={drafting || saving} className="gap-2">
+                {drafting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                AI draft
+              </Button>
+              <Button onClick={approve} disabled={saving}>Approve</Button>
+            </>
           )}
         </div>
       </CardHeader>
@@ -173,13 +200,18 @@ export function ScorecardPanel({ dealId }: Props) {
           </p>
         ) : (
           <Tabs value={tab} onValueChange={setTab}>
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
+              <TabsTrigger value="sources">Sources</TabsTrigger>
               <TabsTrigger value="inputs">Inputs</TabsTrigger>
               <TabsTrigger value="quant">Quantitative</TabsTrigger>
               <TabsTrigger value="qual">Qualitative</TabsTrigger>
               <TabsTrigger value="narrative">Narrative</TabsTrigger>
               <TabsTrigger value="risks">Hard Stops & Risk</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="sources" className="pt-4">
+              <UploadsPanel scorecardId={row.id} dealId={dealId} readonly={readonly} />
+            </TabsContent>
 
             <TabsContent value="inputs" className="space-y-6 pt-4">
               {INPUT_GROUPS.map((group) => (
