@@ -7,12 +7,25 @@ import { useState } from "react";
 const ACTION_LABELS: Record<string, string> = {
   update_deal: "Update deal",
   score_deal: "Score deal",
+  create_deal: "Create deal",
+  create_investor: "Create investor",
+  update_investor: "Update investor",
+  create_contact: "Create contact",
+  update_contact: "Update contact",
   create_task: "Create task",
   draft_email: "Draft email",
 };
 
-export function AgentActionsPanel({ targetTable, targetId }: { targetTable?: string; targetId?: string }) {
-  const { actions, apply, reject } = useAgentActions("pending");
+export function AgentActionsPanel({
+  targetTable,
+  targetId,
+  status = "pending",
+}: {
+  targetTable?: string;
+  targetId?: string;
+  status?: "pending" | "applied" | "rejected" | "failed" | "all";
+}) {
+  const { actions, apply, reject } = useAgentActions(status);
   const filtered = targetId
     ? actions.filter((a) => a.target_table === targetTable && a.target_id === targetId)
     : actions;
@@ -20,7 +33,7 @@ export function AgentActionsPanel({ targetTable, targetId }: { targetTable?: str
   if (filtered.length === 0) {
     return (
       <div className="text-sm text-muted-foreground text-center py-8">
-        No pending agent suggestions.
+        No {status === "pending" ? "pending" : status} agent suggestions.
       </div>
     );
   }

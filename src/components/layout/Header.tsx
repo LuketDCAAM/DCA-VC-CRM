@@ -15,9 +15,11 @@ import {
   HandCoins,
   ClipboardList,
   Sparkles,
-  Target
+  Target,
+  Inbox
 } from 'lucide-react';
 import ThemeToggle from '@/components/theme/ThemeToggle';
+import { usePendingActionCount } from '@/hooks/agent/usePendingActionCount';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
@@ -28,6 +30,7 @@ const navigation = [
   { name: 'Contacts', href: '/contacts', icon: Contact },
   { name: 'Tasks', href: '/tasks', icon: ClipboardList },
   { name: 'Assistant', href: '/assistant', icon: Sparkles },
+  { name: 'Approvals', href: '/approvals', icon: Inbox },
   { name: 'Thesis', href: '/settings/thesis', icon: Target },
 ];
 
@@ -36,6 +39,7 @@ export default function Header() {
   const location = useLocation();
   const { isViewer, isAdmin } = useUserRoles();
   const { count: openTaskCount } = useOpenTaskCount();
+  const pendingActions = usePendingActionCount();
 
   // Filter navigation for viewers
   const filteredNavigation = isViewer 
@@ -58,7 +62,10 @@ export default function Header() {
               {filteredNavigation.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.href || location.pathname.startsWith(item.href + '/');
-                const showBadge = item.name === 'Tasks' && openTaskCount > 0;
+                const taskBadge = item.name === 'Tasks' && openTaskCount > 0 ? openTaskCount : 0;
+                const approvalsBadge = item.name === 'Approvals' && pendingActions > 0 ? pendingActions : 0;
+                const badgeCount = taskBadge || approvalsBadge;
+                const showBadge = badgeCount > 0;
                 
                 return (
                   <Button
@@ -72,7 +79,7 @@ export default function Header() {
                     <span className="hidden xl:inline">{item.name}</span>
                     {showBadge && (
                       <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
-                        {openTaskCount > 99 ? '99+' : openTaskCount}
+                        {badgeCount > 99 ? '99+' : badgeCount}
                       </span>
                     )}
                   </Button>
