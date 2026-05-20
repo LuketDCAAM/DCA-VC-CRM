@@ -98,7 +98,7 @@ export function useDealScorecard(dealId: string) {
       ? {
           sector: deal.sector ?? null,
           stage: deal.round_stage ?? null,
-          geography: deal.location ?? [deal.city, deal.state_province, deal.country].filter(Boolean).join(", ") || null,
+          geography: deal.location ?? ([deal.city, deal.state_province, deal.country].filter(Boolean).join(", ") || null),
           founding_year: deal.founded_year ?? null,
           deal_lead: deal.deal_lead ?? null,
           vehicle: deal.investment_vehicle ?? null,
@@ -134,7 +134,7 @@ export function useDealScorecard(dealId: string) {
         .from("deal_scorecards")
         .update({
           ...patch,
-          computed: computed as unknown as Record<string, unknown>,
+          computed: computed as unknown as never,
           blended_score: computed.blended_score,
           classification: computed.classification,
         })
