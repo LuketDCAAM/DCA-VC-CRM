@@ -44,7 +44,7 @@ export interface ScorecardInputs {
 }
 
 export interface QualitativeRating {
-  score: number | null; // 1-5
+  score?: number | null; // 1-5
   rationale?: string;
   source?: string; // 'deck:p4' | 'transcript' | 'web' | 'manual'
 }
