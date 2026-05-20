@@ -2,106 +2,100 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+/* Design system tokens — lavender / soft-purple oklch theme.
+   Colors stored as raw oklch() values; tailwind.config.ts references
+   them via var(--token) directly (no hsl() wrapper). */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: oklch(0.9777 0.0041 301.4256);
+    --foreground: oklch(0.3651 0.0325 287.0807);
+    --card: oklch(1.0000 0 0);
+    --card-foreground: oklch(0.3651 0.0325 287.0807);
+    --popover: oklch(1.0000 0 0);
+    --popover-foreground: oklch(0.3651 0.0325 287.0807);
+    --primary: oklch(0.6104 0.0767 299.7335);
+    --primary-foreground: oklch(0.9777 0.0041 301.4256);
+    --secondary: oklch(0.8957 0.0265 300.2416);
+    --secondary-foreground: oklch(0.3651 0.0325 287.0807);
+    --muted: oklch(0.8906 0.0139 299.7754);
+    --muted-foreground: oklch(0.5288 0.0375 290.7895);
+    --accent: oklch(0.7889 0.0802 359.9375);
+    --accent-foreground: oklch(0.3394 0.0441 1.7583);
+    --destructive: oklch(0.6332 0.1578 22.6734);
+    --destructive-foreground: oklch(0.9777 0.0041 301.4256);
+    --border: oklch(0.8447 0.0226 300.1421);
+    --input: oklch(0.9329 0.0124 301.2783);
+    --ring: oklch(0.6104 0.0767 299.7335);
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --chart-1: oklch(0.6104 0.0767 299.7335);
+    --chart-2: oklch(0.7889 0.0802 359.9375);
+    --chart-3: oklch(0.7321 0.0749 169.8670);
+    --chart-4: oklch(0.8540 0.0882 76.8292);
+    --chart-5: oklch(0.7857 0.0645 258.0839);
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --sidebar: oklch(0.9554 0.0082 301.3541);
+    --sidebar-background: oklch(0.9554 0.0082 301.3541);
+    --sidebar-foreground: oklch(0.3651 0.0325 287.0807);
+    --sidebar-primary: oklch(0.6104 0.0767 299.7335);
+    --sidebar-primary-foreground: oklch(0.9777 0.0041 301.4256);
+    --sidebar-accent: oklch(0.7889 0.0802 359.9375);
+    --sidebar-accent-foreground: oklch(0.3394 0.0441 1.7583);
+    --sidebar-border: oklch(0.8719 0.0198 302.1690);
+    --sidebar-ring: oklch(0.6104 0.0767 299.7335);
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --font-sans: Geist, ui-sans-serif, system-ui, sans-serif;
+    --font-serif: "Lora", Georgia, serif;
+    --font-mono: "Fira Code", ui-monospace, "Courier New", monospace;
 
     --radius: 0.5rem;
 
-    --chart-1: 340 65% 68%;  /* Soft Pink */
-    --chart-2: 270 55% 70%;  /* Soft Purple */
-    --chart-3: 300 60% 72%;  /* Soft Magenta */
-    --chart-4: 250 50% 68%;  /* Soft Violet */
-    --chart-5: 320 58% 70%;  /* Soft Rose */
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --shadow-2xs: 1px 2px 5px 1px hsl(0 0% 0% / 0.03);
+    --shadow-xs: 1px 2px 5px 1px hsl(0 0% 0% / 0.03);
+    --shadow-sm: 1px 2px 5px 1px hsl(0 0% 0% / 0.06), 1px 1px 2px 0px hsl(0 0% 0% / 0.06);
+    --shadow: 1px 2px 5px 1px hsl(0 0% 0% / 0.06), 1px 1px 2px 0px hsl(0 0% 0% / 0.06);
+    --shadow-md: 1px 2px 5px 1px hsl(0 0% 0% / 0.06), 1px 2px 4px 0px hsl(0 0% 0% / 0.06);
+    --shadow-lg: 1px 2px 5px 1px hsl(0 0% 0% / 0.06), 1px 4px 6px 0px hsl(0 0% 0% / 0.06);
+    --shadow-xl: 1px 2px 5px 1px hsl(0 0% 0% / 0.06), 1px 8px 10px 0px hsl(0 0% 0% / 0.06);
+    --shadow-2xl: 1px 2px 5px 1px hsl(0 0% 0% / 0.15);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: oklch(0.2166 0.0215 292.8474);
+    --foreground: oklch(0.9053 0.0245 293.5570);
+    --card: oklch(0.2544 0.0301 292.7315);
+    --card-foreground: oklch(0.9053 0.0245 293.5570);
+    --popover: oklch(0.2544 0.0301 292.7315);
+    --popover-foreground: oklch(0.9053 0.0245 293.5570);
+    --primary: oklch(0.7058 0.0777 302.0489);
+    --primary-foreground: oklch(0.2166 0.0215 292.8474);
+    --secondary: oklch(0.4604 0.0472 295.5578);
+    --secondary-foreground: oklch(0.9053 0.0245 293.5570);
+    --muted: oklch(0.2560 0.0320 294.8380);
+    --muted-foreground: oklch(0.6974 0.0282 300.0614);
+    --accent: oklch(0.3181 0.0321 308.6149);
+    --accent-foreground: oklch(0.8391 0.0692 2.6681);
+    --destructive: oklch(0.6875 0.1420 21.4566);
+    --destructive-foreground: oklch(0.2166 0.0215 292.8474);
+    --border: oklch(0.3063 0.0359 293.3367);
+    --input: oklch(0.2847 0.0346 291.2726);
+    --ring: oklch(0.7058 0.0777 302.0489);
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --chart-1: oklch(0.7058 0.0777 302.0489);
+    --chart-2: oklch(0.8391 0.0692 2.6681);
+    --chart-3: oklch(0.7321 0.0749 169.8670);
+    --chart-4: oklch(0.8540 0.0882 76.8292);
+    --chart-5: oklch(0.7857 0.0645 258.0839);
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-
-    --chart-1: 340 65% 68%;  /* Soft Pink */
-    --chart-2: 270 55% 70%;  /* Soft Purple */
-    --chart-3: 300 60% 72%;  /* Soft Magenta */
-    --chart-4: 250 50% 68%;  /* Soft Violet */
-    --chart-5: 320 58% 70%;  /* Soft Rose */
-
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar: oklch(0.1985 0.0200 293.6639);
+    --sidebar-background: oklch(0.1985 0.0200 293.6639);
+    --sidebar-foreground: oklch(0.9053 0.0245 293.5570);
+    --sidebar-primary: oklch(0.7058 0.0777 302.0489);
+    --sidebar-primary-foreground: oklch(0.2166 0.0215 292.8474);
+    --sidebar-accent: oklch(0.3181 0.0321 308.6149);
+    --sidebar-accent-foreground: oklch(0.8391 0.0692 2.6681);
+    --sidebar-border: oklch(0.2847 0.0346 291.2726);
+    --sidebar-ring: oklch(0.7058 0.0777 302.0489);
   }
 }
 
@@ -112,5 +106,6 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-sans);
   }
 }

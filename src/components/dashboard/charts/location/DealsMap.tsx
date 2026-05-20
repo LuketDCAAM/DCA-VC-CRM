@@ -120,12 +120,12 @@ export function DealsMap({ locationData }: DealsMapProps) {
                 <Geography
                   key={geo.rsmKey}
                   geography={geo}
-                  fill="hsl(var(--muted))"
-                  stroke="hsl(var(--border))"
+                  fill="var(--muted)"
+                  stroke="var(--border)"
                   strokeWidth={0.5}
                   style={{
                     default: { outline: 'none' },
-                    hover: { outline: 'none', fill: 'hsl(var(--accent))' },
+                    hover: { outline: 'none', fill: 'var(--accent)' },
                     pressed: { outline: 'none' },
                   }}
                 />

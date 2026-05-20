@@ -155,7 +155,7 @@ export function InvestmentVehicleChart({ deals }: InvestmentVehicleChartProps) {
                 outerRadius={CHART_DIMENSIONS.pieOuterRadius}
                 fill="#8884d8"
                 dataKey="count"
-                stroke="hsl(var(--background))"
+                stroke="var(--background)"
                 strokeWidth={CHART_DIMENSIONS.strokeWidth}
               >
                 {chartData.map((entry, index) => (

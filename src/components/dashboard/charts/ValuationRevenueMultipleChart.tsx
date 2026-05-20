@@ -371,11 +371,11 @@ export function ValuationRevenueMultipleChart({ deals }: ValuationRevenueMultipl
               <XAxis 
                 dataKey="quarter" 
                 className="text-xs"
-                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: CHART_TYPOGRAPHY.axisLabel.fontSize }}
+                tick={{ fill: 'var(--muted-foreground)', fontSize: CHART_TYPOGRAPHY.axisLabel.fontSize }}
               />
               <YAxis 
                 className="text-xs"
-                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: CHART_TYPOGRAPHY.axisLabel.fontSize }}
+                tick={{ fill: 'var(--muted-foreground)', fontSize: CHART_TYPOGRAPHY.axisLabel.fontSize }}
                 label={{ value: 'Multiple (x)', angle: -90, position: 'insideLeft', fontSize: CHART_TYPOGRAPHY.label.fontSize }}
               />
               <Tooltip content={<CustomTooltip />} />

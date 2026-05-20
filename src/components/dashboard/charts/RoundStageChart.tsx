@@ -111,7 +111,7 @@ export function RoundStageChart({ data, deals }: RoundStageChartProps) {
                 dataKey="count"
                 label={({ percentage }) => percentage >= 5 ? `${percentage}%` : ''}
                 labelLine={false}
-                stroke="hsl(var(--background))"
+                stroke="var(--background)"
                 strokeWidth={CHART_DIMENSIONS.strokeWidth}
               >
                 {chartData.map((entry, index) => (
