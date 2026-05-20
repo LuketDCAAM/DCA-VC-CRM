@@ -28,6 +28,7 @@ import {
   Sparkles,
   Target,
   BookOpen,
+  Sliders,
 } from 'lucide-react';
 
 const navigation = [
@@ -52,7 +53,11 @@ export default function AppSidebar() {
   const items = isViewer
     ? navigation.filter((i) => i.name === 'Dashboard')
     : isAdmin
-      ? [...navigation, { name: 'Agent Rules', href: '/settings/agent-instructions', icon: BookOpen }]
+      ? [
+          ...navigation,
+          { name: 'Benchmarks', href: '/settings/benchmarks', icon: Sliders },
+          { name: 'Agent Rules', href: '/settings/agent-instructions', icon: BookOpen },
+        ]
       : navigation;
 
   const isActive = (href: string) =>

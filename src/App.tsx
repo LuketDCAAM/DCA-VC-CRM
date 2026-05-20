@@ -17,6 +17,7 @@ import Tasks from "./pages/Tasks";
 import ExternalDataDashboard from "./pages/ExternalDataDashboard";
 import Assistant from "./pages/Assistant";
 import ThesisSettings from "./pages/ThesisSettings";
+import BenchmarksSettings from "./pages/BenchmarksSettings";
 import AgentInstructions from "./pages/AgentInstructions";
 import NotFound from "./pages/NotFound";
 import MicrosoftAuthCallback from "./pages/auth/microsoft/callback";
@@ -97,6 +98,7 @@ function App() {
                       <Route path="/assistant" element={<Assistant />} />
                       <Route path="/assistant/:threadId" element={<Assistant />} />
                       <Route path="/settings/thesis" element={<ThesisSettings />} />
+                      <Route path="/settings/benchmarks" element={<BenchmarksSettings />} />
                       <Route path="/settings/agent-instructions" element={<AgentInstructions />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
