@@ -37,11 +37,8 @@ export default function Deals() {
 
 
   const handleCSVImportWrapper = async (data: any[]) => {
-    console.log('CSV Import wrapper called with', data.length, 'rows');
-    
     const processResult = await handleCSVImport(data);
-    console.log('Process result:', processResult);
-    
+
     if (!processResult.success) {
       return {
         success: false,
@@ -49,9 +46,8 @@ export default function Deals() {
         errors: processResult.errors
       };
     }
-    
+
     const result = await importDeals(processResult.data);
-    console.log('Import result:', result);
     
     if (result.success) {
       await refetch();
