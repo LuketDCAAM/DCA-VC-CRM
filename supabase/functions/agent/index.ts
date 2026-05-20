@@ -703,6 +703,8 @@ Deno.serve(async (req) => {
           if (error) return { error: error.message };
           return { proposed: true, action_id: data.id };
         },
+      }),
+
       list_prompts: tool({
         description:
           "List the agent's editable instruction prompts and playbooks (slug, title, kind). Use BEFORE propose_edit_prompt to find the correct slug.",
