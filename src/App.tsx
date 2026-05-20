@@ -18,6 +18,7 @@ import Tasks from "./pages/Tasks";
 import ExternalDataDashboard from "./pages/ExternalDataDashboard";
 import Assistant from "./pages/Assistant";
 import ThesisSettings from "./pages/ThesisSettings";
+import Approvals from "./pages/Approvals";
 import NotFound from "./pages/NotFound";
 import MicrosoftAuthCallback from "./pages/auth/microsoft/callback";
 import ResetPassword from "./pages/auth/ResetPassword";
