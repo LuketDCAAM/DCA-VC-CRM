@@ -19,6 +19,7 @@ import {
   PanelRightOpen,
   CheckCheck,
   Loader2,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
@@ -31,8 +32,9 @@ export default function Assistant() {
   const [creating, setCreating] = useState(false);
   const [approvalsOpen, setApprovalsOpen] = useState(true);
   const [tab, setTab] = useState<"pending" | "applied" | "rejected" | "failed">("pending");
-  const { actions, applyMany } = useAgentActions(tab);
+  const { actions, applyMany, rejectMany } = useAgentActions(tab);
   const [bulk, setBulk] = useState(false);
+  const [bulkReject, setBulkReject] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -54,6 +56,13 @@ export default function Assistant() {
     const { ok, failed } = await applyMany(actions.map((a) => a.id));
     setBulk(false);
     toast({ title: `Approved ${ok}`, description: failed ? `${failed} failed` : undefined });
+  };
+
+  const rejectAll = async () => {
+    setBulkReject(true);
+    const { ok, failed } = await rejectMany(actions.map((a) => a.id));
+    setBulkReject(false);
+    toast({ title: `Rejected ${ok}`, description: failed ? `${failed} failed` : undefined });
   };
 
   return (
@@ -160,8 +169,12 @@ export default function Assistant() {
               <TabsTrigger value="failed">Failed</TabsTrigger>
             </TabsList>
             {tab === "pending" && actions.length > 0 && (
-              <div className="px-3 pt-2">
-                <Button size="sm" className="w-full" onClick={approveAll} disabled={bulk}>
+              <div className="px-3 pt-2 flex gap-2">
+                <Button size="sm" variant="outline" className="flex-1" onClick={rejectAll} disabled={bulkReject || bulk}>
+                  {bulkReject ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <X className="h-3 w-3 mr-2" />}
+                  Reject all
+                </Button>
+                <Button size="sm" className="flex-1" onClick={approveAll} disabled={bulk || bulkReject}>
                   {bulk ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <CheckCheck className="h-3 w-3 mr-2" />}
                   Approve all ({actions.length})
                 </Button>
