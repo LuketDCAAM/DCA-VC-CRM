@@ -343,6 +343,131 @@ Deno.serve(async (req) => {
         },
       }),
 
+      propose_create_deal: tool({
+        description:
+          "Propose creating a new deal. Lands in the approval queue. Use search_deals first to check for duplicates by company name.",
+        inputSchema: z.object({
+          company_name: z.string(),
+          fields: z.record(z.string(), z.unknown()).describe(
+            "Other deal columns: description, sector, pipeline_stage, round_stage, round_size, post_money_valuation, website, linkedin_url, location, contact_name, contact_email, deal_source, source_date, next_steps, tags (string[]), etc.",
+          ).optional(),
+          rationale: z.string(),
+        }),
+        execute: async ({ company_name, fields, rationale }) => {
+          if (!runId) return { error: "No run id" };
+          const payload = { company_name, ...(fields ?? {}) };
+          const { data, error } = await supabase
+            .from("agent_actions")
+            .insert({
+              run_id: runId,
+              user_id: userId,
+              action_type: "create_deal",
+              target_table: "deals",
+              payload,
+              rationale,
+              status: "pending",
+            })
+            .select("id")
+            .single();
+          if (error) return { error: error.message };
+          return { proposed: true, action_id: data.id };
+        },
+      }),
+
+      propose_create_investor: tool({
+        description: "Propose creating a new investor record. Lands in the approval queue.",
+        inputSchema: z.object({
+          contact_name: z.string(),
+          fields: z.record(z.string(), z.unknown()).optional().describe(
+            "Other columns: firm_name, firm_website, contact_email, contact_phone, location, preferred_sectors (string[]), preferred_investment_stage, average_check_size, linkedin_url, tags (string[])",
+          ),
+          rationale: z.string(),
+        }),
+        execute: async ({ contact_name, fields, rationale }) => {
+          if (!runId) return { error: "No run id" };
+          const payload = { contact_name, ...(fields ?? {}) };
+          const { data, error } = await supabase
+            .from("agent_actions")
+            .insert({
+              run_id: runId, user_id: userId,
+              action_type: "create_investor", target_table: "investors",
+              payload, rationale, status: "pending",
+            })
+            .select("id").single();
+          if (error) return { error: error.message };
+          return { proposed: true, action_id: data.id };
+        },
+      }),
+
+      propose_update_investor: tool({
+        description: "Propose updates to fields on an investor. Lands in the approval queue.",
+        inputSchema: z.object({
+          investor_id: z.string().uuid(),
+          changes: z.record(z.string(), z.unknown()),
+          rationale: z.string(),
+        }),
+        execute: async ({ investor_id, changes, rationale }) => {
+          if (!runId) return { error: "No run id" };
+          const { data, error } = await supabase
+            .from("agent_actions")
+            .insert({
+              run_id: runId, user_id: userId,
+              action_type: "update_investor", target_table: "investors", target_id: investor_id,
+              payload: changes, rationale, status: "pending",
+            })
+            .select("id").single();
+          if (error) return { error: error.message };
+          return { proposed: true, action_id: data.id };
+        },
+      }),
+
+      propose_create_contact: tool({
+        description: "Propose creating a new contact. Lands in the approval queue.",
+        inputSchema: z.object({
+          name: z.string(),
+          fields: z.record(z.string(), z.unknown()).optional().describe(
+            "Other columns: email, phone, title, company_or_firm, deal_id, investor_id, portfolio_company_id",
+          ),
+          rationale: z.string(),
+        }),
+        execute: async ({ name, fields, rationale }) => {
+          if (!runId) return { error: "No run id" };
+          const payload = { name, ...(fields ?? {}) };
+          const { data, error } = await supabase
+            .from("agent_actions")
+            .insert({
+              run_id: runId, user_id: userId,
+              action_type: "create_contact", target_table: "contacts",
+              payload, rationale, status: "pending",
+            })
+            .select("id").single();
+          if (error) return { error: error.message };
+          return { proposed: true, action_id: data.id };
+        },
+      }),
+
+      propose_update_contact: tool({
+        description: "Propose updates to a contact. Lands in the approval queue.",
+        inputSchema: z.object({
+          contact_id: z.string().uuid(),
+          changes: z.record(z.string(), z.unknown()),
+          rationale: z.string(),
+        }),
+        execute: async ({ contact_id, changes, rationale }) => {
+          if (!runId) return { error: "No run id" };
+          const { data, error } = await supabase
+            .from("agent_actions")
+            .insert({
+              run_id: runId, user_id: userId,
+              action_type: "update_contact", target_table: "contacts", target_id: contact_id,
+              payload: changes, rationale, status: "pending",
+            })
+            .select("id").single();
+          if (error) return { error: error.message };
+          return { proposed: true, action_id: data.id };
+        },
+      }),
+
       propose_draft_email: tool({
         description:
           "Draft an outbound email (subject + body). Lands in the approval queue — nothing is sent automatically.",
