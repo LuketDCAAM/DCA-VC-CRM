@@ -23,6 +23,13 @@ export default function Approvals() {
     toast({ title: `Approved ${ok}`, description: fail ? `${fail} failed` : undefined });
   };
 
+  const rejectAll = async () => {
+    setRejecting(true);
+    await rejectMany(actions.map((a) => a.id));
+    setRejecting(false);
+    toast({ title: `Rejected ${actions.length}` });
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-4">
       <div className="flex items-center justify-between">
