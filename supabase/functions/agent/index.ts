@@ -394,9 +394,9 @@ Deno.serve(async (req) => {
           "Propose creating a new deal. Lands in the approval queue. Use search_deals first to check for duplicates by company name.",
         inputSchema: z.object({
           company_name: z.string(),
-          fields: z.record(z.string(), z.unknown()).describe(
-            "Other deal columns: description, sector, pipeline_stage, round_stage, round_size, post_money_valuation, website, linkedin_url, location, contact_name, contact_email, deal_source, source_date, next_steps, tags (string[]), etc.",
-          ).optional(),
+          fields: DealFieldsSchema.optional().describe(
+            "Optional deal columns. Use documented enum values exactly. Numeric fields must be integers (USD).",
+          ),
           rationale: z.string(),
         }),
         execute: async ({ company_name, fields, rationale }) => {
