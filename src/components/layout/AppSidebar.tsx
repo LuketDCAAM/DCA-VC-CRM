@@ -66,9 +66,6 @@ export default function AppSidebar() {
             alt="VC Platform Logo"
             className="h-7 w-auto shrink-0"
           />
-          {!collapsed && (
-            <span className="text-sm font-semibold tracking-tight">DCA</span>
-          )}
         </div>
       </SidebarHeader>
 
