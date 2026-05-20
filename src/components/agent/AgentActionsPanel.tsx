@@ -14,6 +14,7 @@ const ACTION_LABELS: Record<string, string> = {
   update_contact: "Update contact",
   create_task: "Create task",
   draft_email: "Draft email",
+  attach_link: "Attach link",
   edit_prompt: "Edit agent instructions",
 };
 
