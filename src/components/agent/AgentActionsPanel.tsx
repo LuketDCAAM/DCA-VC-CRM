@@ -25,10 +25,31 @@ export function AgentActionsPanel({
   targetId?: string;
   status?: "pending" | "applied" | "rejected" | "failed" | "all";
 }) {
-  const { actions, apply, reject, retry } = useAgentActions(status);
+  const { actions, loading, error, apply, reject, retry, refresh } = useAgentActions(status);
   const filtered = targetId
     ? actions.filter((a) => a.target_table === targetTable && a.target_id === targetId)
     : actions;
+
+  if (loading) {
+    return (
+      <div className="text-sm text-muted-foreground text-center py-8">
+        <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
+        Loading {status === "pending" ? "pending" : status} approvals…
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-sm text-center py-8 space-y-3">
+        <div className="text-destructive">Could not load approvals: {error}</div>
+        <Button size="sm" variant="outline" onClick={refresh}>
+          <RotateCw className="h-3 w-3 mr-1" />
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   if (filtered.length === 0) {
     return (
