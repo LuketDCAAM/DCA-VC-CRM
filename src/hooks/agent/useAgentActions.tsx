@@ -124,6 +124,11 @@ export function useAgentActions(filterStatus: AgentAction["status"] | "all" = "p
     await supabase.from("agent_actions").update({ status: "rejected" }).eq("id", action.id);
   };
 
+  const rejectMany = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    await supabase.from("agent_actions").update({ status: "rejected" }).in("id", ids);
+  };
+
   const retry = async (action: AgentAction) => {
     await supabase
       .from("agent_actions")
