@@ -38,14 +38,6 @@ export function AgentActionsPanel({
     );
   }
 
-  if (filtered.length === 0) {
-    return (
-      <div className="text-sm text-muted-foreground text-center py-8">
-        No pending agent suggestions.
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-3">
       {filtered.map((a) => (
