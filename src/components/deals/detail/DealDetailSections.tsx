@@ -5,6 +5,7 @@ import { CallNotesManager } from '../CallNotesManager';
 import { DealInvestorsManager } from '../DealInvestorsManager';
 import { DealContactsManager } from '../DealContactsManager';
 import { AnalystPanel } from '@/components/agent/AnalystPanel';
+import { ScorecardPanel } from '@/components/scorecard/ScorecardPanel';
 import { Deal } from '@/types/deal';
 
 interface DealDetailSectionsProps {
@@ -19,6 +20,12 @@ export function DealDetailSections({ deal }: DealDetailSectionsProps) {
       </div>
 
       <AnalystPanel dealId={deal.id} />
+
+      <div className="my-6">
+        <Separator />
+      </div>
+
+      <ScorecardPanel dealId={deal.id} />
 
       <div className="my-6">
         <Separator />

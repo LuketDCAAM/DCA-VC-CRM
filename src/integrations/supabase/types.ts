@@ -640,6 +640,189 @@ export type Database = {
           },
         ]
       }
+      deal_scorecards: {
+        Row: {
+          acv: number | null
+          ai_run_id: string | null
+          approved_at: string | null
+          approved_by: string | null
+          blended_score: number | null
+          bridge_rounds_18mo: number | null
+          business_model: string | null
+          cash_balance: number | null
+          classification: string | null
+          committed_amount: number | null
+          company_overview: string | null
+          competitive_landscape: string | null
+          computed: Json
+          created_at: string
+          created_by: string
+          current_arr: number | null
+          dca_value_add: string | null
+          deal_id: string
+          deal_lead: string | null
+          employee_count: number | null
+          fcst_gross_margin: number | null
+          forecast_arr: number | null
+          founder_ownership_pct: number | null
+          founding_year: number | null
+          fundraise_amount: number | null
+          geography: string | null
+          geography_tier: string | null
+          gross_burn: number | null
+          gross_margin: number | null
+          grr: number | null
+          has_technical_cofounder: boolean | null
+          id: string
+          investment_thesis: string | null
+          investor_base: string | null
+          is_current: boolean
+          key_risks: string | null
+          key_strengths: string | null
+          metric_notes: Json
+          monthly_churn: number | null
+          net_burn: number | null
+          nrr: number | null
+          prev_valuation: number | null
+          prior_arr: number | null
+          qualitative_ratings: Json
+          repeat_founder: boolean | null
+          round_deadline: string | null
+          sector: string | null
+          stage: string | null
+          status: string
+          top_cust_pct: number | null
+          total_debt_excl_convertibles: number | null
+          total_raised: number | null
+          traction_milestones: string | null
+          updated_at: string
+          use_of_funds: string | null
+          valuation: number | null
+          vehicle: string | null
+          version: number
+        }
+        Insert: {
+          acv?: number | null
+          ai_run_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          blended_score?: number | null
+          bridge_rounds_18mo?: number | null
+          business_model?: string | null
+          cash_balance?: number | null
+          classification?: string | null
+          committed_amount?: number | null
+          company_overview?: string | null
+          competitive_landscape?: string | null
+          computed?: Json
+          created_at?: string
+          created_by: string
+          current_arr?: number | null
+          dca_value_add?: string | null
+          deal_id: string
+          deal_lead?: string | null
+          employee_count?: number | null
+          fcst_gross_margin?: number | null
+          forecast_arr?: number | null
+          founder_ownership_pct?: number | null
+          founding_year?: number | null
+          fundraise_amount?: number | null
+          geography?: string | null
+          geography_tier?: string | null
+          gross_burn?: number | null
+          gross_margin?: number | null
+          grr?: number | null
+          has_technical_cofounder?: boolean | null
+          id?: string
+          investment_thesis?: string | null
+          investor_base?: string | null
+          is_current?: boolean
+          key_risks?: string | null
+          key_strengths?: string | null
+          metric_notes?: Json
+          monthly_churn?: number | null
+          net_burn?: number | null
+          nrr?: number | null
+          prev_valuation?: number | null
+          prior_arr?: number | null
+          qualitative_ratings?: Json
+          repeat_founder?: boolean | null
+          round_deadline?: string | null
+          sector?: string | null
+          stage?: string | null
+          status?: string
+          top_cust_pct?: number | null
+          total_debt_excl_convertibles?: number | null
+          total_raised?: number | null
+          traction_milestones?: string | null
+          updated_at?: string
+          use_of_funds?: string | null
+          valuation?: number | null
+          vehicle?: string | null
+          version?: number
+        }
+        Update: {
+          acv?: number | null
+          ai_run_id?: string | null
+          approved_at?: string | null
+          approved_by?: string | null
+          blended_score?: number | null
+          bridge_rounds_18mo?: number | null
+          business_model?: string | null
+          cash_balance?: number | null
+          classification?: string | null
+          committed_amount?: number | null
+          company_overview?: string | null
+          competitive_landscape?: string | null
+          computed?: Json
+          created_at?: string
+          created_by?: string
+          current_arr?: number | null
+          dca_value_add?: string | null
+          deal_id?: string
+          deal_lead?: string | null
+          employee_count?: number | null
+          fcst_gross_margin?: number | null
+          forecast_arr?: number | null
+          founder_ownership_pct?: number | null
+          founding_year?: number | null
+          fundraise_amount?: number | null
+          geography?: string | null
+          geography_tier?: string | null
+          gross_burn?: number | null
+          gross_margin?: number | null
+          grr?: number | null
+          has_technical_cofounder?: boolean | null
+          id?: string
+          investment_thesis?: string | null
+          investor_base?: string | null
+          is_current?: boolean
+          key_risks?: string | null
+          key_strengths?: string | null
+          metric_notes?: Json
+          monthly_churn?: number | null
+          net_burn?: number | null
+          nrr?: number | null
+          prev_valuation?: number | null
+          prior_arr?: number | null
+          qualitative_ratings?: Json
+          repeat_founder?: boolean | null
+          round_deadline?: string | null
+          sector?: string | null
+          stage?: string | null
+          status?: string
+          top_cust_pct?: number | null
+          total_debt_excl_convertibles?: number | null
+          total_raised?: number | null
+          traction_milestones?: string | null
+          updated_at?: string
+          use_of_funds?: string | null
+          valuation?: number | null
+          vehicle?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       deals: {
         Row: {
           city: string | null
@@ -1440,6 +1623,95 @@ export type Database = {
             columns: ["portfolio_company_id"]
             isOneToOne: false
             referencedRelation: "portfolio_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scorecard_benchmarks: {
+        Row: {
+          created_at: string
+          id: string
+          inverted: boolean
+          metric: string
+          notes: string | null
+          sector: string
+          stage: string
+          target_value: number | null
+          tier_thresholds: Json
+          updated_at: string
+          updated_by: string | null
+          weight: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inverted?: boolean
+          metric: string
+          notes?: string | null
+          sector: string
+          stage: string
+          target_value?: number | null
+          tier_thresholds?: Json
+          updated_at?: string
+          updated_by?: string | null
+          weight?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inverted?: boolean
+          metric?: string
+          notes?: string | null
+          sector?: string
+          stage?: string
+          target_value?: number | null
+          tier_thresholds?: Json
+          updated_at?: string
+          updated_by?: string | null
+          weight?: number
+        }
+        Relationships: []
+      }
+      scorecard_documents: {
+        Row: {
+          created_at: string
+          created_by: string
+          external_url: string | null
+          file_attachment_id: string | null
+          id: string
+          kind: string
+          parsed_at: string | null
+          parsed_excerpt: string | null
+          scorecard_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          external_url?: string | null
+          file_attachment_id?: string | null
+          id?: string
+          kind: string
+          parsed_at?: string | null
+          parsed_excerpt?: string | null
+          scorecard_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          external_url?: string | null
+          file_attachment_id?: string | null
+          id?: string
+          kind?: string
+          parsed_at?: string | null
+          parsed_excerpt?: string | null
+          scorecard_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scorecard_documents_scorecard_id_fkey"
+            columns: ["scorecard_id"]
+            isOneToOne: false
+            referencedRelation: "deal_scorecards"
             referencedColumns: ["id"]
           },
         ]
