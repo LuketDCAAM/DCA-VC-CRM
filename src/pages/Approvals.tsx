@@ -4,13 +4,14 @@ import { useAgentActions } from "@/hooks/agent/useAgentActions";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCheck, Loader2, Inbox } from "lucide-react";
+import { CheckCheck, X, Loader2, Inbox } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function Approvals() {
   const [tab, setTab] = useState<"pending" | "applied" | "rejected" | "failed">("pending");
-  const { actions, apply } = useAgentActions(tab);
+  const { actions, apply, rejectMany } = useAgentActions(tab);
   const [bulk, setBulk] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
 
   const approveAll = async () => {
     setBulk(true);
@@ -20,6 +21,13 @@ export default function Approvals() {
     }
     setBulk(false);
     toast({ title: `Approved ${ok}`, description: fail ? `${fail} failed` : undefined });
+  };
+
+  const rejectAll = async () => {
+    setRejecting(true);
+    await rejectMany(actions.map((a) => a.id));
+    setRejecting(false);
+    toast({ title: `Rejected ${actions.length}` });
   };
 
   return (
@@ -32,10 +40,16 @@ export default function Approvals() {
           <p className="text-sm text-muted-foreground">Review and apply changes proposed by the Assistant and Analyst agents.</p>
         </div>
         {tab === "pending" && actions.length > 0 && (
-          <Button onClick={approveAll} disabled={bulk}>
-            {bulk ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCheck className="h-4 w-4 mr-2" />}
-            Approve all ({actions.length})
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={rejectAll} disabled={rejecting}>
+              {rejecting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <X className="h-4 w-4 mr-2" />}
+              Reject all ({actions.length})
+            </Button>
+            <Button onClick={approveAll} disabled={bulk}>
+              {bulk ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCheck className="h-4 w-4 mr-2" />}
+              Approve all ({actions.length})
+            </Button>
+          </div>
         )}
       </div>
 
