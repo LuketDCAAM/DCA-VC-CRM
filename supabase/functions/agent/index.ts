@@ -703,6 +703,75 @@ Deno.serve(async (req) => {
           if (error) return { error: error.message };
           return { proposed: true, action_id: data.id };
         },
+      list_prompts: tool({
+        description:
+          "List the agent's editable instruction prompts and playbooks (slug, title, kind). Use BEFORE propose_edit_prompt to find the correct slug.",
+        inputSchema: z.object({}),
+        execute: async () => {
+          const { data, error } = await supabase
+            .from("agent_prompts")
+            .select("slug,kind,title,updated_at")
+            .order("sort_order", { ascending: true });
+          if (error) return { error: error.message };
+          return { count: data?.length ?? 0, prompts: data };
+        },
+      }),
+
+      get_prompt: tool({
+        description: "Fetch the full markdown body of one prompt/playbook by slug. Use before propose_edit_prompt so you can return the full new body.",
+        inputSchema: z.object({ slug: z.string() }),
+        execute: async ({ slug }) => {
+          const { data, error } = await supabase
+            .from("agent_prompts")
+            .select("slug,kind,title,body,updated_at")
+            .eq("slug", slug)
+            .maybeSingle();
+          if (error) return { error: error.message };
+          return data ?? { error: "Not found" };
+        },
+      }),
+
+      propose_edit_prompt: tool({
+        description:
+          "Propose an edit to one of your own instruction prompts or playbooks. Lands in the approval queue — nothing changes until approved. Always pass the FULL new markdown body (not a diff). Use list_prompts and get_prompt first to load the current body, then return a modified version.",
+        inputSchema: z.object({
+          slug: z.string().describe("Existing slug, e.g. prompts/system or playbooks/weekly-review"),
+          new_body: z.string().min(10).describe("Full replacement markdown body"),
+          change_note: z.string().describe("One-line description of why this change"),
+        }),
+        execute: async ({ slug, new_body, change_note }) => {
+          if (!runId) return { error: "No run id" };
+          // Verify slug exists
+          const { data: existing, error: lookupErr } = await supabase
+            .from("agent_prompts")
+            .select("id,body")
+            .eq("slug", slug)
+            .maybeSingle();
+          if (lookupErr) return { error: lookupErr.message };
+          if (!existing) return { error: `No prompt with slug "${slug}"` };
+
+          const { data, error } = await supabase
+            .from("agent_actions")
+            .insert({
+              run_id: runId,
+              user_id: userId,
+              action_type: "edit_prompt",
+              target_table: "agent_prompts",
+              target_id: existing.id,
+              payload: {
+                slug,
+                new_body,
+                change_note,
+                old_body: existing.body,
+              },
+              rationale: change_note,
+              status: "pending",
+            })
+            .select("id")
+            .single();
+          if (error) return { error: error.message };
+          return { proposed: true, action_id: data.id };
+        },
       }),
     };
 
