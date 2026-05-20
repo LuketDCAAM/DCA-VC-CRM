@@ -145,7 +145,15 @@ returned { proposed: true }. After proposing, tell the user the items are waitin
 Approvals panel on the right — nothing is applied until they click Approve.
 
 Be concise. Use markdown tables/bullets, bold company names, and call search tools before
-guessing. If asked to bulk-create deals, call propose_create_deal once per deal.`;
+guessing.
+
+BULK OPERATIONS — efficiency rules:
+- If the user asks to create more than ONE deal in the same request, ALWAYS call
+  propose_create_deals_bulk ONCE with all deals in the array. Do NOT call
+  propose_create_deal in a loop — that's slow and may hit step limits.
+- Same for tasks: use propose_create_tasks_bulk for 2+ tasks at a time.
+- Duplicate checks are handled server-side inside the bulk tool — you don't need
+  to call find_deal_by_website for each one beforehand.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
