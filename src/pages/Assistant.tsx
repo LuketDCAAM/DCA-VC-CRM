@@ -31,7 +31,7 @@ export default function Assistant() {
   const [creating, setCreating] = useState(false);
   const [approvalsOpen, setApprovalsOpen] = useState(true);
   const [tab, setTab] = useState<"pending" | "applied" | "rejected" | "failed">("pending");
-  const { actions, apply } = useAgentActions(tab);
+  const { actions, applyMany } = useAgentActions(tab);
   const [bulk, setBulk] = useState(false);
 
   useEffect(() => {
