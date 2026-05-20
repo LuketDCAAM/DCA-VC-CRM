@@ -61,7 +61,7 @@ const DealFieldsSchema = z.object({
   deal_source: z.string().optional(),
   source_date: z.string().optional().describe("YYYY-MM-DD"),
   deal_lead: z.string().optional(),
-  next_steps: z.string().optional().describe("Use for pitch deck links and immediate follow-ups."),
+  next_steps: z.string().optional().describe("Immediate follow-ups in plain text. Do NOT put pitch deck URLs here — use propose_attach_link instead."),
   tags: z.array(z.string()).optional(),
   founded_year: z.number().int().optional(),
   employee_count_range: z.string().optional(),
