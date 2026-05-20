@@ -15,9 +15,11 @@ import {
   HandCoins,
   ClipboardList,
   Sparkles,
-  Target
+  Target,
+  Inbox
 } from 'lucide-react';
 import ThemeToggle from '@/components/theme/ThemeToggle';
+import { usePendingActionCount } from '@/hooks/agent/usePendingActionCount';
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
@@ -28,6 +30,7 @@ const navigation = [
   { name: 'Contacts', href: '/contacts', icon: Contact },
   { name: 'Tasks', href: '/tasks', icon: ClipboardList },
   { name: 'Assistant', href: '/assistant', icon: Sparkles },
+  { name: 'Approvals', href: '/approvals', icon: Inbox },
   { name: 'Thesis', href: '/settings/thesis', icon: Target },
 ];
 
