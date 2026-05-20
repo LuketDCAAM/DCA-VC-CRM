@@ -75,7 +75,7 @@ export function PipelineChart({ data, type = 'pie' }: PipelineChartProps) {
                   <Cell 
                     key={`cell-${index}`} 
                     fill={getChartColor(index, data.length > 5)}
-                    stroke="hsl(var(--background))"
+                    stroke="var(--background)"
                     strokeWidth={CHART_DIMENSIONS.strokeWidth}
                   />
                 ))}

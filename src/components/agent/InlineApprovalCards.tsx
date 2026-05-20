@@ -98,7 +98,7 @@ function InlineCard({
   if (action.status === "applied" || action.status === "rejected") {
     return (
       <div className="flex items-center gap-2 text-xs text-muted-foreground border-l-2 pl-3 py-1.5"
-           style={{ borderColor: action.status === "applied" ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))" }}>
+           style={{ borderColor: action.status === "applied" ? "var(--primary)" : "var(--muted-foreground)" }}>
         <span className={cn("h-1.5 w-1.5 rounded-full", STATUS_DOT[action.status])} />
         <span className="font-medium text-foreground">{STATUS_LABEL[action.status]}</span>
         <span>·</span>
