@@ -4,7 +4,7 @@ import { useAgentActions } from "@/hooks/agent/useAgentActions";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCheck, Loader2, Inbox } from "lucide-react";
+import { CheckCheck, X, Loader2, Inbox } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function Approvals() {
