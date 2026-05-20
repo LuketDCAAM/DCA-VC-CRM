@@ -30,7 +30,7 @@ export default function Assistant() {
   const { threads, loading, createThread, deleteThread } = useAgentThreads();
   const { initialMessages, loading: messagesLoading } = useAgentMessages(threadId ?? null);
   const [creating, setCreating] = useState(false);
-  const [approvalsOpen, setApprovalsOpen] = useState(true);
+  const [approvalsOpen, setApprovalsOpen] = useState(false);
   const [tab, setTab] = useState<"pending" | "applied" | "rejected" | "failed">("pending");
   const { actions, applyMany, rejectMany } = useAgentActions(tab);
   const [bulk, setBulk] = useState(false);
