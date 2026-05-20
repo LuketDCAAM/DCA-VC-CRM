@@ -1,59 +1,52 @@
-## Goal
+## Why the Deals tab is slow
 
-Replicate the pasted lavender / soft-purple theme across the entire app — light + dark, all components, charts, sidebar, fonts, radius, and shadows — without breaking the existing Tailwind v3 setup.
+Findings from the codebase + DB:
 
-## Key compatibility note
-
-The pasted snippet is **Tailwind v4 syntax** (`@import "tailwindcss"`, `@theme inline`, `@custom-variant`). This project is **Tailwind v3** with the `hsl(var(--token))` wrapper pattern. We will keep v3 and port the theme by:
-
-1. Storing the raw `oklch(...)` values in the CSS variables.
-2. Changing `tailwind.config.ts` color wrappers from `hsl(var(--x))` → `var(--x)` so any color space (oklch, hsl, hex) works.
-
-This is the cleanest way to replicate the look without a framework upgrade.
+- `fetchDeals` pulls **every column of every deal** (`select('*')`, `limit(MAX_SAFE_INTEGER)`) — currently 3,759 rows — on every Deals page load, with no pagination and no field projection.
+- Stage distribution: **2,880 Inactive + 551 Passed = ~91% of all deals** live in two dead-end columns. The Kanban renders all of them anyway.
+- `DealPipelineBoard` uses `@hello-pangea/dnd`, which does **not** virtualize. Every deal becomes a `<Draggable>` with a full Card subtree → thousands of DOM nodes + drag listeners on first paint.
+- `DealCardMini` is declared **inside** the parent component, so it's a brand-new component identity on every render → React can't memoize, and `memo()` on the parent doesn't help.
+- Several hot paths log on every render/filter: `fetchDeals` (10+ `console.log`s incl. dumping the full data array), `useOptimizedFilteredDeals` (`🔍 FILTERING DEALS` + `🔍 FILTERED RESULTS`), `DealsPageContent`, `Deals`, `DealsGrid`. Console output of large arrays is itself a measurable cost.
+- `fetchDeals` makes an extra `rpc('is_user_approved')` round-trip on every load purely for debugging.
+- No DB index on `pipeline_stage` (and full-table reads make `created_at` ordering scan everything).
 
 ## Plan
 
-### 1. Rewrite `src/index.css`
-- Replace `:root` and `.dark` blocks with the pasted oklch tokens (background, foreground, card, popover, primary, secondary, muted, accent, destructive, border, input, ring, chart-1…5, sidebar-* tokens, fonts, radius, shadows).
-- Rename `--sidebar` → `--sidebar-background` (our config expects that name) — keep both for safety.
-- Add the shadow tokens (`--shadow-sm` … `--shadow-2xl`) and font tokens (`--font-sans`, `--font-serif`, `--font-mono`).
-- Keep `@tailwind base/components/utilities` directives (v3).
-- Keep the `@layer base` body/border rules.
+### 1. Trim the network payload (biggest win)
 
-### 2. Update `tailwind.config.ts`
-- Swap every `hsl(var(--token))` to `var(--token)` so oklch resolves correctly.
-- Add `fontFamily`: `sans: ['var(--font-sans)']`, `serif: ['var(--font-serif)']`, `mono: ['var(--font-mono)']`.
-- Add `boxShadow` entries mapping to `var(--shadow-*)`.
-- Keep existing chart-1…5, sidebar, keyframes, animations.
+In `src/hooks/deals/fetchDeals.ts`:
+- Replace `select('*')` with an explicit column list containing only the fields actually used by the table/grid/kanban/filters (company_name, pipeline_stage, round_stage, round_size, deal_score, next_steps, updated_at, created_at, source_date, scored_at, sector, country, state_province, city, location, deal_source, contact_name, description, last_call_date, total_calls, id, plus anything the detail dialog opens lazily).
+- Drop the `limit(MAX_SAFE_INTEGER)` and the `count: 'exact'` — pass a real cap (e.g. 5,000) and let the detail dialog fetch the full row on demand.
+- Remove the `is_user_approved` RPC and the verbose `console.log`s.
 
-### 3. Load the fonts
-- Add Geist, Lora, Fira Code via `<link>` tags in `index.html` (Google Fonts).
+### 2. Exclude Inactive/Passed from the default working set
 
-### 4. Audit hard-coded colors
-- Grep the codebase for raw hex / `text-white` / `bg-black` / `text-green-600` / chart hardcodes and replace with semantic tokens where they slipped in (memory rule: never use raw colors).
-- Known offender: `ThesisSettings.tsx` uses `text-green-600` / `text-destructive` — normalize.
+Add a default filter so the page initially loads only "active" pipeline stages (everything except `Inactive` and `Passed`). That alone drops the rendered set from 3,759 → ~330.
+- Implement as a server-side filter in `fetchDeals` parameterised by stage list, OR
+- Keep client-side but seed `activeFilters.pipeline_stage` with the active stages in `useDealsPageState`, with a UI toggle "Show archived (Inactive/Passed)" that opts back in.
 
-### 5. Verify charts & gradients
-- Project memory: pink→purple gradient lives in `--chart-1` … `--chart-5`. The new palette is purple/rose/teal/amber/blue — confirm with you before swapping, since this changes dashboard chart colors meaningfully.
+### 3. Make the Kanban cheap to render
 
-### 6. QA pass
-- Visit: Dashboard, Deals table, Assistant (chat + inline approvals + sidebar), Approvals, Thesis settings, Auth pages, Settings — confirm contrast and that no component renders unstyled.
-- Light + dark mode toggle check.
+In `src/components/deals/DealPipelineBoard.tsx`:
+- Move `DealCardMini` **out of** the parent function and wrap it in `React.memo` so cards don't re-render on every parent update.
+- Cap visible cards per column (e.g. first 50) with a "Show N more" button per column. Dead-end columns (Inactive, Passed) get a collapsed/empty state by default.
+- Memoize `formatCurrency` results via a stable formatter instance (already top-level — fine).
 
-## Technical details
+### 4. Remove debug noise from hot paths
 
-```text
-src/index.css          → replace token blocks, add shadows + font vars
-tailwind.config.ts     → hsl(var(--x)) → var(--x); add fontFamily + boxShadow
-index.html             → <link> Geist / Lora / Fira Code
-components             → fix any remaining literal color classes
-```
+Strip the `console.log`s from `fetchDeals.ts`, `useOptimizedFilteredDeals.tsx`, `DealsPageContent.tsx`, `Deals.tsx`, and `DealsGrid` render path (or guard them behind `import.meta.env.DEV` only when explicitly debugging).
 
-## One question before I build
+### 5. DB index
 
-The new palette replaces the existing **pink→purple chart gradient** (a core brand rule in memory) with `purple / rose / teal / amber / blue`. Do you want me to:
+Add a migration: `CREATE INDEX IF NOT EXISTS deals_pipeline_stage_idx ON deals (pipeline_stage);` and a composite `(pipeline_stage, created_at DESC)` to support stage-filtered ordered queries once #2 moves filtering server-side.
 
-- **(A)** Apply the new palette literally as pasted (charts become multi-hue), or
-- **(B)** Keep charts on the pink→purple gradient and only apply the new theme to UI chrome (background, primary, sidebar, etc.)?
+### Out of scope (not needed)
 
-If you don't answer, I'll default to **(A)** since you pasted the theme verbatim and update the memory accordingly.
+- No queue/background worker. The slowness is client-side rendering + payload size, not edge-function timeouts. (The `<lovable-stack-overflow>` queue suggestion does not apply here.)
+- No change to the table/grid views' existing pagination/virtualization — they already work.
+
+### Expected impact
+
+- Initial Deals page load: ~1 large query of full rows → ~1 query of ~330 active deals with narrow columns. Should cut JSON payload by ~10×.
+- Kanban first paint: thousands of Draggables → low hundreds. Drag interactions become snappy.
+- Filter typing latency: removing per-keystroke console dumps of the full deals array noticeably improves INP.
