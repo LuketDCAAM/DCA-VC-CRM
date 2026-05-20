@@ -9,7 +9,7 @@ import { toast } from "@/hooks/use-toast";
 
 export default function Approvals() {
   const [tab, setTab] = useState<"pending" | "applied" | "rejected" | "failed">("pending");
-  const { actions, apply, loading } = useAgentActions(tab);
+  const { actions, apply } = useAgentActions(tab);
   const [bulk, setBulk] = useState(false);
 
   const approveAll = async () => {
@@ -49,11 +49,7 @@ export default function Approvals() {
           <TabsTrigger value="failed">Failed</TabsTrigger>
         </TabsList>
         <TabsContent value={tab} className="mt-4">
-          {loading ? (
-            <div className="text-sm text-muted-foreground text-center py-8">Loading…</div>
-          ) : (
-            <AgentActionsPanel status={tab} />
-          )}
+          <AgentActionsPanel status={tab} />
         </TabsContent>
       </Tabs>
     </div>
