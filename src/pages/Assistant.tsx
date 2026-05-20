@@ -169,8 +169,12 @@ export default function Assistant() {
               <TabsTrigger value="failed">Failed</TabsTrigger>
             </TabsList>
             {tab === "pending" && actions.length > 0 && (
-              <div className="px-3 pt-2">
-                <Button size="sm" className="w-full" onClick={approveAll} disabled={bulk}>
+              <div className="px-3 pt-2 flex gap-2">
+                <Button size="sm" variant="outline" className="flex-1" onClick={rejectAll} disabled={bulkReject || bulk}>
+                  {bulkReject ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <X className="h-3 w-3 mr-2" />}
+                  Reject all
+                </Button>
+                <Button size="sm" className="flex-1" onClick={approveAll} disabled={bulk || bulkReject}>
                   {bulk ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <CheckCheck className="h-3 w-3 mr-2" />}
                   Approve all ({actions.length})
                 </Button>
