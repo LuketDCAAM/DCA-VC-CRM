@@ -11,6 +11,10 @@ import { createOpenAICompatible } from "npm:@ai-sdk/openai-compatible@2.0.47";
 import { z } from "npm:zod@4.4.3";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { researchTools } from "../_shared/research-tools.ts";
+import { normalizeDomain as normalizeDomainShared } from "../_shared/action-schemas.ts";
+
+const HISTORY_LIMIT = 20; // last N messages sent to the model
+const TOOL_PART_DETAIL_TURNS = 2; // keep full tool output for the last N turns
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
