@@ -79,7 +79,7 @@ export default function Header() {
                     <span className="hidden xl:inline">{item.name}</span>
                     {showBadge && (
                       <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
-                        {openTaskCount > 99 ? '99+' : openTaskCount}
+                        {badgeCount > 99 ? '99+' : badgeCount}
                       </span>
                     )}
                   </Button>
