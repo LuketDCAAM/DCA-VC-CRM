@@ -1,69 +1,58 @@
-# Analyst Agent — Plan
+## Problem
 
-Builds on the existing `/assistant` (Phase 1). Adds an autonomous Analyst that ranks new deals against your thesis, pulls external research, and reads Notion call transcripts.
+Every recent `create_deal` action from the agent has `status = failed`, but the stored `error` column is the literal string `"[object Object]"`, so we can't see what's actually wrong. Root cause is in `src/hooks/agent/useAgentActions.tsx`:
 
-## 1. Investment Thesis (settings page)
+```ts
+error: String(e)   // PostgrestError → "[object Object]"
+```
 
-New route `/settings/thesis` + table `investment_thesis` (one row per workspace, editable by admins). Fields:
+On top of that, the agent's `propose_create_deal` accepts a free-form `fields: Record<string, unknown>`, with nothing pinning it to the actual `deals` schema. The model is currently sending:
+- `next_steps` duplicating the deck URL (fine, but noisy)
+- `pipeline_stage: "Inactive"` (valid enum, OK)
+- `round_size` as a number (OK)
+- but no validation against the real column list / enum values, so any typo (e.g. `stage: "Seed"` instead of `round_stage`, or `pipeline_stage: "Sourced"`) silently lands in the queue and blows up only on apply.
 
-- Sectors (multi), Stages (multi), Check size min/max
-- Geographies (multi), Business models (multi)
-- Must-haves (free text list), Deal-breakers (free text list)
-- Scoring rubric weights (sector fit, stage fit, traction, team, market — 0-100, sums to 100)
-- Free-form thesis narrative (markdown)
+Finally, once an action is `failed`, the UI has no way to retry after we fix the payload.
 
-The agent reads this row at runtime and passes it into the system prompt + the scoring tool.
+## Plan
 
-## 2. Connectors
+### 1. Capture real Postgres errors (the actual bug)
 
-- **Firecrawl** — connect via `standard_connectors--connect`. Used for `web_search` and `scrape_url` tools.
-- **Notion** — connect via `standard_connectors--connect`. User picks the call-transcripts database ID, stored in `investment_thesis.notion_transcripts_db_id`.
-- Lovable AI Gateway already wired (no change).
+In `src/hooks/agent/useAgentActions.tsx`:
+- Replace `String(e)` with a helper that extracts `message`, `details`, `hint`, `code` from a `PostgrestError` and falls back to `JSON.stringify`.
+- Also surface the error string in the Assistant approvals panel (already shown for failed items — just need real text).
 
-## 3. New agent tools (added to `supabase/functions/agent/index.ts`)
+### 2. Constrain the agent's `propose_create_deal` / `propose_update_deal` payload
 
-Read:
-- `get_investment_thesis` — returns the thesis row
-- `web_search(query)` — Firecrawl `/v2/search`
-- `scrape_url(url)` — Firecrawl `/v2/scrape` (markdown)
-- `notion_search_transcripts(deal_or_company)` — query the configured Notion DB
-- `notion_get_page(pageId)` — fetch full transcript markdown
+In `supabase/functions/agent/index.ts`:
+- Tighten the Zod schema for `propose_create_deal.fields` to an explicit object with the real `deals` columns (description, sector, website, linkedin_url, location, contact_name/email/phone, deal_source, source_date, next_steps, round_size, post_money_valuation, revenue, tags, founded_year, headquarters_location, employee_count_range, etc.).
+- Use `z.enum([...])` for `pipeline_stage`, `round_stage`, `investment_vehicle` so the model can only pick valid values:
+  - pipeline_stage: Inactive, Watchlist, Initial Review, Scorecard, Decision Making, One Pager, Due Diligence, Memo, Legal Review, Invested, Passed
+  - round_stage: Pre-Seed, Seed, Series A, Series B, Series C, Bridge, Growth
+  - investment_vehicle: Preferred Equity, Common Equity, Convertible Note, SAFE Note, Other
+- Same treatment for `propose_update_deal.changes` (partial of the same shape).
+- Update the system prompt to tell the model which fields and enum values exist.
 
-Write (proposals — go through existing `agent_actions` approval queue):
-- `propose_score_deal` — already exists; extended to include `rubric_breakdown` JSON + `rationale`
-- `propose_update_deal` — already exists (sector, stage, traction notes, etc.)
-- `propose_create_task` — already exists (next steps)
+### 3. Strip unknown keys before insert/update (defense in depth)
 
-## 4. Two new edge functions
+In `useAgentActions.tsx`, before `supabase.from("deals").insert(...)`, filter `payload` to a known allow-list of `deals` columns so any leftover junk the model adds (e.g. `stage`, `valuation`, `deck_url`) gets dropped instead of crashing the insert.
 
-- `analyst-run` — runs the full analyst loop for one deal. Inputs: `dealId`, `mode: 'auto' | 'manual'`. Loads thesis + deal + call notes + Notion transcripts, runs `streamText` with all tools, writes proposals into `agent_actions`. Returns the run summary.
-- `on-deal-created` — DB trigger via `pg_net` (or Supabase webhook) calls `analyst-run` with `mode: 'auto'` whenever a row lands in `deals`.
+Same allow-list applied to `update_deal`, `create_investor`, `update_investor`, `create_contact`, `update_contact`, `create_task`.
 
-## 5. UI changes
+### 4. Let the user retry failed actions
 
-- **`/settings/thesis`** — form to edit thesis, connect Firecrawl/Notion, pick Notion DB.
-- **Deal detail page** — new "Analyst" panel:
-  - "Run Analyst" button (manual trigger)
-  - Latest run: score, rubric breakdown, key findings, sources (citations), proposed next steps
-  - Linked entries from the existing `agent_actions` approval queue
-- **Header** — small badge on Assistant link showing pending analyst proposals.
+In `src/components/agent/AgentActionsPanel.tsx` (and the Assistant page tab):
+- For `failed` actions, show the real error message and add a "Retry" button that calls `apply()` again after we flip status back to `pending`.
+- Add an "Edit payload" affordance later if needed — not in scope now.
 
-## 6. Autonomy model
+### Technical details
 
-- New deal inserted → `on-deal-created` fires → analyst runs → writes proposals (score, enrich, tasks) into approval queue. Nothing is applied automatically.
-- User can also click "Run Analyst" on any deal to re-run.
-- Risky writes always go through the existing approve/reject UI (`useAgentActions`).
+- Files touched:
+  - `src/hooks/agent/useAgentActions.tsx` — better error capture, payload allow-list, retry helper
+  - `src/components/agent/AgentActionsPanel.tsx` — show real error text, Retry button
+  - `src/pages/Assistant.tsx` — pass retry through; show failed count
+  - `supabase/functions/agent/index.ts` — Zod enums + explicit field schema + prompt update
 
-## Technical notes
+- No DB migration required; this is all client + edge-function code.
 
-- Stack: Vercel AI SDK + Lovable AI Gateway (`google/gemini-3-flash-preview`), `stepCountIs(50)`.
-- Firecrawl + Notion called server-side only (edge function), via connector gateway with `Authorization: Bearer LOVABLE_API_KEY` + `X-Connection-Api-Key`.
-- Thesis table: workspace-scoped, RLS so only approved users read, only admins write.
-- New table `analyst_runs(id, deal_id, status, summary, score, rubric jsonb, sources jsonb, created_by, created_at)` to keep history beyond the proposal queue.
-- Trigger uses `pg_net.http_post` to the `analyst-run` function with the service role key (stored as DB setting, not in a public table).
-
-## Out of scope (next phase)
-
-- Auto-applying any writes
-- Slack/email notifications when proposals land
-- Investor matching against the proposed deal (Phase 4)
+- Verification: after the fix, re-run one of the failed actions; if it still fails, the panel will display the real Postgres message (e.g. "invalid input value for enum pipeline_stage: …") and we can iterate from there.

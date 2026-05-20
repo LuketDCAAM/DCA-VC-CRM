@@ -27,6 +27,44 @@ const gateway = createOpenAICompatible({
   },
 });
 
+const PIPELINE_STAGES = [
+  "Inactive", "Watchlist", "Initial Review", "Scorecard", "Decision Making",
+  "One Pager", "Due Diligence", "Memo", "Legal Review", "Invested", "Passed",
+] as const;
+const ROUND_STAGES = ["Pre-Seed", "Seed", "Series A", "Series B", "Series C", "Bridge", "Growth"] as const;
+const INVESTMENT_VEHICLES = ["Preferred Equity", "Common Equity", "Convertible Note", "SAFE Note", "Other"] as const;
+
+const DealFieldsSchema = z.object({
+  description: z.string().optional(),
+  sector: z.string().optional(),
+  pipeline_stage: z.enum(PIPELINE_STAGES).optional(),
+  round_stage: z.enum(ROUND_STAGES).optional(),
+  round_size: z.number().optional(),
+  post_money_valuation: z.number().optional(),
+  revenue: z.number().optional(),
+  website: z.string().optional(),
+  linkedin_url: z.string().optional(),
+  crunchbase_url: z.string().optional(),
+  location: z.string().optional(),
+  city: z.string().optional(),
+  state_province: z.string().optional(),
+  country: z.string().optional(),
+  headquarters_location: z.string().optional(),
+  contact_name: z.string().optional(),
+  contact_email: z.string().optional(),
+  contact_phone: z.string().optional(),
+  deal_source: z.string().optional(),
+  source_date: z.string().optional().describe("YYYY-MM-DD"),
+  deal_lead: z.string().optional(),
+  next_steps: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  founded_year: z.number().int().optional(),
+  employee_count_range: z.string().optional(),
+  company_type: z.string().optional(),
+  investment_vehicle: z.enum(INVESTMENT_VEHICLES).optional(),
+  reason_for_passing: z.string().optional(),
+}).partial();
+
 const SYSTEM_PROMPT = `You are the AI assistant inside a venture-capital CRM.
 
 You can read deals, investors, contacts, call notes, and tasks for the signed-in user.
@@ -38,9 +76,17 @@ For ANY mutating action you MUST call the corresponding "propose_*" tool:
   - propose_create_task
   - propose_draft_email
 
+Deal field rules — only use these enum values exactly:
+  - pipeline_stage: ${PIPELINE_STAGES.join(", ")}
+  - round_stage: ${ROUND_STAGES.join(", ")}
+  - investment_vehicle: ${INVESTMENT_VEHICLES.join(", ")}
+Use round_stage for the funding round (NOT a "stage" field). Numeric fields
+(round_size, post_money_valuation, revenue) must be integers in USD, never strings.
+Dates must be YYYY-MM-DD. Do NOT invent column names — stick to the documented fields.
+
 NEVER claim something was created, updated, or sent unless the matching propose_* tool
 returned { proposed: true }. After proposing, tell the user the items are waiting in the
-Approvals queue (top-nav "Approvals") — nothing is applied until they click Approve.
+Approvals panel on the right — nothing is applied until they click Approve.
 
 Be concise. Use markdown tables/bullets, bold company names, and call search tools before
 guessing. If asked to bulk-create deals, call propose_create_deal once per deal.`;
@@ -258,7 +304,7 @@ Deno.serve(async (req) => {
           "Propose updates to fields on a deal. Lands in the approval queue — the user must approve before changes are applied.",
         inputSchema: z.object({
           deal_id: z.string().uuid(),
-          changes: z.record(z.string(), z.unknown()).describe("Object of column → new value"),
+          changes: DealFieldsSchema.describe("Subset of deal columns to update"),
           rationale: z.string().describe("One-sentence reason the user should approve"),
         }),
         execute: async ({ deal_id, changes, rationale }) => {
@@ -348,9 +394,9 @@ Deno.serve(async (req) => {
           "Propose creating a new deal. Lands in the approval queue. Use search_deals first to check for duplicates by company name.",
         inputSchema: z.object({
           company_name: z.string(),
-          fields: z.record(z.string(), z.unknown()).describe(
-            "Other deal columns: description, sector, pipeline_stage, round_stage, round_size, post_money_valuation, website, linkedin_url, location, contact_name, contact_email, deal_source, source_date, next_steps, tags (string[]), etc.",
-          ).optional(),
+          fields: DealFieldsSchema.optional().describe(
+            "Optional deal columns. Use documented enum values exactly. Numeric fields must be integers (USD).",
+          ),
           rationale: z.string(),
         }),
         execute: async ({ company_name, fields, rationale }) => {
