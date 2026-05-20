@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useInvestmentThesis } from "@/hooks/agent/useInvestmentThesis";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,14 +9,30 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Sparkles, Loader2 } from "lucide-react";
 
-function listInput(label: string, value: string[], onChange: (v: string[]) => void, placeholder = "Comma-separated") {
+function ListInput({ label, value, onChange, placeholder = "Comma-separated" }: {
+  label: string;
+  value: string[];
+  onChange: (v: string[]) => void;
+  placeholder?: string;
+}) {
+  // Hold the raw string so the user can freely type commas, spaces, and trailing separators.
+  const [raw, setRaw] = useState(value.join(", "));
+  // Re-sync from parent only when the canonical array actually changes (e.g. after save/discard).
+  useEffect(() => {
+    const parsed = raw.split(",").map((s) => s.trim()).filter(Boolean);
+    if (parsed.join("|") !== value.join("|")) setRaw(value.join(", "));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value.join("|")]);
   return (
     <div className="space-y-1">
       <Label>{label}</Label>
       <Input
-        value={value.join(", ")}
+        value={raw}
         placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value.split(",").map((s) => s.trim()).filter(Boolean))}
+        onChange={(e) => {
+          setRaw(e.target.value);
+          onChange(e.target.value.split(",").map((s) => s.trim()).filter(Boolean));
+        }}
       />
     </div>
   );
