@@ -160,12 +160,6 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
     }
   });
 
-  console.log('🔍 FILTERED RESULTS:', {
-    originalCount: deals.length,
-    filteredCount: filtered.length,
-    searchTerm,
-    activeFilters,
-  });
 
   return filtered;
 }
