@@ -39,14 +39,6 @@ export function DealsGrid({
     handlePageSizeChange,
   } = useDealsPagination(deals);
 
-  console.log('🎯 DEALS GRID RENDER:', {
-    totalDeals: deals.length,
-    paginatedDeals: paginatedDeals.length,
-    currentPage,
-    pageSize,
-    selectedDeals: selectedDeals.length,
-    showSelection,
-  });
 
   if (deals.length === 0) {
     return (
