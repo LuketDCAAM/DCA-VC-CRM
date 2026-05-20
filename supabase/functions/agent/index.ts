@@ -70,14 +70,46 @@ const DealFieldsSchema = z.object({
 }).partial();
 
 function normalizeDomain(url?: string | null): string | null {
-  if (!url) return null;
-  try {
-    const u = url.includes("://") ? url : `https://${url}`;
-    const host = new URL(u).hostname.toLowerCase().replace(/^www\./, "");
-    return host || null;
-  } catch {
-    return url.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0] || null;
-  }
+  return normalizeDomainShared(url ?? null);
+}
+
+// Strip large tool outputs from older messages to keep prompts small.
+// Keeps user/assistant text intact; replaces older tool outputs with a summary.
+function trimHistory(msgs: UIMessage[]): UIMessage[] {
+  if (msgs.length <= HISTORY_LIMIT) return shrinkOlderToolParts(msgs);
+  const trimmed = msgs.slice(-HISTORY_LIMIT);
+  return shrinkOlderToolParts(trimmed);
+}
+
+function shrinkOlderToolParts(msgs: UIMessage[]): UIMessage[] {
+  // Identify the cutoff: anything before the last TOOL_PART_DETAIL_TURNS assistant turns
+  // gets summarized tool outputs to save tokens.
+  let assistantTurns = 0;
+  const keepFullFromIdx = (() => {
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      if (msgs[i].role === "assistant") {
+        assistantTurns++;
+        if (assistantTurns >= TOOL_PART_DETAIL_TURNS) return i;
+      }
+    }
+    return 0;
+  })();
+  return msgs.map((m, idx) => {
+    if (idx >= keepFullFromIdx) return m;
+    if (!Array.isArray(m.parts)) return m;
+    const parts = m.parts.map((p) => {
+      if (typeof p?.type === "string" && p.type.startsWith("tool-")) {
+        const tp = p as { type: string; toolName?: string; state?: string; output?: unknown };
+        const hasOutput = tp.output !== undefined;
+        return {
+          ...tp,
+          output: hasOutput ? { summary: "[truncated]" } : tp.output,
+        };
+      }
+      return p;
+    }) as UIMessage["parts"];
+    return { ...m, parts };
+  });
 }
 
 const SYSTEM_PROMPT = `You are the AI assistant inside a venture-capital CRM.
