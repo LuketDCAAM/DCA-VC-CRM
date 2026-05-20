@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Send, ChevronDown, ChevronRight, Wrench, StopCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { InlineApprovalCards } from "@/components/agent/InlineApprovalCards";
 
 interface AgentChatProps {
   threadId: string;
