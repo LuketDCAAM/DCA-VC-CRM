@@ -74,10 +74,10 @@ export default function ThesisSettings() {
       <Card>
         <CardHeader><CardTitle>Filters</CardTitle></CardHeader>
         <CardContent className="grid md:grid-cols-2 gap-4">
-          {listInput("Sectors", v.sectors, (x) => set({ sectors: x }), "fintech, AI, climate")}
-          {listInput("Stages", v.stages, (x) => set({ stages: x }), "Pre-Seed, Seed, Series A")}
-          {listInput("Geographies", v.geographies, (x) => set({ geographies: x }), "US, EU, LatAm")}
-          {listInput("Business models", v.business_models, (x) => set({ business_models: x }), "B2B SaaS, marketplace")}
+          <ListInput label="Sectors" value={v.sectors} onChange={(x) => set({ sectors: x })} placeholder="fintech, AI, climate" />
+          <ListInput label="Stages" value={v.stages} onChange={(x) => set({ stages: x })} placeholder="Pre-Seed, Seed, Series A" />
+          <ListInput label="Geographies" value={v.geographies} onChange={(x) => set({ geographies: x })} placeholder="US, EU, LatAm" />
+          <ListInput label="Business models" value={v.business_models} onChange={(x) => set({ business_models: x })} placeholder="B2B SaaS, marketplace" />
           <div className="space-y-1">
             <Label>Min check size (USD)</Label>
             <Input type="number" value={v.check_size_min ?? ""} onChange={(e) => set({ check_size_min: e.target.value ? Number(e.target.value) : null })} />
@@ -86,8 +86,8 @@ export default function ThesisSettings() {
             <Label>Max check size (USD)</Label>
             <Input type="number" value={v.check_size_max ?? ""} onChange={(e) => set({ check_size_max: e.target.value ? Number(e.target.value) : null })} />
           </div>
-          {listInput("Must-haves", v.must_haves, (x) => set({ must_haves: x }), "technical founder, $10k MRR")}
-          {listInput("Deal-breakers", v.deal_breakers, (x) => set({ deal_breakers: x }), "consulting, hardware-only")}
+          <ListInput label="Must-haves" value={v.must_haves} onChange={(x) => set({ must_haves: x })} placeholder="technical founder, $10k MRR" />
+          <ListInput label="Deal-breakers" value={v.deal_breakers} onChange={(x) => set({ deal_breakers: x })} placeholder="consulting, hardware-only" />
         </CardContent>
       </Card>
 
