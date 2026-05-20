@@ -28,6 +28,7 @@ import {
   Sparkles,
   Target,
   BookOpen,
+  Sliders,
 } from 'lucide-react';
 
 const navigation = [
