@@ -34,7 +34,7 @@ export function useAgentActions(filterStatus: AgentAction["status"] | "all" = "p
   useEffect(() => {
     refresh();
     const channel = supabase
-      .channel("agent_actions_changes")
+      .channel(`agent_actions_changes_${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "agent_actions" },
