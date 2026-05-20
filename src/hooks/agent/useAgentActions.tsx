@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface AgentAction {
@@ -69,20 +69,40 @@ function formatError(e: unknown): string {
 export function useAgentActions(filterStatus: AgentAction["status"] | "all" = "pending") {
   const [actions, setActions] = useState<AgentAction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [loadedStatus, setLoadedStatus] = useState<typeof filterStatus>(filterStatus);
+  const requestId = useRef(0);
 
   const refresh = useCallback(async () => {
+    const currentRequest = ++requestId.current;
+    setLoading(true);
     let q = supabase
       .from("agent_actions")
       .select("*")
       .order("created_at", { ascending: false })
       .limit(100);
     if (filterStatus !== "all") q = q.eq("status", filterStatus);
-    const { data } = await q;
+    const { data, error: queryError } = await q;
+    if (currentRequest !== requestId.current) return;
+    if (queryError) {
+      const msg = formatError(queryError);
+      console.error("agent actions refresh failed:", msg, queryError);
+      setActions([]);
+      setError(msg);
+      setLoadedStatus(filterStatus);
+      setLoading(false);
+      return;
+    }
     setActions((data ?? []) as AgentAction[]);
+    setLoadedStatus(filterStatus);
+    setError(null);
     setLoading(false);
   }, [filterStatus]);
 
   useEffect(() => {
+    setActions([]);
+    setError(null);
+    setLoading(true);
     refresh();
     const channel = supabase
       .channel(`agent_actions_changes_${Math.random().toString(36).slice(2)}`)
@@ -92,7 +112,19 @@ export function useAgentActions(filterStatus: AgentAction["status"] | "all" = "p
         () => refresh(),
       )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const interval = window.setInterval(refresh, 5000);
+    const handleFocus = () => refresh();
+    const handleVisibility = () => {
+      if (!document.hidden) refresh();
+    };
+    window.addEventListener("focus", handleFocus);
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      supabase.removeChannel(channel);
+    };
   }, [refresh]);
 
   const apply = async (action: AgentAction) => {
@@ -175,5 +207,8 @@ export function useAgentActions(filterStatus: AgentAction["status"] | "all" = "p
     await apply({ ...action, status: "pending", error: null });
   };
 
-  return { actions, loading, refresh, apply, reject, retry };
+  const visibleActions = loadedStatus === filterStatus ? actions : [];
+  const visibleLoading = loading || loadedStatus !== filterStatus;
+
+  return { actions: visibleActions, loading: visibleLoading, error, refresh, apply, reject, retry };
 }
