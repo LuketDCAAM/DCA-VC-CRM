@@ -11,6 +11,10 @@ import { createOpenAICompatible } from "npm:@ai-sdk/openai-compatible@2.0.47";
 import { z } from "npm:zod@4.4.3";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { researchTools } from "../_shared/research-tools.ts";
+import { normalizeDomain as normalizeDomainShared } from "../_shared/action-schemas.ts";
+
+const HISTORY_LIMIT = 20; // last N messages sent to the model
+const TOOL_PART_DETAIL_TURNS = 2; // keep full tool output for the last N turns
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -66,14 +70,67 @@ const DealFieldsSchema = z.object({
 }).partial();
 
 function normalizeDomain(url?: string | null): string | null {
-  if (!url) return null;
-  try {
-    const u = url.includes("://") ? url : `https://${url}`;
-    const host = new URL(u).hostname.toLowerCase().replace(/^www\./, "");
-    return host || null;
-  } catch {
-    return url.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0] || null;
+  return normalizeDomainShared(url ?? null);
+}
+
+// Indexed duplicate lookup: uses deals_website_domain_idx and deals_company_name_lower_idx.
+// deno-lint-ignore no-explicit-any
+async function findDuplicate(db: any, companyName: string, website?: string) {
+  const domain = normalizeDomain(website);
+  if (domain) {
+    const { data } = await db
+      .from("deals")
+      .select("id,company_name,website")
+      .ilike("website", `%${domain}%`) // index speeds the lower() comparison; ilike still scans but is now backed by trgm
+      .limit(1);
+    if (data && data.length > 0) return data[0];
   }
+  const { data: byName } = await db
+    .from("deals")
+    .select("id,company_name,website")
+    .ilike("company_name", companyName)
+    .limit(1);
+  if (byName && byName.length > 0) return byName[0];
+  return null;
+}
+
+// Strip large tool outputs from older messages to keep prompts small.
+// Keeps user/assistant text intact; replaces older tool outputs with a summary.
+function trimHistory(msgs: UIMessage[]): UIMessage[] {
+  if (msgs.length <= HISTORY_LIMIT) return shrinkOlderToolParts(msgs);
+  const trimmed = msgs.slice(-HISTORY_LIMIT);
+  return shrinkOlderToolParts(trimmed);
+}
+
+function shrinkOlderToolParts(msgs: UIMessage[]): UIMessage[] {
+  // Identify the cutoff: anything before the last TOOL_PART_DETAIL_TURNS assistant turns
+  // gets summarized tool outputs to save tokens.
+  let assistantTurns = 0;
+  const keepFullFromIdx = (() => {
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      if (msgs[i].role === "assistant") {
+        assistantTurns++;
+        if (assistantTurns >= TOOL_PART_DETAIL_TURNS) return i;
+      }
+    }
+    return 0;
+  })();
+  return msgs.map((m, idx) => {
+    if (idx >= keepFullFromIdx) return m;
+    if (!Array.isArray(m.parts)) return m;
+    const parts = m.parts.map((p) => {
+      if (typeof p?.type === "string" && p.type.startsWith("tool-")) {
+        const tp = p as { type: string; toolName?: string; state?: string; output?: unknown };
+        const hasOutput = tp.output !== undefined;
+        return {
+          ...tp,
+          output: hasOutput ? { summary: "[truncated]" } : tp.output,
+        };
+      }
+      return p;
+    }) as UIMessage["parts"];
+    return { ...m, parts };
+  });
 }
 
 const SYSTEM_PROMPT = `You are the AI assistant inside a venture-capital CRM.
@@ -109,7 +166,15 @@ returned { proposed: true }. After proposing, tell the user the items are waitin
 Approvals panel on the right — nothing is applied until they click Approve.
 
 Be concise. Use markdown tables/bullets, bold company names, and call search tools before
-guessing. If asked to bulk-create deals, call propose_create_deal once per deal.`;
+guessing.
+
+BULK OPERATIONS — efficiency rules:
+- If the user asks to create more than ONE deal in the same request, ALWAYS call
+  propose_create_deals_bulk ONCE with all deals in the array. Do NOT call
+  propose_create_deal in a loop — that's slow and may hit step limits.
+- Same for tasks: use propose_create_tasks_bulk for 2+ tasks at a time.
+- Duplicate checks are handled server-side inside the bulk tool — you don't need
+  to call find_deal_by_website for each one beforehand.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -155,8 +220,9 @@ Deno.serve(async (req) => {
             .from("agent_messages")
             .select("role,parts")
             .eq("thread_id", threadId)
-            .order("created_at", { ascending: true });
-          history = (data ?? []).map((m, i) => ({
+            .order("created_at", { ascending: false })
+            .limit(HISTORY_LIMIT);
+          history = (data ?? []).reverse().map((m, i) => ({
             id: `hist-${i}`,
             role: m.role as UIMessage["role"],
             parts: (m.parts as unknown) as UIMessage["parts"],
@@ -416,19 +482,26 @@ Deno.serve(async (req) => {
         execute: async ({ website }) => {
           const domain = normalizeDomain(website);
           if (!domain) return { found: false };
+          // Uses deals_website_domain_idx for O(log n) lookup.
           const { data, error } = await supabase
-            .from("deals")
-            .select("id,company_name,website,pipeline_stage,deal_score")
-            .or(`website.ilike.%${domain}%`)
+            .rpc("find_potential_duplicates", { p_company_name: "", p_website: domain })
             .limit(5);
-          if (error) return { error: error.message };
+          if (error) {
+            // Fallback: filter client-side after a small fetch (still indexed via lower())
+            const { data: fallback } = await supabase
+              .from("deals")
+              .select("id,company_name,website,pipeline_stage,deal_score")
+              .ilike("website", `%${domain}%`)
+              .limit(5);
+            return { found: (fallback?.length ?? 0) > 0, matches: fallback ?? [] };
+          }
           return { found: (data?.length ?? 0) > 0, matches: data ?? [] };
         },
       }),
 
       propose_create_deal: tool({
         description:
-          "Propose creating a new deal. Lands in the approval queue. ALWAYS call search_deals + find_deal_by_website first — duplicate websites WILL fail. If a duplicate is returned, use propose_update_deal on the existing_deal_id instead.",
+          "Propose creating ONE deal. For 2+ deals, use propose_create_deals_bulk instead. Server checks for duplicates by website domain and company name; if a duplicate is returned use propose_update_deal on existing_deal_id.",
         inputSchema: z.object({
           company_name: z.string(),
           fields: DealFieldsSchema.optional().describe(
@@ -438,39 +511,16 @@ Deno.serve(async (req) => {
         }),
         execute: async ({ company_name, fields, rationale }) => {
           if (!runId) return { error: "No run id" };
-          const payload = { company_name, ...(fields ?? {}) };
-
-          // Server-side duplicate check — by website domain and by company_name (case-insensitive)
-          const domain = normalizeDomain(fields?.website as string | undefined);
-          if (domain) {
-            const { data: byDomain } = await supabase
-              .from("deals")
-              .select("id,company_name,website")
-              .ilike("website", `%${domain}%`)
-              .limit(1);
-            if (byDomain && byDomain.length > 0) {
-              return {
-                duplicate: true,
-                existing_deal_id: byDomain[0].id,
-                existing_company_name: byDomain[0].company_name,
-                hint: "Call propose_update_deal against existing_deal_id instead of creating a duplicate.",
-              };
-            }
-          }
-          const { data: byName } = await supabase
-            .from("deals")
-            .select("id,company_name,website")
-            .ilike("company_name", company_name)
-            .limit(1);
-          if (byName && byName.length > 0) {
+          const dup = await findDuplicate(supabase, company_name, fields?.website as string | undefined);
+          if (dup) {
             return {
               duplicate: true,
-              existing_deal_id: byName[0].id,
-              existing_company_name: byName[0].company_name,
+              existing_deal_id: dup.id,
+              existing_company_name: dup.company_name,
               hint: "Call propose_update_deal against existing_deal_id instead of creating a duplicate.",
             };
           }
-
+          const payload = { company_name, ...(fields ?? {}) };
           const { data, error } = await supabase
             .from("agent_actions")
             .insert({
@@ -486,6 +536,79 @@ Deno.serve(async (req) => {
             .single();
           if (error) return { error: error.message };
           return { proposed: true, action_id: data.id };
+        },
+      }),
+
+      propose_create_deals_bulk: tool({
+        description:
+          "Propose creating MANY deals in one shot. Use this whenever the user asks for 2+ deals. Server-side duplicate checks run for each entry; duplicates are reported back but do not block the others.",
+        inputSchema: z.object({
+          deals: z.array(z.object({
+            company_name: z.string(),
+            fields: DealFieldsSchema.optional(),
+          })).min(1).max(50),
+          rationale: z.string().describe("One-sentence reason covering the whole batch"),
+        }),
+        execute: async ({ deals, rationale }) => {
+          if (!runId) return { error: "No run id" };
+          const proposed: string[] = [];
+          const duplicates: { company_name: string; existing_deal_id: string }[] = [];
+          const rows: Record<string, unknown>[] = [];
+          for (const d of deals) {
+            const dup = await findDuplicate(supabase, d.company_name, d.fields?.website as string | undefined);
+            if (dup) {
+              duplicates.push({ company_name: d.company_name, existing_deal_id: dup.id });
+              continue;
+            }
+            rows.push({
+              run_id: runId,
+              user_id: userId,
+              action_type: "create_deal",
+              target_table: "deals",
+              payload: { company_name: d.company_name, ...(d.fields ?? {}) },
+              rationale,
+              status: "pending",
+            });
+          }
+          if (rows.length) {
+            const { data, error } = await supabase
+              .from("agent_actions")
+              .insert(rows)
+              .select("id");
+            if (error) return { error: error.message, duplicates };
+            for (const r of data ?? []) proposed.push(r.id as string);
+          }
+          return { proposed: proposed.length, duplicates, action_ids: proposed };
+        },
+      }),
+
+      propose_create_tasks_bulk: tool({
+        description: "Propose MANY tasks/reminders in one shot. Use for 2+ tasks.",
+        inputSchema: z.object({
+          tasks: z.array(z.object({
+            title: z.string(),
+            description: z.string().optional(),
+            reminder_date: z.string().describe("YYYY-MM-DD"),
+            priority: z.enum(["low", "medium", "high"]).default("medium"),
+            deal_id: z.string().uuid().optional(),
+            investor_id: z.string().uuid().optional(),
+          })).min(1).max(50),
+          rationale: z.string(),
+        }),
+        execute: async ({ tasks, rationale }) => {
+          if (!runId) return { error: "No run id" };
+          const rows = tasks.map((t) => ({
+            run_id: runId,
+            user_id: userId,
+            action_type: "create_task",
+            target_table: "reminders",
+            payload: t,
+            rationale,
+            status: "pending",
+          }));
+          const { data, error } = await supabase.from("agent_actions").insert(rows).select("id");
+          if (error) return { error: error.message };
+          return { proposed: data?.length ?? 0, action_ids: (data ?? []).map((r) => r.id) };
         },
       }),
 
@@ -619,7 +742,7 @@ Deno.serve(async (req) => {
     const result = streamText({
       model: gateway("google/gemini-3-flash-preview"),
       system: SYSTEM_PROMPT,
-      messages: await convertToModelMessages(messages),
+      messages: await convertToModelMessages(trimHistory(messages)),
       tools,
       stopWhen: stepCountIs(50),
       abortSignal: req.signal,

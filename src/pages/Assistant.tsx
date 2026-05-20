@@ -31,7 +31,7 @@ export default function Assistant() {
   const [creating, setCreating] = useState(false);
   const [approvalsOpen, setApprovalsOpen] = useState(true);
   const [tab, setTab] = useState<"pending" | "applied" | "rejected" | "failed">("pending");
-  const { actions, apply } = useAgentActions(tab);
+  const { actions, applyMany } = useAgentActions(tab);
   const [bulk, setBulk] = useState(false);
 
   useEffect(() => {
@@ -51,12 +51,9 @@ export default function Assistant() {
 
   const approveAll = async () => {
     setBulk(true);
-    let ok = 0, fail = 0;
-    for (const a of actions) {
-      try { await apply(a); ok++; } catch { fail++; }
-    }
+    const { ok, failed } = await applyMany(actions.map((a) => a.id));
     setBulk(false);
-    toast({ title: `Approved ${ok}`, description: fail ? `${fail} failed` : undefined });
+    toast({ title: `Approved ${ok}`, description: failed ? `${failed} failed` : undefined });
   };
 
   return (
