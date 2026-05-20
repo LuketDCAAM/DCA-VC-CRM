@@ -409,19 +409,68 @@ Deno.serve(async (req) => {
         },
       }),
 
+      find_deal_by_website: tool({
+        description:
+          "Look up an existing deal by website domain (handles http/https/www variations). Use BEFORE propose_create_deal whenever you have a URL.",
+        inputSchema: z.object({ website: z.string() }),
+        execute: async ({ website }) => {
+          const domain = normalizeDomain(website);
+          if (!domain) return { found: false };
+          const { data, error } = await supabase
+            .from("deals")
+            .select("id,company_name,website,pipeline_stage,deal_score")
+            .or(`website.ilike.%${domain}%`)
+            .limit(5);
+          if (error) return { error: error.message };
+          return { found: (data?.length ?? 0) > 0, matches: data ?? [] };
+        },
+      }),
+
       propose_create_deal: tool({
         description:
-          "Propose creating a new deal. Lands in the approval queue. Use search_deals first to check for duplicates by company name.",
+          "Propose creating a new deal. Lands in the approval queue. ALWAYS call search_deals + find_deal_by_website first — duplicate websites WILL fail. If a duplicate is returned, use propose_update_deal on the existing_deal_id instead.",
         inputSchema: z.object({
           company_name: z.string(),
           fields: DealFieldsSchema.optional().describe(
-            "Optional deal columns. Use documented enum values exactly. Numeric fields must be integers (USD).",
+            "Optional deal columns. Use documented enum values exactly. Numeric fields are whole USD dollars (integers).",
           ),
           rationale: z.string(),
         }),
         execute: async ({ company_name, fields, rationale }) => {
           if (!runId) return { error: "No run id" };
           const payload = { company_name, ...(fields ?? {}) };
+
+          // Server-side duplicate check — by website domain and by company_name (case-insensitive)
+          const domain = normalizeDomain(fields?.website as string | undefined);
+          if (domain) {
+            const { data: byDomain } = await supabase
+              .from("deals")
+              .select("id,company_name,website")
+              .ilike("website", `%${domain}%`)
+              .limit(1);
+            if (byDomain && byDomain.length > 0) {
+              return {
+                duplicate: true,
+                existing_deal_id: byDomain[0].id,
+                existing_company_name: byDomain[0].company_name,
+                hint: "Call propose_update_deal against existing_deal_id instead of creating a duplicate.",
+              };
+            }
+          }
+          const { data: byName } = await supabase
+            .from("deals")
+            .select("id,company_name,website")
+            .ilike("company_name", company_name)
+            .limit(1);
+          if (byName && byName.length > 0) {
+            return {
+              duplicate: true,
+              existing_deal_id: byName[0].id,
+              existing_company_name: byName[0].company_name,
+              hint: "Call propose_update_deal against existing_deal_id instead of creating a duplicate.",
+            };
+          }
+
           const { data, error } = await supabase
             .from("agent_actions")
             .insert({
