@@ -9,8 +9,9 @@ import { toast } from "@/hooks/use-toast";
 
 export default function Approvals() {
   const [tab, setTab] = useState<"pending" | "applied" | "rejected" | "failed">("pending");
-  const { actions, apply } = useAgentActions(tab);
+  const { actions, apply, rejectMany } = useAgentActions(tab);
   const [bulk, setBulk] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
 
   const approveAll = async () => {
     setBulk(true);
