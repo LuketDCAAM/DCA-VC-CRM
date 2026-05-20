@@ -14,7 +14,8 @@ import {
   HandCoins,
   ClipboardList,
   Sparkles,
-  Target
+  Target,
+  BookOpen
 } from 'lucide-react';
 import ThemeToggle from '@/components/theme/ThemeToggle';
 
@@ -36,10 +37,12 @@ export default function Header() {
   const { isViewer, isAdmin } = useUserRoles();
   const { count: openTaskCount } = useOpenTaskCount();
 
-  // Filter navigation for viewers
+  // Filter navigation for viewers; admins also see Agent Instructions
   const filteredNavigation = isViewer 
     ? navigation.filter(item => item.name === 'Dashboard')
-    : navigation;
+    : isAdmin
+      ? [...navigation, { name: 'Agent Rules', href: '/settings/agent-instructions', icon: BookOpen }]
+      : navigation;
 
   return (
     <header className="bg-background shadow-sm border-b sticky top-0 z-50">
