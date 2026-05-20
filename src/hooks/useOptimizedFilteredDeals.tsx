@@ -30,7 +30,6 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
   // Apply active filters
   Object.entries(activeFilters).forEach(([key, value]) => {
     if (value && value !== '' && value !== null && value !== undefined) {
-      console.log(`Applying filter: ${key} = ${value}`);
       
       switch (key) {
         case 'pipeline_stage':
