@@ -52,7 +52,7 @@ export default function Approvals() {
           {loading ? (
             <div className="text-sm text-muted-foreground text-center py-8">Loading…</div>
           ) : (
-            <AgentActionsPanel />
+            <AgentActionsPanel status={tab} />
           )}
         </TabsContent>
       </Tabs>
