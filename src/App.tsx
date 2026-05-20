@@ -98,6 +98,7 @@ function App() {
                       <Route path="/assistant" element={<Assistant />} />
                       <Route path="/assistant/:threadId" element={<Assistant />} />
                       <Route path="/settings/thesis" element={<ThesisSettings />} />
+                      <Route path="/settings/benchmarks" element={<BenchmarksSettings />} />
                       <Route path="/settings/agent-instructions" element={<AgentInstructions />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
