@@ -39,6 +39,7 @@ export default function Header() {
   const location = useLocation();
   const { isViewer, isAdmin } = useUserRoles();
   const { count: openTaskCount } = useOpenTaskCount();
+  const pendingActions = usePendingActionCount();
 
   // Filter navigation for viewers
   const filteredNavigation = isViewer 
