@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,7 +17,6 @@ import Tasks from "./pages/Tasks";
 import ExternalDataDashboard from "./pages/ExternalDataDashboard";
 import Assistant from "./pages/Assistant";
 import ThesisSettings from "./pages/ThesisSettings";
-import Approvals from "./pages/Approvals";
 import NotFound from "./pages/NotFound";
 import MicrosoftAuthCallback from "./pages/auth/microsoft/callback";
 import ResetPassword from "./pages/auth/ResetPassword";
@@ -98,7 +96,6 @@ function App() {
                       <Route path="/assistant" element={<Assistant />} />
                       <Route path="/assistant/:threadId" element={<Assistant />} />
                       <Route path="/settings/thesis" element={<ThesisSettings />} />
-                      <Route path="/approvals" element={<Approvals />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Layout>
