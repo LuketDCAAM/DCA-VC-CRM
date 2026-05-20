@@ -9,12 +9,6 @@ export interface FilteredDealsConfig {
 }
 
 function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<string, any>): Deal[] {
-  console.log('🔍 FILTERING DEALS:', {
-    totalDeals: deals.length,
-    searchTerm,
-    activeFilters,
-  });
-
   let filtered = deals;
 
   // Apply search term filter
@@ -36,7 +30,6 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
   // Apply active filters
   Object.entries(activeFilters).forEach(([key, value]) => {
     if (value && value !== '' && value !== null && value !== undefined) {
-      console.log(`Applying filter: ${key} = ${value}`);
       
       switch (key) {
         case 'pipeline_stage':
@@ -167,12 +160,6 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
     }
   });
 
-  console.log('🔍 FILTERED RESULTS:', {
-    originalCount: deals.length,
-    filteredCount: filtered.length,
-    searchTerm,
-    activeFilters,
-  });
 
   return filtered;
 }

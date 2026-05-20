@@ -65,13 +65,8 @@ export function DealsPageContent({
   onCSVImport,
   allDeals,
 }: DealsPageContentProps) {
-  console.log('DealsPageContent - showAdvancedFilters:', showAdvancedFilters);
-  console.log('DealsPageContent - activeFilters:', activeFilters);
-  console.log('DealsPageContent - allDeals for filter generation:', allDeals.length);
-
   // Generate dynamic filter options based on actual deals data
   const dynamicFilterOptions = useMemo(() => {
-    console.log('Generating dynamic filter options...');
     return generateDealsFilterOptions(allDeals);
   }, [allDeals]);
 
