@@ -47,8 +47,8 @@ export default function Header() {
   return (
     <header className="bg-background shadow-sm border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
-        <div className="flex justify-between items-center h-14">
-          <div className="flex items-center space-x-8">
+        <div className="flex justify-between items-center gap-3 h-14">
+          <div className="flex items-center gap-4 min-w-0 flex-1">
             <div className="flex-shrink-0">
               <img 
                 src="/lovable-uploads/c1b92e43-b852-475a-aa30-04db2ade1108.png" 
@@ -56,7 +56,7 @@ export default function Header() {
                 className="h-7 w-auto"
               />
             </div>
-            <nav className="hidden lg:flex space-x-1">
+            <nav className="hidden lg:flex items-center gap-0.5 min-w-0 flex-wrap">
               {filteredNavigation.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.href || location.pathname.startsWith(item.href + '/');
@@ -69,10 +69,11 @@ export default function Header() {
                     variant={isActive ? "default" : "ghost"}
                     size="sm"
                     onClick={() => navigate(item.href)}
-                    className="flex items-center gap-1.5 text-sm font-medium px-3 py-2 h-9 relative"
+                    className="flex items-center gap-1.5 text-sm font-medium px-2.5 py-2 h-9 relative shrink-0"
+                    title={item.name}
                   >
-                    <Icon className="h-4 w-4" />
-                    <span className="hidden xl:inline">{item.name}</span>
+                    <Icon className="h-4 w-4 shrink-0" />
+                    <span className="hidden 2xl:inline">{item.name}</span>
                     {showBadge && (
                       <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
                         {taskBadge > 99 ? '99+' : taskBadge}
@@ -85,7 +86,7 @@ export default function Header() {
             
           </div>
           
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {isAdmin && <UserManagementDialog />}
             <ThemeToggle />
             <ProfileButton />
