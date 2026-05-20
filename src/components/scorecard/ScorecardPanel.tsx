@@ -291,7 +291,7 @@ export function ScorecardPanel({ dealId }: Props) {
 
             <TabsContent value="qual" className="space-y-4 pt-4">
               {QUAL_CATEGORIES.map((c) => {
-                const r = ratings[c.key] ?? {};
+                const r: QualitativeRating = ratings[c.key] ?? {};
                 return (
                   <div key={c.key} className="border rounded-md p-4 space-y-2">
                     <div className="flex items-start justify-between gap-3">
