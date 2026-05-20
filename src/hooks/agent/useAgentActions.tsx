@@ -46,27 +46,49 @@ export function useAgentActions(filterStatus: AgentAction["status"] | "all" = "p
 
   const apply = async (action: AgentAction) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not signed in");
+      const payload = action.payload as Record<string, unknown>;
+
       if (action.action_type === "update_deal" && action.target_id) {
-        const { error } = await supabase
-          .from("deals")
-          .update(action.payload as never)
-          .eq("id", action.target_id);
+        const { error } = await supabase.from("deals").update(payload as never).eq("id", action.target_id);
         if (error) throw error;
       } else if (action.action_type === "score_deal" && action.target_id) {
         const { error } = await supabase
           .from("deals")
-          .update({ deal_score: (action.payload as { deal_score: number }).deal_score })
+          .update({ deal_score: (payload as { deal_score: number }).deal_score })
           .eq("id", action.target_id);
         if (error) throw error;
+      } else if (action.action_type === "create_deal") {
+        const { error } = await supabase
+          .from("deals")
+          .insert({ ...payload, created_by: user.id, relationship_owner: payload.relationship_owner ?? user.id } as never);
+        if (error) throw error;
+      } else if (action.action_type === "create_investor") {
+        const { error } = await supabase
+          .from("investors")
+          .insert({ ...payload, created_by: user.id, relationship_owner: payload.relationship_owner ?? user.id } as never);
+        if (error) throw error;
+      } else if (action.action_type === "update_investor" && action.target_id) {
+        const { error } = await supabase.from("investors").update(payload as never).eq("id", action.target_id);
+        if (error) throw error;
+      } else if (action.action_type === "create_contact") {
+        const { error } = await supabase
+          .from("contacts")
+          .insert({ ...payload, created_by: user.id, relationship_owner: payload.relationship_owner ?? user.id } as never);
+        if (error) throw error;
+      } else if (action.action_type === "update_contact" && action.target_id) {
+        const { error } = await supabase.from("contacts").update(payload as never).eq("id", action.target_id);
+        if (error) throw error;
       } else if (action.action_type === "create_task") {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error("Not signed in");
         const { error } = await supabase
           .from("reminders")
-          .insert({ ...(action.payload as Record<string, unknown>), created_by: user.id, assigned_to: user.id } as never);
+          .insert({ ...payload, created_by: user.id, assigned_to: payload.assigned_to ?? user.id } as never);
         if (error) throw error;
       } else if (action.action_type === "draft_email") {
         // Drafts are stored in the action itself; future Phase 4 will send via edge fn.
+      } else {
+        throw new Error(`Unsupported action type: ${action.action_type}`);
       }
       await supabase
         .from("agent_actions")
