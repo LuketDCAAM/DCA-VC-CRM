@@ -62,7 +62,10 @@ export default function Header() {
               {filteredNavigation.map((item) => {
                 const Icon = item.icon;
                 const isActive = location.pathname === item.href || location.pathname.startsWith(item.href + '/');
-                const showBadge = item.name === 'Tasks' && openTaskCount > 0;
+                const taskBadge = item.name === 'Tasks' && openTaskCount > 0 ? openTaskCount : 0;
+                const approvalsBadge = item.name === 'Approvals' && pendingActions > 0 ? pendingActions : 0;
+                const badgeCount = taskBadge || approvalsBadge;
+                const showBadge = badgeCount > 0;
                 
                 return (
                   <Button
