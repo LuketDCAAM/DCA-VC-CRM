@@ -4,11 +4,24 @@ import { useAgentThreads } from "@/hooks/agent/useAgentThreads";
 import { useAgentMessages } from "@/hooks/agent/useAgentMessages";
 import { AgentChat } from "@/components/agent/AgentChat";
 import { AgentActionsPanel } from "@/components/agent/AgentActionsPanel";
+import { useAgentActions } from "@/hooks/agent/useAgentActions";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, MessageSquare, Trash2, Sparkles } from "lucide-react";
+import {
+  Plus,
+  MessageSquare,
+  Trash2,
+  Sparkles,
+  Inbox,
+  PanelRightClose,
+  PanelRightOpen,
+  CheckCheck,
+  Loader2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 
 export default function Assistant() {
   const navigate = useNavigate();
@@ -16,8 +29,11 @@ export default function Assistant() {
   const { threads, loading, createThread, deleteThread } = useAgentThreads();
   const { initialMessages, loading: messagesLoading } = useAgentMessages(threadId ?? null);
   const [creating, setCreating] = useState(false);
+  const [approvalsOpen, setApprovalsOpen] = useState(true);
+  const [tab, setTab] = useState<"pending" | "applied" | "rejected" | "failed">("pending");
+  const { actions, apply } = useAgentActions(tab);
+  const [bulk, setBulk] = useState(false);
 
-  // Auto-select most recent thread or create one
   useEffect(() => {
     if (loading) return;
     if (threadId) return;
@@ -31,6 +47,16 @@ export default function Assistant() {
     const t = await createThread();
     setCreating(false);
     if (t) navigate(`/assistant/${t.id}`);
+  };
+
+  const approveAll = async () => {
+    setBulk(true);
+    let ok = 0, fail = 0;
+    for (const a of actions) {
+      try { await apply(a); ok++; } catch { fail++; }
+    }
+    setBulk(false);
+    toast({ title: `Approved ${ok}`, description: fail ? `${fail} failed` : undefined });
   };
 
   return (
@@ -78,8 +104,8 @@ export default function Assistant() {
         </ScrollArea>
       </aside>
 
-      {/* Main */}
-      <main className="flex-1 flex flex-col">
+      {/* Chat */}
+      <main className="flex-1 flex flex-col min-w-0 relative">
         {!threadId ? (
           <div className="flex-1 flex items-center justify-center text-center">
             <div>
@@ -93,25 +119,63 @@ export default function Assistant() {
               </Button>
             </div>
           </div>
+        ) : messagesLoading ? (
+          <div className="text-center text-sm text-muted-foreground py-12">Loading...</div>
         ) : (
-          <Tabs defaultValue="chat" className="flex-1 flex flex-col">
-            <TabsList className="mx-4 mt-3 self-start">
-              <TabsTrigger value="chat">Chat</TabsTrigger>
-              <TabsTrigger value="actions">Pending actions</TabsTrigger>
-            </TabsList>
-            <TabsContent value="chat" className="flex-1 mt-0">
-              {messagesLoading ? (
-                <div className="text-center text-sm text-muted-foreground py-12">Loading...</div>
-              ) : (
-                <AgentChat key={threadId} threadId={threadId} initialMessages={initialMessages} />
-              )}
-            </TabsContent>
-            <TabsContent value="actions" className="flex-1 overflow-auto p-4">
-              <AgentActionsPanel />
-            </TabsContent>
-          </Tabs>
+          <AgentChat key={threadId} threadId={threadId} initialMessages={initialMessages} />
+        )}
+        {!approvalsOpen && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setApprovalsOpen(true)}
+            className="absolute top-3 right-3 gap-2"
+          >
+            <PanelRightOpen className="h-4 w-4" />
+            Approvals
+            {tab === "pending" && actions.length > 0 && (
+              <Badge variant="secondary">{actions.length}</Badge>
+            )}
+          </Button>
         )}
       </main>
+
+      {/* Approvals side panel */}
+      {approvalsOpen && (
+        <aside className="w-96 border-l flex flex-col bg-background">
+          <div className="p-3 border-b flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Inbox className="h-4 w-4" />
+              <h3 className="font-semibold text-sm">Approvals</h3>
+              {tab === "pending" && actions.length > 0 && (
+                <Badge variant="secondary">{actions.length}</Badge>
+              )}
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => setApprovalsOpen(false)}>
+              <PanelRightClose className="h-4 w-4" />
+            </Button>
+          </div>
+          <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)} className="flex-1 flex flex-col min-h-0">
+            <TabsList className="mx-3 mt-2 self-start">
+              <TabsTrigger value="pending">Pending</TabsTrigger>
+              <TabsTrigger value="applied">Applied</TabsTrigger>
+              <TabsTrigger value="rejected">Rejected</TabsTrigger>
+              <TabsTrigger value="failed">Failed</TabsTrigger>
+            </TabsList>
+            {tab === "pending" && actions.length > 0 && (
+              <div className="px-3 pt-2">
+                <Button size="sm" className="w-full" onClick={approveAll} disabled={bulk}>
+                  {bulk ? <Loader2 className="h-3 w-3 mr-2 animate-spin" /> : <CheckCheck className="h-3 w-3 mr-2" />}
+                  Approve all ({actions.length})
+                </Button>
+              </div>
+            )}
+            <TabsContent value={tab} className="flex-1 overflow-auto p-3 mt-2">
+              <AgentActionsPanel status={tab} />
+            </TabsContent>
+          </Tabs>
+        </aside>
+      )}
     </div>
   );
 }
