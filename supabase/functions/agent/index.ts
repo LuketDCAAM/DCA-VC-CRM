@@ -134,11 +134,13 @@ function shrinkOlderToolParts(msgs: UIMessage[]): UIMessage[] {
   });
 }
 
-const SYSTEM_PROMPT = await loadPrompt({
-  PIPELINE_STAGES: PIPELINE_STAGES.join(", "),
-  ROUND_STAGES: ROUND_STAGES.join(", "),
-  INVESTMENT_VEHICLES: INVESTMENT_VEHICLES.join(", "),
-});
+async function getSystemPrompt(): Promise<string> {
+  return await loadPrompt({
+    PIPELINE_STAGES: PIPELINE_STAGES.join(", "),
+    ROUND_STAGES: ROUND_STAGES.join(", "),
+    INVESTMENT_VEHICLES: INVESTMENT_VEHICLES.join(", "),
+  });
+}
 
 
 Deno.serve(async (req) => {
@@ -706,7 +708,7 @@ Deno.serve(async (req) => {
 
     const result = streamText({
       model: gateway("google/gemini-3-flash-preview"),
-      system: SYSTEM_PROMPT,
+      system: await getSystemPrompt(),
       messages: await convertToModelMessages(trimHistory(messages)),
       tools,
       stopWhen: stepCountIs(50),
