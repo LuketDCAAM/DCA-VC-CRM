@@ -1,58 +1,68 @@
-## Problem
+# Make the CRM Agent faster and less clunky
 
-Every recent `create_deal` action from the agent has `status = failed`, but the stored `error` column is the literal string `"[object Object]"`, so we can't see what's actually wrong. Root cause is in `src/hooks/agent/useAgentActions.tsx`:
+The agent works but feels heavy. Four real performance/UX problems are visible in the code, and each has a tight fix.
 
-```ts
-error: String(e)   // PostgrestError → "[object Object]"
-```
+## Problems we'll fix
 
-On top of that, the agent's `propose_create_deal` accepts a free-form `fields: Record<string, unknown>`, with nothing pinning it to the actual `deals` schema. The model is currently sending:
-- `next_steps` duplicating the deck URL (fine, but noisy)
-- `pipeline_stage: "Inactive"` (valid enum, OK)
-- `round_size` as a number (OK)
-- but no validation against the real column list / enum values, so any typo (e.g. `stage: "Seed"` instead of `round_stage`, or `pipeline_stage: "Sourced"`) silently lands in the queue and blows up only on apply.
+1. **Every chat turn replays the entire thread.** `agent/index.ts` loads ALL `agent_messages` for the thread on each request and ships them to the model. As threads grow this gets slow and expensive, and tool-result blobs balloon the prompt.
+2. **Bulk operations explode into N tool calls.** "Add these 10 deals" forces 10+ `propose_create_deal` round-trips. With `stepCountIs(50)` we can hit the cap, and each propose hits 2 duplicate-check queries (`ilike '%domain%'` — non-indexable). This is the #1 reason the agent feels slow.
+3. **"Approve all" is serial in the browser.** `Assistant.tsx` loops `for (const a of actions) await apply(a)`. 16 approvals = 16 sequential round-trips, plus the realtime channel re-fires `refresh()` after each one (and a 5s polling interval on top). The panel re-renders constantly.
+4. **Approvals panel polls every 5s AND subscribes to realtime AND refetches on focus.** Triple-refresh. Now that realtime is enabled on `agent_actions`, polling is redundant.
 
-Finally, once an action is `failed`, the UI has no way to retry after we fix the payload.
+## Proposed changes
 
-## Plan
+### A. Slimmer chat context (edge function)
+- Cap history to the last **20 messages** (configurable) instead of unbounded.
+- Strip large `tool` parts older than the last 2 turns down to a one-line summary (`{ tool, ok: true }`) — keeps reasoning continuity, drops kilobytes.
+- Switch model selector to a constant so we can A/B Gemini Flash vs. Pro from one place.
 
-### 1. Capture real Postgres errors (the actual bug)
+### B. Batch + indexed duplicate checks (edge function)
+- Add `propose_create_deals_bulk({ deals: [...] })` — one tool call inserts N pending actions in a single round-trip. Update the system prompt: "for bulk imports, ALWAYS use the bulk tool."
+- Add a Postgres migration: index `lower(regexp_replace(website, '^https?://(www\\.)?', ''))` and `lower(company_name)` for O(log n) duplicate lookups. Replace the `ilike '%domain%'` scans with exact lookups against the normalized domain.
+- Add `propose_create_tasks_bulk` for the same reason.
 
-In `src/hooks/agent/useAgentActions.tsx`:
-- Replace `String(e)` with a helper that extracts `message`, `details`, `hint`, `code` from a `PostgrestError` and falls back to `JSON.stringify`.
-- Also surface the error string in the Assistant approvals panel (already shown for failed items — just need real text).
+### C. Server-side bulk apply (new edge function `apply-actions`)
+- New function takes `{ action_ids: [...] }` and applies them inside a single transaction-like loop on the server (service role with `user_id` check). Returns `{ ok, failed }`.
+- `Assistant.tsx` "Approve all" becomes ONE network call instead of N. Re-render once at the end.
+- Single-row approve can still go through the existing client path, or also use the same endpoint.
 
-### 2. Constrain the agent's `propose_create_deal` / `propose_update_deal` payload
+### D. De-clunk the Approvals panel (`useAgentActions.tsx`)
+- Remove the 5-second `setInterval` and the focus/visibility listeners. Realtime is enough now.
+- Debounce realtime-triggered `refresh()` (250ms) so a bulk apply doesn't fire 16 fetches.
+- Only fetch columns the panel renders, not `select('*')`.
 
-In `supabase/functions/agent/index.ts`:
-- Tighten the Zod schema for `propose_create_deal.fields` to an explicit object with the real `deals` columns (description, sector, website, linkedin_url, location, contact_name/email/phone, deal_source, source_date, next_steps, round_size, post_money_valuation, revenue, tags, founded_year, headquarters_location, employee_count_range, etc.).
-- Use `z.enum([...])` for `pipeline_stage`, `round_stage`, `investment_vehicle` so the model can only pick valid values:
-  - pipeline_stage: Inactive, Watchlist, Initial Review, Scorecard, Decision Making, One Pager, Due Diligence, Memo, Legal Review, Invested, Passed
-  - round_stage: Pre-Seed, Seed, Series A, Series B, Series C, Bridge, Growth
-  - investment_vehicle: Preferred Equity, Common Equity, Convertible Note, SAFE Note, Other
-- Same treatment for `propose_update_deal.changes` (partial of the same shape).
-- Update the system prompt to tell the model which fields and enum values exist.
+### E. Better in-chat feedback
+- In `AgentChat`, render tool parts with a compact "Proposing: Update deal Acme → score 78" row that shows immediately on `input-available`, instead of waiting for `output-available`. Users stop wondering "is it stuck?"
+- Toast "X proposals ready" on stream finish so users know to check the side panel.
 
-### 3. Strip unknown keys before insert/update (defense in depth)
+## Technical notes
 
-In `useAgentActions.tsx`, before `supabase.from("deals").insert(...)`, filter `payload` to a known allow-list of `deals` columns so any leftover junk the model adds (e.g. `stage`, `valuation`, `deck_url`) gets dropped instead of crashing the insert.
+- New tool shape:
+  ```ts
+  propose_create_deals_bulk: tool({
+    inputSchema: z.object({
+      deals: z.array(z.object({ company_name: z.string(), fields: DealFieldsSchema.optional(), rationale: z.string() })).max(50),
+    }),
+    execute: async ({ deals }) => { /* one .insert([...]) into agent_actions */ }
+  })
+  ```
+- Migration sketch:
+  ```sql
+  create extension if not exists pg_trgm;
+  create index if not exists deals_company_name_lower_idx on deals (lower(company_name));
+  create index if not exists deals_website_domain_idx
+    on deals (lower(regexp_replace(coalesce(website,''), '^https?://(www\.)?', '')));
+  ```
+- `apply-actions` reuses the per-table allow-lists currently in `useAgentActions.tsx` (move them to `supabase/functions/_shared/action-schemas.ts` so both sides import them).
+- History trim: keep all `user`/`assistant` text parts; for older `tool` parts replace `output` with `{ summary: '...' }` before `convertToModelMessages`.
 
-Same allow-list applied to `update_deal`, `create_investor`, `update_investor`, `create_contact`, `update_contact`, `create_task`.
+## Out of scope
 
-### 4. Let the user retry failed actions
+- Switching models, adding new agent capabilities, changing the Approvals UI layout. This plan is purely about responsiveness.
 
-In `src/components/agent/AgentActionsPanel.tsx` (and the Assistant page tab):
-- For `failed` actions, show the real error message and add a "Retry" button that calls `apply()` again after we flip status back to `pending`.
-- Add an "Edit payload" affordance later if needed — not in scope now.
+## Expected impact
 
-### Technical details
-
-- Files touched:
-  - `src/hooks/agent/useAgentActions.tsx` — better error capture, payload allow-list, retry helper
-  - `src/components/agent/AgentActionsPanel.tsx` — show real error text, Retry button
-  - `src/pages/Assistant.tsx` — pass retry through; show failed count
-  - `supabase/functions/agent/index.ts` — Zod enums + explicit field schema + prompt update
-
-- No DB migration required; this is all client + edge-function code.
-
-- Verification: after the fix, re-run one of the failed actions; if it still fails, the panel will display the real Postgres message (e.g. "invalid input value for enum pipeline_stage: …") and we can iterate from there.
+- "Add 10 deals" goes from ~10 sequential LLM tool calls + 20 ilike scans → 1 tool call + 1 indexed batch insert.
+- "Approve all (16)" goes from 16 round-trips + 16 realtime refreshes → 1 round-trip + 1 refresh.
+- Each chat turn payload shrinks (bounded history) → lower latency to first token.
+- Panel feels live without the 5s flicker.
