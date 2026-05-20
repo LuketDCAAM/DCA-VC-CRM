@@ -304,7 +304,7 @@ Deno.serve(async (req) => {
           "Propose updates to fields on a deal. Lands in the approval queue — the user must approve before changes are applied.",
         inputSchema: z.object({
           deal_id: z.string().uuid(),
-          changes: z.record(z.string(), z.unknown()).describe("Object of column → new value"),
+          changes: DealFieldsSchema.describe("Subset of deal columns to update"),
           rationale: z.string().describe("One-sentence reason the user should approve"),
         }),
         execute: async ({ deal_id, changes, rationale }) => {
