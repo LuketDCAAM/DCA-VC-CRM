@@ -16,11 +16,27 @@ const ACTION_LABELS: Record<string, string> = {
   draft_email: "Draft email",
 };
 
-export function AgentActionsPanel({ targetTable, targetId }: { targetTable?: string; targetId?: string }) {
-  const { actions, apply, reject } = useAgentActions("pending");
+export function AgentActionsPanel({
+  targetTable,
+  targetId,
+  status = "pending",
+}: {
+  targetTable?: string;
+  targetId?: string;
+  status?: "pending" | "applied" | "rejected" | "failed" | "all";
+}) {
+  const { actions, apply, reject } = useAgentActions(status);
   const filtered = targetId
     ? actions.filter((a) => a.target_table === targetTable && a.target_id === targetId)
     : actions;
+
+  if (filtered.length === 0) {
+    return (
+      <div className="text-sm text-muted-foreground text-center py-8">
+        No {status === "pending" ? "pending" : status} agent suggestions.
+      </div>
+    );
+  }
 
   if (filtered.length === 0) {
     return (
