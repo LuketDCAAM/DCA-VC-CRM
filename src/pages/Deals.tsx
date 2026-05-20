@@ -35,10 +35,6 @@ export default function Deals() {
     handleBulkAction,
   } = useDealsPageState();
 
-  console.log('=== DEALS PAGE RENDER ===');
-  console.log('Deals page - dealStats from hook:', dealStats);
-  console.log('Deals page - total deals array length:', deals.length);
-  console.log('Deals page - loading state:', loading);
 
   const handleCSVImportWrapper = async (data: any[]) => {
     console.log('CSV Import wrapper called with', data.length, 'rows');
