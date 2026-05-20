@@ -664,7 +664,7 @@ Deno.serve(async (req) => {
     const result = streamText({
       model: gateway("google/gemini-3-flash-preview"),
       system: SYSTEM_PROMPT,
-      messages: await convertToModelMessages(messages),
+      messages: await convertToModelMessages(trimHistory(messages)),
       tools,
       stopWhen: stepCountIs(50),
       abortSignal: req.signal,
