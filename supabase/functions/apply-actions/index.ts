@@ -198,6 +198,35 @@ async function applyOne(
     }
     case "draft_email":
       return; // drafts stay on the action row
+    case "attach_link": {
+      const dealId = (raw as { deal_id?: string }).deal_id ?? null;
+      const investorId = (raw as { investor_id?: string }).investor_id ?? null;
+      const portfolioCompanyId = (raw as { portfolio_company_id?: string }).portfolio_company_id ?? null;
+      const url = (raw as { url?: string }).url;
+      const label = (raw as { label?: string }).label ?? "Link";
+      const kind = ((raw as { kind?: string }).kind ?? "link") as string;
+      if (!url) throw new Error("attach_link requires url");
+      if (!dealId && !investorId && !portfolioCompanyId) {
+        throw new Error("attach_link requires deal_id, investor_id, or portfolio_company_id");
+      }
+      // For decks targeted at a deal, replace existing 'link' rows so the
+      // deal edit form's single "Pitch Deck Link" slot stays in sync.
+      if (kind === "deck" && dealId) {
+        await db.from("file_attachments").delete().eq("deal_id", dealId).eq("file_type", "link");
+      }
+      const { error } = await db.from("file_attachments").insert({
+        deal_id: dealId,
+        investor_id: investorId,
+        portfolio_company_id: portfolioCompanyId,
+        file_name: label,
+        file_url: url,
+        file_type: "link",
+        file_size: 0,
+        uploaded_by: userId,
+      });
+      if (error) throw error;
+      return;
+    }
     case "edit_prompt": {
       const slug = (raw as { slug?: string }).slug;
       const newBody = (raw as { new_body?: string }).new_body;
