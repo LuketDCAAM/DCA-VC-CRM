@@ -7,6 +7,11 @@ import { useState } from "react";
 const ACTION_LABELS: Record<string, string> = {
   update_deal: "Update deal",
   score_deal: "Score deal",
+  create_deal: "Create deal",
+  create_investor: "Create investor",
+  update_investor: "Update investor",
+  create_contact: "Create contact",
+  update_contact: "Update contact",
   create_task: "Create task",
   draft_email: "Draft email",
 };
