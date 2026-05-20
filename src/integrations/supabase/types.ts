@@ -105,6 +105,77 @@ export type Database = {
           },
         ]
       }
+      agent_prompt_versions: {
+        Row: {
+          body: string
+          change_note: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          prompt_id: string
+          slug: string
+        }
+        Insert: {
+          body: string
+          change_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          prompt_id: string
+          slug: string
+        }
+        Update: {
+          body?: string
+          change_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          prompt_id?: string
+          slug?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_prompt_versions_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "agent_prompts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_prompts: {
+        Row: {
+          body: string
+          id: string
+          kind: string
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          body: string
+          id?: string
+          kind: string
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          body?: string
+          id?: string
+          kind?: string
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       agent_runs: {
         Row: {
           agent_type: string

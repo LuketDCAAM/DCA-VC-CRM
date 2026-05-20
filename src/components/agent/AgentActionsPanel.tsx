@@ -14,6 +14,7 @@ const ACTION_LABELS: Record<string, string> = {
   update_contact: "Update contact",
   create_task: "Create task",
   draft_email: "Draft email",
+  edit_prompt: "Edit agent instructions",
 };
 
 export function AgentActionsPanel({
@@ -119,9 +120,13 @@ function ActionCard({
           <span className="break-words">{action.error}</span>
         </div>
       )}
-      <pre className="text-[11px] bg-muted p-2 rounded overflow-auto max-h-40">
-        {JSON.stringify(action.payload, null, 2)}
-      </pre>
+      {action.action_type === "edit_prompt" ? (
+        <EditPromptPreview payload={action.payload} />
+      ) : (
+        <pre className="text-[11px] bg-muted p-2 rounded overflow-auto max-h-40">
+          {JSON.stringify(action.payload, null, 2)}
+        </pre>
+      )}
       <div className="flex gap-2 justify-end">
         {isPending && (
           <>
@@ -142,6 +147,41 @@ function ActionCard({
           </Button>
         )}
       </div>
+    </div>
+  );
+}
+
+function EditPromptPreview({ payload }: { payload: Record<string, unknown> }) {
+  const slug = String(payload.slug ?? "");
+  const newBody = String(payload.new_body ?? "");
+  const oldBody = String(payload.old_body ?? "");
+  const [tab, setTab] = useState<"new" | "old">("new");
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 text-xs">
+        <span className="font-mono text-muted-foreground">{slug}</span>
+        <div className="ml-auto flex gap-1">
+          <Button
+            size="sm"
+            variant={tab === "new" ? "secondary" : "ghost"}
+            className="h-6 px-2 text-xs"
+            onClick={() => setTab("new")}
+          >
+            New
+          </Button>
+          <Button
+            size="sm"
+            variant={tab === "old" ? "secondary" : "ghost"}
+            className="h-6 px-2 text-xs"
+            onClick={() => setTab("old")}
+          >
+            Current
+          </Button>
+        </div>
+      </div>
+      <pre className="text-[11px] bg-muted p-2 rounded overflow-auto max-h-60 whitespace-pre-wrap">
+        {tab === "new" ? newBody : oldBody}
+      </pre>
     </div>
   );
 }
