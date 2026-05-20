@@ -705,6 +705,69 @@ Deno.serve(async (req) => {
         },
       }),
 
+      list_attachments: tool({
+        description:
+          "List existing file_attachments rows (pitch deck links, uploaded files) for a deal, investor, or portfolio company. Use BEFORE propose_attach_link to avoid creating duplicates.",
+        inputSchema: z.object({
+          deal_id: z.string().uuid().optional(),
+          investor_id: z.string().uuid().optional(),
+          portfolio_company_id: z.string().uuid().optional(),
+        }),
+        execute: async ({ deal_id, investor_id, portfolio_company_id }) => {
+          let q = supabase
+            .from("file_attachments")
+            .select("id,file_name,file_url,file_type,file_size,created_at")
+            .neq("file_type", "investor_info")
+            .order("created_at", { ascending: false })
+            .limit(50);
+          if (deal_id) q = q.eq("deal_id", deal_id);
+          else if (investor_id) q = q.eq("investor_id", investor_id);
+          else if (portfolio_company_id) q = q.eq("portfolio_company_id", portfolio_company_id);
+          else return { error: "Provide deal_id, investor_id, or portfolio_company_id" };
+          const { data, error } = await q;
+          if (error) return { error: error.message };
+          return { count: data?.length ?? 0, attachments: data };
+        },
+      }),
+
+      propose_attach_link: tool({
+        description:
+          "Attach a URL (pitch deck, Google Slides, Notion page, data room link, etc.) to a deal, investor, or portfolio company. Lands in approvals — only inserts after user approves. Use this for pitch deck URLs instead of putting them in next_steps. For uploaded binary files (.pdf, .pptx), tell the user to upload via the deal edit form — you cannot upload files yourself.",
+        inputSchema: z.object({
+          deal_id: z.string().uuid().optional(),
+          investor_id: z.string().uuid().optional(),
+          portfolio_company_id: z.string().uuid().optional(),
+          url: z.string().url().describe("Full https:// URL to the resource"),
+          label: z.string().min(1).max(200).describe("Short human-readable label, e.g. 'Pitch Deck', 'Q3 Data Room', 'Founder LinkedIn'"),
+          kind: z.enum(["deck", "link", "doc"]).default("link").describe("'deck' for pitch decks (replaces existing deck link), 'link' for generic links, 'doc' for documents"),
+          rationale: z.string(),
+        }),
+        execute: async ({ rationale, deal_id, investor_id, portfolio_company_id, url, label, kind }) => {
+          if (!runId) return { error: "No run id" };
+          if (!deal_id && !investor_id && !portfolio_company_id) {
+            return { error: "Provide deal_id, investor_id, or portfolio_company_id" };
+          }
+          const targetTable = deal_id ? "deals" : investor_id ? "investors" : "portfolio_companies";
+          const targetId = deal_id ?? investor_id ?? portfolio_company_id ?? null;
+          const { data, error } = await supabase
+            .from("agent_actions")
+            .insert({
+              run_id: runId,
+              user_id: userId,
+              action_type: "attach_link",
+              target_table: targetTable,
+              target_id: targetId,
+              payload: { deal_id, investor_id, portfolio_company_id, url, label, kind },
+              rationale,
+              status: "pending",
+            })
+            .select("id")
+            .single();
+          if (error) return { error: error.message };
+          return { proposed: true, action_id: data.id };
+        },
+      }),
+
       list_prompts: tool({
         description:
           "List the agent's editable instruction prompts and playbooks (slug, title, kind). Use BEFORE propose_edit_prompt to find the correct slug.",
