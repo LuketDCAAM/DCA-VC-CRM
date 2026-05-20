@@ -1,155 +1,175 @@
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useInvestmentThesis } from "@/hooks/agent/useInvestmentThesis";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useUserRoles } from "@/hooks/useUserRoles";
+import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Lock } from "lucide-react";
 
-function ListInput({ label, value, onChange, placeholder = "Comma-separated" }: {
-  label: string;
-  value: string[];
-  onChange: (v: string[]) => void;
-  placeholder?: string;
-}) {
-  // Hold the raw string so the user can freely type commas, spaces, and trailing separators.
-  const [raw, setRaw] = useState(value.join(", "));
-  // Re-sync from parent only when the canonical array actually changes (e.g. after save/discard).
-  useEffect(() => {
-    const parsed = raw.split(",").map((s) => s.trim()).filter(Boolean);
-    if (parsed.join("|") !== value.join("|")) setRaw(value.join(", "));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value.join("|")]);
-  return (
-    <div className="space-y-1">
-      <Label>{label}</Label>
-      <Input
-        value={raw}
-        placeholder={placeholder}
-        onChange={(e) => {
-          setRaw(e.target.value);
-          onChange(e.target.value.split(",").map((s) => s.trim()).filter(Boolean));
-        }}
-      />
-    </div>
-  );
-}
+const DEFAULT_THESIS = `# Investment Thesis
+
+DCA Asset Management invests in early-stage technology companies (Pre-Seed through Series A) where the founding team has deep domain expertise, the product has clear technical differentiation, and the market is large enough to support a venture-scale outcome. We have high conviction in technology-driven transformation of physical-world industries — specifically Aerospace & Defense, AI Infrastructure, Robotics, Vertical AI Native SaaS, Cybersecurity, and Supply Chain & Logistics. We look for founders who are leveraging AI, automation, or proprietary data to build durable competitive moats. Capital efficiency, founder equity retention, and execution velocity are primary signals. For non-deep tech companies, we prioritize deals with ≥$250k ARR and strong MoM growth as early proof of product-market fit.
+
+## Filters
+
+### Sectors
+
+- ✅ **Tier 1 — High Conviction:** Aerospace & Defense, AI Infrastructure, Robotics, Vertical AI Native SaaS, Cybersecurity, Supply Chain & Logistics
+- ✅ **Tier 2 — Standard:** Digital Health, FinTech, GovTech, Energy Storage, Tobacco/Cannabis
+- ⚠️ **Tier 3 — Hesitant:** Consumer (CPG), EdTech, E-commerce, Gaming
+- ❌ **Excluded:** Pharma, Medical Devices
+
+### Stages
+
+- Pre-Seed, Seed, Series A only
+- Series B and beyond: hard stop
+
+### Geographies
+
+- **Tier 1** (target 15–20x PostMoney/ARR): Bay Area, NYC, Boston
+- **Tier 2** (target 10–15x): Austin, Seattle, LA, Miami, Chicago
+- **Tier 3** (target 6–10x): Rest of US / International
+
+### Business Models
+
+- Vertical SaaS, Subscription, AI Infrastructure, Deep Tech, Defense Tech, B2B Software, Marketplace with strong network effects
+- Hardware acceptable if GM ≥40%
+
+## Must-Haves
+
+- Founding team retains ≥20% equity pre-round
+- Pre-Seed, Seed, or Series A stage
+- Technical co-founder or CTO present (mandatory for AI, Robotics, Aerospace deals)
+- Company <3.5 years old OR ≥$100k ARR (exemption: Aerospace, Defense, Robotics)
+- US market focus (domestic HQ or clear US GTM)
+
+## Deal-Breakers
+
+- Stage: Series B or later
+- Sector: Pharma or Medical Devices
+- Founder equity <20% pre-round (no exceptions for stage)
+- Company >3.5 years old AND <$100k ARR (outside of Aerospace, Defense, Robotics)
+- 2 bridge rounds (SAFEs/Notes) in last 18 months without a valuation step-up
+- $250k in non-convertible debt (equipment loans, bank lines, RBF, term loans)
+- 70% ARR from a single customer (outside GovTech/Defense)
+- NRR <80% or monthly churn >5% for SaaS/subscription businesses
+
+## Scoring Weights
+
+| Category | Weight | Rationale |
+|---|---|---|
+| Team | 30 | Domain expertise, prior exits, and execution velocity are DCA's primary alpha signal |
+| Traction | 25 | ARR level, MoM growth velocity, capital efficiency — proof that the business works |
+| Market | 20 | TAM size, competitive positioning, barriers to entry |
+| Sector Fit | 15 | Tier 1 sectors get full weight; hesitant sectors penalized |
+| Stage Fit | 5 | Binary in most cases (hard stop handles true mismatches); nuance for edge cases near the boundary |
+| Narrative | 5 | Differentiation story, clarity of vision, founder-market fit framing |
+| **Total** | **100** | |
+`;
 
 export default function ThesisSettings() {
   const { thesis, loading, save } = useInvestmentThesis();
+  const { isAdmin, loading: rolesLoading } = useUserRoles();
   const [saving, setSaving] = useState(false);
-  const [draft, setDraft] = useState<Record<string, unknown> | null>(null);
+  const [draft, setDraft] = useState<string | null>(null);
 
-  if (loading) {
-    return <div className="p-8 flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading thesis…</div>;
+  useEffect(() => {
+    if (thesis && !thesis.narrative) setDraft(DEFAULT_THESIS);
+  }, [thesis]);
+
+  if (loading || rolesLoading) {
+    return (
+      <div className="p-8 flex items-center gap-2 text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin" /> Loading thesis…
+      </div>
+    );
   }
   if (!thesis) return <div className="p-8">No thesis row.</div>;
 
-  const v = { ...thesis, ...(draft ?? {}) } as typeof thesis;
-  const set = (patch: Partial<typeof thesis>) => setDraft({ ...(draft ?? {}), ...patch });
+  const content = draft ?? thesis.narrative ?? DEFAULT_THESIS;
+  const isDirty = draft !== null && draft !== (thesis.narrative ?? "");
 
   const onSave = async () => {
+    if (!isAdmin) return;
     setSaving(true);
-    const { error } = await save(draft ?? {});
+    const { error } = await save({ narrative: content });
     setSaving(false);
     if (error) toast.error("Save failed: " + (error as { message?: string }).message);
-    else { toast.success("Thesis saved"); setDraft(null); }
+    else {
+      toast.success("Thesis saved");
+      setDraft(null);
+    }
   };
-
-  const totalWeight = v.weight_sector_fit + v.weight_stage_fit + v.weight_traction + v.weight_team + v.weight_market;
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
-      <div className="flex items-center gap-2">
-        <Sparkles className="h-6 w-6 text-primary" />
-        <h1 className="text-2xl font-semibold">Investment Thesis</h1>
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-6 w-6 text-primary" />
+          <h1 className="text-2xl font-semibold">Investment Thesis</h1>
+        </div>
+        {!isAdmin && (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Lock className="h-3.5 w-3.5" /> Read-only — only admins can edit
+          </div>
+        )}
       </div>
       <p className="text-sm text-muted-foreground">
-        The Analyst agent reads this when scoring inbound deals. Be specific — vague thesis = generic scoring.
+        The Analyst agent reads this Markdown document when scoring inbound deals. Be specific — vague thesis = generic scoring.
       </p>
 
-      <Card>
-        <CardHeader><CardTitle>Filters</CardTitle></CardHeader>
-        <CardContent className="grid md:grid-cols-2 gap-4">
-          <ListInput label="Sectors" value={v.sectors} onChange={(x) => set({ sectors: x })} placeholder="fintech, AI, climate" />
-          <ListInput label="Stages" value={v.stages} onChange={(x) => set({ stages: x })} placeholder="Pre-Seed, Seed, Series A" />
-          <ListInput label="Geographies" value={v.geographies} onChange={(x) => set({ geographies: x })} placeholder="US, EU, LatAm" />
-          <ListInput label="Business models" value={v.business_models} onChange={(x) => set({ business_models: x })} placeholder="B2B SaaS, marketplace" />
-          <div className="space-y-1">
-            <Label>Min check size (USD)</Label>
-            <Input type="number" value={v.check_size_min ?? ""} onChange={(e) => set({ check_size_min: e.target.value ? Number(e.target.value) : null })} />
-          </div>
-          <div className="space-y-1">
-            <Label>Max check size (USD)</Label>
-            <Input type="number" value={v.check_size_max ?? ""} onChange={(e) => set({ check_size_max: e.target.value ? Number(e.target.value) : null })} />
-          </div>
-          <ListInput label="Must-haves" value={v.must_haves} onChange={(x) => set({ must_haves: x })} placeholder="technical founder, $10k MRR" />
-          <ListInput label="Deal-breakers" value={v.deal_breakers} onChange={(x) => set({ deal_breakers: x })} placeholder="consulting, hardware-only" />
-        </CardContent>
-      </Card>
+      {isAdmin ? (
+        <Card>
+          <CardContent className="p-0">
+            <Tabs defaultValue="edit" className="w-full">
+              <div className="border-b px-4 pt-3">
+                <TabsList>
+                  <TabsTrigger value="edit">Edit</TabsTrigger>
+                  <TabsTrigger value="preview">Preview</TabsTrigger>
+                </TabsList>
+              </div>
+              <TabsContent value="edit" className="p-4">
+                <Textarea
+                  value={content}
+                  onChange={(e) => setDraft(e.target.value)}
+                  rows={32}
+                  className="font-mono text-sm"
+                  placeholder="# Investment Thesis&#10;&#10;Write your thesis in Markdown…"
+                />
+              </TabsContent>
+              <TabsContent value="preview" className="p-6">
+                <article className="prose prose-sm dark:prose-invert max-w-none">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+                </article>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="p-6">
+            <article className="prose prose-sm dark:prose-invert max-w-none">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+            </article>
+          </CardContent>
+        </Card>
+      )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Scoring weights</CardTitle>
-          <p className="text-xs text-muted-foreground">Sum should be 100. Currently: <span className={totalWeight === 100 ? "text-green-600" : "text-destructive"}>{totalWeight}</span></p>
-        </CardHeader>
-        <CardContent className="grid md:grid-cols-5 gap-4">
-          {[
-            ["weight_sector_fit", "Sector fit"],
-            ["weight_stage_fit", "Stage fit"],
-            ["weight_traction", "Traction"],
-            ["weight_team", "Team"],
-            ["weight_market", "Market"],
-          ].map(([k, label]) => (
-            <div key={k} className="space-y-1">
-              <Label>{label}</Label>
-              <Input type="number" min={0} max={100} value={v[k as keyof typeof v] as number}
-                onChange={(e) => set({ [k]: Number(e.target.value) } as Partial<typeof thesis>)} />
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader><CardTitle>Narrative</CardTitle></CardHeader>
-        <CardContent>
-          <Textarea rows={8} value={v.narrative ?? ""} onChange={(e) => set({ narrative: e.target.value })}
-            placeholder="Free-form thesis — what wins, what loses, market view, anti-portfolio lessons, etc." />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader><CardTitle>Integrations</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-1">
-            <Label>Notion call-transcripts database ID</Label>
-            <Input value={v.notion_transcripts_db_id ?? ""} placeholder="32-char Notion DB id"
-              onChange={(e) => set({ notion_transcripts_db_id: e.target.value || null })} />
-            <p className="text-xs text-muted-foreground">
-              Share that database with the Notion integration in your Notion settings, then paste the database ID here.
-              Find it in the URL: notion.so/workspace/<b>DATABASE_ID</b>?v=…
-            </p>
-          </div>
-          <div className="flex items-center justify-between rounded-lg border p-3">
-            <div>
-              <Label>Auto-run on new deal</Label>
-              <p className="text-xs text-muted-foreground">When a deal is added, run the Analyst automatically.</p>
-            </div>
-            <Switch checked={v.auto_run_on_create} onCheckedChange={(c) => set({ auto_run_on_create: c })} />
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="flex justify-end gap-2 sticky bottom-4">
-        <Button variant="outline" onClick={() => setDraft(null)} disabled={!draft || saving}>Discard</Button>
-        <Button onClick={onSave} disabled={!draft || saving}>
-          {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          Save thesis
-        </Button>
-      </div>
+      {isAdmin && (
+        <div className="flex justify-end gap-2 sticky bottom-4">
+          <Button variant="outline" onClick={() => setDraft(null)} disabled={!isDirty || saving}>
+            Discard
+          </Button>
+          <Button onClick={onSave} disabled={!isDirty || saving}>
+            {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            Save thesis
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
