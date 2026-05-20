@@ -1,0 +1,208 @@
+// Score deal: generates an AI-drafted scorecard from deal context + uploaded sources.
+// Returns a partial scorecard patch (narrative + qualitative ratings) for human review.
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+interface Body {
+  scorecard_id: string;
+  deal_id: string;
+}
+
+const RESPONSE_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    company_overview: { type: "string" },
+    investment_thesis: { type: "string" },
+    traction_milestones: { type: "string" },
+    business_model: { type: "string" },
+    key_strengths: { type: "string" },
+    key_risks: { type: "string" },
+    investor_base: { type: "string" },
+    competitive_landscape: { type: "string" },
+    use_of_funds: { type: "string" },
+    dca_value_add: { type: "string" },
+    qualitative_ratings: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        market: ratingProp(),
+        product: ratingProp(),
+        business_model: ratingProp(),
+        team: ratingProp(),
+        exit: ratingProp(),
+      },
+      required: ["market", "product", "business_model", "team", "exit"],
+    },
+  },
+  required: ["qualitative_ratings"],
+} as const;
+
+function ratingProp() {
+  return {
+    type: "object",
+    additionalProperties: false,
+    properties: {
+      score: { type: "integer", minimum: 1, maximum: 5 },
+      rationale: { type: "string" },
+    },
+    required: ["score", "rationale"],
+  };
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  try {
+    if (!LOVABLE_API_KEY) {
+      return json({ error: "LOVABLE_API_KEY not configured" }, 500);
+    }
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) return json({ error: "Missing auth" }, 401);
+
+    const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user } } = await userClient.auth.getUser();
+    if (!user) return json({ error: "Unauthorized" }, 401);
+
+    const body = (await req.json()) as Body;
+    if (!body.scorecard_id || !body.deal_id) return json({ error: "Missing ids" }, 400);
+
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // Log run
+    const { data: run } = await admin
+      .from("analyst_runs")
+      .insert({ deal_id: body.deal_id, trigger: "scorecard_ai_draft", status: "running", created_by: user.id })
+      .select("id")
+      .single();
+
+    const [{ data: deal }, { data: thesis }, { data: calls }, { data: docs }, { data: scorecard }] = await Promise.all([
+      admin.from("deals").select("*").eq("id", body.deal_id).maybeSingle(),
+      admin.from("investment_thesis").select("*").limit(1).maybeSingle(),
+      admin.from("call_notes").select("title,call_date,content").eq("deal_id", body.deal_id).order("call_date", { ascending: false }).limit(10),
+      admin.from("scorecard_documents").select("kind,external_url,parsed_excerpt,file:file_attachments(file_name,file_url)").eq("scorecard_id", body.scorecard_id),
+      admin.from("deal_scorecards").select("*").eq("id", body.scorecard_id).maybeSingle(),
+    ]);
+
+    const sourceLines: string[] = [];
+    for (const d of (docs ?? []) as Array<{ kind: string; external_url: string | null; parsed_excerpt: string | null; file: { file_name: string; file_url: string } | null }>) {
+      const label = d.file?.file_name ?? d.external_url ?? "(untitled)";
+      sourceLines.push(`- [${d.kind}] ${label}${d.parsed_excerpt ? `\n  Excerpt: ${d.parsed_excerpt.slice(0, 1500)}` : ""}`);
+    }
+
+    const callLines = (calls ?? []).map((c) => `### ${c.title} (${c.call_date})\n${(c.content ?? "").slice(0, 2000)}`).join("\n\n");
+
+    const prompt = [
+      `You are an analyst at DCA, a venture firm. Draft an investment scorecard for ${deal?.company_name ?? "this company"} for human review.`,
+      "",
+      "Return a STRICT JSON object matching the provided schema. Be specific, cite evidence from sources, and avoid generic platitudes. Each qualitative rationale should be 2-3 sentences. Narrative fields should be 2-5 sentences.",
+      "",
+      "## Investment thesis",
+      thesis?.narrative ?? "(none on file)",
+      thesis ? `Target sectors: ${(thesis.sectors ?? []).join(", ")}\nTarget stages: ${(thesis.stages ?? []).join(", ")}\nMust-haves: ${(thesis.must_haves ?? []).join("; ")}\nDeal-breakers: ${(thesis.deal_breakers ?? []).join("; ")}` : "",
+      "",
+      "## Deal record",
+      JSON.stringify({
+        company_name: deal?.company_name, sector: deal?.sector, stage: deal?.round_stage,
+        location: deal?.location, website: deal?.website, description: deal?.description,
+        round_size: deal?.round_size, post_money_valuation: deal?.post_money_valuation,
+        revenue: deal?.revenue, total_funding_raised: deal?.total_funding_raised,
+        founded_year: deal?.founded_year,
+      }, null, 2),
+      "",
+      "## Existing scorecard inputs",
+      JSON.stringify({
+        current_arr: scorecard?.current_arr, prior_arr: scorecard?.prior_arr,
+        gross_burn: scorecard?.gross_burn, net_burn: scorecard?.net_burn,
+        cash_balance: scorecard?.cash_balance, gross_margin: scorecard?.gross_margin,
+        nrr: scorecard?.nrr, grr: scorecard?.grr, monthly_churn: scorecard?.monthly_churn,
+        founder_ownership_pct: scorecard?.founder_ownership_pct,
+      }, null, 2),
+      "",
+      "## Sources attached",
+      sourceLines.join("\n") || "(none uploaded)",
+      "",
+      "## Recent call notes",
+      callLines || "(no call notes yet)",
+    ].join("\n");
+
+    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { role: "system", content: "You are a rigorous, evidence-driven VC analyst. Output JSON only." },
+          { role: "user", content: prompt },
+        ],
+        tools: [{
+          type: "function",
+          function: {
+            name: "submit_scorecard_draft",
+            description: "Submit the drafted scorecard fields",
+            parameters: RESPONSE_SCHEMA,
+          },
+        }],
+        tool_choice: { type: "function", function: { name: "submit_scorecard_draft" } },
+      }),
+    });
+
+    if (aiRes.status === 429) return json({ error: "Rate limited — try again shortly" }, 429);
+    if (aiRes.status === 402) return json({ error: "AI credits exhausted. Add credits in Lovable settings." }, 402);
+    if (!aiRes.ok) {
+      const text = await aiRes.text();
+      await admin.from("analyst_runs").update({ status: "failed", error: text.slice(0, 1000), completed_at: new Date().toISOString() }).eq("id", run?.id ?? "");
+      return json({ error: "AI request failed", details: text.slice(0, 500) }, 502);
+    }
+
+    const aiJson = await aiRes.json();
+    const toolCall = aiJson.choices?.[0]?.message?.tool_calls?.[0];
+    if (!toolCall) {
+      return json({ error: "No tool call in AI response" }, 502);
+    }
+    const draft = JSON.parse(toolCall.function.arguments);
+
+    // Persist as draft (do not auto-approve)
+    const patch: Record<string, unknown> = {
+      ai_run_id: run?.id ?? null,
+      status: "draft",
+      qualitative_ratings: draft.qualitative_ratings,
+    };
+    for (const k of ["company_overview","investment_thesis","traction_milestones","business_model","key_strengths","key_risks","investor_base","competitive_landscape","use_of_funds","dca_value_add"]) {
+      if (draft[k]) patch[k] = draft[k];
+    }
+    await admin.from("deal_scorecards").update(patch).eq("id", body.scorecard_id);
+
+    await admin.from("analyst_runs").update({
+      status: "completed",
+      completed_at: new Date().toISOString(),
+      summary: draft.investment_thesis ?? null,
+      sources: (docs ?? []).map((d) => ({ kind: d.kind, url: d.external_url ?? d.file?.file_url })),
+    }).eq("id", run?.id ?? "");
+
+    return json({ ok: true, draft });
+  } catch (e) {
+    console.error("score-deal error", e);
+    return json({ error: e instanceof Error ? e.message : String(e) }, 500);
+  }
+});
+
+function json(b: unknown, status = 200) {
+  return new Response(JSON.stringify(b), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
