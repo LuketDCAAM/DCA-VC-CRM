@@ -298,6 +298,21 @@ export function DealEditAttachmentsSection({
                   </div>
                 </div>
                 <div className="flex gap-1">
+                  {attachment.file_type === 'link' && isDocSendUrl(attachment.file_url) && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={capturingUrl === attachment.file_url}
+                      onClick={() => captureDocSend(attachment.file_url)}
+                    >
+                      {capturingUrl === attachment.file_url ? (
+                        <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Capturing…</>
+                      ) : (
+                        <><Camera className="h-4 w-4 mr-1" /> Capture</>
+                      )}
+                    </Button>
+                  )}
                   {attachment.file_type === 'link' ? (
                     <Button
                       type="button"
