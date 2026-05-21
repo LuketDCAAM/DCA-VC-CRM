@@ -29,6 +29,7 @@ import {
   Target,
   BookOpen,
   Sliders,
+  Plug,
 } from 'lucide-react';
 
 const navigation = [
@@ -41,6 +42,7 @@ const navigation = [
   { name: 'Tasks', href: '/tasks', icon: ClipboardList },
   { name: 'Assistant', href: '/assistant', icon: Sparkles },
   { name: 'Thesis', href: '/settings/thesis', icon: Target },
+  { name: 'Integrations', href: '/settings/integrations', icon: Plug },
 ];
 
 export default function AppSidebar() {
