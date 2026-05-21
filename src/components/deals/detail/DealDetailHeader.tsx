@@ -17,7 +17,7 @@ export function DealDetailHeader({ isEditing, onEditClick }: DealDetailHeaderPro
           {isEditing ? 'Edit Deal' : 'Deal Details'}
         </DialogTitle>
         {!isEditing && (
-          <Button onClick={onEditClick} size="sm">
+          <Button onClick={onEditClick} size="sm" className="mr-6">
             <Edit className="h-4 w-4 mr-2" />
             Edit Deal
           </Button>
