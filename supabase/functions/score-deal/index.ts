@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
     );
 
     const captureLog: string[] = [];
-    if (candidateUrls.size && !alreadyCaptured && Deno.env.get("BROWSERLESS_API_KEY")) {
+    if (candidateUrls.size && !alreadyCaptured && Deno.env.get("BROWSERBASE_API_KEY")) {
       for (const url of candidateUrls) {
         try {
           console.log(`[score-deal] auto-capturing gated deck: ${url}`);
