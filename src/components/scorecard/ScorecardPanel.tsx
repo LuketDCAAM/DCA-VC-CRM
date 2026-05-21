@@ -132,7 +132,7 @@ function bandColor(band: string): string {
 
 export function ScorecardPanel({ dealId }: Props) {
   const { row, loading, saving, load, ensureDraft, save, approve, benchmarkMap } = useDealScorecard(dealId);
-  const [tab, setTab] = useState("inputs");
+  const [tab, setTab] = useState("summary");
   const [drafting, setDrafting] = useState(false);
   const [filling, setFilling] = useState(false);
 
@@ -286,7 +286,7 @@ export function ScorecardPanel({ dealId }: Props) {
         ) : (
           <Tabs value={tab} onValueChange={setTab}>
             <TabsList className="grid w-full grid-cols-6">
-              <TabsTrigger value="sources">Sources</TabsTrigger>
+              <TabsTrigger value="summary">Summary</TabsTrigger>
               <TabsTrigger value="inputs">Inputs</TabsTrigger>
               <TabsTrigger value="quant">Quantitative</TabsTrigger>
               <TabsTrigger value="qual">Qualitative</TabsTrigger>
@@ -294,8 +294,108 @@ export function ScorecardPanel({ dealId }: Props) {
               <TabsTrigger value="risks">Hard Stops & Risk</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="sources" className="pt-4">
-              <UploadsPanel scorecardId={row.id} dealId={dealId} readonly={readonly} />
+            <TabsContent value="summary" className="pt-4 space-y-6">
+              {/* Score header */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className={`rounded-md p-4 ${bandColor(computed.classification)}`}>
+                  <div className="text-xs uppercase tracking-wide opacity-80">Blended Score</div>
+                  <div className="text-3xl font-bold mt-1">{computed.blended_score.toFixed(1)}<span className="text-base font-normal opacity-70"> / 100</span></div>
+                  <div className="text-xs font-semibold mt-1">{computed.classification}</div>
+                </div>
+                <div className="rounded-md p-4 border">
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground">Qualitative</div>
+                  <div className="text-3xl font-bold mt-1">{computed.qual_total}<span className="text-base font-normal text-muted-foreground"> / 25</span></div>
+                  <div className="text-xs text-muted-foreground mt-1">Weighted: {computed.qual_score.toFixed(1)} / 60</div>
+                </div>
+                <div className="rounded-md p-4 border">
+                  <div className="text-xs uppercase tracking-wide text-muted-foreground">Quantitative</div>
+                  <div className="text-3xl font-bold mt-1">{computed.quant_total.toFixed(1)}<span className="text-base font-normal text-muted-foreground"> / 25</span></div>
+                  <div className="text-xs text-muted-foreground mt-1">Weighted: {computed.quant_score.toFixed(1)} / 40</div>
+                </div>
+              </div>
+
+              {/* Status badges */}
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                {computed.hard_stop_failed ? (
+                  <Badge variant="destructive" className="gap-1"><XCircle className="h-3 w-3" /> Hard stop failed</Badge>
+                ) : (
+                  <Badge variant="outline" className="gap-1 text-emerald-600 border-emerald-600/40"><CheckCircle2 className="h-3 w-3" /> Hard stops clear</Badge>
+                )}
+                <Badge variant={computed.red_flag_count > 0 ? "destructive" : "outline"} className="gap-1">
+                  <AlertTriangle className="h-3 w-3" /> {computed.red_flag_count} red
+                </Badge>
+                <Badge variant="secondary" className="gap-1">
+                  <AlertTriangle className="h-3 w-3" /> {computed.yellow_flag_count} yellow
+                </Badge>
+              </div>
+
+              {/* Qualitative breakdown */}
+              <div>
+                <h4 className="font-medium mb-2 text-sm">Qualitative Ratings</h4>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-2">
+                  {QUAL_CATEGORIES.map((c) => {
+                    const r = ratings[c.key] ?? {};
+                    return (
+                      <div key={c.key as string} className="border rounded-md p-3">
+                        <div className="text-xs text-muted-foreground truncate" title={c.label}>{c.label.split("&")[0].trim()}</div>
+                        <div className="text-xl font-semibold mt-1">{r.score ? `${r.score}/5` : "—"}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Top quant metrics */}
+              <div>
+                <h4 className="font-medium mb-2 text-sm">Quantitative Highlights</h4>
+                <div className="border rounded-md divide-y">
+                  {[...computed.metrics]
+                    .filter((m) => m.value != null)
+                    .sort((a, b) => b.weighted_score - a.weighted_score)
+                    .slice(0, 5)
+                    .map((m) => (
+                      <div key={m.metric} className="flex items-center justify-between p-2 text-sm">
+                        <div className="font-medium">{m.label}</div>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span>{formatMetricValue(m.metric, m.value)}</span>
+                          <span>vs {formatMetricValue(m.metric, m.benchmark)}</span>
+                          <Badge variant="outline" className="text-xs">Tier {m.tier || "—"}</Badge>
+                          <span className="text-foreground font-semibold w-12 text-right">{m.weighted_score.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  {computed.metrics.every((m) => m.value == null) && (
+                    <div className="p-3 text-sm text-muted-foreground">No quantitative inputs yet.</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Narrative snippets */}
+              <div>
+                <h4 className="font-medium mb-2 text-sm">Narrative</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {[
+                    { key: "company_overview", label: "Company Overview" },
+                    { key: "investment_thesis", label: "Investment Thesis" },
+                    { key: "key_strengths", label: "Key Strengths" },
+                    { key: "key_risks", label: "Key Risks" },
+                  ].map((n) => {
+                    const v = (row[n.key as keyof DealScorecardRow] as string | null) ?? "";
+                    return (
+                      <div key={n.key} className="border rounded-md p-3">
+                        <div className="text-xs uppercase tracking-wide text-muted-foreground mb-1">{n.label}</div>
+                        <div className="text-sm whitespace-pre-wrap line-clamp-5">{v.trim() || <span className="text-muted-foreground italic">Not filled.</span>}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Sources / uploads */}
+              <div>
+                <h4 className="font-medium mb-2 text-sm">Sources</h4>
+                <UploadsPanel scorecardId={row.id} dealId={dealId} readonly={readonly} />
+              </div>
             </TabsContent>
 
             <TabsContent value="inputs" className="space-y-6 pt-4">
