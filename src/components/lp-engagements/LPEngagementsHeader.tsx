@@ -9,10 +9,9 @@ interface LPEngagementsHeaderProps {
 
 export function LPEngagementsHeader({ onAddClick }: LPEngagementsHeaderProps) {
   return (
-    <div className="flex justify-between items-center mb-8">
+    <div className="flex justify-between items-center mb-4">
       <div>
         <h1 className="text-3xl font-bold">LP Engagements</h1>
-        <p className="text-gray-600">Manage your fund LP relationships</p>
       </div>
       <div className="flex items-center gap-2">
         <Button onClick={onAddClick} className="flex items-center gap-2">

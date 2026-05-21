@@ -46,7 +46,7 @@ export function ContactsPageContent({
   }
 
   return (
-    <div className="p-6">
+    <div className="px-6 pt-3 pb-6">
       <ContactsMainContent
         contacts={contacts}
         onEditContact={handleEditContact}

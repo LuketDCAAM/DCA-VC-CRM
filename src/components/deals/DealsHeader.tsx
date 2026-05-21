@@ -44,13 +44,10 @@ export function DealsHeader({
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Deals</h1>
-          <p className="text-muted-foreground">
-            Manage your investment pipeline and track deal progress
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <OutlookCalendarSyncButton 

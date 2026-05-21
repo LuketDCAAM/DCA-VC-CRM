@@ -29,7 +29,7 @@ export default function LPEngagements() {
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto px-6 pt-3 pb-6">
       <LPEngagementsHeader onAddClick={() => setIsAddDialogOpen(true)} />
       
       {lpEngagements.length === 0 ? (

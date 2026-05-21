@@ -45,14 +45,14 @@ export default function Dashboard() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
+      <div className="px-6 pt-3 pb-6">
         <div className="text-center">Loading dashboard...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
+    <div className="px-3 pt-2 pb-3 sm:px-6 sm:pt-3 sm:pb-6 space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h1>
       </div>
