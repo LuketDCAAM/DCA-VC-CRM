@@ -137,10 +137,13 @@ Deno.serve(async (req) => {
         founder_ownership_pct: scorecard?.founder_ownership_pct,
       }, null, 2),
       "",
-      "## Sources attached",
-      sourceLines.join("\n") || "(none uploaded)",
+      "## Sources attached to scorecard",
+      sourceLines.join("\n") || "(none uploaded directly to scorecard)",
       "",
-      "## Recent call notes",
+      "## Existing deal attachments (decks, financials, memos already on the deal record)",
+      dealFileLines.join("\n") || "(no attachments on the deal)",
+      "",
+      "## Recent call notes / transcripts",
       callLines || "(no call notes yet)",
     ].join("\n");
 
