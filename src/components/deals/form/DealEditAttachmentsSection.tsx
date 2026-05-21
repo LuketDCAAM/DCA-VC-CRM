@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Paperclip, Link, X, Upload, File } from 'lucide-react';
+import { Paperclip, Link, X, Upload, File, Camera, Loader2 } from 'lucide-react';
 import { Control } from 'react-hook-form';
 import { DealFormValues } from './dealEditFormSchema';
 import { supabase } from '@/integrations/supabase/client';
