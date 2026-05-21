@@ -14,6 +14,8 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 interface Body {
   scorecard_id: string;
   deal_id: string;
+  // Optional: restrict fill to only these field keys (and/or qualitative rating categories).
+  fields?: string[];
 }
 
 // Field catalogue: name -> { type, description }
