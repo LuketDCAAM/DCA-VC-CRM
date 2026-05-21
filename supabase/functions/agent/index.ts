@@ -74,6 +74,53 @@ const DealFieldsSchema = z.object({
   reason_for_passing: z.string().optional(),
 }).partial();
 
+const ScorecardFieldsSchema = z.object({
+  sector: z.string().optional(),
+  stage: z.string().optional(),
+  geography: z.string().optional(),
+  geography_tier: z.string().optional(),
+  founding_year: z.number().int().optional(),
+  deal_lead: z.string().optional(),
+  vehicle: z.string().optional(),
+  repeat_founder: z.boolean().optional(),
+  has_technical_cofounder: z.boolean().optional(),
+  fundraise_amount: z.number().optional().describe("Whole USD dollars"),
+  valuation: z.number().optional().describe("Whole USD dollars"),
+  prev_valuation: z.number().optional().describe("Whole USD dollars"),
+  committed_amount: z.number().optional().describe("Whole USD dollars"),
+  round_deadline: z.string().optional().describe("YYYY-MM-DD"),
+  founder_ownership_pct: z.number().optional().describe("Percent 0-100"),
+  bridge_rounds_18mo: z.number().int().optional(),
+  total_debt_excl_convertibles: z.number().optional().describe("Whole USD dollars"),
+  current_arr: z.number().optional().describe("Current ARR in whole USD dollars"),
+  prior_arr: z.number().optional().describe("Prior year ARR in whole USD dollars (last year's ARR)"),
+  forecast_arr: z.number().optional().describe("Forecast ARR in whole USD dollars"),
+  gross_burn: z.number().optional().describe("Monthly gross burn in whole USD dollars"),
+  net_burn: z.number().optional().describe("Monthly net burn in whole USD dollars"),
+  cash_balance: z.number().optional().describe("Whole USD dollars"),
+  total_raised: z.number().optional().describe("Whole USD dollars"),
+  gross_margin: z.number().optional().describe("Percent 0-100"),
+  fcst_gross_margin: z.number().optional().describe("Percent 0-100"),
+  acv: z.number().optional().describe("Whole USD dollars"),
+  employee_count: z.number().int().optional(),
+  nrr: z.number().optional().describe("Net revenue retention percent (e.g. 115)"),
+  grr: z.number().optional().describe("Gross revenue retention percent"),
+  top_cust_pct: z.number().optional().describe("Top customer concentration %"),
+  monthly_churn: z.number().optional().describe("Monthly churn %"),
+  company_overview: z.string().optional(),
+  investment_thesis: z.string().optional(),
+  traction_milestones: z.string().optional(),
+  business_model: z.string().optional(),
+  key_strengths: z.string().optional(),
+  key_risks: z.string().optional(),
+  investor_base: z.string().optional(),
+  competitive_landscape: z.string().optional(),
+  use_of_funds: z.string().optional(),
+  dca_value_add: z.string().optional(),
+  metric_notes: z.record(z.string(), z.string()).optional().describe("Per-metric notes keyed by metric key"),
+}).partial();
+
+
 function normalizeDomain(url?: string | null): string | null {
   return normalizeDomainShared(url ?? null);
 }
