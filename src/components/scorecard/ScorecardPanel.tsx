@@ -132,7 +132,7 @@ function bandColor(band: string): string {
 
 export function ScorecardPanel({ dealId }: Props) {
   const { row, loading, saving, load, ensureDraft, save, approve, benchmarkMap } = useDealScorecard(dealId);
-  const [tab, setTab] = useState("inputs");
+  const [tab, setTab] = useState("summary");
   const [drafting, setDrafting] = useState(false);
   const [filling, setFilling] = useState(false);
 
