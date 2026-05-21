@@ -277,7 +277,9 @@ export function ScorecardPanel({ dealId }: Props) {
                     {group.fields.map((f) => {
                       const raw = (inputs as Record<string, unknown>)[f.key as string];
                       const displayVal =
-                        f.type === "percent" && typeof raw === "number" ? (raw * 100).toString()
+                        f.type === "percent" && typeof raw === "number" ? `${+(raw * 100).toFixed(4)}%`
+                        : f.type === "currency" && typeof raw === "number" ? `$${raw.toLocaleString()}`
+                        : f.type === "number" && typeof raw === "number" ? raw.toLocaleString()
                         : raw == null ? "" : String(raw);
                       return (
                         <div key={f.key as string} className="space-y-1">
@@ -308,16 +310,28 @@ export function ScorecardPanel({ dealId }: Props) {
                           ) : (
                             <Input
                               key={`${row.id}:${f.key as string}:${displayVal}`}
-                              type={f.type === "date" ? "date" : f.type === "text" ? "text" : "number"}
+                              type={f.type === "date" ? "date" : "text"}
+                              inputMode={f.type === "number" || f.type === "currency" || f.type === "percent" ? "decimal" : undefined}
                               defaultValue={displayVal}
                               disabled={readonly}
+                              onFocus={(e) => {
+                                if (f.type === "currency" || f.type === "number") {
+                                  e.target.value = raw == null ? "" : String(raw);
+                                } else if (f.type === "percent") {
+                                  e.target.value = raw == null ? "" : String(+(Number(raw) * 100).toFixed(4));
+                                }
+                              }}
                               onBlur={(e) => {
-                                const v = e.target.value;
+                                const v = e.target.value.replace(/[$,\s%]/g, "");
                                 if (v === "" && raw == null) return;
                                 let parsed: unknown = v === "" ? null : v;
                                 if (f.type === "number" || f.type === "currency") parsed = v === "" ? null : Number(v);
                                 if (f.type === "percent") parsed = v === "" ? null : Number(v) / 100;
                                 if (parsed !== raw) setField(f.key as string, parsed);
+                                // Reformat display
+                                if (f.type === "currency" && typeof parsed === "number") e.target.value = `$${parsed.toLocaleString()}`;
+                                else if (f.type === "number" && typeof parsed === "number") e.target.value = parsed.toLocaleString();
+                                else if (f.type === "percent" && typeof parsed === "number") e.target.value = `${+(parsed * 100).toFixed(4)}%`;
                               }}
                             />
                           )}
