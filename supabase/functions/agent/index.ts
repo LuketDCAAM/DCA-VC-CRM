@@ -67,6 +67,10 @@ const DealFieldsSchema = z.object({
   employee_count_range: z.string().optional(),
   company_type: z.string().optional(),
   investment_vehicle: z.enum(INVESTMENT_VEHICLES).optional(),
+  total_funding_raised: z.number().int().optional().describe("Total funding raised to date in WHOLE USD DOLLARS."),
+  last_funding_date: z.string().optional().describe("YYYY-MM-DD"),
+  ic_review_date: z.string().optional().describe("YYYY-MM-DD"),
+  last_call_date: z.string().optional().describe("YYYY-MM-DD"),
   reason_for_passing: z.string().optional(),
 }).partial();
 
