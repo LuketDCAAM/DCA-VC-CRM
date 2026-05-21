@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Plus, BookOpen } from 'lucide-react';
 import { useCallNotes, CallNote } from '@/hooks/useCallNotes';
