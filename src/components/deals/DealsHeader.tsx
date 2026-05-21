@@ -36,7 +36,7 @@ export function DealsHeader({
   const { isAuthenticated, loading: authLoading } = useMicrosoftAuth();
   const [showDuplicateSearch, setShowDuplicateSearch] = useState(false);
 
-  console.log('DealsHeader - Microsoft auth status:', { isAuthenticated, authLoading });
+  
 
   const handleDealsDeleted = async () => {
     onDealAdded(); // This will trigger a refetch

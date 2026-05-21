@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Eye } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Deal } from '@/types/deal';
-import { useTableColumns } from '@/hooks/deals/useTableColumns';
+import type { TableColumn } from '@/hooks/deals/tableColumnDefinitions';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ExternalDataSyncButton } from '@/components/external-data/ExternalDataSyncButton';
 import { CompanyCellContent } from './cells/CompanyCellContent';
@@ -18,6 +18,7 @@ interface ConfigurableDealsTableRowProps {
   deal: Deal;
   index: number;
   isSelected: boolean;
+  visibleColumns: TableColumn[];
   onToggleSelection: (dealId: string) => void;
   onViewDetails: (deal: Deal) => void;
   onDealUpdated?: () => void;
@@ -27,11 +28,11 @@ const ConfigurableDealsTableRow = memo(({
   deal, 
   index, 
   isSelected, 
+  visibleColumns,
   onToggleSelection, 
   onViewDetails,
   onDealUpdated
 }: ConfigurableDealsTableRowProps) => {
-  const { visibleColumns } = useTableColumns();
   const handleCheckboxChange = () => onToggleSelection(deal.id);
   const handleViewClick = () => onViewDetails(deal);
 
@@ -171,7 +172,8 @@ const ConfigurableDealsTableRow = memo(({
     prevProps.deal.id === nextProps.deal.id &&
     prevProps.deal.updated_at === nextProps.deal.updated_at &&
     prevProps.isSelected === nextProps.isSelected &&
-    prevProps.index === nextProps.index
+    prevProps.index === nextProps.index &&
+    prevProps.visibleColumns === nextProps.visibleColumns
   );
 });
 
