@@ -152,22 +152,27 @@ export function ScorecardPanel({ dealId }: Props) {
     load();
   };
 
-  const fillBlanks = async () => {
+  const [fillingField, setFillingField] = useState<string | null>(null);
+
+  const fillBlanks = async (fields?: string[]) => {
     const r = await ensureDraft();
     if (!r) return;
-    setFilling(true);
+    const key = fields && fields.length === 1 ? fields[0] : "__all__";
+    if (fields && fields.length === 1) setFillingField(key);
+    else setFilling(true);
     const { data, error } = await supabase.functions.invoke("fill-scorecard-blanks", {
-      body: { scorecard_id: r.id, deal_id: dealId },
+      body: { scorecard_id: r.id, deal_id: dealId, ...(fields ? { fields } : {}) },
     });
     setFilling(false);
+    setFillingField(null);
     const err = (data as { error?: string })?.error ?? error?.message;
     if (err) {
       toast.error(err);
       return;
     }
     const filled = (data as { filled?: number })?.filled ?? 0;
-    if (filled === 0) toast.info("No blank fields could be confidently filled from the available notes.");
-    else toast.success(`Filled ${filled} blank field${filled === 1 ? "" : "s"} from notes & sources`);
+    if (filled === 0) toast.info("Couldn't confidently fill from the available notes.");
+    else toast.success(`Filled ${filled} field${filled === 1 ? "" : "s"} from notes & sources`);
     load();
   };
 
