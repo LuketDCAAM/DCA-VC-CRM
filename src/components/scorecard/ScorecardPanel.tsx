@@ -8,13 +8,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle2, AlertTriangle, XCircle, Loader2, FileSpreadsheet, Sparkles } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, Loader2, FileSpreadsheet, Sparkles, FileDown } from "lucide-react";
 import { useDealScorecard, inputsFromRow, type DealScorecardRow } from "@/hooks/useDealScorecard";
 import { computeSnapshot } from "@/lib/scorecard/engine";
 import type { QualitativeRating, QualitativeRatings, ScorecardInputs } from "@/lib/scorecard/types";
 import { UploadsPanel } from "./UploadsPanel";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { exportMemoPdf } from "@/lib/scorecard/memoExport";
 
 interface Props {
   dealId: string;
@@ -129,6 +130,35 @@ export function ScorecardPanel({ dealId }: Props) {
     load();
   };
 
+  const exportMemo = async () => {
+    if (!row) return;
+    const { data: deal } = await supabase
+      .from("deals")
+      .select("company_name")
+      .eq("id", dealId)
+      .maybeSingle();
+    const narrative: Record<string, string | null> = {};
+    for (const k of ["company_overview","investment_thesis","traction_milestones","business_model","key_strengths","key_risks","investor_base","competitive_landscape","use_of_funds","dca_value_add"]) {
+      narrative[k] = (row[k] as string | null) ?? null;
+    }
+    try {
+      exportMemoPdf({
+        companyName: deal?.company_name ?? "Untitled Deal",
+        inputs,
+        ratings,
+        computed,
+        narrative,
+        status: row.status,
+        approvedBy: row.approved_by,
+        approvedAt: row.approved_at,
+      });
+      toast.success("Memo exported");
+    } catch (e) {
+      toast.error("Export failed");
+      console.error(e);
+    }
+  };
+
 
   const inputs = useMemo(() => inputsFromRow(row), [row]);
   const ratings = (row?.qualitative_ratings ?? {}) as QualitativeRatings;
@@ -177,6 +207,11 @@ export function ScorecardPanel({ dealId }: Props) {
           {!row && !loading && (
             <Button onClick={ensureDraft} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Start scorecard"}
+            </Button>
+          )}
+          {row && (
+            <Button variant="outline" onClick={exportMemo} className="gap-2">
+              <FileDown className="h-4 w-4" /> Export memo
             </Button>
           )}
           {row && !isApproved && (
