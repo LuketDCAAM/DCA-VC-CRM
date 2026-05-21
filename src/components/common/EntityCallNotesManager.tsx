@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Plus, BookOpen } from 'lucide-react';
 import { useEntityCallNotes } from '@/hooks/useEntityCallNotes';
@@ -32,6 +33,7 @@ export function EntityCallNotesManager({ entityId, entityType }: EntityCallNotes
   const [noteToEdit, setNoteToEdit] = useState<CallNote | null>(null);
   const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { callNotes, isLoading, addCallNote, updateCallNote, deleteCallNote } = useEntityCallNotes({
     entityId,
