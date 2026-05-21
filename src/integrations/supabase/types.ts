@@ -1384,6 +1384,27 @@ export type Database = {
         }
         Relationships: []
       }
+      notion_oauth_states: {
+        Row: {
+          created_at: string
+          expires_at: string
+          state: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          state: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          state?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       outlook_calendar_sync_logs: {
         Row: {
           completed_at: string | null
@@ -1808,6 +1829,48 @@ export type Database = {
           status?: Database["public"]["Enums"]["user_status"]
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_notion_connections: {
+        Row: {
+          access_token: string
+          bot_id: string | null
+          created_at: string
+          id: string
+          last_synced_at: string | null
+          source_config: Json | null
+          updated_at: string
+          user_id: string
+          workspace_icon: string | null
+          workspace_id: string | null
+          workspace_name: string | null
+        }
+        Insert: {
+          access_token: string
+          bot_id?: string | null
+          created_at?: string
+          id?: string
+          last_synced_at?: string | null
+          source_config?: Json | null
+          updated_at?: string
+          user_id: string
+          workspace_icon?: string | null
+          workspace_id?: string | null
+          workspace_name?: string | null
+        }
+        Update: {
+          access_token?: string
+          bot_id?: string | null
+          created_at?: string
+          id?: string
+          last_synced_at?: string | null
+          source_config?: Json | null
+          updated_at?: string
+          user_id?: string
+          workspace_icon?: string | null
+          workspace_id?: string | null
+          workspace_name?: string | null
         }
         Relationships: []
       }
