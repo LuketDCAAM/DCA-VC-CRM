@@ -152,22 +152,27 @@ export function ScorecardPanel({ dealId }: Props) {
     load();
   };
 
-  const fillBlanks = async () => {
+  const [fillingField, setFillingField] = useState<string | null>(null);
+
+  const fillBlanks = async (fields?: string[]) => {
     const r = await ensureDraft();
     if (!r) return;
-    setFilling(true);
+    const key = fields && fields.length === 1 ? fields[0] : "__all__";
+    if (fields && fields.length === 1) setFillingField(key);
+    else setFilling(true);
     const { data, error } = await supabase.functions.invoke("fill-scorecard-blanks", {
-      body: { scorecard_id: r.id, deal_id: dealId },
+      body: { scorecard_id: r.id, deal_id: dealId, ...(fields ? { fields } : {}) },
     });
     setFilling(false);
+    setFillingField(null);
     const err = (data as { error?: string })?.error ?? error?.message;
     if (err) {
       toast.error(err);
       return;
     }
     const filled = (data as { filled?: number })?.filled ?? 0;
-    if (filled === 0) toast.info("No blank fields could be confidently filled from the available notes.");
-    else toast.success(`Filled ${filled} blank field${filled === 1 ? "" : "s"} from notes & sources`);
+    if (filled === 0) toast.info("Couldn't confidently fill from the available notes.");
+    else toast.success(`Filled ${filled} field${filled === 1 ? "" : "s"} from notes & sources`);
     load();
   };
 
@@ -257,7 +262,7 @@ export function ScorecardPanel({ dealId }: Props) {
           )}
           {row && !isApproved && (
             <>
-              <Button variant="outline" onClick={fillBlanks} disabled={filling || saving || drafting} className="gap-2">
+              <Button variant="outline" onClick={() => fillBlanks()} disabled={filling || saving || drafting} className="gap-2">
                 {filling ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
                 Fill blanks with AI
               </Button>
@@ -305,9 +310,28 @@ export function ScorecardPanel({ dealId }: Props) {
                         : f.type === "currency" && typeof raw === "number" ? `$${raw.toLocaleString()}`
                         : f.type === "number" && typeof raw === "number" ? raw.toLocaleString()
                         : raw == null ? "" : String(raw);
+                      const fieldKey = f.key as string;
+                      const isFieldBlank = raw == null || raw === "";
+                      const isFillingThis = fillingField === fieldKey;
                       return (
-                        <div key={f.key as string} className="space-y-1">
-                          <Label className="text-xs">{f.label}</Label>
+                        <div key={fieldKey} className="space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <Label className="text-xs">{f.label}</Label>
+                            {isFieldBlank && !readonly && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 px-1.5 text-[10px] gap-1 text-muted-foreground hover:text-primary"
+                                onClick={() => fillBlanks([fieldKey])}
+                                disabled={filling || !!fillingField || saving || drafting}
+                                title="Fill from notes with AI"
+                              >
+                                {isFillingThis ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                                AI
+                              </Button>
+                            )}
+                          </div>
                           {f.type === "select" ? (
                             <Select
                               value={(raw as string) ?? ""}
@@ -418,6 +442,9 @@ export function ScorecardPanel({ dealId }: Props) {
             <TabsContent value="qual" className="space-y-4 pt-4">
               {QUAL_CATEGORIES.map((c) => {
                 const r: QualitativeRating = ratings[c.key] ?? {};
+                const ratingKey = `rating:${c.key as string}`;
+                const isBlankRating = r.score == null;
+                const isFillingThis = fillingField === ratingKey;
                 return (
                   <div key={c.key} className="border rounded-md p-4 space-y-2">
                     <div className="flex items-start justify-between gap-3">
@@ -425,16 +452,32 @@ export function ScorecardPanel({ dealId }: Props) {
                         <div className="font-medium">{c.label}</div>
                         <div className="text-xs text-muted-foreground mt-1">{c.rubric}</div>
                       </div>
-                      <Select
-                        value={r.score ? String(r.score) : ""}
-                        onValueChange={(v) => setRating(c.key, { score: Number(v) })}
-                        disabled={readonly}
-                      >
-                        <SelectTrigger className="w-28"><SelectValue placeholder="Score" /></SelectTrigger>
-                        <SelectContent>
-                          {[1,2,3,4,5].map((n) => <SelectItem key={n} value={String(n)}>{n} / 5</SelectItem>)}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-2">
+                        {isBlankRating && !readonly && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs gap-1 text-muted-foreground hover:text-primary"
+                            onClick={() => fillBlanks([ratingKey])}
+                            disabled={filling || !!fillingField || saving || drafting}
+                            title="Score & explain with AI"
+                          >
+                            {isFillingThis ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                            AI
+                          </Button>
+                        )}
+                        <Select
+                          value={r.score ? String(r.score) : ""}
+                          onValueChange={(v) => setRating(c.key, { score: Number(v) })}
+                          disabled={readonly}
+                        >
+                          <SelectTrigger className="w-28"><SelectValue placeholder="Score" /></SelectTrigger>
+                          <SelectContent>
+                            {[1,2,3,4,5].map((n) => <SelectItem key={n} value={String(n)}>{n} / 5</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                     <Textarea
                       placeholder="Rationale / notes"
@@ -454,20 +497,42 @@ export function ScorecardPanel({ dealId }: Props) {
             </TabsContent>
 
             <TabsContent value="narrative" className="space-y-4 pt-4">
-              {NARRATIVE_FIELDS.map((f) => (
-                <div key={f.key as string} className="space-y-1">
-                  <Label>{f.label}</Label>
-                  <Textarea
-                    defaultValue={(row[f.key] as string) ?? ""}
-                    placeholder={f.placeholder}
-                    disabled={readonly}
-                    onBlur={(e) => {
-                      if (e.target.value !== ((row[f.key] as string) ?? "")) setField(f.key as string, e.target.value || null);
-                    }}
-                    rows={3}
-                  />
-                </div>
-              ))}
+              {NARRATIVE_FIELDS.map((f) => {
+                const narrKey = f.key as string;
+                const val = (row[f.key] as string) ?? "";
+                const isFieldBlank = val.trim() === "";
+                const isFillingThis = fillingField === narrKey;
+                return (
+                  <div key={narrKey} className="space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <Label>{f.label}</Label>
+                      {isFieldBlank && !readonly && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2 text-xs gap-1 text-muted-foreground hover:text-primary"
+                          onClick={() => fillBlanks([narrKey])}
+                          disabled={filling || !!fillingField || saving || drafting}
+                          title="Draft from notes with AI"
+                        >
+                          {isFillingThis ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                          AI
+                        </Button>
+                      )}
+                    </div>
+                    <Textarea
+                      defaultValue={val}
+                      placeholder={f.placeholder}
+                      disabled={readonly}
+                      onBlur={(e) => {
+                        if (e.target.value !== val) setField(narrKey, e.target.value || null);
+                      }}
+                      rows={3}
+                    />
+                  </div>
+                );
+              })}
             </TabsContent>
 
             <TabsContent value="risks" className="pt-4 space-y-6">

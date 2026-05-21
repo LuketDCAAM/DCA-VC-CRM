@@ -14,6 +14,8 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 interface Body {
   scorecard_id: string;
   deal_id: string;
+  // Optional: restrict fill to only these field keys (and/or qualitative rating categories).
+  fields?: string[];
 }
 
 // Field catalogue: name -> { type, description }
@@ -101,7 +103,9 @@ Deno.serve(async (req) => {
     const blanks: string[] = [];
     const isBlank = (v: unknown) => v === null || v === undefined || v === "";
     const allFields = { ...NUM_FIELDS, ...TEXT_FIELDS, ...BOOL_FIELDS, ...NARRATIVE_FIELDS };
+    const restrict = Array.isArray(body.fields) && body.fields.length > 0 ? new Set(body.fields) : null;
     for (const k of Object.keys(allFields)) {
+      if (restrict && !restrict.has(k)) continue;
       if (isBlank((scorecard as Record<string, unknown>)[k])) blanks.push(k);
     }
 
@@ -109,6 +113,7 @@ Deno.serve(async (req) => {
     const ratings = (scorecard.qualitative_ratings ?? {}) as Record<string, { score?: number }>;
     const missingRatings: string[] = [];
     for (const c of ["market", "product", "business_model", "team", "exit"]) {
+      if (restrict && !restrict.has(`rating:${c}`)) continue;
       if (!ratings[c] || ratings[c].score == null) missingRatings.push(c);
     }
 
