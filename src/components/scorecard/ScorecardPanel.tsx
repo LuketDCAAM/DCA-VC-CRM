@@ -257,7 +257,11 @@ export function ScorecardPanel({ dealId }: Props) {
           )}
           {row && !isApproved && (
             <>
-              <Button variant="outline" onClick={runAiDraft} disabled={drafting || saving} className="gap-2">
+              <Button variant="outline" onClick={fillBlanks} disabled={filling || saving || drafting} className="gap-2">
+                {filling ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                Fill blanks with AI
+              </Button>
+              <Button variant="outline" onClick={runAiDraft} disabled={drafting || saving || filling} className="gap-2">
                 {drafting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                 AI draft
               </Button>
