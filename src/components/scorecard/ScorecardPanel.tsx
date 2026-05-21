@@ -286,8 +286,9 @@ export function ScorecardPanel({ dealId }: Props) {
                             </Select>
                           ) : (
                             <Input
+                              key={`${row.id}:${f.key as string}:${displayVal}`}
                               type={f.type === "date" ? "date" : f.type === "text" ? "text" : "number"}
-                              value={displayVal}
+                              defaultValue={displayVal}
                               disabled={readonly}
                               onBlur={(e) => {
                                 const v = e.target.value;
@@ -297,7 +298,6 @@ export function ScorecardPanel({ dealId }: Props) {
                                 if (f.type === "percent") parsed = v === "" ? null : Number(v) / 100;
                                 if (parsed !== raw) setField(f.key as string, parsed);
                               }}
-                              onChange={() => { /* commit on blur */ }}
                             />
                           )}
                         </div>
