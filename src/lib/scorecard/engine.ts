@@ -106,7 +106,6 @@ export function computeMetrics(
       variance = b.inverted ? -raw : raw;
     }
     const tier = tierFromVariance(variance);
-    // Top-cust concentration is always weighted at full (workbook hardcodes tier=5)
     const weighted_score = tier > 0 ? b.weight * tier * 5 : 0;
     lines.push({
       metric,
@@ -121,8 +120,19 @@ export function computeMetrics(
     });
   }
 
-  // Customer concentration always counts (workbook forces tier 5 to 25 contribution),
-  // so if no data fall back to 25 * weight contribution from a manual 5.
+  // Reweight: redistribute weight from metrics with no input value across the
+  // metrics that do have values, so the score still totals out of 25.
+  const totalWeight = lines.reduce((s, l) => s + l.weight, 0);
+  const presentWeight = lines.reduce((s, l) => s + (l.value != null ? l.weight : 0), 0);
+  const scale = presentWeight > 0 ? totalWeight / presentWeight : 1;
+  for (const l of lines) {
+    if (l.value != null) {
+      l.weighted_score = l.weighted_score * scale;
+    } else {
+      l.weighted_score = 0;
+    }
+  }
+
   const quant_total = Math.min(25, lines.reduce((s, l) => s + l.weighted_score, 0));
   return { metrics: lines, quant_total };
 }
