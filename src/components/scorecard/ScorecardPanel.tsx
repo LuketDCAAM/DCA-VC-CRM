@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle2, AlertTriangle, XCircle, Loader2, FileSpreadsheet, Sparkles, FileDown } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, Loader2, FileSpreadsheet, Sparkles, FileDown, Wand2 } from "lucide-react";
 import { useDealScorecard, inputsFromRow, type DealScorecardRow } from "@/hooks/useDealScorecard";
 import { computeSnapshot } from "@/lib/scorecard/engine";
 import type { QualitativeRating, QualitativeRatings, ScorecardInputs } from "@/lib/scorecard/types";
@@ -134,6 +134,7 @@ export function ScorecardPanel({ dealId }: Props) {
   const { row, loading, saving, load, ensureDraft, save, approve, benchmarkMap } = useDealScorecard(dealId);
   const [tab, setTab] = useState("inputs");
   const [drafting, setDrafting] = useState(false);
+  const [filling, setFilling] = useState(false);
 
   const runAiDraft = async () => {
     const r = await ensureDraft();
@@ -148,6 +149,25 @@ export function ScorecardPanel({ dealId }: Props) {
       return;
     }
     toast.success("AI draft ready — review & approve");
+    load();
+  };
+
+  const fillBlanks = async () => {
+    const r = await ensureDraft();
+    if (!r) return;
+    setFilling(true);
+    const { data, error } = await supabase.functions.invoke("fill-scorecard-blanks", {
+      body: { scorecard_id: r.id, deal_id: dealId },
+    });
+    setFilling(false);
+    const err = (data as { error?: string })?.error ?? error?.message;
+    if (err) {
+      toast.error(err);
+      return;
+    }
+    const filled = (data as { filled?: number })?.filled ?? 0;
+    if (filled === 0) toast.info("No blank fields could be confidently filled from the available notes.");
+    else toast.success(`Filled ${filled} blank field${filled === 1 ? "" : "s"} from notes & sources`);
     load();
   };
 
@@ -237,7 +257,11 @@ export function ScorecardPanel({ dealId }: Props) {
           )}
           {row && !isApproved && (
             <>
-              <Button variant="outline" onClick={runAiDraft} disabled={drafting || saving} className="gap-2">
+              <Button variant="outline" onClick={fillBlanks} disabled={filling || saving || drafting} className="gap-2">
+                {filling ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                Fill blanks with AI
+              </Button>
+              <Button variant="outline" onClick={runAiDraft} disabled={drafting || saving || filling} className="gap-2">
                 {drafting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                 AI draft
               </Button>
