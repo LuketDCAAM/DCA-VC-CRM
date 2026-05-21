@@ -209,6 +209,11 @@ export function ScorecardPanel({ dealId }: Props) {
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Start scorecard"}
             </Button>
           )}
+          {row && (
+            <Button variant="outline" onClick={exportMemo} className="gap-2">
+              <FileDown className="h-4 w-4" /> Export memo
+            </Button>
+          )}
           {row && !isApproved && (
             <>
               <Button variant="outline" onClick={runAiDraft} disabled={drafting || saving} className="gap-2">
