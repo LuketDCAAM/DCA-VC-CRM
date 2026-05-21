@@ -7,6 +7,7 @@ import { useOptimizedFilteredDeals } from '@/hooks/useOptimizedFilteredDeals';
 import { DealsPageContent } from '@/components/deals/DealsPageContent';
 import { useDealsPageState } from '@/hooks/useDealsPageState';
 import { useDealsCSVConfig } from '@/components/deals/DealsCSVConfig';
+import { useDebouncedSearch } from '@/hooks/useDebounce';
 
 export default function Deals() {
   const { deals, loading, refetch, dealStats } = useOptimizedDeals();
@@ -60,8 +61,9 @@ export default function Deals() {
     };
   };
 
-  // Use optimized filtered deals hook
-  const filteredDeals = useOptimizedFilteredDeals(deals, searchTerm, activeFilters);
+  // Debounce search term so we don't re-filter 10k deals on every keystroke
+  const debouncedSearchTerm = useDebouncedSearch(searchTerm, 250);
+  const filteredDeals = useOptimizedFilteredDeals(deals, debouncedSearchTerm, activeFilters);
 
   const isAllSelected = selectedDeals.length === filteredDeals.length && filteredDeals.length > 0;
 
