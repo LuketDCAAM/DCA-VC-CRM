@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CheckCircle2, AlertTriangle, XCircle, Loader2, FileSpreadsheet, Sparkles, FileDown } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, Loader2, FileSpreadsheet, Sparkles, FileDown, Wand2 } from "lucide-react";
 import { useDealScorecard, inputsFromRow, type DealScorecardRow } from "@/hooks/useDealScorecard";
 import { computeSnapshot } from "@/lib/scorecard/engine";
 import type { QualitativeRating, QualitativeRatings, ScorecardInputs } from "@/lib/scorecard/types";
