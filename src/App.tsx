@@ -19,6 +19,7 @@ import Assistant from "./pages/Assistant";
 import ThesisSettings from "./pages/ThesisSettings";
 import BenchmarksSettings from "./pages/BenchmarksSettings";
 import AgentInstructions from "./pages/AgentInstructions";
+import IntegrationsSettings from "./pages/IntegrationsSettings";
 import NotFound from "./pages/NotFound";
 import MicrosoftAuthCallback from "./pages/auth/microsoft/callback";
 import ResetPassword from "./pages/auth/ResetPassword";
@@ -100,6 +101,7 @@ function App() {
                       <Route path="/settings/thesis" element={<ThesisSettings />} />
                       <Route path="/settings/benchmarks" element={<BenchmarksSettings />} />
                       <Route path="/settings/agent-instructions" element={<AgentInstructions />} />
+                      <Route path="/settings/integrations" element={<IntegrationsSettings />} />
                       <Route path="*" element={<NotFound />} />
                     </Routes>
                   </Layout>
