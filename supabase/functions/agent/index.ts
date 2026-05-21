@@ -461,6 +461,36 @@ Deno.serve(async (req) => {
         },
       }),
 
+      propose_update_scorecard: tool({
+        description:
+          "Propose updates to the deal's scorecard (financials, qualitative notes, narrative). Use this for fields that live on the scorecard rather than the deal itself — especially ARR (current_arr, prior_arr, forecast_arr), burn, churn, NRR/GRR, gross margin, ownership, valuation history, and narrative sections (company_overview, key_risks, etc.). Lands in the approval queue.",
+        inputSchema: z.object({
+          deal_id: z.string().uuid(),
+          changes: ScorecardFieldsSchema.describe("Subset of scorecard fields to set"),
+          rationale: z.string().describe("One-sentence reason the user should approve"),
+        }),
+        execute: async ({ deal_id, changes, rationale }) => {
+          if (!runId) return { error: "No run id" };
+          const { data, error } = await supabase
+            .from("agent_actions")
+            .insert({
+              run_id: runId,
+              user_id: userId,
+              action_type: "update_scorecard",
+              target_table: "deal_scorecards",
+              target_id: deal_id,
+              payload: changes,
+              rationale,
+              status: "pending",
+            })
+            .select("id")
+            .single();
+          if (error) return { error: error.message };
+          return { proposed: true, action_id: data.id };
+        },
+      }),
+
+
       propose_create_task: tool({
         description:
           "Propose a new task/reminder. Lands in the approval queue. assigned_to defaults to the current user.",
