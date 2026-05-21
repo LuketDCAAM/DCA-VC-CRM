@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, BookOpen } from 'lucide-react';
 import { useCallNotes, CallNote } from '@/hooks/useCallNotes';
 import { CallNoteCard } from './CallNoteCard';
 import { AddOrEditCallNoteDialog } from './AddOrEditCallNoteDialog';
+import { NotionImportDialog } from '@/components/notion/NotionImportDialog';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -25,6 +26,7 @@ interface CallNotesManagerProps {
 export function CallNotesManager({ dealId }: CallNotesManagerProps) {
   const { callNotes, isLoading, addCallNote, updateCallNote, deleteCallNote } = useCallNotes(dealId);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isNotionOpen, setIsNotionOpen] = useState(false);
   const [noteToEdit, setNoteToEdit] = useState<CallNote | null>(null);
   const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
   const { toast } = useToast();
@@ -62,10 +64,16 @@ export function CallNotesManager({ dealId }: CallNotesManagerProps) {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-lg font-semibold">Call Notes</h3>
-        <Button onClick={handleAddNote} size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Add Note
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={() => setIsNotionOpen(true)} size="sm" variant="outline">
+            <BookOpen className="h-4 w-4 mr-2" />
+            Add Notion Notes
+          </Button>
+          <Button onClick={handleAddNote} size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Note
+          </Button>
+        </div>
       </div>
 
       {isLoading && (
@@ -98,6 +106,13 @@ export function CallNotesManager({ dealId }: CallNotesManagerProps) {
         addCallNote={addCallNote}
         updateCallNote={updateCallNote}
         noteToEdit={noteToEdit}
+      />
+
+      <NotionImportDialog
+        open={isNotionOpen}
+        onOpenChange={setIsNotionOpen}
+        entityType="deal"
+        entityId={dealId}
       />
       
       <AlertDialog open={!!noteToDelete} onOpenChange={(open) => !open && setNoteToDelete(null)}>
