@@ -86,21 +86,29 @@ Deno.serve(async (req) => {
       .select("id")
       .single();
 
-    const [{ data: deal }, { data: thesis }, { data: calls }, { data: docs }, { data: scorecard }] = await Promise.all([
+    const [{ data: deal }, { data: thesis }, { data: calls }, { data: docs }, { data: dealFiles }, { data: scorecard }] = await Promise.all([
       admin.from("deals").select("*").eq("id", body.deal_id).maybeSingle(),
       admin.from("investment_thesis").select("*").limit(1).maybeSingle(),
-      admin.from("call_notes").select("title,call_date,content").eq("deal_id", body.deal_id).order("call_date", { ascending: false }).limit(10),
-      admin.from("scorecard_documents").select("kind,external_url,parsed_excerpt,file:file_attachments(file_name,file_url)").eq("scorecard_id", body.scorecard_id),
+      admin.from("call_notes").select("title,call_date,content").eq("deal_id", body.deal_id).order("call_date", { ascending: false }).limit(20),
+      admin.from("scorecard_documents").select("kind,external_url,parsed_excerpt,file:file_attachments(file_name,file_url,file_type)").eq("scorecard_id", body.scorecard_id),
+      admin.from("file_attachments").select("file_name,file_url,file_type,file_size,created_at").eq("deal_id", body.deal_id).order("created_at", { ascending: false }).limit(25),
       admin.from("deal_scorecards").select("*").eq("id", body.scorecard_id).maybeSingle(),
     ]);
 
     const sourceLines: string[] = [];
-    for (const d of (docs ?? []) as Array<{ kind: string; external_url: string | null; parsed_excerpt: string | null; file: { file_name: string; file_url: string } | null }>) {
+    for (const d of (docs ?? []) as Array<{ kind: string; external_url: string | null; parsed_excerpt: string | null; file: { file_name: string; file_url: string; file_type: string | null } | null }>) {
       const label = d.file?.file_name ?? d.external_url ?? "(untitled)";
       sourceLines.push(`- [${d.kind}] ${label}${d.parsed_excerpt ? `\n  Excerpt: ${d.parsed_excerpt.slice(0, 1500)}` : ""}`);
     }
 
-    const callLines = (calls ?? []).map((c) => `### ${c.title} (${c.call_date})\n${(c.content ?? "").slice(0, 2000)}`).join("\n\n");
+    // Existing deal-level attachments (pitch decks, financials, etc. uploaded outside the scorecard panel)
+    const dealFileLines: string[] = [];
+    for (const f of (dealFiles ?? []) as Array<{ file_name: string; file_url: string; file_type: string | null; file_size: number | null; created_at: string }>) {
+      const kb = f.file_size ? ` (${Math.round(f.file_size / 1024)} KB)` : "";
+      dealFileLines.push(`- ${f.file_name}${kb} [${f.file_type ?? "file"}] — ${f.file_url}`);
+    }
+
+    const callLines = (calls ?? []).map((c) => `### ${c.title} (${c.call_date})\n${(c.content ?? "").slice(0, 3000)}`).join("\n\n");
 
     const prompt = [
       `You are an analyst at DCA, a venture firm. Draft an investment scorecard for ${deal?.company_name ?? "this company"} for human review.`,
@@ -129,10 +137,13 @@ Deno.serve(async (req) => {
         founder_ownership_pct: scorecard?.founder_ownership_pct,
       }, null, 2),
       "",
-      "## Sources attached",
-      sourceLines.join("\n") || "(none uploaded)",
+      "## Sources attached to scorecard",
+      sourceLines.join("\n") || "(none uploaded directly to scorecard)",
       "",
-      "## Recent call notes",
+      "## Existing deal attachments (decks, financials, memos already on the deal record)",
+      dealFileLines.join("\n") || "(no attachments on the deal)",
+      "",
+      "## Recent call notes / transcripts",
       callLines || "(no call notes yet)",
     ].join("\n");
 
