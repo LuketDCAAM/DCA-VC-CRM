@@ -61,8 +61,9 @@ export default function Deals() {
     };
   };
 
-  // Use optimized filtered deals hook
-  const filteredDeals = useOptimizedFilteredDeals(deals, searchTerm, activeFilters);
+  // Debounce search term so we don't re-filter 10k deals on every keystroke
+  const debouncedSearchTerm = useDebouncedSearch(searchTerm, 250);
+  const filteredDeals = useOptimizedFilteredDeals(deals, debouncedSearchTerm, activeFilters);
 
   const isAllSelected = selectedDeals.length === filteredDeals.length && filteredDeals.length > 0;
 
