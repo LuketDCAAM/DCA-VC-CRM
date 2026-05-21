@@ -52,7 +52,17 @@ export default function IntegrationsSettings() {
         body: { return_to: returnTo },
       });
       if (error || !data?.auth_url) throw new Error(error?.message || 'Failed to start OAuth');
-      window.location.href = data.auth_url;
+      // Notion blocks being loaded inside an iframe (e.g. the Lovable preview).
+      // Break out to the top window if possible, otherwise open in a new tab.
+      try {
+        if (window.top && window.top !== window.self) {
+          window.top.location.href = data.auth_url;
+        } else {
+          window.location.href = data.auth_url;
+        }
+      } catch {
+        window.open(data.auth_url, '_blank', 'noopener,noreferrer');
+      }
     } catch (e) {
       toast({ title: 'Could not start Notion connection', description: (e as Error).message, variant: 'destructive' });
       setConnecting(false);
