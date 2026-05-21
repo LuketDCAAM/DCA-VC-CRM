@@ -361,8 +361,8 @@ export function ScorecardPanel({ dealId }: Props) {
                     {computed.metrics.map((m) => (
                       <tr key={m.metric} className="border-b last:border-0">
                         <td className="py-2 pr-3 font-medium">{m.label}</td>
-                        <td className="py-2 pr-3">{m.value == null ? "—" : m.metric.includes("margin") || m.metric.includes("nrr") || m.metric.includes("grr") || m.metric === "annual_growth" || m.metric === "top_cust_pct" ? fmt.pct(m.value) : m.metric === "ev_revenue" ? `${m.value.toFixed(1)}x` : fmt.num(m.value, 0)}</td>
-                        <td className="py-2 pr-3 text-muted-foreground">{m.benchmark == null ? "—" : m.metric.includes("margin") || m.metric.includes("nrr") || m.metric.includes("grr") || m.metric === "annual_growth" || m.metric === "top_cust_pct" ? fmt.pct(m.benchmark) : m.metric === "ev_revenue" ? `${m.benchmark}x` : m.benchmark.toLocaleString()}</td>
+                        <td className="py-2 pr-3">{formatMetricValue(m.metric, m.value)}</td>
+                        <td className="py-2 pr-3 text-muted-foreground">{formatMetricValue(m.metric, m.benchmark)}</td>
                         <td className="py-2 pr-3">{m.variance == null ? "—" : fmt.pct(m.variance)}</td>
                         <td className="py-2 pr-3">{m.tier === 0 ? "—" : m.tier}</td>
                         <td className="py-2 pr-3 text-right">{m.weighted_score.toFixed(2)}</td>
