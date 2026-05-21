@@ -31,6 +31,7 @@ export function CallNotesManager({ dealId }: CallNotesManagerProps) {
   const [noteToEdit, setNoteToEdit] = useState<CallNote | null>(null);
   const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const handleAddNote = () => {
     setNoteToEdit(null);
