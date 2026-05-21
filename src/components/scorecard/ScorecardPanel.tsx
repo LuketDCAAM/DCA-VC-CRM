@@ -287,11 +287,11 @@ export function ScorecardPanel({ dealId }: Props) {
           <Tabs value={tab} onValueChange={setTab}>
             <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="summary">Summary</TabsTrigger>
-              <TabsTrigger value="inputs">Inputs</TabsTrigger>
               <TabsTrigger value="quant">Quantitative</TabsTrigger>
               <TabsTrigger value="qual">Qualitative</TabsTrigger>
               <TabsTrigger value="narrative">Narrative</TabsTrigger>
               <TabsTrigger value="risks">Hard Stops & Risk</TabsTrigger>
+              <TabsTrigger value="inputs">Inputs</TabsTrigger>
             </TabsList>
 
             <TabsContent value="summary" className="pt-4 space-y-6">
