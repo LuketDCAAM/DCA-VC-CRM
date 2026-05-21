@@ -209,6 +209,22 @@ export function DealEditAttachmentsSection({
               <FormControl>
                 <Input type="url" placeholder="https://docs.google.com/presentation/..." {...field} />
               </FormControl>
+              {isDocSendUrl(field.value) && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  disabled={capturingUrl === field.value}
+                  onClick={() => captureDocSend(field.value as string)}
+                >
+                  {capturingUrl === field.value ? (
+                    <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Capturing…</>
+                  ) : (
+                    <><Camera className="h-4 w-4 mr-1" /> Capture DocSend as PDF</>
+                  )}
+                </Button>
+              )}
               <FormMessage />
             </FormItem>
           )}
