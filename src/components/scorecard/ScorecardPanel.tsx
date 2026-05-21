@@ -507,93 +507,191 @@ export function ScorecardPanel({ dealId }: Props) {
             </TabsContent>
 
             <TabsContent value="quant" className="pt-4">
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b text-left text-xs uppercase text-muted-foreground">
-                      <th className="py-2 pr-3">Metric</th>
-                      <th className="py-2 pr-3">Value</th>
-                      <th className="py-2 pr-3">Benchmark</th>
-                      <th className="py-2 pr-3">Variance</th>
-                      <th className="py-2 pr-3">Tier</th>
-                      <th className="py-2 pr-3 text-right">Weighted</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {computed.metrics.map((m) => (
-                      <tr key={m.metric} className="border-b last:border-0">
-                        <td className="py-2 pr-3 font-medium">{m.label}</td>
-                        <td className="py-2 pr-3">{formatMetricValue(m.metric, m.value)}</td>
-                        <td className="py-2 pr-3 text-muted-foreground">{formatMetricValue(m.metric, m.benchmark)}</td>
-                        <td className="py-2 pr-3">{m.variance == null ? "—" : fmt.pct(m.variance)}</td>
-                        <td className="py-2 pr-3">{m.tier === 0 ? "—" : m.tier}</td>
-                        <td className="py-2 pr-3 text-right">{m.weighted_score.toFixed(2)}</td>
+              {isApproved ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {computed.metrics.map((m) => {
+                      const tierPct = (m.tier / 5) * 100;
+                      const tierTone =
+                        m.tier >= 4 ? "bg-emerald-500"
+                        : m.tier === 3 ? "bg-amber-500"
+                        : m.tier > 0 ? "bg-orange-500"
+                        : "bg-muted";
+                      return (
+                        <div key={m.metric} className="border rounded-lg p-4 space-y-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="font-medium">{m.label}</div>
+                            <Badge variant="outline" className="shrink-0">
+                              {m.tier === 0 ? "Unscored" : `Tier ${m.tier}/5`}
+                            </Badge>
+                          </div>
+                          <div className="grid grid-cols-3 gap-2 text-sm">
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-muted-foreground">Value</div>
+                              <div className="font-semibold mt-0.5">{formatMetricValue(m.metric, m.value)}</div>
+                            </div>
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-muted-foreground">Benchmark</div>
+                              <div className="mt-0.5">{formatMetricValue(m.metric, m.benchmark)}</div>
+                            </div>
+                            <div>
+                              <div className="text-xs uppercase tracking-wide text-muted-foreground">Variance</div>
+                              <div className="mt-0.5">{m.variance == null ? "—" : fmt.pct(m.variance)}</div>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                              <div className={`h-full ${tierTone}`} style={{ width: `${tierPct}%` }} />
+                            </div>
+                            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                              <span>Weighted contribution</span>
+                              <span className="font-semibold text-foreground">{m.weighted_score.toFixed(2)}</span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className={`rounded-md p-4 flex items-center justify-between ${bandColor(computed.classification)}`}>
+                    <div className="font-semibold">Quantitative Total</div>
+                    <div className="text-xl font-bold">{computed.quant_total.toFixed(1)} <span className="text-sm font-normal opacity-70">/ 25</span></div>
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-xs uppercase text-muted-foreground">
+                        <th className="py-2 pr-3">Metric</th>
+                        <th className="py-2 pr-3">Value</th>
+                        <th className="py-2 pr-3">Benchmark</th>
+                        <th className="py-2 pr-3">Variance</th>
+                        <th className="py-2 pr-3">Tier</th>
+                        <th className="py-2 pr-3 text-right">Weighted</th>
                       </tr>
-                    ))}
-                    <tr className="font-semibold">
-                      <td className="py-2 pr-3" colSpan={5}>Quantitative Total</td>
-                      <td className="py-2 pr-3 text-right">{computed.quant_total.toFixed(1)} / 25</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {computed.metrics.map((m) => (
+                        <tr key={m.metric} className="border-b last:border-0">
+                          <td className="py-2 pr-3 font-medium">{m.label}</td>
+                          <td className="py-2 pr-3">{formatMetricValue(m.metric, m.value)}</td>
+                          <td className="py-2 pr-3 text-muted-foreground">{formatMetricValue(m.metric, m.benchmark)}</td>
+                          <td className="py-2 pr-3">{m.variance == null ? "—" : fmt.pct(m.variance)}</td>
+                          <td className="py-2 pr-3">{m.tier === 0 ? "—" : m.tier}</td>
+                          <td className="py-2 pr-3 text-right">{m.weighted_score.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                      <tr className="font-semibold">
+                        <td className="py-2 pr-3" colSpan={5}>Quantitative Total</td>
+                        <td className="py-2 pr-3 text-right">{computed.quant_total.toFixed(1)} / 25</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </TabsContent>
 
             <TabsContent value="qual" className="space-y-4 pt-4">
-              {QUAL_CATEGORIES.map((c) => {
-                const r: QualitativeRating = ratings[c.key] ?? {};
-                const ratingKey = `rating:${c.key as string}`;
-                const isBlankRating = r.score == null;
-                const isFillingThis = fillingField === ratingKey;
-                return (
-                  <div key={c.key} className="border rounded-md p-4 space-y-2">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="font-medium">{c.label}</div>
-                        <div className="text-xs text-muted-foreground mt-1">{c.rubric}</div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {isBlankRating && !readonly && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 px-2 text-xs gap-1 text-muted-foreground hover:text-primary"
-                            onClick={() => fillBlanks([ratingKey])}
-                            disabled={filling || !!fillingField || saving || drafting}
-                            title="Score & explain with AI"
-                          >
-                            {isFillingThis ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
-                            AI
-                          </Button>
-                        )}
-                        <Select
-                          value={r.score ? String(r.score) : ""}
-                          onValueChange={(v) => setRating(c.key, { score: Number(v) })}
-                          disabled={readonly}
-                        >
-                          <SelectTrigger className="w-28"><SelectValue placeholder="Score" /></SelectTrigger>
-                          <SelectContent>
-                            {[1,2,3,4,5].map((n) => <SelectItem key={n} value={String(n)}>{n} / 5</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <Textarea
-                      placeholder="Rationale / notes"
-                      defaultValue={r.rationale ?? ""}
-                      disabled={readonly}
-                      onBlur={(e) => {
-                        if (e.target.value !== (r.rationale ?? "")) setRating(c.key, { rationale: e.target.value });
-                      }}
-                      rows={2}
-                    />
+              {isApproved ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {QUAL_CATEGORIES.map((c) => {
+                      const r: QualitativeRating = ratings[c.key] ?? {};
+                      const score = r.score ?? 0;
+                      const tone =
+                        score >= 4 ? "bg-emerald-500"
+                        : score === 3 ? "bg-amber-500"
+                        : score > 0 ? "bg-orange-500"
+                        : "bg-muted";
+                      return (
+                        <div key={c.key} className="border rounded-lg p-4 space-y-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="font-medium">{c.label}</div>
+                            <div className="flex items-center gap-0.5 shrink-0">
+                              {[1,2,3,4,5].map((n) => (
+                                <span
+                                  key={n}
+                                  className={`text-base ${n <= score ? "text-amber-500" : "text-muted-foreground/30"}`}
+                                >★</span>
+                              ))}
+                              <span className="text-sm font-semibold ml-1.5">{score || "—"}/5</span>
+                            </div>
+                          </div>
+                          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                            <div className={`h-full ${tone}`} style={{ width: `${(score / 5) * 100}%` }} />
+                          </div>
+                          {r.rationale && (
+                            <div className="text-sm border-l-2 border-primary/40 pl-3 text-muted-foreground whitespace-pre-wrap">
+                              {r.rationale}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-              <div className="text-sm font-semibold text-right">
-                Qualitative Total: {computed.qual_total} / 25
-              </div>
+                  <div className={`rounded-md p-4 flex items-center justify-between ${bandColor(computed.classification)}`}>
+                    <div className="font-semibold">Qualitative Total</div>
+                    <div className="text-xl font-bold">{computed.qual_total} <span className="text-sm font-normal opacity-70">/ 25</span></div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {QUAL_CATEGORIES.map((c) => {
+                    const r: QualitativeRating = ratings[c.key] ?? {};
+                    const ratingKey = `rating:${c.key as string}`;
+                    const isBlankRating = r.score == null;
+                    const isFillingThis = fillingField === ratingKey;
+                    return (
+                      <div key={c.key} className="border rounded-md p-4 space-y-2">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <div className="font-medium">{c.label}</div>
+                            <div className="text-xs text-muted-foreground mt-1">{c.rubric}</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {isBlankRating && !readonly && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-xs gap-1 text-muted-foreground hover:text-primary"
+                                onClick={() => fillBlanks([ratingKey])}
+                                disabled={filling || !!fillingField || saving || drafting}
+                                title="Score & explain with AI"
+                              >
+                                {isFillingThis ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                                AI
+                              </Button>
+                            )}
+                            <Select
+                              value={r.score ? String(r.score) : ""}
+                              onValueChange={(v) => setRating(c.key, { score: Number(v) })}
+                              disabled={readonly}
+                            >
+                              <SelectTrigger className="w-28"><SelectValue placeholder="Score" /></SelectTrigger>
+                              <SelectContent>
+                                {[1,2,3,4,5].map((n) => <SelectItem key={n} value={String(n)}>{n} / 5</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <Textarea
+                          placeholder="Rationale / notes"
+                          defaultValue={r.rationale ?? ""}
+                          disabled={readonly}
+                          onBlur={(e) => {
+                            if (e.target.value !== (r.rationale ?? "")) setRating(c.key, { rationale: e.target.value });
+                          }}
+                          rows={2}
+                        />
+                      </div>
+                    );
+                  })}
+                  <div className="text-sm font-semibold text-right">
+                    Qualitative Total: {computed.qual_total} / 25
+                  </div>
+                </>
+              )}
             </TabsContent>
 
             <TabsContent value="narrative" className="space-y-4 pt-4">
