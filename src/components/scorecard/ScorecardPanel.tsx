@@ -100,7 +100,28 @@ const fmt = {
   pct: (v: number | null) => (v == null ? "—" : `${(v * 100).toFixed(1)}%`),
   money: (v: number | null) => (v == null ? "—" : `$${Math.round(v).toLocaleString()}`),
   num: (v: number | null, d = 1) => (v == null ? "—" : v.toFixed(d)),
+  compactMoney: (v: number | null) => {
+    if (v == null) return "—";
+    const abs = Math.abs(v);
+    const sign = v < 0 ? "-" : "";
+    if (abs >= 1_000_000_000) return `${sign}$${(abs / 1_000_000_000).toFixed(abs >= 10_000_000_000 ? 0 : 1)}B`;
+    if (abs >= 1_000_000) return `${sign}$${(abs / 1_000_000).toFixed(abs >= 10_000_000 ? 0 : 1)}M`;
+    if (abs >= 1_000) return `${sign}$${(abs / 1_000).toFixed(abs >= 10_000 ? 0 : 1)}K`;
+    return `${sign}$${Math.round(abs).toLocaleString()}`;
+  },
 };
+
+const CURRENCY_METRICS = new Set(["current_arr", "net_burn", "acv", "prior_arr", "forecast_arr", "gross_burn", "cash_balance"]);
+const PCT_METRICS = new Set(["gross_margin", "fcst_gross_margin", "nrr", "grr", "annual_growth", "top_cust_pct", "monthly_churn"]);
+
+function formatMetricValue(metric: string, v: number | null): string {
+  if (v == null) return "—";
+  if (metric === "ev_revenue") return `${v.toFixed(1)}x`;
+  if (CURRENCY_METRICS.has(metric)) return fmt.compactMoney(v);
+  if (PCT_METRICS.has(metric)) return fmt.pct(v);
+  if (metric === "runway_months") return v.toFixed(0);
+  return fmt.num(v, 0);
+}
 
 function bandColor(band: string): string {
   if (band === "HIGHLY ATTRACTIVE") return "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300";
