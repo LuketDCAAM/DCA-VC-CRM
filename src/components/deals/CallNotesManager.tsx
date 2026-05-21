@@ -115,6 +115,7 @@ export function CallNotesManager({ dealId }: CallNotesManagerProps) {
         onOpenChange={setIsNotionOpen}
         entityType="deal"
         entityId={dealId}
+        onImported={() => queryClient.invalidateQueries({ queryKey: ['call_notes', dealId] })}
       />
       
       <AlertDialog open={!!noteToDelete} onOpenChange={(open) => !open && setNoteToDelete(null)}>

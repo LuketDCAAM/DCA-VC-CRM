@@ -133,6 +133,7 @@ export function EntityCallNotesManager({ entityId, entityType }: EntityCallNotes
         onOpenChange={setIsNotionOpen}
         entityType={entityType}
         entityId={entityId}
+        onImported={() => queryClient.invalidateQueries({ queryKey: ['call_notes', entityType, entityId] })}
       />
 
       <AlertDialog open={!!noteToDelete} onOpenChange={() => setNoteToDelete(null)}>
