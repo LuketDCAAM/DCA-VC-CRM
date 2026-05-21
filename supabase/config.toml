@@ -59,6 +59,12 @@ verify_jwt = false
 [functions.notion-oauth-callback]
 verify_jwt = false
 
+[functions.notion-search]
+verify_jwt = true
+
+[functions.notion-import-page]
+verify_jwt = true
+
 [edge-runtime]
 enabled = true
 policy = "per_request"
