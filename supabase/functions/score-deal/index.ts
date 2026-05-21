@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
       .select("id")
       .single();
 
-    const [{ data: deal }, { data: thesis }, { data: calls }, { data: docs }, { data: dealFiles }, { data: scorecard }] = await Promise.all([
+    let [{ data: deal }, { data: thesis }, { data: calls }, { data: docs }, { data: dealFiles }, { data: scorecard }] = await Promise.all([
       admin.from("deals").select("*").eq("id", body.deal_id).maybeSingle(),
       admin.from("investment_thesis").select("*").limit(1).maybeSingle(),
       // Pull ALL call notes for this deal (no cap) so the analyst has full context
@@ -97,14 +97,66 @@ Deno.serve(async (req) => {
       admin.from("deal_scorecards").select("*").eq("id", body.scorecard_id).maybeSingle(),
     ]);
 
-    // Detect gated DocSend links so the analyst flags rather than hallucinates their contents
-    const isDocSend = (u?: string | null) => !!u && /docsend\.com\//i.test(u);
+    // Detect gated deck links (DocSend, Pitch, etc.) and auto-capture them via Browserless
+    // so the analyst draft can reference the captured PDF instead of flagging a blocked link.
+    const isGatedDeck = (u?: string | null) =>
+      !!u && /(docsend\.com|pitch\.com\/v\/|app\.pitch\.com)/i.test(u);
+
+    const candidateUrls = new Set<string>();
+    for (const d of (docs ?? []) as Array<{ external_url: string | null }>) {
+      if (isGatedDeck(d.external_url)) candidateUrls.add(d.external_url!);
+    }
+    for (const f of (dealFiles ?? []) as Array<{ file_url: string }>) {
+      if (isGatedDeck(f.file_url)) candidateUrls.add(f.file_url);
+    }
+    // Also try the deal's own pitch_deck_url field if present
+    const pitchDeckUrl = (deal as { pitch_deck_url?: string | null } | null)?.pitch_deck_url;
+    if (isGatedDeck(pitchDeckUrl)) candidateUrls.add(pitchDeckUrl!);
+
+    // Skip capture if any captured PDF for this deal already exists
+    const alreadyCaptured = (dealFiles ?? []).some(
+      (f) => f.file_url?.includes(`${body.deal_id}_docsend_`),
+    );
+
+    const captureLog: string[] = [];
+    if (candidateUrls.size && !alreadyCaptured && Deno.env.get("BROWSERLESS_API_KEY")) {
+      for (const url of candidateUrls) {
+        try {
+          console.log(`[score-deal] auto-capturing gated deck: ${url}`);
+          const res = await fetch(`${SUPABASE_URL}/functions/v1/capture-docsend`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: authHeader,
+            },
+            body: JSON.stringify({ url, deal_id: body.deal_id }),
+          });
+          const text = await res.text();
+          if (res.ok) {
+            captureLog.push(`Captured ${url}`);
+          } else {
+            captureLog.push(`Failed to capture ${url}: ${text.slice(0, 200)}`);
+          }
+        } catch (e) {
+          captureLog.push(`Failed to capture ${url}: ${(e as Error).message}`);
+        }
+      }
+      // Re-fetch deal attachments to pick up newly captured PDFs
+      const { data: refreshed } = await admin
+        .from("file_attachments")
+        .select("file_name,file_url,file_type,file_size,created_at")
+        .eq("deal_id", body.deal_id)
+        .order("created_at", { ascending: false });
+      dealFiles = refreshed;
+    }
+
+    // After capture attempts, anything still recognised as a raw gated URL goes in the flag list
     const gatedDocsend: string[] = [];
 
     const sourceLines: string[] = [];
     for (const d of (docs ?? []) as Array<{ kind: string; external_url: string | null; parsed_excerpt: string | null; file: { file_name: string; file_url: string; file_type: string | null } | null }>) {
       const label = d.file?.file_name ?? d.external_url ?? "(untitled)";
-      if (isDocSend(d.external_url)) gatedDocsend.push(d.external_url!);
+      if (isGatedDeck(d.external_url)) gatedDocsend.push(d.external_url!);
       sourceLines.push(`- [${d.kind}] ${label}${d.parsed_excerpt ? `\n  Excerpt: ${d.parsed_excerpt.slice(0, 2500)}` : ""}`);
     }
 
@@ -112,8 +164,10 @@ Deno.serve(async (req) => {
     const dealFileLines: string[] = [];
     for (const f of (dealFiles ?? []) as Array<{ file_name: string; file_url: string; file_type: string | null; file_size: number | null; created_at: string }>) {
       const kb = f.file_size ? ` (${Math.round(f.file_size / 1024)} KB)` : "";
-      if (isDocSend(f.file_url)) gatedDocsend.push(f.file_url);
-      dealFileLines.push(`- ${f.file_name}${kb} [${f.file_type ?? "file"}] — ${f.file_url}`);
+      const isCaptured = f.file_url?.includes(`${body.deal_id}_docsend_`);
+      if (isGatedDeck(f.file_url) && !isCaptured) gatedDocsend.push(f.file_url);
+      const tag = isCaptured ? " [auto-captured deck PDF]" : "";
+      dealFileLines.push(`- ${f.file_name}${kb} [${f.file_type ?? "file"}]${tag} — ${f.file_url}`);
     }
 
     // Use full call note content (generous per-note cap)
