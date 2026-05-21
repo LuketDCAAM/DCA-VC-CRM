@@ -6,6 +6,7 @@ import {
   INVESTOR_COLUMNS,
   CONTACT_COLUMNS,
   REMINDER_COLUMNS,
+  SCORECARD_COLUMNS,
   pickAllowed,
   formatPgError,
 } from "../_shared/action-schemas.ts";
