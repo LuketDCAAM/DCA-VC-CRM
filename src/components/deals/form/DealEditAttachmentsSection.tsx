@@ -34,8 +34,29 @@ export function DealEditAttachmentsSection({
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const [additionalFiles, setAdditionalFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [capturingUrl, setCapturingUrl] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  const isDocSendUrl = (u?: string | null) => !!u && /docsend\.com/i.test(u);
+
+  const captureDocSend = async (url: string) => {
+    setCapturingUrl(url);
+    toast({ title: 'Capturing deck…', description: 'This may take 30-90 seconds.' });
+    try {
+      const { data, error } = await supabase.functions.invoke('capture-docsend', {
+        body: { url, deal_id: dealId },
+      });
+      if (error) throw error;
+      toast({ title: 'Deck captured', description: `${data.slides} slides saved as PDF.` });
+      fetchAttachments();
+    } catch (e: any) {
+      console.error('capture-docsend failed', e);
+      toast({ title: 'Capture failed', description: e.message || 'See console for details', variant: 'destructive' });
+    } finally {
+      setCapturingUrl(null);
+    }
+  };
 
   useEffect(() => {
     fetchAttachments();
