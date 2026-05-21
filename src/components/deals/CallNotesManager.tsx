@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Plus, BookOpen } from 'lucide-react';
 import { useCallNotes, CallNote } from '@/hooks/useCallNotes';
@@ -30,6 +31,7 @@ export function CallNotesManager({ dealId }: CallNotesManagerProps) {
   const [noteToEdit, setNoteToEdit] = useState<CallNote | null>(null);
   const [noteToDelete, setNoteToDelete] = useState<string | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const handleAddNote = () => {
     setNoteToEdit(null);
@@ -113,6 +115,7 @@ export function CallNotesManager({ dealId }: CallNotesManagerProps) {
         onOpenChange={setIsNotionOpen}
         entityType="deal"
         entityId={dealId}
+        onImported={() => queryClient.invalidateQueries({ queryKey: ['call_notes', dealId] })}
       />
       
       <AlertDialog open={!!noteToDelete} onOpenChange={(open) => !open && setNoteToDelete(null)}>
