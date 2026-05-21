@@ -56,6 +56,9 @@ verify_jwt = false
 [functions.outlook-push]
 verify_jwt = false
 
+[functions.notion-oauth-callback]
+verify_jwt = false
+
 [edge-runtime]
 enabled = true
 policy = "per_request"
