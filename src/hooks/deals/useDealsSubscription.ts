@@ -8,6 +8,8 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
   const channelRef = useRef<any>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const queryKeyStr = JSON.stringify(queryKey);
+
   useEffect(() => {
     if (!userId) return;
 
@@ -16,7 +18,7 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
       channelRef.current = null;
     }
 
-    const channel = supabase.channel(`deals_${userId}`);
+    const channel = supabase.channel(`deals_${userId}_${Date.now()}_${Math.random()}`);
     channelRef.current = channel;
 
     channel
@@ -24,10 +26,9 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
         'postgres_changes',
         { event: '*', schema: 'public', table: 'deals' },
         () => {
-          // Debounce bursts of changes (bulk imports, etc.) into a single refetch
           if (debounceRef.current) clearTimeout(debounceRef.current);
           debounceRef.current = setTimeout(() => {
-            queryClient.invalidateQueries({ queryKey });
+            queryClient.invalidateQueries({ queryKey: JSON.parse(queryKeyStr) });
           }, 500);
         }
       )
@@ -40,7 +41,7 @@ export function useDealsSubscription(userId: string | undefined, queryKey: (stri
         channelRef.current = null;
       }
     };
-  }, [userId, queryClient, queryKey]);
+  }, [userId, queryClient, queryKeyStr]);
 
   return null;
 }
