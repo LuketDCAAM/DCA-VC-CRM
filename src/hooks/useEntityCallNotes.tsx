@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -98,6 +99,22 @@ export function useEntityCallNotes({ entityId, entityType }: EntityCallNotesPara
     queryFn: () => fetchEntityCallNotes(entityId, entityType),
     enabled: !!entityId,
   });
+
+  useEffect(() => {
+    if (!entityId) return;
+    const column = entityType === 'deal' ? 'deal_id' : entityType === 'investor' ? 'investor_id' : 'portfolio_company_id';
+    const channel = supabase
+      .channel(`call_notes_${entityType}_${entityId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'call_notes', filter: `${column}=eq.${entityId}` },
+        () => queryClient.invalidateQueries({ queryKey })
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [entityId, entityType, queryClient]);
 
   const addNoteMutation = useMutation({
     mutationFn: addCallNote,
