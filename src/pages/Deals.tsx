@@ -67,14 +67,14 @@ export default function Deals() {
 
   if (loading) {
     return (
-      <div className="p-6">
+      <div className="px-6 pt-3 pb-6">
         <div className="text-center">Loading deals...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
+    <div className="px-6 pt-3 pb-6">
       <DealsPageContent
         filteredDeals={filteredDeals}
         dealStats={dealStats}

@@ -224,14 +224,14 @@ export default function Portfolio() {
 
   if (loading) {
     return (
-      <div className="p-6">
+      <div className="px-6 pt-3 pb-6">
         <div className="text-center">Loading portfolio companies...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
+    <div className="px-6 pt-3 pb-6">
       <PortfolioHeader
         exportData={exportData}
         exportColumns={exportColumns}

@@ -278,14 +278,14 @@ export default function Investors() {
 
   if (loading) {
     return (
-      <div className="p-6">
+      <div className="px-6 pt-3 pb-6">
         <div className="text-center">Loading investors...</div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
+    <div className="px-6 pt-3 pb-6">
       <InvestorsPageHeader
         onAddNew={handleAddNew}
         exportData={exportData}
