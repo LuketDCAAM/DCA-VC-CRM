@@ -6,6 +6,7 @@ import { ConfigurableDealsTableRow } from './table/ConfigurableDealsTableRow';
 import { ConfigurableDealsTableHeader } from './table/ConfigurableDealsTableHeader';
 import { useAdvancedTableSorting } from '@/hooks/deals/useAdvancedTableSorting';
 import { useDealsPagination } from '@/hooks/deals/useDealsPagination';
+import { useTableColumns } from '@/hooks/deals/useTableColumns';
 import { PaginationControls } from './PaginationControls';
 
 interface ConfigurableDealsTableProps {
@@ -31,6 +32,8 @@ export function ConfigurableDealsTable({
 }: ConfigurableDealsTableProps) {
   const selectedDealsSet = useMemo(() => new Set(selectedDeals), [selectedDeals]);
   
+  const { visibleColumns } = useTableColumns();
+
   const {
     sortedDeals,
     sortConfigs,
@@ -99,6 +102,7 @@ export function ConfigurableDealsTable({
                   deal={deal}
                   index={index}
                   isSelected={selectedDealsSet.has(deal.id)}
+                  visibleColumns={visibleColumns}
                   onToggleSelection={onToggleDealSelection}
                   onViewDetails={onViewDetails}
                   onDealUpdated={onDealUpdated}
