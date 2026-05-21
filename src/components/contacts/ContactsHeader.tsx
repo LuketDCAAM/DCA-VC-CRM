@@ -22,10 +22,9 @@ const exportColumns = [
 
 export function ContactsHeader({ exportData, loading, onContactSaved }: ContactsHeaderProps) {
   return (
-    <div className="flex justify-between items-center mb-8">
+    <div className="flex justify-between items-center mb-4">
       <div>
         <h1 className="text-3xl font-bold">Contacts</h1>
-        <p className="text-gray-600">Unified contact directory</p>
       </div>
       <div className="flex items-center gap-2">
         <ExportData
