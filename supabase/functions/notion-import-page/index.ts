@@ -13,32 +13,40 @@ function richTextToPlain(rich: any[]): string {
 function blockToText(block: any): string {
   const t = block.type;
   const data = block[t];
+  const indent = '  '.repeat(Math.max(0, (block._depth || 0)));
+  const line = (s: string) => (s ? indent + s : '');
   if (!data) return '';
   switch (t) {
     case 'paragraph':
     case 'quote':
     case 'callout':
-      return richTextToPlain(data.rich_text);
+      return line(richTextToPlain(data.rich_text));
     case 'heading_1':
-      return `# ${richTextToPlain(data.rich_text)}`;
+      return line(`# ${richTextToPlain(data.rich_text)}`);
     case 'heading_2':
-      return `## ${richTextToPlain(data.rich_text)}`;
+      return line(`## ${richTextToPlain(data.rich_text)}`);
     case 'heading_3':
-      return `### ${richTextToPlain(data.rich_text)}`;
+      return line(`### ${richTextToPlain(data.rich_text)}`);
     case 'bulleted_list_item':
-      return `- ${richTextToPlain(data.rich_text)}`;
+      return line(`- ${richTextToPlain(data.rich_text)}`);
     case 'numbered_list_item':
-      return `1. ${richTextToPlain(data.rich_text)}`;
+      return line(`1. ${richTextToPlain(data.rich_text)}`);
     case 'to_do':
-      return `${data.checked ? '[x]' : '[ ]'} ${richTextToPlain(data.rich_text)}`;
+      return line(`${data.checked ? '[x]' : '[ ]'} ${richTextToPlain(data.rich_text)}`);
     case 'toggle':
-      return richTextToPlain(data.rich_text);
+      return line(richTextToPlain(data.rich_text));
     case 'code':
-      return '```\n' + richTextToPlain(data.rich_text) + '\n```';
+      return line('```\n' + richTextToPlain(data.rich_text) + '\n```');
     case 'divider':
-      return '---';
+      return line('---');
+    case 'child_page':
+      return line(`# ${data.title || ''}`);
+    case 'bookmark':
+    case 'embed':
+    case 'link_preview':
+      return line(data.url || '');
     default:
-      if (data.rich_text) return richTextToPlain(data.rich_text);
+      if (data.rich_text) return line(richTextToPlain(data.rich_text));
       return '';
   }
 }
