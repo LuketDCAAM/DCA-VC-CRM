@@ -310,9 +310,28 @@ export function ScorecardPanel({ dealId }: Props) {
                         : f.type === "currency" && typeof raw === "number" ? `$${raw.toLocaleString()}`
                         : f.type === "number" && typeof raw === "number" ? raw.toLocaleString()
                         : raw == null ? "" : String(raw);
+                      const fieldKey = f.key as string;
+                      const isFieldBlank = raw == null || raw === "";
+                      const isFillingThis = fillingField === fieldKey;
                       return (
-                        <div key={f.key as string} className="space-y-1">
-                          <Label className="text-xs">{f.label}</Label>
+                        <div key={fieldKey} className="space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <Label className="text-xs">{f.label}</Label>
+                            {isFieldBlank && !readonly && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 px-1.5 text-[10px] gap-1 text-muted-foreground hover:text-primary"
+                                onClick={() => fillBlanks([fieldKey])}
+                                disabled={filling || !!fillingField || saving || drafting}
+                                title="Fill from notes with AI"
+                              >
+                                {isFillingThis ? <Loader2 className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />}
+                                AI
+                              </Button>
+                            )}
+                          </div>
                           {f.type === "select" ? (
                             <Select
                               value={(raw as string) ?? ""}
