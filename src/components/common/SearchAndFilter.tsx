@@ -44,9 +44,6 @@ export function SearchAndFilter({
   showAdvanced = false,
   onToggleAdvanced
 }: SearchAndFilterProps) {
-  console.log('SearchAndFilter - filters received:', filters);
-  console.log('SearchAndFilter - activeFilters:', activeFilters);
-  console.log('SearchAndFilter - showAdvanced:', showAdvanced);
 
   const activeFilterCount = Object.keys(activeFilters).filter(key => {
     const value = activeFilters[key];
