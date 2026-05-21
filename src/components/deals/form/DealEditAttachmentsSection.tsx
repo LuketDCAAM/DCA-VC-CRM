@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Paperclip, Link, X, Upload, File } from 'lucide-react';
+import { Paperclip, Link, X, Upload, File, Camera, Loader2 } from 'lucide-react';
 import { Control } from 'react-hook-form';
 import { DealFormValues } from './dealEditFormSchema';
 import { supabase } from '@/integrations/supabase/client';
@@ -34,8 +34,29 @@ export function DealEditAttachmentsSection({
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const [additionalFiles, setAdditionalFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [capturingUrl, setCapturingUrl] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  const isDocSendUrl = (u?: string | null) => !!u && /docsend\.com/i.test(u);
+
+  const captureDocSend = async (url: string) => {
+    setCapturingUrl(url);
+    toast({ title: 'Capturing deck…', description: 'This may take 30-90 seconds.' });
+    try {
+      const { data, error } = await supabase.functions.invoke('capture-docsend', {
+        body: { url, deal_id: dealId },
+      });
+      if (error) throw error;
+      toast({ title: 'Deck captured', description: `${data.slides} slides saved as PDF.` });
+      fetchAttachments();
+    } catch (e: any) {
+      console.error('capture-docsend failed', e);
+      toast({ title: 'Capture failed', description: e.message || 'See console for details', variant: 'destructive' });
+    } finally {
+      setCapturingUrl(null);
+    }
+  };
 
   useEffect(() => {
     fetchAttachments();
@@ -188,6 +209,22 @@ export function DealEditAttachmentsSection({
               <FormControl>
                 <Input type="url" placeholder="https://docs.google.com/presentation/..." {...field} />
               </FormControl>
+              {isDocSendUrl(field.value) && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="mt-2"
+                  disabled={capturingUrl === field.value}
+                  onClick={() => captureDocSend(field.value as string)}
+                >
+                  {capturingUrl === field.value ? (
+                    <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Capturing…</>
+                  ) : (
+                    <><Camera className="h-4 w-4 mr-1" /> Capture DocSend as PDF</>
+                  )}
+                </Button>
+              )}
               <FormMessage />
             </FormItem>
           )}
@@ -261,6 +298,21 @@ export function DealEditAttachmentsSection({
                   </div>
                 </div>
                 <div className="flex gap-1">
+                  {attachment.file_type === 'link' && isDocSendUrl(attachment.file_url) && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={capturingUrl === attachment.file_url}
+                      onClick={() => captureDocSend(attachment.file_url)}
+                    >
+                      {capturingUrl === attachment.file_url ? (
+                        <><Loader2 className="h-4 w-4 mr-1 animate-spin" /> Capturing…</>
+                      ) : (
+                        <><Camera className="h-4 w-4 mr-1" /> Capture</>
+                      )}
+                    </Button>
+                  )}
                   {attachment.file_type === 'link' ? (
                     <Button
                       type="button"
