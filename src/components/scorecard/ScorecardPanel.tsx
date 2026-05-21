@@ -130,6 +130,35 @@ export function ScorecardPanel({ dealId }: Props) {
     load();
   };
 
+  const exportMemo = async () => {
+    if (!row) return;
+    const { data: deal } = await supabase
+      .from("deals")
+      .select("company_name")
+      .eq("id", dealId)
+      .maybeSingle();
+    const narrative: Record<string, string | null> = {};
+    for (const k of ["company_overview","investment_thesis","traction_milestones","business_model","key_strengths","key_risks","investor_base","competitive_landscape","use_of_funds","dca_value_add"]) {
+      narrative[k] = (row[k] as string | null) ?? null;
+    }
+    try {
+      exportMemoPdf({
+        companyName: deal?.company_name ?? "Untitled Deal",
+        inputs,
+        ratings,
+        computed,
+        narrative,
+        status: row.status,
+        approvedBy: row.approved_by,
+        approvedAt: row.approved_at,
+      });
+      toast.success("Memo exported");
+    } catch (e) {
+      toast.error("Export failed");
+      console.error(e);
+    }
+  };
+
 
   const inputs = useMemo(() => inputsFromRow(row), [row]);
   const ratings = (row?.qualitative_ratings ?? {}) as QualitativeRatings;
