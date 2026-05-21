@@ -1,4 +1,5 @@
 
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Database } from '@/integrations/supabase/types';
@@ -61,6 +62,21 @@ export function useCallNotes(dealId: string) {
     queryFn: () => fetchCallNotes(dealId),
     enabled: !!dealId,
   });
+
+  useEffect(() => {
+    if (!dealId) return;
+    const channel = supabase
+      .channel(`call_notes_deal_${dealId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'call_notes', filter: `deal_id=eq.${dealId}` },
+        () => queryClient.invalidateQueries({ queryKey })
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [dealId, queryClient]);
 
   const addNoteMutation = useMutation({
     mutationFn: addCallNote,
