@@ -54,3 +54,27 @@ Rules:
   link, but at minimum capture lead investor names in `tags` or `next_steps`.
 - In your `rationale`, briefly list which fields you populated so the user can
   spot gaps quickly.
+
+## Scorecard fields (use `propose_update_scorecard`)
+
+The following fields live on the **scorecard**, NOT on the deal. If you only call
+`propose_update_deal` for these, they will be silently dropped. Whenever the
+source mentions any of them, ALSO call `propose_update_scorecard` for the same
+deal_id:
+
+- ARR: `current_arr`, `prior_arr` (last year's / prior year ARR), `forecast_arr`
+- Burn & cash: `gross_burn`, `net_burn`, `cash_balance`, `total_raised`
+- Unit economics: `gross_margin`, `fcst_gross_margin`, `acv`, `nrr`, `grr`,
+  `top_cust_pct`, `monthly_churn`
+- Team & round: `employee_count`, `repeat_founder`, `has_technical_cofounder`,
+  `founder_ownership_pct`, `fundraise_amount`, `valuation`, `prev_valuation`,
+  `committed_amount`, `round_deadline`, `bridge_rounds_18mo`,
+  `total_debt_excl_convertibles`
+- Narrative: `company_overview`, `investment_thesis`, `traction_milestones`,
+  `business_model`, `key_strengths`, `key_risks`, `investor_base`,
+  `competitive_landscape`, `use_of_funds`, `dca_value_add`
+
+Always look explicitly for "last year ARR", "prior year ARR", "FY2X ARR",
+"ending ARR 20XX", or similar phrasing and map it to `prior_arr`. Current /
+latest ARR maps to `current_arr`; next-year or plan ARR maps to `forecast_arr`.
+

@@ -31,6 +31,26 @@ export const REMINDER_COLUMNS = new Set([
   "send_email_reminder", "status",
 ]);
 
+export const SCORECARD_COLUMNS = new Set([
+  // identity / context
+  "sector", "stage", "geography", "geography_tier", "founding_year",
+  "deal_lead", "vehicle",
+  // team / round
+  "repeat_founder", "has_technical_cofounder", "fundraise_amount", "valuation",
+  "prev_valuation", "committed_amount", "round_deadline", "founder_ownership_pct",
+  "bridge_rounds_18mo", "total_debt_excl_convertibles",
+  // financials
+  "current_arr", "prior_arr", "forecast_arr", "gross_burn", "net_burn",
+  "cash_balance", "total_raised", "gross_margin", "fcst_gross_margin", "acv",
+  "employee_count", "nrr", "grr", "top_cust_pct", "monthly_churn",
+  // narrative
+  "company_overview", "investment_thesis", "traction_milestones", "business_model",
+  "key_strengths", "key_risks", "investor_base", "competitive_landscape",
+  "use_of_funds", "dca_value_add",
+  // notes
+  "metric_notes",
+]);
+
 export function pickAllowed(
   payload: Record<string, unknown>,
   allowed: Set<string>,

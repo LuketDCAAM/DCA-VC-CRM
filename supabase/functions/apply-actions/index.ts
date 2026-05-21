@@ -6,6 +6,7 @@ import {
   INVESTOR_COLUMNS,
   CONTACT_COLUMNS,
   REMINDER_COLUMNS,
+  SCORECARD_COLUMNS,
   pickAllowed,
   formatPgError,
 } from "../_shared/action-schemas.ts";
@@ -198,6 +199,32 @@ async function applyOne(
     }
     case "draft_email":
       return; // drafts stay on the action row
+    case "update_scorecard": {
+      const dealId = action.target_id ?? (raw as { deal_id?: string }).deal_id ?? null;
+      if (!dealId) throw new Error("update_scorecard requires deal_id");
+      const payload = pickAllowed(raw, SCORECARD_COLUMNS);
+      // Find current scorecard row; create one if missing.
+      const { data: existing, error: lookupErr } = await db
+        .from("deal_scorecards")
+        .select("id")
+        .eq("deal_id", dealId)
+        .eq("is_current", true)
+        .maybeSingle();
+      if (lookupErr) throw lookupErr;
+      if (existing?.id) {
+        const { error } = await db.from("deal_scorecards").update(payload).eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await db.from("deal_scorecards").insert({
+          deal_id: dealId,
+          created_by: userId,
+          status: "draft",
+          ...payload,
+        });
+        if (error) throw error;
+      }
+      return;
+    }
     case "attach_link": {
       const dealId = (raw as { deal_id?: string }).deal_id ?? null;
       const investorId = (raw as { investor_id?: string }).investor_id ?? null;
