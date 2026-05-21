@@ -43,7 +43,12 @@ function blockToText(block: any): string {
   }
 }
 
-async function fetchAllBlocks(pageId: string, headers: Record<string, string>): Promise<any[]> {
+async function fetchAllBlocks(
+  pageId: string,
+  headers: Record<string, string>,
+  depth = 0,
+): Promise<any[]> {
+  if (depth > 4) return [];
   const all: any[] = [];
   let cursor: string | undefined;
   do {
@@ -53,7 +58,22 @@ async function fetchAllBlocks(pageId: string, headers: Record<string, string>): 
     const r = await fetch(url.toString(), { headers });
     const d = await r.json();
     if (!r.ok) throw new Error(d?.message || 'Failed to fetch blocks');
-    all.push(...(d.results || []));
+    for (const block of d.results || []) {
+      all.push({ ...block, _depth: depth });
+      if (block.has_children) {
+        // For synced_block, fetch from the synced source if it points elsewhere
+        let childId = block.id;
+        if (block.type === 'synced_block' && block.synced_block?.synced_from?.block_id) {
+          childId = block.synced_block.synced_from.block_id;
+        }
+        try {
+          const children = await fetchAllBlocks(childId, headers, depth + 1);
+          all.push(...children);
+        } catch (_) {
+          // ignore child fetch failures (e.g., unsupported block types)
+        }
+      }
+    }
     cursor = d.has_more ? d.next_cursor : undefined;
   } while (cursor);
   return all;
