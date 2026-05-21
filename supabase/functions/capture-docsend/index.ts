@@ -2,7 +2,6 @@
 // stitch slides into a PDF, upload to the pitch-decks bucket, and attach to the deal.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
-import { PDFDocument } from 'npm:pdf-lib@1.17.1';
 import puppeteer from 'npm:puppeteer-core@23.11.1';
 
 const BROWSERBASE_API_KEY = Deno.env.get('BROWSERBASE_API_KEY');
@@ -32,7 +31,44 @@ async function createBrowserbaseSession(): Promise<string> {
   return json.connectUrl as string;
 }
 
-async function captureSlides(url: string): Promise<string[]> {
+interface CaptureResult {
+  pdfBytes: Uint8Array;
+  slideCount: number;
+}
+
+async function renderSlidesToPdf(browser: Awaited<ReturnType<typeof puppeteer.connect>>, slides: string[]): Promise<Uint8Array> {
+  const pdfPage = await browser.newPage();
+  try {
+    const html = `<!doctype html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <style>
+            @page { size: 16in 10in; margin: 0; }
+            * { box-sizing: border-box; }
+            body { margin: 0; background: white; }
+            .slide { page-break-after: always; width: 16in; height: 10in; overflow: hidden; }
+            .slide:last-child { page-break-after: auto; }
+            img { display: block; width: 16in; height: 10in; object-fit: contain; background: white; }
+          </style>
+        </head>
+        <body>
+          ${slides.map((shot) => `<section class="slide"><img src="data:image/jpeg;base64,${shot}" /></section>`).join('')}
+        </body>
+      </html>`;
+
+    await pdfPage.setContent(html, { waitUntil: 'load', timeout: 60_000 });
+    return await pdfPage.pdf({
+      printBackground: true,
+      preferCSSPageSize: true,
+      margin: { top: '0', right: '0', bottom: '0', left: '0' },
+    });
+  } finally {
+    await pdfPage.close().catch(() => {});
+  }
+}
+
+async function captureDeckPdf(url: string): Promise<CaptureResult> {
   const connectUrl = await createBrowserbaseSession();
   console.log('[capture-docsend] connected to Browserbase session');
   const browser = await puppeteer.connect({ browserWSEndpoint: connectUrl });
@@ -82,7 +118,7 @@ async function captureSlides(url: string): Promise<string[]> {
     const seen = new Set<string>();
     for (let i = 0; i < Math.min(total, 80); i++) {
       await new Promise((r) => setTimeout(r, 900));
-      const shot = (await page.screenshot({ type: 'png', fullPage: false, encoding: 'base64' })) as string;
+      const shot = (await page.screenshot({ type: 'jpeg', quality: 85, fullPage: false, encoding: 'base64' })) as string;
       const sig = shot.slice(0, 200) + shot.slice(-200);
       if (seen.has(sig)) break;
       seen.add(sig);
@@ -90,21 +126,15 @@ async function captureSlides(url: string): Promise<string[]> {
       await page.keyboard.press('ArrowRight');
     }
 
-    return slides;
+    if (slides.length === 0) throw new Error('No slides were captured');
+    console.log(`[capture-docsend] captured ${slides.length} slides, rendering PDF in Browserbase`);
+    const pdfBytes = await renderSlidesToPdf(browser, slides);
+    return { pdfBytes, slideCount: slides.length };
   } finally {
-    await browser.disconnect().catch(() => {});
+    await browser.close().catch(async () => {
+      await browser.disconnect().catch(() => {});
+    });
   }
-}
-
-async function slidesToPdf(slides: string[]): Promise<Uint8Array> {
-  const pdf = await PDFDocument.create();
-  for (const b64 of slides) {
-    const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
-    const img = await pdf.embedPng(bytes);
-    const page = pdf.addPage([img.width, img.height]);
-    page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height });
-  }
-  return await pdf.save();
 }
 
 Deno.serve(async (req) => {
@@ -144,9 +174,7 @@ Deno.serve(async (req) => {
     if (!url || !dealId) throw new Error('url and deal_id required');
 
     console.log(`[capture-docsend] starting capture for deal ${dealId} url=${url}`);
-    const slides = await captureSlides(url);
-    console.log(`[capture-docsend] captured ${slides.length} slides, building PDF`);
-    const pdfBytes = await slidesToPdf(slides);
+    const { pdfBytes, slideCount } = await captureDeckPdf(url);
     console.log(`[capture-docsend] PDF built (${pdfBytes.byteLength} bytes), uploading`);
 
     const admin = createClient(
@@ -167,7 +195,7 @@ Deno.serve(async (req) => {
       .from('file_attachments')
       .insert({
         deal_id: dealId,
-        file_name: `DocSend capture (${slides.length} slides).pdf`,
+        file_name: `DocSend capture (${slideCount} slides).pdf`,
         file_url: pub.publicUrl,
         file_type: 'file',
         file_size: pdfBytes.byteLength,
@@ -178,7 +206,7 @@ Deno.serve(async (req) => {
     if (insErr) throw insErr;
 
     return new Response(
-      JSON.stringify({ success: true, attachment: row, slides: slides.length }),
+      JSON.stringify({ success: true, attachment: row, slides: slideCount }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     );
   } catch (err) {
