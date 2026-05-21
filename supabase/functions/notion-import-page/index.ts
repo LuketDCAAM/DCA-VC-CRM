@@ -13,37 +13,50 @@ function richTextToPlain(rich: any[]): string {
 function blockToText(block: any): string {
   const t = block.type;
   const data = block[t];
+  const indent = '  '.repeat(Math.max(0, (block._depth || 0)));
+  const line = (s: string) => (s ? indent + s : '');
   if (!data) return '';
   switch (t) {
     case 'paragraph':
     case 'quote':
     case 'callout':
-      return richTextToPlain(data.rich_text);
+      return line(richTextToPlain(data.rich_text));
     case 'heading_1':
-      return `# ${richTextToPlain(data.rich_text)}`;
+      return line(`# ${richTextToPlain(data.rich_text)}`);
     case 'heading_2':
-      return `## ${richTextToPlain(data.rich_text)}`;
+      return line(`## ${richTextToPlain(data.rich_text)}`);
     case 'heading_3':
-      return `### ${richTextToPlain(data.rich_text)}`;
+      return line(`### ${richTextToPlain(data.rich_text)}`);
     case 'bulleted_list_item':
-      return `- ${richTextToPlain(data.rich_text)}`;
+      return line(`- ${richTextToPlain(data.rich_text)}`);
     case 'numbered_list_item':
-      return `1. ${richTextToPlain(data.rich_text)}`;
+      return line(`1. ${richTextToPlain(data.rich_text)}`);
     case 'to_do':
-      return `${data.checked ? '[x]' : '[ ]'} ${richTextToPlain(data.rich_text)}`;
+      return line(`${data.checked ? '[x]' : '[ ]'} ${richTextToPlain(data.rich_text)}`);
     case 'toggle':
-      return richTextToPlain(data.rich_text);
+      return line(richTextToPlain(data.rich_text));
     case 'code':
-      return '```\n' + richTextToPlain(data.rich_text) + '\n```';
+      return line('```\n' + richTextToPlain(data.rich_text) + '\n```');
     case 'divider':
-      return '---';
+      return line('---');
+    case 'child_page':
+      return line(`# ${data.title || ''}`);
+    case 'bookmark':
+    case 'embed':
+    case 'link_preview':
+      return line(data.url || '');
     default:
-      if (data.rich_text) return richTextToPlain(data.rich_text);
+      if (data.rich_text) return line(richTextToPlain(data.rich_text));
       return '';
   }
 }
 
-async function fetchAllBlocks(pageId: string, headers: Record<string, string>): Promise<any[]> {
+async function fetchAllBlocks(
+  pageId: string,
+  headers: Record<string, string>,
+  depth = 0,
+): Promise<any[]> {
+  if (depth > 4) return [];
   const all: any[] = [];
   let cursor: string | undefined;
   do {
@@ -53,7 +66,22 @@ async function fetchAllBlocks(pageId: string, headers: Record<string, string>): 
     const r = await fetch(url.toString(), { headers });
     const d = await r.json();
     if (!r.ok) throw new Error(d?.message || 'Failed to fetch blocks');
-    all.push(...(d.results || []));
+    for (const block of d.results || []) {
+      all.push({ ...block, _depth: depth });
+      if (block.has_children) {
+        // For synced_block, fetch from the synced source if it points elsewhere
+        let childId = block.id;
+        if (block.type === 'synced_block' && block.synced_block?.synced_from?.block_id) {
+          childId = block.synced_block.synced_from.block_id;
+        }
+        try {
+          const children = await fetchAllBlocks(childId, headers, depth + 1);
+          all.push(...children);
+        } catch (_) {
+          // ignore child fetch failures (e.g., unsupported block types)
+        }
+      }
+    }
     cursor = d.has_more ? d.next_cursor : undefined;
   } while (cursor);
   return all;
