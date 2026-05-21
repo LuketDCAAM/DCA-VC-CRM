@@ -179,8 +179,11 @@ Deno.serve(async (req) => {
       `You are an analyst at DCA, a venture firm. Draft an investment scorecard for ${deal?.company_name ?? "this company"} for human review.`,
       "",
       "Return a STRICT JSON object matching the provided schema. Be specific, cite evidence from sources (call notes, attachments, scorecard inputs), and avoid generic platitudes. Each qualitative rationale should be 2-3 sentences. Narrative fields should be 2-5 sentences. If a piece of evidence is missing, say so rather than inventing it.",
+      captureLog.length
+        ? `\nDECK AUTO-CAPTURE: ${captureLog.join(" | ")}. Captured deck PDFs are listed under "Existing deal attachments" and are image-only screenshots — you cannot read the text directly, but you can reference them by name and note that a visual deck capture is on file.`
+        : "",
       gatedDocsend.length
-        ? `\nNOTE: The following deck links are gated DocSend URLs and their contents are NOT available to you. Do not fabricate their contents — instead, flag in key_risks that the deck needs to be unlocked or exported as PDF:\n${gatedDocsend.map((u) => `- ${u}`).join("\n")}`
+        ? `\nNOTE: The following deck links are gated and could not be auto-captured. Do not fabricate their contents — flag in key_risks that the deck needs to be unlocked or exported as PDF:\n${gatedDocsend.map((u) => `- ${u}`).join("\n")}`
         : "",
       "## Investment thesis",
       thesis?.narrative ?? "(none on file)",
