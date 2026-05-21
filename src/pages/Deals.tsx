@@ -7,6 +7,7 @@ import { useOptimizedFilteredDeals } from '@/hooks/useOptimizedFilteredDeals';
 import { DealsPageContent } from '@/components/deals/DealsPageContent';
 import { useDealsPageState } from '@/hooks/useDealsPageState';
 import { useDealsCSVConfig } from '@/components/deals/DealsCSVConfig';
+import { useDebouncedSearch } from '@/hooks/useDebounce';
 
 export default function Deals() {
   const { deals, loading, refetch, dealStats } = useOptimizedDeals();
