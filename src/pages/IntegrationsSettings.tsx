@@ -34,7 +34,7 @@ type AICred = {
 // with the live list from Anthropic's /v1/models endpoint, so new releases
 // (Opus 4.9, Sonnet 5, Haiku 5, etc.) appear automatically.
 type ClaudeModel = { value: string; label: string };
-const FALLBACK_models: ClaudeModel[] = [
+const FALLBACK_CLAUDE_MODELS: ClaudeModel[] = [
   { value: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6 (recommended — best speed/quality)' },
   { value: 'claude-opus-4-8', label: 'Claude Opus 4.8 (most capable)' },
   { value: 'claude-haiku-4-5', label: 'Claude Haiku 4.5 (fastest / cheapest)' },
@@ -42,7 +42,7 @@ const FALLBACK_models: ClaudeModel[] = [
   { value: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5' },
   { value: 'claude-opus-4-5', label: 'Claude Opus 4.5' },
 ];
-const DEFAULT_MODEL = FALLBACK_models[0].value;
+const DEFAULT_MODEL = FALLBACK_CLAUDE_MODELS[0].value;
 
 
 export default function IntegrationsSettings() {
@@ -57,7 +57,7 @@ export default function IntegrationsSettings() {
   const [apiKey, setApiKey] = useState('');
   const [model, setModel] = useState(DEFAULT_MODEL);
   const [saving, setSaving] = useState(false);
-  const [models, setModels] = useState<ClaudeModel[]>(FALLBACK_models);
+  const [models, setModels] = useState<ClaudeModel[]>(FALLBACK_CLAUDE_MODELS);
   const [refreshingModels, setRefreshingModels] = useState(false);
 
   const refreshModels = async (candidateKey?: string) => {
