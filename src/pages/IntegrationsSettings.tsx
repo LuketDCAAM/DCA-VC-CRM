@@ -353,23 +353,52 @@ export default function IntegrationsSettings() {
             </>
           ) : (
             <>
-              <ol className="text-sm space-y-2 list-decimal pl-5 text-muted-foreground">
-                <li>
-                  Go to{' '}
-                  <a
-                    href="https://console.anthropic.com/settings/keys"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary underline"
-                  >
-                    console.anthropic.com → API keys <ExternalLink className="inline h-3 w-3" />
-                  </a>
-                  {' '}and create a new key.
-                </li>
-                <li>Copy the key (starts with <code>sk-ant-</code>) and paste it below.</li>
-                <li>We'll send one tiny verification request to Anthropic, then store the key encrypted.</li>
-                <li>From then on every AI call in the app uses your account.</li>
-              </ol>
+              <div className="rounded-md border bg-muted/30 p-4 text-sm space-y-2">
+                <div className="font-medium">How to connect your Claude account</div>
+                <ol className="space-y-2 list-decimal pl-5 text-muted-foreground">
+                  <li>
+                    Sign in to the{' '}
+                    <a
+                      href="https://console.anthropic.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline inline-flex items-center gap-1"
+                    >
+                      Anthropic Console <ExternalLink className="h-3 w-3" />
+                    </a>
+                    . If this is a new account, you'll need to verify your email and phone number.
+                  </li>
+                  <li>
+                    Add a payment method under{' '}
+                    <a
+                      href="https://console.anthropic.com/settings/billing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline inline-flex items-center gap-1"
+                    >
+                      Settings → Billing <ExternalLink className="h-3 w-3" />
+                    </a>
+                    {' '}and load at least a few dollars of credit. Anthropic charges per token; this app will use whatever your account has available.
+                  </li>
+                  <li>
+                    Open{' '}
+                    <a
+                      href="https://console.anthropic.com/settings/keys"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline inline-flex items-center gap-1"
+                    >
+                      Settings → API keys <ExternalLink className="h-3 w-3" />
+                    </a>
+                    , click <strong>Create Key</strong>, name it (e.g. "DCA VC CRM"), and copy the value — it starts with <code className="px-1 py-0.5 rounded bg-background text-xs">sk-ant-</code>. Anthropic only shows it once.
+                  </li>
+                  <li>Paste it below and pick a default model. We'll send one tiny request to Anthropic to verify the key works, then store it encrypted on the server. The key is never returned to your browser again.</li>
+                  <li>From then on every AI feature in the app — the assistant, scorecard fills, analyst runs, deal scoring — runs on your account and is billed directly by Anthropic. Disconnect any time to fall back to shared credits.</li>
+                </ol>
+                <p className="text-xs text-muted-foreground pt-1">
+                  Tip: in the Anthropic Console you can set a monthly spend limit on the key so usage can't run away.
+                </p>
+              </div>
 
               <div className="space-y-3 rounded-md border p-4">
                 <div className="space-y-2">
@@ -380,11 +409,18 @@ export default function IntegrationsSettings() {
                     placeholder="sk-ant-…"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
+                    onBlur={() => apiKey.startsWith('sk-ant-') && refreshModels(apiKey)}
                     autoComplete="off"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Tab out of this field and we'll fetch the live list of models your account has access to.
+                  </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="ai-model-new">Default model</Label>
+                  <Label htmlFor="ai-model-new" className="flex items-center gap-2">
+                    Default model
+                    {refreshingModels && <Loader2 className="h-3 w-3 animate-spin" />}
+                  </Label>
                   <Select value={model} onValueChange={setModel}>
                     <SelectTrigger id="ai-model-new"><SelectValue /></SelectTrigger>
                     <SelectContent>
@@ -403,6 +439,7 @@ export default function IntegrationsSettings() {
                 </Button>
               </div>
             </>
+
           )}
         </CardContent>
       </Card>
