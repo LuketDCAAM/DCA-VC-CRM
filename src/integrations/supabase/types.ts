@@ -1766,6 +1766,45 @@ export type Database = {
           },
         ]
       }
+      user_ai_credentials: {
+        Row: {
+          created_at: string
+          default_model: string
+          encrypted_api_key: string
+          last_4: string
+          last_error: string | null
+          last_status: string | null
+          last_used_at: string | null
+          provider: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_model?: string
+          encrypted_api_key: string
+          last_4: string
+          last_error?: string | null
+          last_status?: string | null
+          last_used_at?: string | null
+          provider?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_model?: string
+          encrypted_api_key?: string
+          last_4?: string
+          last_error?: string | null
+          last_status?: string | null
+          last_used_at?: string | null
+          provider?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_approval_logs: {
         Row: {
           approval_status: string

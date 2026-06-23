@@ -5,6 +5,7 @@ import { createOpenAICompatible } from "npm:@ai-sdk/openai-compatible@2.0.47";
 import { z } from "npm:zod@4.4.3";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { researchTools } from "../_shared/research-tools.ts";
+import { resolveUserModel, markCredentialUsed } from "../_shared/ai-provider.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +13,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const gateway = createOpenAICompatible({
+// gateway kept available for any non-BYOK callers via resolveUserModel fallback.
+const _gateway = createOpenAICompatible({
   name: "lovable",
   baseURL: "https://ai.gateway.lovable.dev/v1",
   headers: {
@@ -87,6 +89,9 @@ Deno.serve(async (req) => {
       .single();
     const runId = runRow?.id as string | undefined;
 
+    // Resolve model — caller's BYOK Claude key or Lovable gateway fallback.
+    const resolved = await resolveUserModel({ userId, fallbackModelId: "google/gemini-3-flash-preview" });
+
     // Also create an agent_runs row so proposals show up in the standard panel
     const { data: agentRun } = await supabase
       .from("agent_runs")
@@ -95,7 +100,7 @@ Deno.serve(async (req) => {
         agent_type: "analyst",
         trigger,
         status: "running",
-        model: "google/gemini-3-flash-preview",
+        model: `${resolved.provider}:${resolved.modelId}`,
       })
       .select("id")
       .single();
@@ -260,14 +265,23 @@ Be concise and skeptical. Do not invent facts — if research returned nothing u
 
     const prompt = `${thesisBlock}\n${dealBlock}\n\nProduce the analysis now.`;
 
-    const result = await generateText({
-      model: gateway("google/gemini-3-flash-preview"),
-      system: SYSTEM,
-      prompt,
-      tools,
-      stopWhen: stepCountIs(50),
-      abortSignal: req.signal,
-    });
+    let result;
+    try {
+      result = await generateText({
+        model: resolved.model,
+        system: SYSTEM,
+        prompt,
+        tools,
+        stopWhen: stepCountIs(50),
+        abortSignal: req.signal,
+      });
+      if (resolved.hasUserCredential) await markCredentialUsed(userId, "ok");
+    } catch (err) {
+      if (resolved.hasUserCredential) {
+        await markCredentialUsed(userId, "error", String(err).slice(0, 500));
+      }
+      throw err;
+    }
 
     // Extract the score we proposed (look at agent_actions row inserted in this run)
     const { data: scoreAction } = await supabase

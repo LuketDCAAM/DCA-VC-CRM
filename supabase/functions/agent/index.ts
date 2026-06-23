@@ -7,11 +7,11 @@ import {
   tool,
   type UIMessage,
 } from "npm:ai@6.0.182";
-import { createOpenAICompatible } from "npm:@ai-sdk/openai-compatible@2.0.47";
 import { z } from "npm:zod@4.4.3";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { researchTools } from "../_shared/research-tools.ts";
 import { normalizeDomain as normalizeDomainShared } from "../_shared/action-schemas.ts";
+import { resolveUserModel, markCredentialUsed } from "../_shared/ai-provider.ts";
 import { loadPrompt } from "./prompt-loader.ts";
 
 const HISTORY_LIMIT = 20; // last N messages sent to the model
@@ -23,14 +23,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
 };
 
-const gateway = createOpenAICompatible({
-  name: "lovable",
-  baseURL: "https://ai.gateway.lovable.dev/v1",
-  headers: {
-    "Lovable-API-Key": Deno.env.get("LOVABLE_API_KEY") ?? "",
-    "X-Lovable-AIG-SDK": "vercel-ai-sdk",
-  },
-});
+// Model is resolved per-request from the caller's BYOK Anthropic key, or
+// falls back to the Lovable AI Gateway. See _shared/ai-provider.ts.
 
 const PIPELINE_STAGES = [
   "Inactive", "Watchlist", "Initial Review", "Scorecard", "Decision Making",
@@ -255,6 +249,10 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Resolve which AI model to use (caller's own Claude key if connected,
+    // otherwise the Lovable AI Gateway default).
+    const resolved = await resolveUserModel({ userId, fallbackModelId: "google/gemini-3-flash-preview" });
+
     // Create an agent_runs row for this turn
     const { data: runRow } = await supabase
       .from("agent_runs")
@@ -264,7 +262,7 @@ Deno.serve(async (req) => {
         trigger: "chat",
         thread_id: threadId ?? null,
         status: "running",
-        model: "google/gemini-3-flash-preview",
+        model: `${resolved.provider}:${resolved.modelId}`,
       })
       .select("id")
       .single();
@@ -922,13 +920,16 @@ Deno.serve(async (req) => {
     };
 
     const result = streamText({
-      model: gateway("google/gemini-3-flash-preview"),
+      model: resolved.model,
       system: await getSystemPrompt(),
       messages: await convertToModelMessages(trimHistory(messages)),
       tools,
       stopWhen: stepCountIs(50),
       abortSignal: req.signal,
       onFinish: async ({ usage }) => {
+        if (resolved.hasUserCredential) {
+          await markCredentialUsed(userId, "ok");
+        }
         if (!runId) return;
         await supabase
           .from("agent_runs")
@@ -942,6 +943,9 @@ Deno.serve(async (req) => {
       },
       onError: async ({ error }) => {
         console.error("agent stream error", error);
+        if (resolved.hasUserCredential) {
+          await markCredentialUsed(userId, "error", String(error).slice(0, 500));
+        }
         if (runId) {
           await supabase
             .from("agent_runs")
@@ -954,6 +958,7 @@ Deno.serve(async (req) => {
         }
       },
     });
+
 
     return result.toUIMessageStreamResponse({
       headers: corsHeaders,

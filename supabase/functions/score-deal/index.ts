@@ -1,13 +1,13 @@
 // Score deal: generates an AI-drafted scorecard from deal context + uploaded sources.
 // Returns a partial scorecard patch (narrative + qualitative ratings) for human review.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { callSingleTool } from "../_shared/ai-provider.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -62,9 +62,6 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    if (!LOVABLE_API_KEY) {
-      return json({ error: "LOVABLE_API_KEY not configured" }, 500);
-    }
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return json({ error: "Missing auth" }, 401);
 
@@ -217,44 +214,26 @@ Deno.serve(async (req) => {
       callLines || "(no call notes yet)",
     ].join("\n");
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: "You are a rigorous, evidence-driven VC analyst. Output JSON only." },
-          { role: "user", content: prompt },
-        ],
-        tools: [{
-          type: "function",
-          function: {
-            name: "submit_scorecard_draft",
-            description: "Submit the drafted scorecard fields",
-            parameters: RESPONSE_SCHEMA,
-          },
-        }],
-        tool_choice: { type: "function", function: { name: "submit_scorecard_draft" } },
-      }),
-    });
-
-    if (aiRes.status === 429) return json({ error: "Rate limited — try again shortly" }, 429);
-    if (aiRes.status === 402) return json({ error: "AI credits exhausted. Add credits in Lovable settings." }, 402);
-    if (!aiRes.ok) {
-      const text = await aiRes.text();
-      await admin.from("analyst_runs").update({ status: "failed", error: text.slice(0, 1000), completed_at: new Date().toISOString() }).eq("id", run?.id ?? "");
-      return json({ error: "AI request failed", details: text.slice(0, 500) }, 502);
+    let draft: Record<string, unknown>;
+    try {
+      const out = await callSingleTool({
+        userId: user.id,
+        system: "You are a rigorous, evidence-driven VC analyst. Output JSON only.",
+        user: prompt,
+        toolName: "submit_scorecard_draft",
+        toolDescription: "Submit the drafted scorecard fields",
+        parameters: RESPONSE_SCHEMA as unknown as Record<string, unknown>,
+        fallbackModelId: "google/gemini-2.5-flash",
+      });
+      draft = out.args;
+    } catch (e) {
+      const err = e as Error & { status?: number };
+      await admin.from("analyst_runs").update({ status: "failed", error: err.message.slice(0, 1000), completed_at: new Date().toISOString() }).eq("id", run?.id ?? "");
+      if (err.status === 429) return json({ error: "Rate limited \u2014 try again shortly" }, 429);
+      if (err.status === 402) return json({ error: "AI credits exhausted. Connect your own Claude key in Settings \u2192 Integrations." }, 402);
+      if (err.status === 401) return json({ error: "Your Claude API key was rejected. Reconnect it in Settings \u2192 Integrations." }, 401);
+      return json({ error: err.message || "AI request failed" }, 502);
     }
-
-    const aiJson = await aiRes.json();
-    const toolCall = aiJson.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) {
-      return json({ error: "No tool call in AI response" }, 502);
-    }
-    const draft = JSON.parse(toolCall.function.arguments);
 
     // Persist as draft (do not auto-approve)
     const patch: Record<string, unknown> = {
