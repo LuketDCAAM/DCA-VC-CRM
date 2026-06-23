@@ -18,9 +18,11 @@ type AICred = {
   last_used_at: string | null;
   last_status: string | null;
   last_error: string | null;
+  is_default: boolean;
   created_at: string;
   updated_at: string;
 };
+
 
 type ModelOpt = { value: string; label: string };
 
