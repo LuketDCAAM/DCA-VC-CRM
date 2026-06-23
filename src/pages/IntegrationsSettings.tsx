@@ -118,6 +118,7 @@ export default function IntegrationsSettings() {
 
   useEffect(() => {
     load();
+    loadAiCred();
     // After OAuth redirect back
     const url = new URL(window.location.href);
     if (url.searchParams.get('notion') === 'success') {
@@ -238,6 +239,144 @@ export default function IntegrationsSettings() {
                   <>Connect Notion <ExternalLink className="h-4 w-4 ml-2" /></>
                 )}
               </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Claude / Anthropic BYOK */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" />
+                Claude (Anthropic)
+                {aiCred && <CheckCircle2 className="h-5 w-5 text-green-600" />}
+              </CardTitle>
+              <CardDescription>
+                Run every AI feature in this app — the assistant, scorecard fills, analyst runs — on your own
+                Anthropic account. Usage is billed directly to your Claude account, not to shared credits.
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {aiLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading…
+            </div>
+          ) : aiCred ? (
+            <>
+              <div className="flex items-center gap-3 p-3 rounded-md border bg-muted/30">
+                <div className="flex-1">
+                  <div className="font-medium flex items-center gap-2">
+                    Key ending in <code className="px-1.5 py-0.5 rounded bg-muted text-xs">…{aiCred.last_4}</code>
+                    {aiCred.last_status === 'ok' && <Badge variant="secondary">Healthy</Badge>}
+                    {aiCred.last_status === 'error' && <Badge variant="destructive">Error</Badge>}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Model: {aiCred.default_model} · Connected {new Date(aiCred.created_at).toLocaleDateString()}
+                    {aiCred.last_used_at && ` · Last used ${new Date(aiCred.last_used_at).toLocaleString()}`}
+                  </div>
+                  {aiCred.last_error && (
+                    <div className="mt-2 text-xs text-destructive flex items-start gap-1">
+                      <AlertCircle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+                      <span>{aiCred.last_error}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-md border p-4 space-y-3">
+                <div className="text-sm font-medium">Update key or model</div>
+                <div className="space-y-2">
+                  <Label htmlFor="ai-model">Default model</Label>
+                  <Select value={model} onValueChange={setModel}>
+                    <SelectTrigger id="ai-model"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CLAUDE_MODELS.map((m) => (
+                        <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ai-key">New API key (optional — leave blank to keep current)</Label>
+                  <Input
+                    id="ai-key"
+                    type="password"
+                    placeholder="sk-ant-…"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    autoComplete="off"
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <Button onClick={handleSaveAi} disabled={saving || !apiKey.trim()}>
+                    {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                    Save & verify
+                  </Button>
+                  <Button variant="destructive" onClick={handleDisconnectAi} disabled={saving}>
+                    Disconnect
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  To change only the model, re-paste your key with the new model selected.
+                </p>
+              </div>
+            </>
+          ) : (
+            <>
+              <ol className="text-sm space-y-2 list-decimal pl-5 text-muted-foreground">
+                <li>
+                  Go to{' '}
+                  <a
+                    href="https://console.anthropic.com/settings/keys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary underline"
+                  >
+                    console.anthropic.com → API keys <ExternalLink className="inline h-3 w-3" />
+                  </a>
+                  {' '}and create a new key.
+                </li>
+                <li>Copy the key (starts with <code>sk-ant-</code>) and paste it below.</li>
+                <li>We'll send one tiny verification request to Anthropic, then store the key encrypted.</li>
+                <li>From then on every AI call in the app uses your account.</li>
+              </ol>
+
+              <div className="space-y-3 rounded-md border p-4">
+                <div className="space-y-2">
+                  <Label htmlFor="ai-key-new">Anthropic API key</Label>
+                  <Input
+                    id="ai-key-new"
+                    type="password"
+                    placeholder="sk-ant-…"
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                    autoComplete="off"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ai-model-new">Default model</Label>
+                  <Select value={model} onValueChange={setModel}>
+                    <SelectTrigger id="ai-model-new"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CLAUDE_MODELS.map((m) => (
+                        <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={handleSaveAi} disabled={saving || !apiKey.trim()}>
+                  {saving ? (
+                    <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Verifying…</>
+                  ) : (
+                    <>Connect Claude</>
+                  )}
+                </Button>
+              </div>
             </>
           )}
         </CardContent>
