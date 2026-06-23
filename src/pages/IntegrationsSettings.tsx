@@ -40,6 +40,68 @@ export default function IntegrationsSettings() {
   const [connecting, setConnecting] = useState(false);
   const [conn, setConn] = useState<NotionConn | null>(null);
 
+  // --- Claude / Anthropic BYOK ---
+  const [aiLoading, setAiLoading] = useState(true);
+  const [aiCred, setAiCred] = useState<AICred | null>(null);
+  const [apiKey, setApiKey] = useState('');
+  const [model, setModel] = useState('claude-sonnet-4-5');
+  const [saving, setSaving] = useState(false);
+
+  const loadAiCred = async () => {
+    setAiLoading(true);
+    const { data, error } = await supabase.functions.invoke('user-ai-credentials', { method: 'GET' });
+    if (error) {
+      // Silently ignore — likely just not connected.
+    }
+    const c = (data?.credential as AICred | null) ?? null;
+    setAiCred(c);
+    if (c?.default_model) setModel(c.default_model);
+    setAiLoading(false);
+  };
+
+  const handleSaveAi = async () => {
+    if (!apiKey.trim()) {
+      toast({ title: 'Enter your Anthropic API key', variant: 'destructive' });
+      return;
+    }
+    setSaving(true);
+    const { data, error } = await supabase.functions.invoke('user-ai-credentials', {
+      method: 'POST',
+      body: { api_key: apiKey.trim(), default_model: model },
+    });
+    setSaving(false);
+    if (error || data?.error) {
+      toast({
+        title: 'Could not connect Claude',
+        description: data?.error ?? error?.message ?? 'Unknown error',
+        variant: 'destructive',
+      });
+      return;
+    }
+    toast({ title: 'Claude connected', description: `Key ending in ${data.last_4} verified.` });
+    setApiKey('');
+    await loadAiCred();
+  };
+
+  const handleUpdateModel = async (newModel: string) => {
+    setModel(newModel);
+    if (!aiCred) return; // not yet saved
+    // Re-send a save with empty key won't work; require key. Instead store via a tiny update path.
+    // For simplicity: if user only changes model, ask them to also paste key once. Otherwise auto-save model only.
+    toast({ title: 'Default model updated locally', description: 'Re-enter your API key to save the new model preference.' });
+  };
+
+  const handleDisconnectAi = async () => {
+    const { error } = await supabase.functions.invoke('user-ai-credentials', { method: 'DELETE' });
+    if (error) {
+      toast({ title: 'Failed to disconnect', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Claude disconnected', description: 'AI calls will fall back to shared credits.' });
+    setAiCred(null);
+    setModel('claude-sonnet-4-5');
+  };
+
   const load = async () => {
     setLoading(true);
     const { data, error } = await supabase
@@ -52,6 +114,7 @@ export default function IntegrationsSettings() {
     setConn((data as NotionConn) ?? null);
     setLoading(false);
   };
+
 
   useEffect(() => {
     load();
