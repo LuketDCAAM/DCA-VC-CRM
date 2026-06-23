@@ -83,13 +83,6 @@ export default function IntegrationsSettings() {
     await loadAiCred();
   };
 
-  const handleUpdateModel = async (newModel: string) => {
-    setModel(newModel);
-    if (!aiCred) return; // not yet saved
-    // Re-send a save with empty key won't work; require key. Instead store via a tiny update path.
-    // For simplicity: if user only changes model, ask them to also paste key once. Otherwise auto-save model only.
-    toast({ title: 'Default model updated locally', description: 'Re-enter your API key to save the new model preference.' });
-  };
 
   const handleDisconnectAi = async () => {
     const { error } = await supabase.functions.invoke('user-ai-credentials', { method: 'DELETE' });
