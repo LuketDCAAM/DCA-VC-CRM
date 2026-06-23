@@ -7,11 +7,11 @@ import {
   tool,
   type UIMessage,
 } from "npm:ai@6.0.182";
-import { createOpenAICompatible } from "npm:@ai-sdk/openai-compatible@2.0.47";
 import { z } from "npm:zod@4.4.3";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { researchTools } from "../_shared/research-tools.ts";
 import { normalizeDomain as normalizeDomainShared } from "../_shared/action-schemas.ts";
+import { resolveUserModel, markCredentialUsed } from "../_shared/ai-provider.ts";
 import { loadPrompt } from "./prompt-loader.ts";
 
 const HISTORY_LIMIT = 20; // last N messages sent to the model
@@ -23,14 +23,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
 };
 
-const gateway = createOpenAICompatible({
-  name: "lovable",
-  baseURL: "https://ai.gateway.lovable.dev/v1",
-  headers: {
-    "Lovable-API-Key": Deno.env.get("LOVABLE_API_KEY") ?? "",
-    "X-Lovable-AIG-SDK": "vercel-ai-sdk",
-  },
-});
+// Model is resolved per-request from the caller's BYOK Anthropic key, or
+// falls back to the Lovable AI Gateway. See _shared/ai-provider.ts.
 
 const PIPELINE_STAGES = [
   "Inactive", "Watchlist", "Initial Review", "Scorecard", "Decision Making",
