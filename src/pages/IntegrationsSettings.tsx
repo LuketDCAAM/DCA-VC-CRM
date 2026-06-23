@@ -28,11 +28,22 @@ type AICred = {
   updated_at: string;
 };
 
-const CLAUDE_MODELS = [
-  { value: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5 (recommended)' },
-  { value: 'claude-opus-4-5', label: 'Claude Opus 4.5 (most capable)' },
+// Fallback model list used before the user connects a key, or if Anthropic's
+// Models API is unreachable. Kept in rough "most current first" order so the
+// recommended default stays at the top. Once a key is connected we replace this
+// with the live list from Anthropic's /v1/models endpoint, so new releases
+// (Opus 4.9, Sonnet 5, Haiku 5, etc.) appear automatically.
+type ClaudeModel = { value: string; label: string };
+const FALLBACK_CLAUDE_MODELS: ClaudeModel[] = [
+  { value: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6 (recommended — best speed/quality)' },
+  { value: 'claude-opus-4-8', label: 'Claude Opus 4.8 (most capable)' },
   { value: 'claude-haiku-4-5', label: 'Claude Haiku 4.5 (fastest / cheapest)' },
+  { value: 'claude-fable-5', label: 'Claude Fable 5 (frontier reasoning)' },
+  { value: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5' },
+  { value: 'claude-opus-4-5', label: 'Claude Opus 4.5' },
 ];
+const DEFAULT_MODEL = FALLBACK_CLAUDE_MODELS[0].value;
+
 
 export default function IntegrationsSettings() {
   const { toast } = useToast();
