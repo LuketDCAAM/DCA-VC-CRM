@@ -1,10 +1,10 @@
 // Analyst agent — scores a single deal vs the investment thesis.
 // POST { dealId, trigger?: 'manual'|'auto' }
-import { generateText, stepCountIs, tool } from "npm:ai@6.0.182";
 import { createOpenAICompatible } from "npm:@ai-sdk/openai-compatible@2.0.47";
 import { z } from "npm:zod@4.4.3";
 import { createClient } from "npm:@supabase/supabase-js@2";
 import { researchTools } from "../_shared/research-tools.ts";
+import { resolveUserModel, markCredentialUsed } from "../_shared/ai-provider.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +12,8 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
-const gateway = createOpenAICompatible({
+// gateway kept available for any non-BYOK callers via resolveUserModel fallback.
+const _gateway = createOpenAICompatible({
   name: "lovable",
   baseURL: "https://ai.gateway.lovable.dev/v1",
   headers: {
