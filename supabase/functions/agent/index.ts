@@ -249,6 +249,10 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Resolve which AI model to use (caller's own Claude key if connected,
+    // otherwise the Lovable AI Gateway default).
+    const resolved = await resolveUserModel({ userId, fallbackModelId: "google/gemini-3-flash-preview" });
+
     // Create an agent_runs row for this turn
     const { data: runRow } = await supabase
       .from("agent_runs")
@@ -258,7 +262,7 @@ Deno.serve(async (req) => {
         trigger: "chat",
         thread_id: threadId ?? null,
         status: "running",
-        model: "google/gemini-3-flash-preview",
+        model: `${resolved.provider}:${resolved.modelId}`,
       })
       .select("id")
       .single();
