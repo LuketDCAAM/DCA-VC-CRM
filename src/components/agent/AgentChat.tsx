@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
@@ -6,7 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, ChevronDown, ChevronRight, Wrench, StopCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Send, ChevronDown, ChevronRight, Wrench, StopCircle, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { InlineApprovalCards } from "@/components/agent/InlineApprovalCards";
 
@@ -17,8 +18,41 @@ interface AgentChatProps {
 
 const FUNCTIONS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agent`;
 
+type ProviderId = "anthropic" | "openai" | "google";
+type ConnectedProvider = { provider: ProviderId; default_model: string; is_default: boolean };
+
+const PROVIDER_LABELS: Record<ProviderId, string> = {
+  anthropic: "Claude",
+  openai: "ChatGPT",
+  google: "Gemini",
+};
+
 export function AgentChat({ threadId, initialMessages }: AgentChatProps) {
   const [input, setInput] = useState("");
+  const [providers, setProviders] = useState<ConnectedProvider[]>([]);
+  const [selectedProvider, setSelectedProvider] = useState<ProviderId | "default">("default");
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      const { data } = await supabase
+        .from("user_ai_credentials")
+        .select("provider, default_model, is_default")
+        .order("provider");
+      if (cancelled) return;
+      const rows = (data ?? []).filter(
+        (r): r is ConnectedProvider =>
+          r.provider === "anthropic" || r.provider === "openai" || r.provider === "google",
+      );
+      setProviders(rows);
+    };
+    load();
+    const onChange = () => load();
+    window.addEventListener("ai-creds-changed", onChange);
+    return () => { cancelled = true; window.removeEventListener("ai-creds-changed", onChange); };
+  }, []);
+
+  const defaultProvider = providers.find((p) => p.is_default);
 
   const { messages, sendMessage, status, stop, error } = useChat({
     id: threadId,
@@ -29,13 +63,13 @@ export function AgentChat({ threadId, initialMessages }: AgentChatProps) {
         const { data: { session } } = await supabase.auth.getSession();
         const headers = new Headers(options?.headers);
         if (session?.access_token) headers.set("Authorization", `Bearer ${session.access_token}`);
-        // Inject threadId into request body
         const bodyText = options?.body ? String(options.body) : "{}";
         const parsed = JSON.parse(bodyText);
+        const providerOverride = selectedProvider === "default" ? undefined : selectedProvider;
         return fetch(url, {
           ...options,
           headers,
-          body: JSON.stringify({ ...parsed, threadId }),
+          body: JSON.stringify({ ...parsed, threadId, providerOverride }),
         });
       },
     }),
@@ -49,6 +83,7 @@ export function AgentChat({ threadId, initialMessages }: AgentChatProps) {
   };
 
   const isBusy = status === "streaming" || status === "submitted";
+
 
   return (
     <div className="flex flex-col h-full">
