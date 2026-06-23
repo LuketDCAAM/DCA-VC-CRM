@@ -2,8 +2,12 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CheckCircle2, ExternalLink } from 'lucide-react';
+import { Loader2, CheckCircle2, ExternalLink, AlertCircle, Sparkles } from 'lucide-react';
 
 type NotionConn = {
   id: string;
@@ -12,6 +16,23 @@ type NotionConn = {
   created_at: string;
   last_synced_at: string | null;
 };
+
+type AICred = {
+  provider: string;
+  last_4: string;
+  default_model: string;
+  last_used_at: string | null;
+  last_status: string | null;
+  last_error: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+const CLAUDE_MODELS = [
+  { value: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5 (recommended)' },
+  { value: 'claude-opus-4-5', label: 'Claude Opus 4.5 (most capable)' },
+  { value: 'claude-haiku-4-5', label: 'Claude Haiku 4.5 (fastest / cheapest)' },
+];
 
 export default function IntegrationsSettings() {
   const { toast } = useToast();
