@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
     if (req.method === "GET") {
       let q = admin
         .from("user_ai_credentials")
-        .select("provider, last_4, default_model, last_used_at, last_status, last_error, created_at, updated_at")
+        .select("provider, last_4, default_model, last_used_at, last_status, last_error, is_default, created_at, updated_at")
         .eq("user_id", userId);
       if (providerParam && isProvider(providerParam)) q = q.eq("provider", providerParam);
       const { data } = await q;
@@ -185,12 +185,45 @@ Deno.serve(async (req) => {
     // ----- DELETE: remove a single provider -----
     if (req.method === "DELETE") {
       if (!isProvider(providerParam)) return json({ error: "Provider required" }, 400);
-      await admin
+      const { data: removed } = await admin
         .from("user_ai_credentials")
         .delete()
         .eq("user_id", userId)
-        .eq("provider", providerParam);
+        .eq("provider", providerParam)
+        .select("is_default")
+        .maybeSingle();
+      // If we removed the default, promote the most-recently-updated remaining cred.
+      if (removed?.is_default) {
+        const { data: next } = await admin
+          .from("user_ai_credentials")
+          .select("provider")
+          .eq("user_id", userId)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (next?.provider) {
+          await admin.from("user_ai_credentials")
+            .update({ is_default: true })
+            .eq("user_id", userId).eq("provider", next.provider);
+        }
+      }
       return json({ ok: true });
+    }
+
+    // ----- POST ?action=set-default ----
+    if (req.method === "POST" && action === "set-default") {
+      const body = await req.json().catch(() => ({})) as { provider?: Provider };
+      const provider = body.provider;
+      if (!isProvider(provider)) return json({ error: "Invalid provider" }, 400);
+      // Clear other defaults first (avoid unique index conflict), then set the chosen one.
+      await admin.from("user_ai_credentials")
+        .update({ is_default: false })
+        .eq("user_id", userId).neq("provider", provider);
+      const { error: upErr } = await admin.from("user_ai_credentials")
+        .update({ is_default: true })
+        .eq("user_id", userId).eq("provider", provider);
+      if (upErr) return json({ error: upErr.message }, 500);
+      return json({ ok: true, provider });
     }
 
     // ----- POST: upsert + validate -----
@@ -215,6 +248,14 @@ Deno.serve(async (req) => {
         return json({ error: msg, details: check.body.slice(0, 300) }, 400);
       }
 
+      // Auto-promote to default if this user has no default yet.
+      const { data: existingDefault } = await admin
+        .from("user_ai_credentials")
+        .select("provider")
+        .eq("user_id", userId).eq("is_default", true)
+        .maybeSingle();
+      const shouldBeDefault = !existingDefault;
+
       const last_4 = apiKey.slice(-4);
       const { error: upsertErr } = await admin
         .from("user_ai_credentials")
@@ -227,11 +268,13 @@ Deno.serve(async (req) => {
           last_used_at: new Date().toISOString(),
           last_status: "ok",
           last_error: null,
+          ...(shouldBeDefault ? { is_default: true } : {}),
         }, { onConflict: "user_id,provider" });
       if (upsertErr) return json({ error: upsertErr.message }, 500);
 
-      return json({ ok: true, provider, last_4, default_model: model });
+      return json({ ok: true, provider, last_4, default_model: model, is_default: shouldBeDefault });
     }
+
 
     return json({ error: "Method not allowed" }, 405);
   } catch (e) {
