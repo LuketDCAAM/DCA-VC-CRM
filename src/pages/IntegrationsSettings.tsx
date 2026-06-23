@@ -55,8 +55,27 @@ export default function IntegrationsSettings() {
   const [aiLoading, setAiLoading] = useState(true);
   const [aiCred, setAiCred] = useState<AICred | null>(null);
   const [apiKey, setApiKey] = useState('');
-  const [model, setModel] = useState('claude-sonnet-4-5');
+  const [model, setModel] = useState(DEFAULT_MODEL);
   const [saving, setSaving] = useState(false);
+  const [models, setModels] = useState<ClaudeModel[]>(FALLBACK_CLAUDE_MODELS);
+  const [refreshingModels, setRefreshingModels] = useState(false);
+
+  const refreshModels = async (candidateKey?: string) => {
+    setRefreshingModels(true);
+    try {
+      const { data } = await supabase.functions.invoke('user-ai-credentials?action=list-models', {
+        method: 'POST',
+        body: { api_key: candidateKey?.trim() || undefined },
+      });
+      const live = (data?.models as Array<{ id: string; label: string }> | undefined) ?? [];
+      if (live.length > 0) {
+        setModels(live.map((m) => ({ value: m.id, label: m.label })));
+      }
+    } finally {
+      setRefreshingModels(false);
+    }
+  };
+
 
   const loadAiCred = async () => {
     setAiLoading(true);
