@@ -181,7 +181,7 @@ function AIProviderCard({ config }: { config: ProviderConfig }) {
     }
     toast({ title: `${config.title} connected`, description: `Key ending in ${data.last_4} verified.` });
     setApiKey('');
-    await load();
+    window.dispatchEvent(new CustomEvent('ai-creds-changed'));
   };
 
   const handleDisconnect = async () => {
@@ -198,12 +198,30 @@ function AIProviderCard({ config }: { config: ProviderConfig }) {
     setApiKey('');
     setModel(config.fallbackModels[0].value);
     setModels(config.fallbackModels);
+    window.dispatchEvent(new CustomEvent('ai-creds-changed'));
+  };
+
+  const handleMakeDefault = async () => {
+    const { data, error } = await supabase.functions.invoke(
+      'user-ai-credentials?action=set-default',
+      { method: 'POST', body: { provider: config.id } },
+    );
+    if (error || data?.error) {
+      toast({ title: 'Could not set default', description: data?.error ?? error?.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: `${config.title} is now your default model` });
+    window.dispatchEvent(new CustomEvent('ai-creds-changed'));
   };
 
   useEffect(() => {
     load();
+    const onChange = () => load();
+    window.addEventListener('ai-creds-changed', onChange);
+    return () => window.removeEventListener('ai-creds-changed', onChange);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.id]);
+
 
   return (
     <Card>
