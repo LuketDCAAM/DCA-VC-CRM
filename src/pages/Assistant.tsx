@@ -87,10 +87,11 @@ export default function Assistant() {
       {/* Sidebar */}
       <aside className="w-64 border-r flex flex-col bg-muted/30">
         <div className="p-3 border-b">
-          <Button onClick={handleNew} disabled={creating} className="w-full" size="sm">
-            <Plus className="h-4 w-4 mr-2" /> New conversation
+          <Button onClick={handleNewBlank} className="w-full" size="sm" variant={!threadId ? "default" : "outline"}>
+            <Plus className="h-4 w-4 mr-2" /> New chat
           </Button>
         </div>
+
         <ScrollArea className="flex-1">
           <div className="p-2 space-y-1">
             {threads.map((t) => (
