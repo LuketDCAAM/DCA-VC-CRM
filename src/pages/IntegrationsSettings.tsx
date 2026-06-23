@@ -28,11 +28,22 @@ type AICred = {
   updated_at: string;
 };
 
-const CLAUDE_MODELS = [
-  { value: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5 (recommended)' },
-  { value: 'claude-opus-4-5', label: 'Claude Opus 4.5 (most capable)' },
+// Fallback model list used before the user connects a key, or if Anthropic's
+// Models API is unreachable. Kept in rough "most current first" order so the
+// recommended default stays at the top. Once a key is connected we replace this
+// with the live list from Anthropic's /v1/models endpoint, so new releases
+// (Opus 4.9, Sonnet 5, Haiku 5, etc.) appear automatically.
+type ClaudeModel = { value: string; label: string };
+const FALLBACK_CLAUDE_MODELS: ClaudeModel[] = [
+  { value: 'claude-sonnet-4-6', label: 'Claude Sonnet 4.6 (recommended — best speed/quality)' },
+  { value: 'claude-opus-4-8', label: 'Claude Opus 4.8 (most capable)' },
   { value: 'claude-haiku-4-5', label: 'Claude Haiku 4.5 (fastest / cheapest)' },
+  { value: 'claude-fable-5', label: 'Claude Fable 5 (frontier reasoning)' },
+  { value: 'claude-sonnet-4-5', label: 'Claude Sonnet 4.5' },
+  { value: 'claude-opus-4-5', label: 'Claude Opus 4.5' },
 ];
+const DEFAULT_MODEL = FALLBACK_CLAUDE_MODELS[0].value;
+
 
 export default function IntegrationsSettings() {
   const { toast } = useToast();
@@ -44,8 +55,27 @@ export default function IntegrationsSettings() {
   const [aiLoading, setAiLoading] = useState(true);
   const [aiCred, setAiCred] = useState<AICred | null>(null);
   const [apiKey, setApiKey] = useState('');
-  const [model, setModel] = useState('claude-sonnet-4-5');
+  const [model, setModel] = useState(DEFAULT_MODEL);
   const [saving, setSaving] = useState(false);
+  const [models, setModels] = useState<ClaudeModel[]>(FALLBACK_CLAUDE_MODELS);
+  const [refreshingModels, setRefreshingModels] = useState(false);
+
+  const refreshModels = async (candidateKey?: string) => {
+    setRefreshingModels(true);
+    try {
+      const { data } = await supabase.functions.invoke('user-ai-credentials?action=list-models', {
+        method: 'POST',
+        body: { api_key: candidateKey?.trim() || undefined },
+      });
+      const live = (data?.models as Array<{ id: string; label: string }> | undefined) ?? [];
+      if (live.length > 0) {
+        setModels(live.map((m) => ({ value: m.id, label: m.label })));
+      }
+    } finally {
+      setRefreshingModels(false);
+    }
+  };
+
 
   const loadAiCred = async () => {
     setAiLoading(true);
@@ -57,7 +87,9 @@ export default function IntegrationsSettings() {
     setAiCred(c);
     if (c?.default_model) setModel(c.default_model);
     setAiLoading(false);
+    if (c) refreshModels(); // pull live model list using stored key
   };
+
 
   const handleSaveAi = async () => {
     if (!apiKey.trim()) {
@@ -92,7 +124,7 @@ export default function IntegrationsSettings() {
     }
     toast({ title: 'Claude disconnected', description: 'AI calls will fall back to shared credits.' });
     setAiCred(null);
-    setModel('claude-sonnet-4-5');
+    setModel(DEFAULT_MODEL);
   };
 
   const load = async () => {
@@ -288,7 +320,7 @@ export default function IntegrationsSettings() {
                   <Select value={model} onValueChange={setModel}>
                     <SelectTrigger id="ai-model"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {CLAUDE_MODELS.map((m) => (
+                      {models.map((m) => (
                         <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
                       ))}
                     </SelectContent>
@@ -321,23 +353,52 @@ export default function IntegrationsSettings() {
             </>
           ) : (
             <>
-              <ol className="text-sm space-y-2 list-decimal pl-5 text-muted-foreground">
-                <li>
-                  Go to{' '}
-                  <a
-                    href="https://console.anthropic.com/settings/keys"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary underline"
-                  >
-                    console.anthropic.com → API keys <ExternalLink className="inline h-3 w-3" />
-                  </a>
-                  {' '}and create a new key.
-                </li>
-                <li>Copy the key (starts with <code>sk-ant-</code>) and paste it below.</li>
-                <li>We'll send one tiny verification request to Anthropic, then store the key encrypted.</li>
-                <li>From then on every AI call in the app uses your account.</li>
-              </ol>
+              <div className="rounded-md border bg-muted/30 p-4 text-sm space-y-2">
+                <div className="font-medium">How to connect your Claude account</div>
+                <ol className="space-y-2 list-decimal pl-5 text-muted-foreground">
+                  <li>
+                    Sign in to the{' '}
+                    <a
+                      href="https://console.anthropic.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline inline-flex items-center gap-1"
+                    >
+                      Anthropic Console <ExternalLink className="h-3 w-3" />
+                    </a>
+                    . If this is a new account, you'll need to verify your email and phone number.
+                  </li>
+                  <li>
+                    Add a payment method under{' '}
+                    <a
+                      href="https://console.anthropic.com/settings/billing"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline inline-flex items-center gap-1"
+                    >
+                      Settings → Billing <ExternalLink className="h-3 w-3" />
+                    </a>
+                    {' '}and load at least a few dollars of credit. Anthropic charges per token; this app will use whatever your account has available.
+                  </li>
+                  <li>
+                    Open{' '}
+                    <a
+                      href="https://console.anthropic.com/settings/keys"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline inline-flex items-center gap-1"
+                    >
+                      Settings → API keys <ExternalLink className="h-3 w-3" />
+                    </a>
+                    , click <strong>Create Key</strong>, name it (e.g. "DCA VC CRM"), and copy the value — it starts with <code className="px-1 py-0.5 rounded bg-background text-xs">sk-ant-</code>. Anthropic only shows it once.
+                  </li>
+                  <li>Paste it below and pick a default model. We'll send one tiny request to Anthropic to verify the key works, then store it encrypted on the server. The key is never returned to your browser again.</li>
+                  <li>From then on every AI feature in the app — the assistant, scorecard fills, analyst runs, deal scoring — runs on your account and is billed directly by Anthropic. Disconnect any time to fall back to shared credits.</li>
+                </ol>
+                <p className="text-xs text-muted-foreground pt-1">
+                  Tip: in the Anthropic Console you can set a monthly spend limit on the key so usage can't run away.
+                </p>
+              </div>
 
               <div className="space-y-3 rounded-md border p-4">
                 <div className="space-y-2">
@@ -348,15 +409,22 @@ export default function IntegrationsSettings() {
                     placeholder="sk-ant-…"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
+                    onBlur={() => apiKey.startsWith('sk-ant-') && refreshModels(apiKey)}
                     autoComplete="off"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Tab out of this field and we'll fetch the live list of models your account has access to.
+                  </p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="ai-model-new">Default model</Label>
+                  <Label htmlFor="ai-model-new" className="flex items-center gap-2">
+                    Default model
+                    {refreshingModels && <Loader2 className="h-3 w-3 animate-spin" />}
+                  </Label>
                   <Select value={model} onValueChange={setModel}>
                     <SelectTrigger id="ai-model-new"><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {CLAUDE_MODELS.map((m) => (
+                      {models.map((m) => (
                         <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
                       ))}
                     </SelectContent>
@@ -371,6 +439,7 @@ export default function IntegrationsSettings() {
                 </Button>
               </div>
             </>
+
           )}
         </CardContent>
       </Card>

@@ -14,11 +14,13 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-const ALLOWED_MODELS = new Set([
-  "claude-sonnet-4-5",
-  "claude-opus-4-5",
-  "claude-haiku-4-5",
-]);
+// Any claude-* model the caller's Anthropic account exposes is allowed.
+// We validate by calling Anthropic's own Models API rather than maintaining a hardcoded allowlist,
+// so new Claude releases work automatically.
+function isPlausibleClaudeModel(m: string) {
+  return /^claude-[a-z0-9-]+$/i.test(m) && m.length <= 80;
+}
+
 
 function json(b: unknown, status = 200) {
   return new Response(JSON.stringify(b), {
@@ -60,6 +62,36 @@ Deno.serve(async (req) => {
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+    const url = new URL(req.url);
+    const action = url.searchParams.get("action");
+
+    // List models available to the caller's Anthropic account. Optionally accept a
+    // candidate api_key (when the user hasn't connected yet) so the UI can populate
+    // the model dropdown before saving.
+    if (req.method === "POST" && action === "list-models") {
+      const body = await req.json().catch(() => ({})) as { api_key?: string };
+      let apiKey = (body.api_key ?? "").trim();
+      if (!apiKey) {
+        const { data: existing } = await admin
+          .from("user_ai_credentials")
+          .select("encrypted_api_key")
+          .eq("user_id", userId)
+          .eq("provider", "anthropic")
+          .maybeSingle();
+        apiKey = (existing?.encrypted_api_key as string | undefined) ?? "";
+      }
+      if (!apiKey) return json({ models: [] });
+      const res = await fetch("https://api.anthropic.com/v1/models?limit=100", {
+        headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
+      });
+      if (!res.ok) return json({ models: [], error: `Anthropic returned ${res.status}` }, 200);
+      const payload = await res.json() as { data?: Array<{ id: string; display_name?: string; created_at?: string }> };
+      const models = (payload.data ?? [])
+        .filter((m) => m.id?.startsWith("claude-"))
+        .map((m) => ({ id: m.id, label: m.display_name ?? m.id, created_at: m.created_at }));
+      return json({ models });
+    }
+
     if (req.method === "GET") {
       const { data } = await admin
         .from("user_ai_credentials")
@@ -87,9 +119,10 @@ Deno.serve(async (req) => {
       if (!apiKey || !apiKey.startsWith("sk-ant-")) {
         return json({ error: "Please enter a valid Anthropic API key (starts with sk-ant-)." }, 400);
       }
-      if (!ALLOWED_MODELS.has(model)) {
-        return json({ error: `Model ${model} is not supported.` }, 400);
+      if (!isPlausibleClaudeModel(model)) {
+        return json({ error: `Model "${model}" doesn't look like a Claude model id.` }, 400);
       }
+
 
       const check = await validateAnthropicKey(apiKey, model);
       if (!check.ok) {
