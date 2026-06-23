@@ -14,6 +14,7 @@ import { InlineApprovalCards } from "@/components/agent/InlineApprovalCards";
 interface AgentChatProps {
   threadId: string;
   initialMessages: UIMessage[];
+  initialPrompt?: string;
 }
 
 const FUNCTIONS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agent`;
@@ -27,10 +28,11 @@ const PROVIDER_LABELS: Record<ProviderId, string> = {
   google: "Gemini",
 };
 
-export function AgentChat({ threadId, initialMessages }: AgentChatProps) {
+export function AgentChat({ threadId, initialMessages, initialPrompt }: AgentChatProps) {
   const [input, setInput] = useState("");
   const [providers, setProviders] = useState<ConnectedProvider[]>([]);
   const [selectedProvider, setSelectedProvider] = useState<ProviderId | "default">("default");
+  const autoSentRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -75,6 +77,16 @@ export function AgentChat({ threadId, initialMessages }: AgentChatProps) {
     }),
   });
 
+  // Auto-send a prompt handed in from the empty-state composer, exactly once per thread.
+  useEffect(() => {
+    if (autoSentRef.current) return;
+    if (!initialPrompt?.trim()) return;
+    if (initialMessages.length > 0) return;
+    autoSentRef.current = true;
+    sendMessage({ text: initialPrompt });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [threadId]);
+
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || status === "streaming" || status === "submitted") return;
@@ -83,6 +95,7 @@ export function AgentChat({ threadId, initialMessages }: AgentChatProps) {
   };
 
   const isBusy = status === "streaming" || status === "submitted";
+
 
 
   return (
