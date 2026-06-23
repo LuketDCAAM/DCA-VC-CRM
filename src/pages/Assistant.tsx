@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAgentThreads } from "@/hooks/agent/useAgentThreads";
 import { useAgentMessages } from "@/hooks/agent/useAgentMessages";
 import { AgentChat } from "@/components/agent/AgentChat";
@@ -8,24 +8,33 @@ import { useAgentActions } from "@/hooks/agent/useAgentActions";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plus,
   MessageSquare,
   Trash2,
-  Sparkles,
   Inbox,
   PanelRightClose,
   PanelRightOpen,
   CheckCheck,
   Loader2,
+  Send,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
+const SUGGESTIONS = [
+  "Which deals haven't moved in 30 days?",
+  "Summarize the latest call notes for our top priority deals",
+  "Find investors for a seed-stage AI infrastructure deal",
+  "Create a follow-up task for next Tuesday",
+];
+
 export default function Assistant() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { threadId } = useParams<{ threadId: string }>();
   const { threads, loading, createThread, deleteThread } = useAgentThreads();
   const { initialMessages, loading: messagesLoading } = useAgentMessages(threadId ?? null);
@@ -35,21 +44,29 @@ export default function Assistant() {
   const { actions, applyMany, rejectMany } = useAgentActions(tab);
   const [bulk, setBulk] = useState(false);
   const [bulkReject, setBulkReject] = useState(false);
+  const [draft, setDraft] = useState("");
 
-  useEffect(() => {
-    if (loading) return;
-    if (threadId) return;
-    if (threads.length > 0) {
-      navigate(`/assistant/${threads[0].id}`, { replace: true });
-    }
-  }, [loading, threads, threadId, navigate]);
+  const initialPrompt = (location.state as { initialPrompt?: string } | null)?.initialPrompt;
 
-  const handleNew = async () => {
-    setCreating(true);
-    const t = await createThread();
-    setCreating(false);
-    if (t) navigate(`/assistant/${t.id}`);
+  const goNew = () => navigate("/assistant");
+
+  const handleNewBlank = async () => {
+    goNew();
   };
+
+  const startNewChat = async (prompt: string) => {
+    const text = prompt.trim();
+    if (!text || creating) return;
+    setCreating(true);
+    const title = text.length > 60 ? `${text.slice(0, 57)}…` : text;
+    const t = await createThread(title);
+    setCreating(false);
+    if (t) {
+      setDraft("");
+      navigate(`/assistant/${t.id}`, { state: { initialPrompt: text } });
+    }
+  };
+
 
   const approveAll = async () => {
     setBulk(true);
