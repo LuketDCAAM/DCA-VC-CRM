@@ -1,55 +1,58 @@
+## Goal
 
-# Notion → Call Notes Integration
+Let each user paste their own Anthropic API key so every AI call the app makes (agent chat, scorecard fill, analyst run, deal scoring) runs on Claude under **their** account and is billed to **them**, not to the workspace's Lovable AI credits.
 
-The existing workspace Notion connector authenticates only the workspace owner. Since every user needs to bring their own Notion workspace/transcripts, we need a **per-user OAuth** flow (not the Lovable connector). This will be built in phases.
+Quick terminology note: this isn't actually MCP — MCP is for exposing tools to an AI client like Claude Desktop. What you're describing is "bring your own key" (BYOK) for the app's existing AI agent. The plan below implements BYOK; happy to also add a real MCP server later if you want Claude Desktop to reach into the CRM.
 
-## Phase 1 — Notion OAuth (per user)
+## What we'll build
 
-**You'll need to do once (outside Lovable):**
-1. Create a public Notion integration at https://www.notion.so/profile/integrations
-2. Set redirect URI to `https://arfyltduzmkrzdxjnodb.supabase.co/functions/v1/notion-oauth-callback`
-3. Provide `NOTION_OAUTH_CLIENT_ID` and `NOTION_OAUTH_CLIENT_SECRET` as secrets
+### 1. Per-user credentials storage
+New table `user_ai_credentials`:
+- `user_id` (PK, FK to auth)
+- `provider` ('anthropic' for now, leaves room for openai/gemini later)
+- `api_key` (encrypted via pgsodium; only accessible to the owning user and service role)
+- `default_model` (e.g. `claude-sonnet-4-5`, `claude-opus-4-5`, `claude-haiku-4-5`)
+- `created_at`, `updated_at`, `last_used_at`, `last_status`
 
-**Build:**
-- New table `user_notion_connections` (user_id, access_token (encrypted), workspace_id, workspace_name, workspace_icon, bot_id, connected_at) with RLS so each user sees only their own row
-- Edge function `notion-oauth-start` — generates state, returns Notion auth URL
-- Edge function `notion-oauth-callback` — exchanges code for token, stores row, redirects back to `/settings/integrations`
-- Settings page `/settings/integrations` with "Connect Notion" / "Disconnect" UI showing workspace name + icon
+RLS: user can only see/update their own row. Service role (edge functions) reads to make calls.
 
-## Phase 2 — Source selection
+### 2. Settings UI
+New section in Profile / Settings:
+- "Connect your Claude account" panel
+- Input for Anthropic API key (masked, with link to console.anthropic.com)
+- Model dropdown (Sonnet / Opus / Haiku)
+- "Test connection" button (calls a small edge function that pings Anthropic with the key)
+- Status badge: Connected / Not connected / Last error
+- Disconnect button
 
-Once connected, the user picks where call notes live in Notion:
-- Edge function `notion-list-sources` — uses the user's token to search pages/databases the integration has access to
-- UI to pick a database (preferred — structured) or parent page; persist selection in `user_notion_connections.source_config` JSON (e.g. `{ type: 'database', id, title_prop, date_prop, content_prop, deal_prop }`)
-- Property mapper UI: map Notion DB columns → `title`, `call_date`, `content`, optional `deal` link
+### 3. Edge function changes
+Add a shared helper `_shared/ai-provider.ts` that, given the caller's user id:
+1. Looks up their `user_ai_credentials`
+2. If a valid Anthropic key exists, returns an `@ai-sdk/anthropic` model bound to that key
+3. Otherwise falls back to the existing Lovable AI gateway (or returns an error, configurable)
 
-## Phase 3 — Import / sync
+Wire this helper into:
+- `agent/index.ts` (chat agent — `streamText` / tools)
+- `fill-scorecard-blanks/index.ts`
+- `analyst-run/index.ts`
+- `score-deal/index.ts`
 
-- Edge function `notion-sync-call-notes` — pulls pages from the selected source (paginated, `last_edited_time` cursor), converts blocks → markdown, upserts into `call_notes`
-- Dedup table `notion_sync_state` (user_id, notion_page_id → call_note_id, last_edited_time)
-- Deal matching strategies (in order): explicit Notion relation/select → fuzzy match on company name → unassigned bucket the user can triage
-- Trigger paths:
-  - Manual "Sync now" button on `/settings/integrations` and on the call-notes panel
-  - Scheduled cron (every 15 min) via `supabase/config.toml` cron
-- Sync log table for visibility (rows imported, errors, last run)
+Each function updates `last_used_at` / `last_status` after a call so the settings UI can show health.
 
-## Phase 4 — Transcripts & enrichment (later)
+### 4. UX in chat
+- If the user has no key connected, the agent shows a one-time banner: "Using shared AI credits — connect your Claude account in Settings to use your own."
+- Errors from Anthropic (401, 429, quota) surface as friendly inline messages with a link back to settings.
 
-- Detect transcript blocks (toggle named "Transcript", child page, or specific property) and store separately on `call_notes` (new `transcript` column)
-- Pipe transcripts into the scorecard AI draft (already reads from `call_notes`) — no extra work once stored
-- Optional: support Granola / Fireflies as additional sources later, same per-user OAuth pattern
+## Technical details
 
-## Technical notes
+- Use `npm:@ai-sdk/anthropic` inside Deno edge functions — same AI SDK shape as today, only the model factory changes, so existing tool-calling / streaming code stays intact.
+- Encryption: use pgsodium `pgp_sym_encrypt`/`decrypt` with a key stored in vault; edge functions decrypt via a `SECURITY DEFINER` SQL function scoped to the calling user.
+- No key ever returned to the browser after save — UI only shows "•••• last 4".
+- Audit: a `user_ai_credentials_events` log row on connect / disconnect / test / failure.
+- Models exposed initially: `claude-sonnet-4-5` (default), `claude-opus-4-5`, `claude-haiku-4-5`. Configurable list in one place.
 
-- Token storage: encrypt at rest using pgsodium or a `SERVICE_ROLE`-only edge function path; never expose token to client
-- All Notion API calls go from edge functions using the user's stored token directly (NOT the Lovable connector gateway — gateway is workspace-scoped to the builder's account)
-- RLS: `user_notion_connections` policies = `auth.uid() = user_id` for select/delete; insert only via edge function with service role
-- Rate limit Notion (3 req/s) — batch with small delays in sync function
+## Out of scope (ask if you want them)
 
-## Open questions
-
-1. Do users keep call notes in a **Notion database** (structured, recommended) or free-form pages under a parent? Database makes mapping much cleaner.
-2. How should we link a Notion call note to a deal? Options: (a) a Notion relation/select property the user maps, (b) auto-match by company name, (c) manual triage after import.
-3. Sync frequency: every 15 min cron OK, or do you want webhook-style on-demand only?
-
-I'll wait for the Notion integration credentials and your answers above before starting Phase 1.
+- Real MCP server exposing CRM data to Claude Desktop
+- OpenAI / Gemini BYOK (table is structured to allow it later)
+- Per-call cost tracking dashboard
