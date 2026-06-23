@@ -14,11 +14,13 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-const ALLOWED_MODELS = new Set([
-  "claude-sonnet-4-5",
-  "claude-opus-4-5",
-  "claude-haiku-4-5",
-]);
+// Any claude-* model the caller's Anthropic account exposes is allowed.
+// We validate by calling Anthropic's own Models API rather than maintaining a hardcoded allowlist,
+// so new Claude releases work automatically.
+function isPlausibleClaudeModel(m: string) {
+  return /^claude-[a-z0-9-]+$/i.test(m) && m.length <= 80;
+}
+
 
 function json(b: unknown, status = 200) {
   return new Response(JSON.stringify(b), {
