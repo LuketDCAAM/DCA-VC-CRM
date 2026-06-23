@@ -265,14 +265,23 @@ Be concise and skeptical. Do not invent facts — if research returned nothing u
 
     const prompt = `${thesisBlock}\n${dealBlock}\n\nProduce the analysis now.`;
 
-    const result = await generateText({
-      model: gateway("google/gemini-3-flash-preview"),
-      system: SYSTEM,
-      prompt,
-      tools,
-      stopWhen: stepCountIs(50),
-      abortSignal: req.signal,
-    });
+    let result;
+    try {
+      result = await generateText({
+        model: resolved.model,
+        system: SYSTEM,
+        prompt,
+        tools,
+        stopWhen: stepCountIs(50),
+        abortSignal: req.signal,
+      });
+      if (resolved.hasUserCredential) await markCredentialUsed(userId, "ok");
+    } catch (err) {
+      if (resolved.hasUserCredential) {
+        await markCredentialUsed(userId, "error", String(err).slice(0, 500));
+      }
+      throw err;
+    }
 
     // Extract the score we proposed (look at agent_actions row inserted in this run)
     const { data: scoreAction } = await supabase
