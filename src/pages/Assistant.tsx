@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAgentThreads } from "@/hooks/agent/useAgentThreads";
 import { useAgentMessages } from "@/hooks/agent/useAgentMessages";
 import { AgentChat } from "@/components/agent/AgentChat";
@@ -8,24 +8,33 @@ import { useAgentActions } from "@/hooks/agent/useAgentActions";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Plus,
   MessageSquare,
   Trash2,
-  Sparkles,
   Inbox,
   PanelRightClose,
   PanelRightOpen,
   CheckCheck,
   Loader2,
+  Send,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 
+const SUGGESTIONS = [
+  "Which deals haven't moved in 30 days?",
+  "Summarize the latest call notes for our top priority deals",
+  "Find investors for a seed-stage AI infrastructure deal",
+  "Create a follow-up task for next Tuesday",
+];
+
 export default function Assistant() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { threadId } = useParams<{ threadId: string }>();
   const { threads, loading, createThread, deleteThread } = useAgentThreads();
   const { initialMessages, loading: messagesLoading } = useAgentMessages(threadId ?? null);
@@ -35,21 +44,29 @@ export default function Assistant() {
   const { actions, applyMany, rejectMany } = useAgentActions(tab);
   const [bulk, setBulk] = useState(false);
   const [bulkReject, setBulkReject] = useState(false);
+  const [draft, setDraft] = useState("");
 
-  useEffect(() => {
-    if (loading) return;
-    if (threadId) return;
-    if (threads.length > 0) {
-      navigate(`/assistant/${threads[0].id}`, { replace: true });
-    }
-  }, [loading, threads, threadId, navigate]);
+  const initialPrompt = (location.state as { initialPrompt?: string } | null)?.initialPrompt;
 
-  const handleNew = async () => {
-    setCreating(true);
-    const t = await createThread();
-    setCreating(false);
-    if (t) navigate(`/assistant/${t.id}`);
+  const goNew = () => navigate("/assistant");
+
+  const handleNewBlank = async () => {
+    goNew();
   };
+
+  const startNewChat = async (prompt: string) => {
+    const text = prompt.trim();
+    if (!text || creating) return;
+    setCreating(true);
+    const title = text.length > 60 ? `${text.slice(0, 57)}…` : text;
+    const t = await createThread(title);
+    setCreating(false);
+    if (t) {
+      setDraft("");
+      navigate(`/assistant/${t.id}`, { state: { initialPrompt: text } });
+    }
+  };
+
 
   const approveAll = async () => {
     setBulk(true);
@@ -70,10 +87,11 @@ export default function Assistant() {
       {/* Sidebar */}
       <aside className="w-64 border-r flex flex-col bg-muted/30">
         <div className="p-3 border-b">
-          <Button onClick={handleNew} disabled={creating} className="w-full" size="sm">
-            <Plus className="h-4 w-4 mr-2" /> New conversation
+          <Button onClick={handleNewBlank} className="w-full" size="sm" variant={!threadId ? "default" : "outline"}>
+            <Plus className="h-4 w-4 mr-2" /> New chat
           </Button>
         </div>
+
         <ScrollArea className="flex-1">
           <div className="p-2 space-y-1">
             {threads.map((t) => (
@@ -113,23 +131,70 @@ export default function Assistant() {
       {/* Chat */}
       <main className="flex-1 flex flex-col min-w-0 relative">
         {!threadId ? (
-          <div className="flex-1 flex items-center justify-center text-center">
-            <div>
-              <Sparkles className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-              <h2 className="text-lg font-semibold mb-2">CRM Assistant</h2>
-              <p className="text-sm text-muted-foreground mb-4">
-                Start a conversation to query, analyze, and act on your pipeline.
-              </p>
-              <Button onClick={handleNew} disabled={creating}>
-                <Plus className="h-4 w-4 mr-2" /> New conversation
-              </Button>
+          <div className="flex-1 flex flex-col items-center justify-center px-4">
+            <div className="w-full max-w-2xl space-y-6">
+              <div className="text-center space-y-2">
+                <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
+                  How can I help?
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Ask anything about your pipeline, portfolio, investors, or tasks.
+                </p>
+              </div>
+
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  startNewChat(draft);
+                }}
+                className="rounded-2xl border bg-background shadow-sm focus-within:ring-2 focus-within:ring-ring/40 transition"
+              >
+                <Textarea
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      startNewChat(draft);
+                    }
+                  }}
+                  placeholder="Message the assistant…"
+                  className="min-h-[64px] max-h-48 resize-none border-0 focus-visible:ring-0 shadow-none bg-transparent px-4 py-3"
+                  autoFocus
+                />
+                <div className="flex items-center justify-end px-2 pb-2">
+                  <Button type="submit" size="icon" disabled={!draft.trim() || creating}>
+                    {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </form>
+
+              <div className="grid sm:grid-cols-2 gap-2">
+                {SUGGESTIONS.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => startNewChat(s)}
+                    disabled={creating}
+                    className="text-left text-sm rounded-lg border px-3 py-2 hover:bg-muted/50 transition disabled:opacity-60"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : messagesLoading ? (
           <div className="text-center text-sm text-muted-foreground py-12">Loading...</div>
         ) : (
-          <AgentChat key={threadId} threadId={threadId} initialMessages={initialMessages} />
+          <AgentChat
+            key={threadId}
+            threadId={threadId}
+            initialMessages={initialMessages}
+            initialPrompt={initialPrompt}
+          />
         )}
+
         {!approvalsOpen && (
           <Button
             variant="outline"
