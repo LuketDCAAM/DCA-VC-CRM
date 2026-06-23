@@ -928,7 +928,7 @@ Deno.serve(async (req) => {
       abortSignal: req.signal,
       onFinish: async ({ usage }) => {
         if (resolved.hasUserCredential) {
-          await markCredentialUsed(userId, "ok");
+          await markCredentialUsed(userId, resolved.provider as any, "ok");
         }
         if (!runId) return;
         await supabase
@@ -944,7 +944,7 @@ Deno.serve(async (req) => {
       onError: async ({ error }) => {
         console.error("agent stream error", error);
         if (resolved.hasUserCredential) {
-          await markCredentialUsed(userId, "error", String(error).slice(0, 500));
+          await markCredentialUsed(userId, resolved.provider as any, "error", String(error).slice(0, 500));
         }
         if (runId) {
           await supabase

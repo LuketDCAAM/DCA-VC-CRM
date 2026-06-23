@@ -1,7 +1,9 @@
-// Manage a user's own Anthropic (Claude) API key.
-//   GET    -> returns metadata for the calling user (no key returned)
-//   POST   -> { api_key, default_model? } validates against Anthropic, then upserts
-//   DELETE -> removes the credential
+// Manage a user's own AI API keys (Anthropic, OpenAI, Google).
+//   GET    ?provider=...                       -> metadata (or list of all if no provider)
+//   POST   ?action=list-models { provider, api_key? }
+//   POST   { provider, api_key, default_model? } -> validate + upsert
+//   DELETE ?provider=...                       -> remove credential
+
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -14,13 +16,27 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-// Any claude-* model the caller's Anthropic account exposes is allowed.
-// We validate by calling Anthropic's own Models API rather than maintaining a hardcoded allowlist,
-// so new Claude releases work automatically.
-function isPlausibleClaudeModel(m: string) {
-  return /^claude-[a-z0-9-]+$/i.test(m) && m.length <= 80;
-}
+type Provider = "anthropic" | "openai" | "google";
+const PROVIDERS: Provider[] = ["anthropic", "openai", "google"];
 
+const DEFAULT_MODEL: Record<Provider, string> = {
+  anthropic: "claude-sonnet-4-6",
+  openai: "gpt-5-mini",
+  google: "gemini-2.5-flash",
+};
+
+const KEY_PREFIX: Record<Provider, RegExp> = {
+  // Anthropic keys start with sk-ant-.
+  anthropic: /^sk-ant-/,
+  // OpenAI: sk-... (sk-proj-, sk-svcacct-, sk-... legacy)
+  openai: /^sk-[A-Za-z0-9_-]+/,
+  // Google AI Studio keys are opaque alnum strings, typically starting "AIza".
+  google: /^[A-Za-z0-9_\-]{20,}$/,
+};
+
+function isProvider(p: unknown): p is Provider {
+  return typeof p === "string" && PROVIDERS.includes(p as Provider);
+}
 
 function json(b: unknown, status = 200) {
   return new Response(JSON.stringify(b), {
@@ -29,23 +45,89 @@ function json(b: unknown, status = 200) {
   });
 }
 
-async function validateAnthropicKey(apiKey: string, model: string) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "x-api-key": apiKey,
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: 8,
-      messages: [{ role: "user", content: "ping" }],
-    }),
-  });
-  const text = await res.text();
-  return { ok: res.ok, status: res.status, body: text };
+// ---------- Validation: ping each provider's models endpoint ----------
+
+async function validateKey(provider: Provider, apiKey: string, model: string) {
+  if (provider === "anthropic") {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": apiKey,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        max_tokens: 8,
+        messages: [{ role: "user", content: "ping" }],
+      }),
+    });
+    return { ok: res.ok, status: res.status, body: await res.text() };
+  }
+  if (provider === "openai") {
+    const res = await fetch("https://api.openai.com/v1/models", {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+    return { ok: res.ok, status: res.status, body: await res.text() };
+  }
+  // google
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`,
+  );
+  return { ok: res.ok, status: res.status, body: await res.text() };
 }
+
+// ---------- Live model listing per provider ----------
+
+type LiveModel = { id: string; label: string };
+
+async function listModels(provider: Provider, apiKey: string): Promise<LiveModel[]> {
+  if (provider === "anthropic") {
+    const res = await fetch("https://api.anthropic.com/v1/models?limit=100", {
+      headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
+    });
+    if (!res.ok) return [];
+    const j = await res.json() as {
+      data?: Array<{ id: string; display_name?: string }>;
+    };
+    return (j.data ?? [])
+      .filter((m) => m.id?.startsWith("claude-"))
+      .map((m) => ({ id: m.id, label: m.display_name ?? m.id }));
+  }
+  if (provider === "openai") {
+    const res = await fetch("https://api.openai.com/v1/models", {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+    if (!res.ok) return [];
+    const j = await res.json() as { data?: Array<{ id: string }> };
+    return (j.data ?? [])
+      .map((m) => m.id)
+      // Chat-capable model families
+      .filter((id) => /^(gpt-|o[0-9])/.test(id))
+      // Drop fine-tunes and obviously non-chat models
+      .filter((id) => !/(audio|tts|whisper|embedding|image|realtime|moderation|search|davinci|babbage|curie|ada)/i.test(id))
+      .sort()
+      .reverse()
+      .map((id) => ({ id, label: id }));
+  }
+  // google
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`,
+  );
+  if (!res.ok) return [];
+  const j = await res.json() as {
+    models?: Array<{ name: string; displayName?: string; supportedGenerationMethods?: string[] }>;
+  };
+  return (j.models ?? [])
+    .filter((m) => m.supportedGenerationMethods?.includes("generateContent"))
+    .map((m) => ({
+      id: m.name.replace(/^models\//, ""),
+      label: m.displayName ?? m.name.replace(/^models\//, ""),
+    }))
+    .filter((m) => m.id.startsWith("gemini-"));
+}
+
+// ---------------------------------------------------------------------
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -61,75 +143,75 @@ Deno.serve(async (req) => {
     if (!userId) return json({ error: "Unauthorized" }, 401);
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
     const url = new URL(req.url);
     const action = url.searchParams.get("action");
+    const providerParam = url.searchParams.get("provider");
 
-    // List models available to the caller's Anthropic account. Optionally accept a
-    // candidate api_key (when the user hasn't connected yet) so the UI can populate
-    // the model dropdown before saving.
+    // ----- list-models (uses stored key, or candidate from body) -----
     if (req.method === "POST" && action === "list-models") {
-      const body = await req.json().catch(() => ({})) as { api_key?: string };
+      const body = await req.json().catch(() => ({})) as {
+        provider?: Provider; api_key?: string;
+      };
+      const provider = body.provider;
+      if (!isProvider(provider)) return json({ error: "Invalid provider" }, 400);
       let apiKey = (body.api_key ?? "").trim();
       if (!apiKey) {
         const { data: existing } = await admin
           .from("user_ai_credentials")
           .select("encrypted_api_key")
           .eq("user_id", userId)
-          .eq("provider", "anthropic")
+          .eq("provider", provider)
           .maybeSingle();
         apiKey = (existing?.encrypted_api_key as string | undefined) ?? "";
       }
       if (!apiKey) return json({ models: [] });
-      const res = await fetch("https://api.anthropic.com/v1/models?limit=100", {
-        headers: { "x-api-key": apiKey, "anthropic-version": "2023-06-01" },
-      });
-      if (!res.ok) return json({ models: [], error: `Anthropic returned ${res.status}` }, 200);
-      const payload = await res.json() as { data?: Array<{ id: string; display_name?: string; created_at?: string }> };
-      const models = (payload.data ?? [])
-        .filter((m) => m.id?.startsWith("claude-"))
-        .map((m) => ({ id: m.id, label: m.display_name ?? m.id, created_at: m.created_at }));
-      return json({ models });
+      return json({ models: await listModels(provider, apiKey) });
     }
 
+    // ----- GET: metadata for one provider or all -----
     if (req.method === "GET") {
-      const { data } = await admin
+      let q = admin
         .from("user_ai_credentials")
         .select("provider, last_4, default_model, last_used_at, last_status, last_error, created_at, updated_at")
-        .eq("user_id", userId)
-        .eq("provider", "anthropic")
-        .maybeSingle();
-      return json({ credential: data });
+        .eq("user_id", userId);
+      if (providerParam && isProvider(providerParam)) q = q.eq("provider", providerParam);
+      const { data } = await q;
+      if (providerParam) {
+        return json({ credential: (data?.[0] as unknown) ?? null });
+      }
+      return json({ credentials: data ?? [] });
     }
 
+    // ----- DELETE: remove a single provider -----
     if (req.method === "DELETE") {
+      if (!isProvider(providerParam)) return json({ error: "Provider required" }, 400);
       await admin
         .from("user_ai_credentials")
         .delete()
         .eq("user_id", userId)
-        .eq("provider", "anthropic");
+        .eq("provider", providerParam);
       return json({ ok: true });
     }
 
+    // ----- POST: upsert + validate -----
     if (req.method === "POST") {
-      const body = await req.json() as { api_key?: string; default_model?: string };
+      const body = await req.json() as {
+        provider?: Provider; api_key?: string; default_model?: string;
+      };
+      const provider = body.provider;
+      if (!isProvider(provider)) return json({ error: "Invalid provider" }, 400);
       const apiKey = (body.api_key ?? "").trim();
-      const model = (body.default_model ?? "claude-sonnet-4-5").trim();
-
-      if (!apiKey || !apiKey.startsWith("sk-ant-")) {
-        return json({ error: "Please enter a valid Anthropic API key (starts with sk-ant-)." }, 400);
-      }
-      if (!isPlausibleClaudeModel(model)) {
-        return json({ error: `Model "${model}" doesn't look like a Claude model id.` }, 400);
+      const model = (body.default_model ?? DEFAULT_MODEL[provider]).trim();
+      if (!apiKey || !KEY_PREFIX[provider].test(apiKey)) {
+        return json({ error: `That doesn't look like a valid ${provider} API key.` }, 400);
       }
 
-
-      const check = await validateAnthropicKey(apiKey, model);
+      const check = await validateKey(provider, apiKey, model);
       if (!check.ok) {
-        let msg = `Anthropic rejected the key (${check.status}).`;
-        if (check.status === 401) msg = "Anthropic says this API key is invalid.";
-        else if (check.status === 429) msg = "Anthropic rate-limited the test request. The key may still be valid — try again in a moment.";
-        else if (check.status === 404) msg = `Model "${model}" is not available on this Anthropic account.`;
+        let msg = `${provider} rejected the key (${check.status}).`;
+        if (check.status === 401 || check.status === 403) msg = `${provider} says this API key is invalid or lacks permission.`;
+        else if (check.status === 429) msg = `${provider} rate-limited the test request. The key may still be valid — try again in a moment.`;
+        else if (check.status === 404) msg = `Model "${model}" is not available on this ${provider} account.`;
         return json({ error: msg, details: check.body.slice(0, 300) }, 400);
       }
 
@@ -138,7 +220,7 @@ Deno.serve(async (req) => {
         .from("user_ai_credentials")
         .upsert({
           user_id: userId,
-          provider: "anthropic",
+          provider,
           encrypted_api_key: apiKey,
           last_4,
           default_model: model,
@@ -148,7 +230,7 @@ Deno.serve(async (req) => {
         }, { onConflict: "user_id,provider" });
       if (upsertErr) return json({ error: upsertErr.message }, 500);
 
-      return json({ ok: true, last_4, default_model: model });
+      return json({ ok: true, provider, last_4, default_model: model });
     }
 
     return json({ error: "Method not allowed" }, 405);
