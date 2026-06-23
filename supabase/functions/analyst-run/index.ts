@@ -275,10 +275,10 @@ Be concise and skeptical. Do not invent facts — if research returned nothing u
         stopWhen: stepCountIs(50),
         abortSignal: req.signal,
       });
-      if (resolved.hasUserCredential) await markCredentialUsed(userId, "ok");
+      if (resolved.hasUserCredential) await markCredentialUsed(userId, resolved.provider as any, "ok");
     } catch (err) {
       if (resolved.hasUserCredential) {
-        await markCredentialUsed(userId, "error", String(err).slice(0, 500));
+        await markCredentialUsed(userId, resolved.provider as any, "error", String(err).slice(0, 500));
       }
       throw err;
     }
