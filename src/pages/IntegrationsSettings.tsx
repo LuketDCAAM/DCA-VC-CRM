@@ -246,6 +246,7 @@ function AIProviderCard({ config }: { config: ProviderConfig }) {
                   Key ending in <code className="px-1.5 py-0.5 rounded bg-muted text-xs">…{cred.last_4}</code>
                   {cred.last_status === 'ok' && <Badge variant="secondary">Healthy</Badge>}
                   {cred.last_status === 'error' && <Badge variant="destructive">Error</Badge>}
+                  {cred.is_default && <Badge className="bg-primary text-primary-foreground">Default</Badge>}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   Model: {cred.default_model} · Connected {new Date(cred.created_at).toLocaleDateString()}
@@ -258,6 +259,11 @@ function AIProviderCard({ config }: { config: ProviderConfig }) {
                   </div>
                 )}
               </div>
+              {!cred.is_default && (
+                <Button size="sm" variant="outline" onClick={handleMakeDefault}>
+                  Make default
+                </Button>
+              )}
             </div>
 
             <div className="rounded-md border p-4 space-y-3">
@@ -295,6 +301,7 @@ function AIProviderCard({ config }: { config: ProviderConfig }) {
                   Disconnect
                 </Button>
               </div>
+
               <p className="text-xs text-muted-foreground">
                 To change only the model, re-paste your key with the new model selected.
               </p>
