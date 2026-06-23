@@ -115,31 +115,58 @@ export function AgentChat({ threadId, initialMessages }: AgentChatProps) {
       </ScrollArea>
 
       <form onSubmit={onSubmit} className="border-t p-3 bg-background">
-        <div className="max-w-3xl mx-auto flex gap-2 items-end">
-          <Textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                onSubmit(e);
-              }
-            }}
-            placeholder="Ask the assistant..."
-            className="min-h-[52px] max-h-32 resize-none"
-            autoFocus
-          />
-          {isBusy ? (
-            <Button type="button" size="icon" variant="secondary" onClick={() => stop()}>
-              <StopCircle className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button type="submit" size="icon" disabled={!input.trim()}>
-              <Send className="h-4 w-4" />
-            </Button>
-          )}
+        <div className="max-w-3xl mx-auto space-y-2">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>Model:</span>
+            <Select value={selectedProvider} onValueChange={(v) => setSelectedProvider(v as ProviderId | "default")}>
+              <SelectTrigger className="h-7 w-auto min-w-[180px] text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default">
+                  {defaultProvider
+                    ? `Default (${PROVIDER_LABELS[defaultProvider.provider]} · ${defaultProvider.default_model})`
+                    : "Default (Lovable AI)"}
+                </SelectItem>
+                {providers.map((p) => (
+                  <SelectItem key={p.provider} value={p.provider}>
+                    {PROVIDER_LABELS[p.provider]} · {p.default_model}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {providers.length === 0 && (
+              <a href="/settings/integrations" className="underline ml-auto">Connect your own keys</a>
+            )}
+          </div>
+          <div className="flex gap-2 items-end">
+            <Textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  onSubmit(e);
+                }
+              }}
+              placeholder="Ask the assistant..."
+              className="min-h-[52px] max-h-32 resize-none"
+              autoFocus
+            />
+            {isBusy ? (
+              <Button type="button" size="icon" variant="secondary" onClick={() => stop()}>
+                <StopCircle className="h-4 w-4" />
+              </Button>
+            ) : (
+              <Button type="submit" size="icon" disabled={!input.trim()}>
+                <Send className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
       </form>
+
     </div>
   );
 }
