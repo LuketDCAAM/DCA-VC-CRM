@@ -1,13 +1,13 @@
 // Fill scorecard blanks: ask AI to extract values from call notes + attachments
 // for ONLY the fields that are currently empty on the scorecard.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { callSingleTool } from "../_shared/ai-provider.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -74,7 +74,6 @@ const NARRATIVE_FIELDS: Record<string, string> = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
-    if (!LOVABLE_API_KEY) return json({ error: "LOVABLE_API_KEY not configured" }, 500);
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return json({ error: "Missing auth" }, 401);
 
@@ -206,44 +205,26 @@ Deno.serve(async (req) => {
       callLines || "(none)",
     ].join("\n");
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_API_KEY}` },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: "You are a rigorous VC analyst. Return null for any field not supported by evidence." },
-          { role: "user", content: prompt },
-        ],
-        tools: [{
-          type: "function",
-          function: {
-            name: "fill_blanks",
-            description: "Fill blank scorecard fields using evidence from notes and attachments.",
-            parameters: schema,
-          },
-        }],
-        tool_choice: { type: "function", function: { name: "fill_blanks" } },
-      }),
-    });
-
-    if (aiRes.status === 429) return json({ error: "Rate limited — try again shortly" }, 429);
-    if (aiRes.status === 402) return json({ error: "AI credits exhausted. Add credits in Lovable settings." }, 402);
-    if (!aiRes.ok) {
-      const text = await aiRes.text();
-      return json({ error: "AI request failed", details: text.slice(0, 500) }, 502);
-    }
-
-    const aiJson = await aiRes.json();
-    const toolCall = aiJson.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) return json({ error: "No tool call in AI response" }, 502);
-
     let draft: Record<string, unknown>;
     try {
-      draft = JSON.parse(toolCall.function.arguments);
-    } catch {
-      return json({ error: "AI returned invalid JSON" }, 502);
+      const out = await callSingleTool({
+        userId: user.id,
+        system: "You are a rigorous VC analyst. Return null for any field not supported by evidence.",
+        user: prompt,
+        toolName: "fill_blanks",
+        toolDescription: "Fill blank scorecard fields using evidence from notes and attachments.",
+        parameters: schema,
+        fallbackModelId: "google/gemini-2.5-flash",
+      });
+      draft = out.args;
+    } catch (e) {
+      const err = e as Error & { status?: number };
+      if (err.status === 429) return json({ error: "Rate limited \u2014 try again shortly" }, 429);
+      if (err.status === 402) return json({ error: "AI credits exhausted. Connect your own Claude key in Settings \u2192 Integrations." }, 402);
+      if (err.status === 401) return json({ error: "Your Claude API key was rejected. Reconnect it in Settings \u2192 Integrations." }, 401);
+      return json({ error: err.message || "AI request failed" }, 502);
     }
+
 
     // Apply only to still-blank fields
     const patch: Record<string, unknown> = {};
