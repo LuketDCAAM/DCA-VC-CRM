@@ -1,5 +1,6 @@
 // Analyst agent — scores a single deal vs the investment thesis.
 // POST { dealId, trigger?: 'manual'|'auto' }
+import { generateText, stepCountIs, tool } from "npm:ai@6.0.182";
 import { createOpenAICompatible } from "npm:@ai-sdk/openai-compatible@2.0.47";
 import { z } from "npm:zod@4.4.3";
 import { createClient } from "npm:@supabase/supabase-js@2";
@@ -88,6 +89,9 @@ Deno.serve(async (req) => {
       .single();
     const runId = runRow?.id as string | undefined;
 
+    // Resolve model — caller's BYOK Claude key or Lovable gateway fallback.
+    const resolved = await resolveUserModel({ userId, fallbackModelId: "google/gemini-3-flash-preview" });
+
     // Also create an agent_runs row so proposals show up in the standard panel
     const { data: agentRun } = await supabase
       .from("agent_runs")
@@ -96,7 +100,7 @@ Deno.serve(async (req) => {
         agent_type: "analyst",
         trigger,
         status: "running",
-        model: "google/gemini-3-flash-preview",
+        model: `${resolved.provider}:${resolved.modelId}`,
       })
       .select("id")
       .single();
