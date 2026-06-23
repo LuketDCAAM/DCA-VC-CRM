@@ -87,7 +87,9 @@ export default function IntegrationsSettings() {
     setAiCred(c);
     if (c?.default_model) setModel(c.default_model);
     setAiLoading(false);
+    if (c) refreshModels(); // pull live model list using stored key
   };
+
 
   const handleSaveAi = async () => {
     if (!apiKey.trim()) {
