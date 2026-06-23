@@ -18,9 +18,11 @@ type AICred = {
   last_used_at: string | null;
   last_status: string | null;
   last_error: string | null;
+  is_default: boolean;
   created_at: string;
   updated_at: string;
 };
+
 
 type ModelOpt = { value: string; label: string };
 
@@ -179,7 +181,7 @@ function AIProviderCard({ config }: { config: ProviderConfig }) {
     }
     toast({ title: `${config.title} connected`, description: `Key ending in ${data.last_4} verified.` });
     setApiKey('');
-    await load();
+    window.dispatchEvent(new CustomEvent('ai-creds-changed'));
   };
 
   const handleDisconnect = async () => {
@@ -196,12 +198,30 @@ function AIProviderCard({ config }: { config: ProviderConfig }) {
     setApiKey('');
     setModel(config.fallbackModels[0].value);
     setModels(config.fallbackModels);
+    window.dispatchEvent(new CustomEvent('ai-creds-changed'));
+  };
+
+  const handleMakeDefault = async () => {
+    const { data, error } = await supabase.functions.invoke(
+      'user-ai-credentials?action=set-default',
+      { method: 'POST', body: { provider: config.id } },
+    );
+    if (error || data?.error) {
+      toast({ title: 'Could not set default', description: data?.error ?? error?.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: `${config.title} is now your default model` });
+    window.dispatchEvent(new CustomEvent('ai-creds-changed'));
   };
 
   useEffect(() => {
     load();
+    const onChange = () => load();
+    window.addEventListener('ai-creds-changed', onChange);
+    return () => window.removeEventListener('ai-creds-changed', onChange);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.id]);
+
 
   return (
     <Card>
@@ -226,6 +246,7 @@ function AIProviderCard({ config }: { config: ProviderConfig }) {
                   Key ending in <code className="px-1.5 py-0.5 rounded bg-muted text-xs">…{cred.last_4}</code>
                   {cred.last_status === 'ok' && <Badge variant="secondary">Healthy</Badge>}
                   {cred.last_status === 'error' && <Badge variant="destructive">Error</Badge>}
+                  {cred.is_default && <Badge className="bg-primary text-primary-foreground">Default</Badge>}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   Model: {cred.default_model} · Connected {new Date(cred.created_at).toLocaleDateString()}
@@ -238,6 +259,11 @@ function AIProviderCard({ config }: { config: ProviderConfig }) {
                   </div>
                 )}
               </div>
+              {!cred.is_default && (
+                <Button size="sm" variant="outline" onClick={handleMakeDefault}>
+                  Make default
+                </Button>
+              )}
             </div>
 
             <div className="rounded-md border p-4 space-y-3">
@@ -275,6 +301,7 @@ function AIProviderCard({ config }: { config: ProviderConfig }) {
                   Disconnect
                 </Button>
               </div>
+
               <p className="text-xs text-muted-foreground">
                 To change only the model, re-paste your key with the new model selected.
               </p>

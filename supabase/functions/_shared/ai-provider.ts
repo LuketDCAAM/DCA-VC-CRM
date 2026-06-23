@@ -46,16 +46,28 @@ function lovableGateway() {
   });
 }
 
-/** Return the first connected BYOK credential for this user (any provider). */
+/** Return a BYOK credential for this user.
+ *  - If `providerOverride` is given, return that provider's row (or null).
+ *  - Else prefer the row marked is_default, then fall back to most-recent. */
 export async function loadUserCredential(
   userId: string | null,
+  providerOverride?: Provider | null,
 ): Promise<CredentialRow | null> {
   if (!userId) return null;
   const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  if (providerOverride) {
+    const { data } = await admin
+      .from("user_ai_credentials")
+      .select("user_id, provider, encrypted_api_key, default_model")
+      .eq("user_id", userId).eq("provider", providerOverride)
+      .maybeSingle();
+    return (data as CredentialRow | null) ?? null;
+  }
   const { data } = await admin
     .from("user_ai_credentials")
-    .select("user_id, provider, encrypted_api_key, default_model")
+    .select("user_id, provider, encrypted_api_key, default_model, is_default, updated_at")
     .eq("user_id", userId)
+    .order("is_default", { ascending: false })
     .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -65,9 +77,10 @@ export async function loadUserCredential(
 export async function resolveUserModel(opts: {
   userId: string | null;
   fallbackModelId?: string;
+  providerOverride?: Provider | null;
 }): Promise<ResolvedModel> {
   const fallback = opts.fallbackModelId ?? "google/gemini-3-flash-preview";
-  const cred = await loadUserCredential(opts.userId);
+  const cred = await loadUserCredential(opts.userId, opts.providerOverride ?? null);
   if (cred?.encrypted_api_key) {
     const modelId = cred.default_model || PROVIDER_DEFAULT_MODEL[cred.provider];
     if (cred.provider === "anthropic") {
@@ -106,6 +119,7 @@ export async function resolveUserModel(opts: {
     hasUserCredential: false,
   };
 }
+
 
 export async function markCredentialUsed(
   userId: string,

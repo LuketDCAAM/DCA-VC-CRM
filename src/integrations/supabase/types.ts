@@ -1771,6 +1771,7 @@ export type Database = {
           created_at: string
           default_model: string
           encrypted_api_key: string
+          is_default: boolean
           last_4: string
           last_error: string | null
           last_status: string | null
@@ -1783,6 +1784,7 @@ export type Database = {
           created_at?: string
           default_model?: string
           encrypted_api_key: string
+          is_default?: boolean
           last_4: string
           last_error?: string | null
           last_status?: string | null
@@ -1795,6 +1797,7 @@ export type Database = {
           created_at?: string
           default_model?: string
           encrypted_api_key?: string
+          is_default?: boolean
           last_4?: string
           last_error?: string | null
           last_status?: string | null

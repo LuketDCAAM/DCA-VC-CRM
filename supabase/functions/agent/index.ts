@@ -249,9 +249,14 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Resolve which AI model to use (caller's own Claude key if connected,
-    // otherwise the Lovable AI Gateway default).
-    const resolved = await resolveUserModel({ userId, fallbackModelId: "google/gemini-3-flash-preview" });
+    // Resolve which AI model to use (caller-selected provider, the user's default,
+    // or the Lovable AI Gateway fallback).
+    const rawOverride = (body as { providerOverride?: string }).providerOverride;
+    const providerOverride = (rawOverride === "anthropic" || rawOverride === "openai" || rawOverride === "google")
+      ? rawOverride
+      : null;
+    const resolved = await resolveUserModel({ userId, fallbackModelId: "google/gemini-3-flash-preview", providerOverride });
+
 
     // Create an agent_runs row for this turn
     const { data: runRow } = await supabase
