@@ -920,13 +920,16 @@ Deno.serve(async (req) => {
     };
 
     const result = streamText({
-      model: gateway("google/gemini-3-flash-preview"),
+      model: resolved.model,
       system: await getSystemPrompt(),
       messages: await convertToModelMessages(trimHistory(messages)),
       tools,
       stopWhen: stepCountIs(50),
       abortSignal: req.signal,
       onFinish: async ({ usage }) => {
+        if (resolved.hasUserCredential) {
+          await markCredentialUsed(userId, "ok");
+        }
         if (!runId) return;
         await supabase
           .from("agent_runs")
@@ -940,6 +943,9 @@ Deno.serve(async (req) => {
       },
       onError: async ({ error }) => {
         console.error("agent stream error", error);
+        if (resolved.hasUserCredential) {
+          await markCredentialUsed(userId, "error", String(error).slice(0, 500));
+        }
         if (runId) {
           await supabase
             .from("agent_runs")
@@ -952,6 +958,7 @@ Deno.serve(async (req) => {
         }
       },
     });
+
 
     return result.toUIMessageStreamResponse({
       headers: corsHeaders,
