@@ -1455,6 +1455,33 @@ export type Database = {
           },
         ]
       }
+      outlook_connections: {
+        Row: {
+          connection_key: string
+          connector_id: string
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connection_key: string
+          connector_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connection_key?: string
+          connector_id?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       outlook_sync_logs: {
         Row: {
           completed_at: string | null

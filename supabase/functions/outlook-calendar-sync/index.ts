@@ -1,10 +1,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders } from '../_shared/cors.ts'
+import { getConnectionKey, gatewayProxy } from '../_shared/outlook-gateway.ts'
 
 interface CalendarSyncRequest {
   user_id: string;
@@ -92,56 +89,60 @@ Deno.serve(async (req) => {
 
     console.log(`📝 Created sync log with ID: ${syncLog.id}`);
 
-    // Get user's Microsoft token
-    const { data: tokenData, error: tokenError } = await supabase
-      .from('microsoft_tokens')
-      .select('*')
-      .eq('user_id', user_id)
-      .single();
+    // Check for gateway connection key first (new flow)
+    const connectionKey = await getConnectionKey(supabase, user_id);
 
-    if (tokenError || !tokenData) {
-      console.log(`❌ No Microsoft token found for user ${user_id}:`, tokenError);
-      await updateSyncLog(supabase, syncLog.id, 'failed', 'No Microsoft token found');
-      return new Response(JSON.stringify({ error: 'Microsoft token not found' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    console.log(`🔑 Found Microsoft token for user, expires at: ${tokenData.expires_at}`);
-
-    // Check if token needs refresh
-    let accessToken = tokenData.access_token;
-    if (new Date() >= new Date(tokenData.expires_at)) {
-      accessToken = await refreshToken(supabase, tokenData);
-      if (!accessToken) {
-        await updateSyncLog(supabase, syncLog.id, 'failed', 'Failed to refresh token');
-        return new Response(JSON.stringify({ error: 'Failed to refresh token' }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-    }
+    let eventsResponse: Response;
 
     // Fetch calendar events from Microsoft Graph (last 30 days, excluding future events)
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - 30);
     const endDate = new Date(); // Only include events up to now, not future events
-    
-    console.log(`📅 Calendar sync window: ${startDate.toISOString()} to ${endDate.toISOString()}`);
-    
-    const calendarUrl = `https://graph.microsoft.com/v1.0/me/events?` +
+
+    const calendarPath = `/me/events?` +
       `$filter=start/dateTime ge '${startDate.toISOString()}' and end/dateTime le '${endDate.toISOString()}'&` +
       `$select=id,subject,start,end,attendees,organizer,body&` +
       `$orderby=start/dateTime desc&` +
       `$top=100`;
 
-    const eventsResponse = await fetch(calendarUrl, {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    });
+    if (connectionKey) {
+      // Use gateway proxy (token refresh handled automatically)
+      eventsResponse = await gatewayProxy(connectionKey, calendarPath);
+    } else {
+      // Fall back to legacy microsoft_tokens approach
+      const { data: tokenData, error: tokenError } = await supabase
+        .from('microsoft_tokens')
+        .select('*')
+        .eq('user_id', user_id)
+        .single();
+
+      if (tokenError || !tokenData) {
+        await updateSyncLog(supabase, syncLog.id, 'failed', 'No Outlook connection found');
+        return new Response(JSON.stringify({ error: 'Outlook connection not found' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      let accessToken = tokenData.access_token;
+      if (new Date() >= new Date(tokenData.expires_at)) {
+        accessToken = await refreshToken(supabase, tokenData);
+        if (!accessToken) {
+          await updateSyncLog(supabase, syncLog.id, 'failed', 'Failed to refresh token');
+          return new Response(JSON.stringify({ error: 'Failed to refresh token' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      }
+
+      eventsResponse = await fetch(`https://graph.microsoft.com/v1.0${calendarPath}`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+    }
 
     if (!eventsResponse.ok) {
       const errorText = await eventsResponse.text();

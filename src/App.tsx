@@ -22,6 +22,7 @@ import AgentInstructions from "./pages/AgentInstructions";
 import IntegrationsSettings from "./pages/IntegrationsSettings";
 import NotFound from "./pages/NotFound";
 import MicrosoftAuthCallback from "./pages/auth/microsoft/callback";
+import OutlookCallback from "./pages/auth/outlook/callback";
 import ResetPassword from "./pages/auth/ResetPassword";
 import OAuthConsent from "./pages/OAuthConsent";
 
@@ -84,6 +85,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth/microsoft/callback" element={<MicrosoftAuthCallback />} />
+              <Route path="/auth/outlook/callback" element={<OutlookCallback />} />
               <Route path="/auth/reset" element={<ResetPassword />} />
               <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
 

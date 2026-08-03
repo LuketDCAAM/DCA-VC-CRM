@@ -27,22 +27,29 @@ Deno.serve(async (req) => {
 
     console.log('Starting scheduled calendar sync for all users...');
 
-    // Get all users who have Microsoft tokens (active integrations)
-    const { data: tokenData, error: tokenError } = await supabase
+    // Get all users who have gateway connections (new flow)
+    const { data: connData, error: connError } = await supabase
+      .from('outlook_connections')
+      .select('user_id')
+      .eq('connector_id', 'microsoft_outlook');
+
+    // Also get users with legacy microsoft_tokens (old flow)
+    const { data: tokenData } = await supabase
       .from('microsoft_tokens')
       .select('user_id')
-      .gte('expires_at', new Date().toISOString()); // Only active tokens
+      .gte('expires_at', new Date().toISOString());
 
-    if (tokenError) {
-      console.error('Error fetching Microsoft tokens:', tokenError);
-      return new Response(JSON.stringify({ error: 'Failed to fetch users' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (connError) {
+      console.error('Error fetching Outlook connections:', connError);
     }
 
-    if (!tokenData || tokenData.length === 0) {
-      console.log('No active Microsoft integrations found');
+    // Combine both lists, deduplicating by user_id
+    const connUsers = (connData || []).map((r: any) => r.user_id);
+    const tokenUsers = (tokenData || []).map((r: any) => r.user_id);
+    const allUserIds = [...new Set([...connUsers, ...tokenUsers])];
+
+    if (allUserIds.length === 0) {
+      console.log('No active Outlook integrations found');
       return new Response(JSON.stringify({ message: 'No active integrations' }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -53,29 +60,28 @@ Deno.serve(async (req) => {
     let totalFailed = 0;
 
     // Process each user
-    for (const token of tokenData) {
+    for (const userId of allUserIds) {
       try {
-        console.log(`Syncing calendar for user: ${token.user_id}`);
+        console.log(`Syncing calendar for user: ${userId}`);
         
         const { data, error } = await supabase.functions.invoke('outlook-calendar-sync', {
           body: {
-            user_id: token.user_id,
+            user_id: userId,
             sync_type: 'incremental'
           }
         });
 
         if (error) {
-          console.error(`Calendar sync failed for user ${token.user_id}:`, error);
+          console.error(`Calendar sync failed for user ${userId}:`, error);
           totalFailed++;
         } else {
-          console.log(`Calendar sync completed for user ${token.user_id}`);
+          console.log(`Calendar sync completed for user ${userId}`);
           totalSynced++;
         }
 
-        // Add small delay between requests to avoid rate limits
         await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (error) {
-        console.error(`Error syncing calendar for user ${token.user_id}:`, error);
+        console.error(`Error syncing calendar for user ${userId}:`, error);
         totalFailed++;
       }
     }
@@ -84,7 +90,7 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       message: 'Scheduled sync completed',
-      total_users: tokenData.length,
+      total_users: allUserIds.length,
       successful_syncs: totalSynced,
       failed_syncs: totalFailed
     }), {

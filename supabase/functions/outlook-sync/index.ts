@@ -1,10 +1,6 @@
-
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
+import { corsHeaders } from '../_shared/cors.ts';
+import { getConnectionKey, gatewayProxy } from '../_shared/outlook-gateway.ts';
 
 interface SyncRequest {
   user_id: string;
@@ -14,19 +10,14 @@ interface SyncRequest {
 interface OutlookTask {
   id: string;
   title: string;
-  body?: {
-    content: string;
-  };
-  dueDateTime?: {
-    dateTime: string;
-  };
+  body?: { content: string };
+  dueDateTime?: { dateTime: string };
   status: string;
   createdDateTime: string;
   lastModifiedDateTime: string;
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -66,48 +57,55 @@ Deno.serve(async (req) => {
       .single();
 
     if (logError || !syncLog) {
-      console.error('Failed to create sync log:', logError);
       return new Response(JSON.stringify({ error: 'Failed to create sync log' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Get user's Microsoft token
-    const { data: tokenData, error: tokenError } = await supabase
-      .from('microsoft_tokens')
-      .select('*')
-      .eq('user_id', user_id)
-      .single();
+    // Check for gateway connection key first (new flow)
+    const connectionKey = await getConnectionKey(supabase, user_id);
 
-    if (tokenError || !tokenData) {
-      await updateSyncLog(supabase, syncLog.id, 'failed', 'No Microsoft token found');
-      return new Response(JSON.stringify({ error: 'Microsoft token not found' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    let tasksResponse: Response;
 
-    // Check if token needs refresh
-    let accessToken = tokenData.access_token;
-    if (new Date() >= new Date(tokenData.expires_at)) {
-      accessToken = await refreshToken(supabase, tokenData);
-      if (!accessToken) {
-        await updateSyncLog(supabase, syncLog.id, 'failed', 'Failed to refresh token');
-        return new Response(JSON.stringify({ error: 'Failed to refresh token' }), {
-          status: 401,
+    if (connectionKey) {
+      // Use gateway proxy (token refresh handled automatically)
+      tasksResponse = await gatewayProxy(connectionKey, '/me/todo/lists/tasks/tasks');
+    } else {
+      // Fall back to legacy microsoft_tokens approach
+      const { data: tokenData, error: tokenError } = await supabase
+        .from('microsoft_tokens')
+        .select('*')
+        .eq('user_id', user_id)
+        .single();
+
+      if (tokenError || !tokenData) {
+        await updateSyncLog(supabase, syncLog.id, 'failed', 'No Outlook connection found');
+        return new Response(JSON.stringify({ error: 'Outlook connection not found' }), {
+          status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-    }
 
-    // Fetch tasks from Microsoft Graph
-    const tasksResponse = await fetch('https://graph.microsoft.com/v1.0/me/todo/lists/tasks/tasks', {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-    });
+      let accessToken = tokenData.access_token;
+      if (new Date() >= new Date(tokenData.expires_at)) {
+        accessToken = await refreshToken(supabase, tokenData);
+        if (!accessToken) {
+          await updateSyncLog(supabase, syncLog.id, 'failed', 'Failed to refresh token');
+          return new Response(JSON.stringify({ error: 'Failed to refresh token' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      }
+
+      tasksResponse = await fetch('https://graph.microsoft.com/v1.0/me/todo/lists/tasks/tasks', {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+    }
 
     if (!tasksResponse.ok) {
       const errorText = await tasksResponse.text();
@@ -125,16 +123,14 @@ Deno.serve(async (req) => {
     let itemsProcessed = 0;
     let itemsFailed = 0;
 
-    // Sync tasks
     for (const outlookTask of outlookTasks) {
       try {
-        const reminderDate = outlookTask.dueDateTime?.dateTime 
+        const reminderDate = outlookTask.dueDateTime?.dateTime
           ? new Date(outlookTask.dueDateTime.dateTime).toISOString().split('T')[0]
           : new Date().toISOString().split('T')[0];
 
         const isCompleted = outlookTask.status === 'completed';
 
-        // Check if reminder already exists
         const { data: existingReminder } = await supabase
           .from('reminders')
           .select('id, outlook_last_sync, outlook_modified_date')
@@ -143,7 +139,6 @@ Deno.serve(async (req) => {
           .single();
 
         if (existingReminder) {
-          // Update existing reminder if it was modified in Outlook
           const outlookModified = new Date(outlookTask.lastModifiedDateTime);
           const lastSync = existingReminder.outlook_last_sync ? new Date(existingReminder.outlook_last_sync) : new Date(0);
 
@@ -162,7 +157,6 @@ Deno.serve(async (req) => {
               .eq('id', existingReminder.id);
           }
         } else {
-          // Create new reminder
           await supabase
             .from('reminders')
             .insert({
@@ -189,20 +183,16 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Update sync log
     await updateSyncLog(supabase, syncLog.id, 'completed', null, itemsProcessed, itemsFailed);
 
-    console.log(`Sync completed for user ${user_id}: ${itemsProcessed} processed, ${itemsFailed} failed`);
-
-    return new Response(JSON.stringify({ 
-      success: true, 
+    return new Response(JSON.stringify({
+      success: true,
       items_processed: itemsProcessed,
-      items_failed: itemsFailed 
+      items_failed: itemsFailed,
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-
   } catch (error) {
     console.error('Outlook sync error:', error);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
@@ -217,16 +207,11 @@ async function refreshToken(supabase: any, tokenData: any): Promise<string | nul
     const clientId = Deno.env.get('MICROSOFT_CLIENT_ID');
     const clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET');
 
-    if (!clientId || !clientSecret) {
-      console.error('Missing OAuth configuration for token refresh');
-      return null;
-    }
+    if (!clientId || !clientSecret) return null;
 
     const response = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         client_id: clientId,
         client_secret: clientSecret,
@@ -236,15 +221,11 @@ async function refreshToken(supabase: any, tokenData: any): Promise<string | nul
       }),
     });
 
-    if (!response.ok) {
-      console.error('Token refresh failed:', await response.text());
-      return null;
-    }
+    if (!response.ok) return null;
 
     const newTokenData = await response.json();
     const expiresAt = new Date(Date.now() + newTokenData.expires_in * 1000).toISOString();
 
-    // Update stored tokens
     await supabase
       .from('microsoft_tokens')
       .update({
@@ -268,7 +249,7 @@ async function updateSyncLog(
   status: string,
   errorMessage?: string | null,
   itemsProcessed?: number,
-  itemsFailed?: number
+  itemsFailed?: number,
 ) {
   await supabase
     .from('outlook_sync_logs')

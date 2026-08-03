@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, CheckCircle2, ExternalLink, AlertCircle, Sparkles } from 'lucide-react';
+import { Loader2, CheckCircle2, ExternalLink, AlertCircle, Sparkles, Mail, Calendar } from 'lucide-react';
+import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
 
 type Provider = 'anthropic' | 'openai' | 'google';
 
@@ -378,6 +379,69 @@ function AIProviderCard({ config }: { config: ProviderConfig }) {
   );
 }
 
+function MicrosoftOutlookCard() {
+  const { isAuthenticated, loading: authLoading, initiateAuth, disconnectMicrosoft } = useMicrosoftAuth();
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Mail className="h-5 w-5" />
+          Microsoft Outlook
+          {isAuthenticated && <CheckCircle2 className="h-5 w-5 text-green-600" />}
+        </CardTitle>
+        <CardDescription>
+          Connect your own Microsoft account to read & send email, sync calendar events, and push tasks to Outlook. Each user connects their own account — your data stays yours.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {authLoading ? (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" /> Loading…
+          </div>
+        ) : isAuthenticated ? (
+          <>
+            <div className="flex items-center gap-3 p-3 rounded-md border bg-muted/30">
+              <div className="flex-1">
+                <div className="font-medium flex items-center gap-2">
+                  Connected to Microsoft Outlook
+                  <Badge variant="secondary">Active</Badge>
+                </div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  Calendar events, email, and tasks are available. Tokens are managed securely by the connector gateway.
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={initiateAuth}>
+                Reconnect
+              </Button>
+              <Button variant="destructive" onClick={disconnectMicrosoft}>
+                Disconnect
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <ol className="text-sm space-y-2 list-decimal pl-5 text-muted-foreground">
+              <li>Click <strong>Connect Microsoft Account</strong> — you'll be redirected to Microsoft to sign in.</li>
+              <li>Approve the requested permissions: read & send mail, manage calendar, and manage tasks.</li>
+              <li>You'll be sent back here automatically once connected.</li>
+            </ol>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-blue-50 dark:bg-blue-950/30 p-3 rounded-md">
+              <Calendar className="h-4 w-4 flex-shrink-0" />
+              <span>Calendar events are synced daily to update deal and investor call dates. You can also sync manually from the Deals page.</span>
+            </div>
+            <Button onClick={initiateAuth}>
+              Connect Microsoft Account <ExternalLink className="h-4 w-4 ml-2" />
+            </Button>
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function IntegrationsSettings() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -505,6 +569,8 @@ export default function IntegrationsSettings() {
           )}
         </CardContent>
       </Card>
+
+      <MicrosoftOutlookCard />
 
       <div className="space-y-2">
         <h2 className="text-lg font-semibold">Bring your own AI</h2>
