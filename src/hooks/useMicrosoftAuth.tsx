@@ -3,248 +3,109 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
-interface MicrosoftToken {
-  id: string;
-  user_id: string;
-  access_token: string;
-  refresh_token: string;
-  expires_at: string;
-  scope: string;
-  created_at: string;
-  updated_at: string;
-}
-
+/**
+ * Manages the Microsoft Outlook connection via the Lovable connector gateway.
+ * This replaces the old custom OAuth flow (microsoft-auth edge function + microsoft_tokens table).
+ * Tokens are now stored encrypted in the connector gateway — only a connection key (lovack_*)
+ * is stored locally in the outlook_connections table.
+ */
 export function useMicrosoftAuth() {
-  const [token, setToken] = useState<MicrosoftToken | null>(null);
-  const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { toast } = useToast();
 
   const fetchToken = async () => {
     if (!user) {
-      console.log('useMicrosoftAuth - No user, skipping token fetch');
       setLoading(false);
       return;
     }
 
     try {
-      console.log('Fetching Microsoft token for user:', user.id);
       setLoading(true);
-      const { data, error } = await supabase
-        .from('microsoft_tokens')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      console.log('Microsoft token fetch result:', { data, error });
-
-      if (error && error.code !== 'PGRST116') throw error;
-      
-      if (data) {
-        setToken(data);
-        setIsAuthenticated(true);
-        console.log('Microsoft authentication: AUTHENTICATED');
-      } else {
-        setToken(null);
-        setIsAuthenticated(false);
-        console.log('Microsoft authentication: NOT AUTHENTICATED - No token found');
-      }
-    } catch (error: any) {
-      console.error('Error fetching Microsoft token:', error);
-      setToken(null);
-      setIsAuthenticated(false);
-      toast({
-        title: "Error fetching Microsoft authentication",
-        description: error.message,
-        variant: "destructive",
+      const { data, error } = await supabase.functions.invoke('outlook-app-user', {
+        body: { action: 'status' },
       });
+
+      if (error) {
+        setIsAuthenticated(false);
+      } else {
+        setIsAuthenticated(!!data?.connected);
+      }
+    } catch (error) {
+      console.error('Error checking Outlook connection:', error);
+      setIsAuthenticated(false);
     } finally {
       setLoading(false);
     }
   };
 
   const initiateAuth = async () => {
-    console.log('=== INITIATING MICROSOFT OAUTH ===');
-    
+    if (!user) {
+      toast({ title: 'Please sign in first', variant: 'destructive' });
+      return;
+    }
+
     try {
-      // First, let's check if we have the client ID configured
-      console.log('Checking Microsoft OAuth configuration...');
-      const { data: configData, error: configError } = await supabase.functions.invoke('microsoft-auth', {
-        body: { action: 'check_config' }
+      // Save the return URL so we can redirect back after the callback
+      const returnTo = window.location.pathname + window.location.search;
+      localStorage.setItem('outlook-auth-redirect', returnTo);
+
+      const returnUrl = `${window.location.origin}/auth/outlook/callback`;
+      const { data, error } = await supabase.functions.invoke('outlook-app-user', {
+        body: { action: 'authorize', return_url: returnUrl },
       });
 
-      console.log('Config check result:', { configData, configError });
-
-      if (configError) {
-        console.error('Config check failed:', configError);
-        toast({
-          title: "Configuration Error",
-          description: `Microsoft authentication is not properly configured: ${configError.message}`,
-          variant: "destructive",
-        });
-        return;
+      if (error || !data?.authorization_url) {
+        throw new Error(error?.message || 'Failed to start authorization');
       }
 
-      if (!configData?.clientId) {
-        console.error('No client ID found in configuration');
-        toast({
-          title: "Configuration Missing",
-          description: "Microsoft Client ID is not configured. Please contact your administrator.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const clientId = configData.clientId;
-      
-      // Let's show the user what Client ID is being used (first 8 characters for security)
-      console.log('Using Client ID (first 8 chars):', clientId.substring(0, 8) + '...');
-      toast({
-        title: "Debug Info",
-        description: `Using Client ID: ${clientId.substring(0, 8)}... (check console for more details)`,
-      });
-
-      const currentUrl = window.location.origin;
-      const redirectUri = encodeURIComponent(`${currentUrl}/auth/microsoft/callback`);
-      const scope = encodeURIComponent('https://graph.microsoft.com/Tasks.ReadWrite https://graph.microsoft.com/Calendars.Read offline_access');
-      const responseType = 'code';
-      const state = encodeURIComponent(JSON.stringify({ 
-        user_id: user?.id,
-        return_url: window.location.pathname 
-      }));
-      
-      const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?` +
-        `client_id=${clientId}&` +
-        `response_type=${responseType}&` +
-        `redirect_uri=${redirectUri}&` +
-        `scope=${scope}&` +
-        `state=${state}&` +
-        `response_mode=query`;
-
-      console.log('Auth URL components:', {
-        clientId: clientId.substring(0, 8) + '...',
-        redirectUri: decodeURIComponent(redirectUri),
-        scope: decodeURIComponent(scope),
-        currentUrl,
-        userId: user?.id
-      });
-      
-      console.log('Full Auth URL (check console):', authUrl);
-      console.log('Redirecting to Microsoft OAuth...');
-      
-      // Show user the redirect URI being used
-      toast({
-        title: "Authentication Starting",
-        description: `Redirecting to Microsoft. Redirect URI: ${decodeURIComponent(redirectUri)}`,
-      });
-
-      window.location.href = authUrl;
-
+      window.location.href = data.authorization_url;
     } catch (error: any) {
-      console.error('Error initiating Microsoft auth:', error);
+      console.error('Error initiating Outlook auth:', error);
       toast({
-        title: "Authentication Error",
-        description: `Failed to start Microsoft authentication: ${error.message}`,
-        variant: "destructive",
+        title: 'Could not start connection',
+        description: error.message || 'Please try again.',
+        variant: 'destructive',
       });
     }
   };
 
-  const handleAuthCallback = async (code: string) => {
-    console.log('=== HANDLING MICROSOFT AUTH CALLBACK ===');
-    console.log('Received auth code:', code ? 'Present' : 'Missing');
-    
-    if (!user) {
-      console.error('No user found when handling callback');
-      throw new Error('User not authenticated');
-    }
-
-    try {
-      console.log('Calling microsoft-auth function with code and user_id:', user.id);
-      const { data, error } = await supabase.functions.invoke('microsoft-auth', {
-        body: { 
-          code, 
-          user_id: user.id 
-        }
-      });
-
-      console.log('Microsoft auth function result:', { data, error });
-
-      if (error) {
-        console.error('Microsoft auth function error:', error);
-        throw new Error(error.message || 'Authentication failed');
-      }
-
-      if (!data?.success) {
-        console.error('Microsoft auth function returned non-success:', data);
-        throw new Error(data?.error || 'Authentication failed');
-      }
-
-      console.log('Microsoft authentication completed successfully');
-      toast({
-        title: "Microsoft authentication successful",
-        description: "Your Outlook integration is now active. You can sync calendar events and push tasks to Outlook.",
-      });
-
-      // Refresh the token state
-      await fetchToken();
-      
-    } catch (error: any) {
-      console.error('Error in handleAuthCallback:', error);
-      toast({
-        title: "Authentication failed",
-        description: error.message || 'Failed to complete Microsoft authentication',
-        variant: "destructive",
-      });
-      throw error;
-    }
+  const handleAuthCallback = async (_code: string) => {
+    // Legacy method — no longer used with the gateway flow.
+    // The callback is now handled by /auth/outlook/callback.
+    await fetchToken();
   };
 
   const disconnectMicrosoft = async () => {
-    if (!user) return;
-
     try {
-      console.log('Disconnecting Microsoft account for user:', user.id);
-      const { error } = await supabase
-        .from('microsoft_tokens')
-        .delete()
-        .eq('user_id', user.id);
+      const { error } = await supabase.functions.invoke('outlook-app-user', {
+        body: { action: 'disconnect' },
+      });
 
       if (error) throw error;
 
-      setToken(null);
       setIsAuthenticated(false);
-
       toast({
-        title: "Microsoft account disconnected",
-        description: "Outlook sync has been disabled.",
+        title: 'Microsoft account disconnected',
+        description: 'Outlook sync has been disabled.',
       });
     } catch (error: any) {
       console.error('Error disconnecting Microsoft account:', error);
       toast({
-        title: "Error disconnecting account",
+        title: 'Error disconnecting account',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   };
 
   useEffect(() => {
-    console.log('useMicrosoftAuth - User changed:', user?.id);
     fetchToken();
   }, [user]);
 
-  console.log('useMicrosoftAuth hook state:', {
-    token: !!token,
-    loading,
-    isAuthenticated,
-    userId: user?.id,
-    hasUser: !!user
-  });
-
   return {
-    token,
+    token: null, // Legacy — tokens are now in the gateway, not local
     loading,
     isAuthenticated,
     initiateAuth,
