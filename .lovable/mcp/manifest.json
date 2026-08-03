@@ -1,0 +1,337 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://arfyltduzmkrzdxjnodb.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "dca-vc-crm",
+      "version": "0.1.0",
+      "title": "dca-vc-crm"
+    },
+    "tools": [
+      {
+        "name": "search_deals",
+        "title": "Search deals",
+        "description": "Search the CRM deal pipeline by company name, sector, pipeline stage or round stage. Returns core deal fields.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "description": "Company name fragment to match.",
+              "type": "string"
+            },
+            "sector": {
+              "description": "Sector filter, matched loosely.",
+              "type": "string"
+            },
+            "pipeline_stage": {
+              "description": "Exact pipeline stage, e.g. 'Due Diligence'.",
+              "type": "string"
+            },
+            "round_stage": {
+              "description": "Exact round stage, e.g. 'Seed'.",
+              "type": "string"
+            },
+            "priority_only": {
+              "description": "Only return deals flagged as priority.",
+              "type": "boolean"
+            },
+            "limit": {
+              "description": "Max rows to return, default 25, max 100.",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_deal",
+        "title": "Get deal detail",
+        "description": "Get one deal with its current investment scorecard (ARR, burn, valuation, ratings, narratives) and recent call notes. Look up by deal id or exact-ish company name.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "deal_id": {
+              "description": "Deal UUID, if known.",
+              "type": "string"
+            },
+            "company_name": {
+              "description": "Company name to match when no id is given.",
+              "type": "string"
+            },
+            "notes_limit": {
+              "description": "How many recent call notes to include, default 5.",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "add_call_note",
+        "title": "Add call note",
+        "description": "Add a call note / meeting note to a deal, investor or portfolio company in the CRM. Content is markdown.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Short note title, e.g. 'Intro call with founders'."
+            },
+            "content": {
+              "type": "string",
+              "description": "Note body in markdown."
+            },
+            "call_date": {
+              "description": "Date of the call as YYYY-MM-DD. Defaults to today.",
+              "type": "string"
+            },
+            "deal_id": {
+              "description": "Deal UUID to attach the note to.",
+              "type": "string"
+            },
+            "investor_id": {
+              "description": "Investor UUID to attach the note to.",
+              "type": "string"
+            },
+            "portfolio_company_id": {
+              "description": "Portfolio company UUID to attach the note to.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "title",
+            "content"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_tasks",
+        "title": "List tasks and reminders",
+        "description": "List CRM tasks/reminders visible to the signed-in user, optionally filtered to open items, a due-date window, or a specific deal.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "open_only": {
+              "description": "Only return tasks that are not completed. Default true.",
+              "type": "boolean"
+            },
+            "deal_id": {
+              "description": "Restrict to one deal UUID.",
+              "type": "string"
+            },
+            "due_before": {
+              "description": "Only tasks due on or before this date (YYYY-MM-DD).",
+              "type": "string"
+            },
+            "due_after": {
+              "description": "Only tasks due on or after this date (YYYY-MM-DD).",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Max rows, default 25, max 100.",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_task",
+        "title": "Create task",
+        "description": "Create a follow-up task / reminder in the CRM, optionally linked to a deal, investor or portfolio company.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Task title."
+            },
+            "reminder_date": {
+              "type": "string",
+              "description": "Due date as YYYY-MM-DD."
+            },
+            "description": {
+              "description": "Optional detail for the task.",
+              "type": "string"
+            },
+            "priority": {
+              "description": "Priority such as low, medium or high.",
+              "type": "string"
+            },
+            "task_type": {
+              "description": "Task type label, e.g. 'Follow-up'.",
+              "type": "string"
+            },
+            "deal_id": {
+              "description": "Deal UUID to link.",
+              "type": "string"
+            },
+            "investor_id": {
+              "description": "Investor UUID to link.",
+              "type": "string"
+            },
+            "portfolio_company_id": {
+              "description": "Portfolio company UUID to link.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "title",
+            "reminder_date"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "search_contacts",
+        "title": "Search contacts",
+        "description": "Search CRM contacts by name, firm/company or email.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "description": "Name fragment to match.",
+              "type": "string"
+            },
+            "company": {
+              "description": "Company or firm fragment to match.",
+              "type": "string"
+            },
+            "deal_id": {
+              "description": "Restrict to contacts linked to this deal UUID.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Max rows, default 25, max 100.",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "search_investors",
+        "title": "Search investors",
+        "description": "Search the investor network by firm name, contact name, preferred sector or preferred investment stage.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "description": "Firm name fragment to match.",
+              "type": "string"
+            },
+            "contact_name": {
+              "description": "Investor contact name fragment.",
+              "type": "string"
+            },
+            "sector": {
+              "description": "Preferred sector to match.",
+              "type": "string"
+            },
+            "stage": {
+              "description": "Preferred investment stage, exact value.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Max rows, default 25, max 100.",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_portfolio",
+        "title": "List portfolio companies",
+        "description": "List portfolio companies tracked in the CRM, optionally filtered by name or status.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "description": "Company name fragment to match.",
+              "type": "string"
+            },
+            "status": {
+              "description": "Exact company status value.",
+              "type": "string"
+            },
+            "limit": {
+              "description": "Max rows, default 25, max 100.",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
