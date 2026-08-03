@@ -111,6 +111,19 @@ export async function resolveUserModel(opts: {
       };
     }
   }
+  // Workspace-wide Anthropic key (project secret) — used when the user has no BYOK row.
+  const orgAnthropic = Deno.env.get("ANTHROPIC_API_KEY");
+  if (orgAnthropic) {
+    const modelId = PROVIDER_DEFAULT_MODEL.anthropic;
+    return {
+      model: createAnthropic({ apiKey: orgAnthropic })(modelId),
+      provider: "anthropic",
+      modelId,
+      userId: opts.userId,
+      hasUserCredential: false,
+    };
+  }
+
   return {
     model: lovableGateway()(fallback),
     provider: "lovable",
@@ -292,6 +305,47 @@ export async function callSingleTool(
         );
       }
       throw e;
+    }
+  }
+
+  // Workspace-wide Anthropic key (project secret) before Lovable fallback.
+  const orgAnthropic = Deno.env.get("ANTHROPIC_API_KEY");
+  if (orgAnthropic) {
+    const anthropicModel = PROVIDER_DEFAULT_MODEL.anthropic;
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "x-api-key": orgAnthropic,
+        "anthropic-version": "2023-06-01",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: anthropicModel,
+        max_tokens: 8000,
+        system: p.system,
+        messages: [{ role: "user", content: p.user }],
+        tools: [{
+          name: p.toolName,
+          description: p.toolDescription,
+          input_schema: p.parameters,
+        }],
+        tool_choice: { type: "tool", name: p.toolName },
+      }),
+    });
+    if (res.ok) {
+      const json = await res.json() as {
+        content: Array<{ type: string; input?: unknown }>;
+      };
+      const toolBlock = json.content.find((c) => c.type === "tool_use");
+      if (toolBlock) {
+        return {
+          args: (toolBlock.input ?? {}) as Record<string, unknown>,
+          provider: "anthropic",
+          modelId: anthropicModel,
+        };
+      }
+    } else {
+      console.error("Org Anthropic key failed, falling back to Lovable:", res.status);
     }
   }
 
