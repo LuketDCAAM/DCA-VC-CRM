@@ -1,10 +1,6 @@
-
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0'
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.50.0';
+import { corsHeaders } from '../_shared/cors.ts';
+import { getConnectionKey, gatewayProxy } from '../_shared/outlook-gateway.ts';
 
 interface PushRequest {
   user_id: string;
@@ -12,7 +8,6 @@ interface PushRequest {
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -39,20 +34,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get user's Microsoft token
-    const { data: tokenData, error: tokenError } = await supabase
-      .from('microsoft_tokens')
-      .select('*')
-      .eq('user_id', user_id)
-      .single();
-
-    if (tokenError || !tokenData) {
-      return new Response(JSON.stringify({ error: 'Microsoft token not found' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     // Get reminder details
     const { data: reminder, error: reminderError } = await supabase
       .from('reminders')
@@ -68,19 +49,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check if token needs refresh
-    let accessToken = tokenData.access_token;
-    if (new Date() >= new Date(tokenData.expires_at)) {
-      accessToken = await refreshToken(supabase, tokenData);
-      if (!accessToken) {
-        return new Response(JSON.stringify({ error: 'Failed to refresh token' }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-    }
-
-    // Create task in Microsoft Graph
     const outlookTask = {
       title: reminder.title,
       body: {
@@ -94,14 +62,51 @@ Deno.serve(async (req) => {
       status: reminder.is_completed ? 'completed' : 'notStarted',
     };
 
-    const createResponse = await fetch('https://graph.microsoft.com/v1.0/me/todo/lists/tasks/tasks', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(outlookTask),
-    });
+    // Check for gateway connection key first (new flow)
+    const connectionKey = await getConnectionKey(supabase, user_id);
+
+    let createResponse: Response;
+
+    if (connectionKey) {
+      createResponse = await gatewayProxy(connectionKey, '/me/todo/lists/tasks/tasks', {
+        method: 'POST',
+        body: outlookTask,
+      });
+    } else {
+      // Fall back to legacy microsoft_tokens approach
+      const { data: tokenData, error: tokenError } = await supabase
+        .from('microsoft_tokens')
+        .select('*')
+        .eq('user_id', user_id)
+        .single();
+
+      if (tokenError || !tokenData) {
+        return new Response(JSON.stringify({ error: 'Outlook connection not found' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      let accessToken = tokenData.access_token;
+      if (new Date() >= new Date(tokenData.expires_at)) {
+        accessToken = await refreshToken(supabase, tokenData);
+        if (!accessToken) {
+          return new Response(JSON.stringify({ error: 'Failed to refresh token' }), {
+            status: 401,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      }
+
+      createResponse = await fetch('https://graph.microsoft.com/v1.0/me/todo/lists/tasks/tasks', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(outlookTask),
+      });
+    }
 
     if (!createResponse.ok) {
       const errorText = await createResponse.text();
@@ -114,7 +119,6 @@ Deno.serve(async (req) => {
 
     const createdTask = await createResponse.json();
 
-    // Update reminder with Outlook task ID
     await supabase
       .from('reminders')
       .update({
@@ -126,16 +130,13 @@ Deno.serve(async (req) => {
       })
       .eq('id', reminder_id);
 
-    console.log(`Successfully pushed reminder ${reminder_id} to Outlook as task ${createdTask.id}`);
-
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       success: true,
-      outlook_task_id: createdTask.id 
+      outlook_task_id: createdTask.id,
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-
   } catch (error) {
     console.error('Outlook push error:', error);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
@@ -150,16 +151,11 @@ async function refreshToken(supabase: any, tokenData: any): Promise<string | nul
     const clientId = Deno.env.get('MICROSOFT_CLIENT_ID');
     const clientSecret = Deno.env.get('MICROSOFT_CLIENT_SECRET');
 
-    if (!clientId || !clientSecret) {
-      console.error('Missing OAuth configuration for token refresh');
-      return null;
-    }
+    if (!clientId || !clientSecret) return null;
 
     const response = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         client_id: clientId,
         client_secret: clientSecret,
@@ -169,15 +165,11 @@ async function refreshToken(supabase: any, tokenData: any): Promise<string | nul
       }),
     });
 
-    if (!response.ok) {
-      console.error('Token refresh failed:', await response.text());
-      return null;
-    }
+    if (!response.ok) return null;
 
     const newTokenData = await response.json();
     const expiresAt = new Date(Date.now() + newTokenData.expires_in * 1000).toISOString();
 
-    // Update stored tokens
     await supabase
       .from('microsoft_tokens')
       .update({
