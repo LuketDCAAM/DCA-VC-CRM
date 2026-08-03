@@ -85,6 +85,8 @@ function App() {
               <Route path="/" element={<Index />} />
               <Route path="/auth/microsoft/callback" element={<MicrosoftAuthCallback />} />
               <Route path="/auth/reset" element={<ResetPassword />} />
+              <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
+
               <Route path="/*" element={
                 <ProtectedRoute>
                   <Layout>
