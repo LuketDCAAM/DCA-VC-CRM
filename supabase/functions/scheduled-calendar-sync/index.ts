@@ -27,22 +27,29 @@ Deno.serve(async (req) => {
 
     console.log('Starting scheduled calendar sync for all users...');
 
-    // Get all users who have Microsoft tokens (active integrations)
-    const { data: tokenData, error: tokenError } = await supabase
+    // Get all users who have gateway connections (new flow)
+    const { data: connData, error: connError } = await supabase
+      .from('outlook_connections')
+      .select('user_id')
+      .eq('connector_id', 'microsoft_outlook');
+
+    // Also get users with legacy microsoft_tokens (old flow)
+    const { data: tokenData } = await supabase
       .from('microsoft_tokens')
       .select('user_id')
-      .gte('expires_at', new Date().toISOString()); // Only active tokens
+      .gte('expires_at', new Date().toISOString());
 
-    if (tokenError) {
-      console.error('Error fetching Microsoft tokens:', tokenError);
-      return new Response(JSON.stringify({ error: 'Failed to fetch users' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (connError) {
+      console.error('Error fetching Outlook connections:', connError);
     }
 
-    if (!tokenData || tokenData.length === 0) {
-      console.log('No active Microsoft integrations found');
+    // Combine both lists, deduplicating by user_id
+    const connUsers = (connData || []).map((r: any) => r.user_id);
+    const tokenUsers = (tokenData || []).map((r: any) => r.user_id);
+    const allUserIds = [...new Set([...connUsers, ...tokenUsers])];
+
+    if (allUserIds.length === 0) {
+      console.log('No active Outlook integrations found');
       return new Response(JSON.stringify({ message: 'No active integrations' }), {
         status: 200,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
