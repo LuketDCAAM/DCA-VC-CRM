@@ -507,6 +507,8 @@ export default function IntegrationsSettings() {
         </CardContent>
       </Card>
 
+      <MicrosoftOutlookCard />
+
       <div className="space-y-2">
         <h2 className="text-lg font-semibold">Bring your own AI</h2>
         <p className="text-sm text-muted-foreground">
