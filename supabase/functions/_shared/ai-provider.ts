@@ -111,6 +111,19 @@ export async function resolveUserModel(opts: {
       };
     }
   }
+  // Workspace-wide Anthropic key (project secret) — used when the user has no BYOK row.
+  const orgAnthropic = Deno.env.get("ANTHROPIC_API_KEY");
+  if (orgAnthropic) {
+    const modelId = PROVIDER_DEFAULT_MODEL.anthropic;
+    return {
+      model: createAnthropic({ apiKey: orgAnthropic })(modelId),
+      provider: "anthropic",
+      modelId,
+      userId: opts.userId,
+      hasUserCredential: false,
+    };
+  }
+
   return {
     model: lovableGateway()(fallback),
     provider: "lovable",
