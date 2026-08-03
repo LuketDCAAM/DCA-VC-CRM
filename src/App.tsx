@@ -23,6 +23,8 @@ import IntegrationsSettings from "./pages/IntegrationsSettings";
 import NotFound from "./pages/NotFound";
 import MicrosoftAuthCallback from "./pages/auth/microsoft/callback";
 import ResetPassword from "./pages/auth/ResetPassword";
+import OAuthConsent from "./pages/OAuthConsent";
+
 import { useAuth } from "./hooks/useAuth";
 import { useUserRoles } from "./hooks/useUserRoles";
 import ApprovalStatus from "./components/auth/ApprovalStatus";
