@@ -60,29 +60,28 @@ Deno.serve(async (req) => {
     let totalFailed = 0;
 
     // Process each user
-    for (const token of tokenData) {
+    for (const userId of allUserIds) {
       try {
-        console.log(`Syncing calendar for user: ${token.user_id}`);
+        console.log(`Syncing calendar for user: ${userId}`);
         
         const { data, error } = await supabase.functions.invoke('outlook-calendar-sync', {
           body: {
-            user_id: token.user_id,
+            user_id: userId,
             sync_type: 'incremental'
           }
         });
 
         if (error) {
-          console.error(`Calendar sync failed for user ${token.user_id}:`, error);
+          console.error(`Calendar sync failed for user ${userId}:`, error);
           totalFailed++;
         } else {
-          console.log(`Calendar sync completed for user ${token.user_id}`);
+          console.log(`Calendar sync completed for user ${userId}`);
           totalSynced++;
         }
 
-        // Add small delay between requests to avoid rate limits
         await new Promise(resolve => setTimeout(resolve, 1000));
       } catch (error) {
-        console.error(`Error syncing calendar for user ${token.user_id}:`, error);
+        console.error(`Error syncing calendar for user ${userId}:`, error);
         totalFailed++;
       }
     }
@@ -91,7 +90,7 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       message: 'Scheduled sync completed',
-      total_users: tokenData.length,
+      total_users: allUserIds.length,
       successful_syncs: totalSynced,
       failed_syncs: totalFailed
     }), {
