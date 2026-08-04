@@ -21,6 +21,7 @@ export default function InvestorsSimple() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedInvestor, setSelectedInvestor] = useState<Investor | null>(null);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
