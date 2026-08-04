@@ -51,6 +51,25 @@ export default function InvestorsSimple() {
     return result;
   };
 
+  // Build filter options dynamically from actual investor data
+  const locationOptions = Array.from(
+    new Set(
+      investors
+        .map(inv => inv.location?.trim())
+        .filter((loc): loc is string => !!loc)
+    )
+  )
+    .sort((a, b) => a.localeCompare(b))
+    .map(loc => ({ label: loc, value: loc }));
+
+  const sectorOptions = Array.from(
+    new Set(
+      investors.flatMap(inv => (inv.preferred_sectors || []).map(s => s?.trim()).filter(Boolean) as string[])
+    )
+  )
+    .sort((a, b) => a.localeCompare(b))
+    .map(s => ({ label: s, value: s }));
+
   // Filter options for investors
   const filterOptions: FilterOption[] = [
     {
@@ -64,18 +83,21 @@ export default function InvestorsSimple() {
       key: 'location',
       label: 'Location',
       value: 'location',
-      type: 'select',
-      options: [
-        { label: 'San Francisco', value: 'San Francisco' },
-        { label: 'New York', value: 'New York' },
-        { label: 'Los Angeles', value: 'Los Angeles' },
-        { label: 'Austin', value: 'Austin' },
-        { label: 'Remote', value: 'Remote' },
-      ]
+      type: 'multiselect',
+      options: locationOptions,
     },
+    ...(sectorOptions.length > 0
+      ? [{
+          key: 'preferred_sectors',
+          label: 'Preferred Sectors',
+          value: 'preferred_sectors',
+          type: 'multiselect' as const,
+          options: sectorOptions,
+        }]
+      : []),
     {
       key: 'average_check_size',
-      label: 'Check Size',
+      label: 'Check Size ($)',
       value: 'average_check_size',
       type: 'range'
     },
@@ -83,7 +105,7 @@ export default function InvestorsSimple() {
       key: 'created_at',
       label: 'Date Added',
       value: 'created_at',
-      type: 'date'
+      type: 'daterange'
     }
   ];
 
@@ -107,26 +129,46 @@ export default function InvestorsSimple() {
 
     // Active filters
     const matchesFilters = Object.entries(activeFilters).every(([key, value]) => {
-      if (!value || value === 'all' || value === '') return true;
-      
-      if (key === 'created_at') {
+      if (value === undefined || value === null || value === 'all' || value === '') return true;
+      if (Array.isArray(value) && value.length === 0) return true;
+
+      if (key === 'created_at_from' || key === 'created_at_to') {
+        if (!investor.created_at) return false;
         const investorDate = new Date(investor.created_at).toISOString().split('T')[0];
-        return investorDate >= value;
+        return key === 'created_at_from' ? investorDate >= value : investorDate <= value;
       }
-      
-      if (key === 'average_check_size_min') {
-        return !investor.average_check_size || investor.average_check_size >= parseInt(value) * 100;
+
+      if (key === 'average_check_size_min' || key === 'average_check_size_max') {
+        const bound = parseFloat(String(value));
+        if (isNaN(bound)) return true;
+        if (!investor.average_check_size) return false;
+        // Stored in cents, filter input is in dollars
+        return key === 'average_check_size_min'
+          ? investor.average_check_size >= bound * 100
+          : investor.average_check_size <= bound * 100;
       }
-      
-      if (key === 'average_check_size_max') {
-        return !investor.average_check_size || investor.average_check_size <= parseInt(value) * 100;
+
+      if (key === 'location') {
+        const loc = investor.location?.trim().toLowerCase();
+        if (!loc) return false;
+        const values = (Array.isArray(value) ? value : [value]).map(v => String(v).trim().toLowerCase());
+        return values.includes(loc);
       }
-      
-      return investor[key as keyof typeof investor] === value;
+
+      if (key === 'preferred_sectors') {
+        const sectors = (investor.preferred_sectors || []).map(s => s?.trim().toLowerCase());
+        const values = (Array.isArray(value) ? value : [value]).map(v => String(v).trim().toLowerCase());
+        return values.some(v => sectors.includes(v));
+      }
+
+      const investorValue = investor[key as keyof typeof investor];
+      if (Array.isArray(value)) return value.some(v => investorValue === v);
+      return investorValue === value;
     });
 
     return matchesSearch && matchesFilters;
   });
+
 
   const handleViewDetails = (investor: Investor) => {
     setSelectedInvestor(investor);
