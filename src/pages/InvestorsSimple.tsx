@@ -250,8 +250,8 @@ export default function InvestorsSimple() {
             onFilterChange={handleFilterChange}
             onClearFilters={handleClearFilters}
             placeholder="Search investors by name, firm, or location..."
-            showAdvanced={false}
-            onToggleAdvanced={() => {}}
+            showAdvanced={showAdvancedFilters}
+            onToggleAdvanced={() => setShowAdvancedFilters(prev => !prev)}
           />
         </div>
         <div className="flex items-center gap-1">
