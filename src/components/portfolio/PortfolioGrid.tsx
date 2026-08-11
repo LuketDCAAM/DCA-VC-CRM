@@ -61,8 +61,10 @@ export function PortfolioGrid({
           key={company.id} 
           company={company}
           onViewDetails={onViewDetails}
+          onDeleted={onSuccess}
         />
       ))}
     </div>
   );
 }
+
