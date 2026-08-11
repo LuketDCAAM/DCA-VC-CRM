@@ -11,6 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { PortfolioHeader } from '@/components/portfolio/PortfolioHeader';
 import { PortfolioStats } from '@/components/portfolio/PortfolioStats';
 import { PortfolioGrid } from '@/components/portfolio/PortfolioGrid';
+import { useDeletePortfolioCompany } from '@/hooks/useDeletePortfolioCompany';
+
 
 export default function Portfolio() {
   const { companies, loading, refetch } = usePortfolioCompanies();
