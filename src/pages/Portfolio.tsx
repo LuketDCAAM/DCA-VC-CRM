@@ -17,6 +17,7 @@ import { useDeletePortfolioCompany } from '@/hooks/useDeletePortfolioCompany';
 export default function Portfolio() {
   const { companies, loading, refetch } = usePortfolioCompanies();
   const { importPortfolioCompanies } = useCSVImport();
+  const { deleteCompanies } = useDeletePortfolioCompany();
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
