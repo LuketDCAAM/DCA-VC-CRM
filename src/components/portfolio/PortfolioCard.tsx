@@ -2,9 +2,21 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, DollarSign, TrendingUp, Calendar, Eye } from 'lucide-react';
+import { Building2, DollarSign, TrendingUp, Calendar, Eye, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Database } from '@/integrations/supabase/types';
 import { PortfolioCompany } from '@/hooks/usePortfolioCompanies';
+import { useDeletePortfolioCompany } from '@/hooks/useDeletePortfolioCompany';
 
 type CompanyStatus = Database['public']['Enums']['company_status'];
 
@@ -21,7 +33,9 @@ interface Investment {
 interface PortfolioCardProps {
   company: PortfolioCompany;
   onViewDetails?: (company: PortfolioCompany) => void;
+  onDeleted?: () => void;
 }
+
 
 const formatCurrency = (amount: number | null) => {
   if (!amount) return 'N/A';
@@ -47,11 +61,17 @@ const getStatusColor = (status: CompanyStatus) => {
   return colors[status] || 'bg-gray-100 text-gray-800';
 };
 
-export function PortfolioCard({ company, onViewDetails }: PortfolioCardProps) {
+export function PortfolioCard({ company, onViewDetails, onDeleted }: PortfolioCardProps) {
+  const { deleteCompany, isDeleting } = useDeletePortfolioCompany();
   const totalInvested = company.investments.reduce((sum, inv) => sum + inv.amount_invested, 0);
   const latestInvestment = company.investments.sort((a, b) => 
     new Date(b.investment_date).getTime() - new Date(a.investment_date).getTime()
   )[0];
+
+  const handleDelete = async () => {
+    const success = await deleteCompany(company.id);
+    if (success) onDeleted?.();
+  };
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -73,12 +93,47 @@ export function PortfolioCard({ company, onViewDetails }: PortfolioCardProps) {
               ))}
             </div>
           </div>
-          {onViewDetails && (
-            <Button variant="ghost" size="sm" onClick={() => onViewDetails(company)}>
-              <Eye className="h-4 w-4 mr-2" />
-              View
-            </Button>
-          )}
+          <div className="flex items-center gap-1">
+            {onViewDetails && (
+              <Button variant="ghost" size="sm" onClick={() => onViewDetails(company)}>
+                <Eye className="h-4 w-4 mr-2" />
+                View
+              </Button>
+            )}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-destructive hover:text-destructive"
+                  disabled={isDeleting}
+                  aria-label={`Delete ${company.company_name}`}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete portfolio company</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete "{company.company_name}"? This also removes its
+                    investments, valuations, notes, tasks and attachments. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? 'Deleting...' : 'Delete'}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

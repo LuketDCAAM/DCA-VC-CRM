@@ -11,10 +11,13 @@ import { useToast } from '@/hooks/use-toast';
 import { PortfolioHeader } from '@/components/portfolio/PortfolioHeader';
 import { PortfolioStats } from '@/components/portfolio/PortfolioStats';
 import { PortfolioGrid } from '@/components/portfolio/PortfolioGrid';
+import { useDeletePortfolioCompany } from '@/hooks/useDeletePortfolioCompany';
+
 
 export default function Portfolio() {
   const { companies, loading, refetch } = usePortfolioCompanies();
   const { importPortfolioCompanies } = useCSVImport();
+  const { deleteCompanies } = useDeletePortfolioCompany();
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -202,10 +205,13 @@ export default function Portfolio() {
   };
 
   const handleBulkAction = async (actionId: string, selectedIds: string[]) => {
-    console.log(`Bulk action ${actionId} on portfolio companies:`, selectedIds);
-    // TODO: Implement actual bulk actions
+    if (actionId === 'delete') {
+      const success = await deleteCompanies(selectedIds);
+      if (success) await refetch();
+    }
     setSelectedCompanies([]);
   };
+
 
   const handleSelectAll = () => {
     setSelectedCompanies(filteredCompanies.map(company => company.id));
