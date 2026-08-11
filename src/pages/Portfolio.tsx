@@ -202,10 +202,13 @@ export default function Portfolio() {
   };
 
   const handleBulkAction = async (actionId: string, selectedIds: string[]) => {
-    console.log(`Bulk action ${actionId} on portfolio companies:`, selectedIds);
-    // TODO: Implement actual bulk actions
+    if (actionId === 'delete') {
+      const success = await deleteCompanies(selectedIds);
+      if (success) await refetch();
+    }
     setSelectedCompanies([]);
   };
+
 
   const handleSelectAll = () => {
     setSelectedCompanies(filteredCompanies.map(company => company.id));
