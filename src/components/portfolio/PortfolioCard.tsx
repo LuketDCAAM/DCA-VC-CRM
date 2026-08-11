@@ -2,9 +2,21 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, DollarSign, TrendingUp, Calendar, Eye } from 'lucide-react';
+import { Building2, DollarSign, TrendingUp, Calendar, Eye, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Database } from '@/integrations/supabase/types';
 import { PortfolioCompany } from '@/hooks/usePortfolioCompanies';
+import { useDeletePortfolioCompany } from '@/hooks/useDeletePortfolioCompany';
 
 type CompanyStatus = Database['public']['Enums']['company_status'];
 
@@ -21,7 +33,9 @@ interface Investment {
 interface PortfolioCardProps {
   company: PortfolioCompany;
   onViewDetails?: (company: PortfolioCompany) => void;
+  onDeleted?: () => void;
 }
+
 
 const formatCurrency = (amount: number | null) => {
   if (!amount) return 'N/A';
