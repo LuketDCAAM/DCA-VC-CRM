@@ -472,7 +472,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
                 name="deal_lead"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Deal Lead</FormLabel>
+                    <FormLabel>Sourced By</FormLabel>
                     <FormControl>
                       <Input {...field} value={field.value || ''} placeholder="Name of the deal lead" />
                     </FormControl>

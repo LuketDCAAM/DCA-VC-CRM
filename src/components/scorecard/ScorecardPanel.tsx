@@ -55,7 +55,7 @@ const INPUT_GROUPS: { title: string; fields: { key: keyof ScorecardInputs; label
       { key: "stage", label: "Stage", type: "select", options: ["Pre-Seed","Seed","Series A","Series B","Series C","Growth"] },
       { key: "geography", label: "Geography", type: "text" },
       { key: "founding_year", label: "Founding Year", type: "number" },
-      { key: "deal_lead", label: "Deal Lead", type: "text" },
+      { key: "deal_lead", label: "Sourced By", type: "text" },
       { key: "vehicle", label: "Vehicle", type: "text" },
       { key: "repeat_founder", label: "Repeat Founder?", type: "bool" },
       { key: "has_technical_cofounder", label: "Technical Co-Founder?", type: "bool" },

@@ -1,7 +1,8 @@
 
 import { FilterOption } from '@/components/common/SearchAndFilter';
 import { Deal } from '@/types/deal';
-import { getUniqueSectors, getUniqueStateProvinces, getUniqueCountries, getUniqueDealSources } from '@/utils/dealFilterUtils';
+import { getUniqueSectors, getUniqueStateProvinces, getUniqueCountries, getUniqueDealSources, getUniqueDealLeads } from '@/utils/dealFilterUtils';
+
 
 export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
   console.log('Generating dynamic filter options from deals:', deals.length);
@@ -87,6 +88,14 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
       type: 'multiselect',
       options: getUniqueDealSources(deals)
     },
+    {
+      key: 'deal_lead',
+      label: 'Sourced By',
+      value: 'deal_lead',
+      type: 'multiselect',
+      options: getUniqueDealLeads(deals)
+    },
+
     {
       key: 'source_date',
       label: 'Source Date',
