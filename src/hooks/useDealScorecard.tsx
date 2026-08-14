@@ -90,7 +90,7 @@ export function useDealScorecard(dealId: string) {
     // Pull existing deal values as starting point
     const { data: deal } = await supabase
       .from("deals")
-      .select("sector,round_stage,location,country,state_province,city,deal_lead,investment_vehicle,founded_year,round_size,post_money_valuation,revenue,total_funding_raised,description")
+      .select("sector,round_stage,location,country,state_province,city,sourced_by,investment_vehicle,founded_year,round_size,post_money_valuation,revenue,total_funding_raised,description")
       .eq("id", dealId)
       .maybeSingle();
 
@@ -100,7 +100,8 @@ export function useDealScorecard(dealId: string) {
           stage: deal.round_stage ?? null,
           geography: deal.location ?? ([deal.city, deal.state_province, deal.country].filter(Boolean).join(", ") || null),
           founding_year: deal.founded_year ?? null,
-          deal_lead: deal.deal_lead ?? null,
+          deal_lead: deal.sourced_by ?? null,
+
           vehicle: deal.investment_vehicle ?? null,
           fundraise_amount: deal.round_size ?? null,
           valuation: deal.post_money_valuation ?? null,
