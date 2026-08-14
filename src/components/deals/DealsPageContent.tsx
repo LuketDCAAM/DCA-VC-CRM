@@ -65,10 +65,18 @@ export function DealsPageContent({
   onCSVImport,
   allDeals,
 }: DealsPageContentProps) {
+  // Sourced By options come straight from the deals.sourced_by column in the DB
+  const sourcedByOptions = useSourcedByValues();
+
   // Generate dynamic filter options based on actual deals data
   const dynamicFilterOptions = useMemo(() => {
-    return generateDealsFilterOptions(allDeals);
-  }, [allDeals]);
+    const options = generateDealsFilterOptions(allDeals);
+    return options.map(option =>
+      option.key === 'sourced_by' && sourcedByOptions.length > 0
+        ? { ...option, options: sourcedByOptions }
+        : option
+    );
+  }, [allDeals, sourcedByOptions]);
 
   return (
     <div className="space-y-4">
