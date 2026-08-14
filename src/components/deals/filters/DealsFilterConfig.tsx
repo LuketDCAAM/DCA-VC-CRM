@@ -1,7 +1,8 @@
 
 import { FilterOption } from '@/components/common/SearchAndFilter';
 import { Deal } from '@/types/deal';
-import { getUniqueSectors, getUniqueStateProvinces, getUniqueCountries, getUniqueDealSources } from '@/utils/dealFilterUtils';
+import { getUniqueSectors, getUniqueStateProvinces, getUniqueCountries, getUniqueDealSources, getUniqueDealLeads } from '@/utils/dealFilterUtils';
+
 
 export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
   console.log('Generating dynamic filter options from deals:', deals.length);
