@@ -116,7 +116,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <DealEditCompanySection control={form.control} />
           <DealEditContactSection control={form.control} />
-          <DealEditStatusSection control={form.control} />
+          <DealEditStatusSection control={form.control} sourcedById={deal.sourced_by_id} />
           <DealEditFinancialSection control={form.control} />
           <DealEditNextStepsSection control={form.control} />
           <DealEditInvestorSection control={form.control} />

@@ -23,6 +23,7 @@ interface EditDealValues {
   investment_vehicle?: string | null;
   deal_score?: number;
   sourced_by?: string;
+  sourced_by_id?: string | null;
   deal_source?: string;
   source_date?: string;
   round_size?: string;
@@ -78,7 +79,9 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
           round_stage: values.round_stage as any || null,
           investment_vehicle: values.investment_vehicle as any || null,
           deal_score: values.deal_score || null,
-          sourced_by: values.sourced_by || null,
+          ...(values.sourced_by_id
+            ? { sourced_by_id: values.sourced_by_id }
+            : { sourced_by: values.sourced_by || null, sourced_by_id: null }),
           deal_source: values.deal_source || null,
           source_date: values.source_date || null,
           last_call_date: values.last_call_date || null,
