@@ -89,6 +89,14 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
       options: getUniqueDealSources(deals)
     },
     {
+      key: 'deal_lead',
+      label: 'Sourced By',
+      value: 'deal_lead',
+      type: 'multiselect',
+      options: getUniqueDealLeads(deals)
+    },
+
+    {
       key: 'source_date',
       label: 'Source Date',
       value: 'source_date',
