@@ -4,8 +4,10 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSourcerProfiles } from '@/hooks/useSourcerProfiles';
+import { useSourcedByValues } from '@/hooks/deals/useSourcedByValues';
 
 const EXTERNAL = '__external__';
+const TEXT_PREFIX = 'text:';
 const NONE = '__none__';
 
 interface SourcedBySelectProps {
@@ -20,9 +22,18 @@ interface SourcedBySelectProps {
 export function SourcedBySelect({ currentSourcedById }: SourcedBySelectProps) {
   const form = useFormContext();
   const { profiles } = useSourcerProfiles(currentSourcedById ?? form.getValues('sourced_by_id'));
+  // Names already stored in the deals.sourced_by column
+  const columnValues = useSourcedByValues();
 
   const sourcedById: string | null = form.watch('sourced_by_id') ?? null;
   const sourcedByText: string = form.watch('sourced_by') ?? '';
+
+  const profileNames = new Set(
+    profiles.map(p => (p.name || p.email || '').trim().toLowerCase()).filter(Boolean)
+  );
+  const existingNames = columnValues
+    .map(o => o.value)
+    .filter(name => !profileNames.has(name.trim().toLowerCase()));
 
   const [external, setExternal] = useState(!sourcedById && !!sourcedByText);
 
@@ -34,6 +45,12 @@ export function SourcedBySelect({ currentSourcedById }: SourcedBySelectProps) {
     if (value === EXTERNAL) {
       setExternal(true);
       form.setValue('sourced_by_id', null, { shouldDirty: true });
+      return;
+    }
+    if (value.startsWith(TEXT_PREFIX)) {
+      setExternal(false);
+      form.setValue('sourced_by_id', null, { shouldDirty: true });
+      form.setValue('sourced_by', value.slice(TEXT_PREFIX.length), { shouldDirty: true });
       return;
     }
     setExternal(false);
@@ -55,7 +72,16 @@ export function SourcedBySelect({ currentSourcedById }: SourcedBySelectProps) {
           <FormItem>
             <FormLabel>Sourced By</FormLabel>
             <Select
-              value={sourcedById ?? (external ? EXTERNAL : NONE)}
+              value={
+                sourcedById ??
+                (external
+                  ? EXTERNAL
+                  : sourcedByText && existingNames.includes(sourcedByText)
+                    ? `${TEXT_PREFIX}${sourcedByText}`
+                    : sourcedByText
+                      ? EXTERNAL
+                      : NONE)
+              }
               onValueChange={handleSelect}
             >
               <FormControl>
@@ -68,6 +94,11 @@ export function SourcedBySelect({ currentSourcedById }: SourcedBySelectProps) {
                 {profiles.map(p => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name || p.email || 'Unnamed'}
+                  </SelectItem>
+                ))}
+                {existingNames.map(name => (
+                  <SelectItem key={name} value={`${TEXT_PREFIX}${name}`}>
+                    {name}
                   </SelectItem>
                 ))}
                 <SelectItem value={EXTERNAL}>Someone outside the firm…</SelectItem>
