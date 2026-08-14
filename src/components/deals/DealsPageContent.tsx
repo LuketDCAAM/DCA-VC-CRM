@@ -6,6 +6,7 @@ import { SearchAndFilter } from '@/components/common/SearchAndFilter';
 import { DealsViewTabs } from './DealsViewTabs';
 import { DealsViewRenderer, ViewMode } from './views/DealsViewRenderer';
 import { generateDealsFilterOptions } from './filters/DealsFilterConfig';
+import { useSourcedByValues } from '@/hooks/deals/useSourcedByValues';
 import { DealStats } from '@/hooks/deals/dealStatsCalculator';
 import { ColumnSelector } from './table/ColumnSelector';
 import { DealsBulkActions } from './DealsBulkActions';
