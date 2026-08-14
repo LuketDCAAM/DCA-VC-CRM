@@ -61,7 +61,7 @@ function supabaseForUser(ctx) {
 }
 
 // src/lib/mcp/tools/search-deals.ts
-var DEAL_FIELDS = "id, company_name, sector, round_stage, pipeline_stage, location, website, description, round_size, post_money_valuation, revenue, total_funding_raised, deal_score, deal_lead, is_priority_deal, next_steps, last_call_date, updated_at";
+var DEAL_FIELDS = "id, company_name, sector, round_stage, pipeline_stage, location, website, description, round_size, post_money_valuation, revenue, total_funding_raised, deal_score, sourced_by, is_priority_deal, next_steps, last_call_date, updated_at";
 var search_deals_default = defineTool({
   name: "search_deals",
   title: "Search deals",

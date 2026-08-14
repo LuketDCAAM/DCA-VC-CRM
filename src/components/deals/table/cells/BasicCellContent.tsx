@@ -7,7 +7,7 @@ import { formatLocation, formatLocationString } from '@/utils/locationUtils';
 
 interface BasicCellContentProps {
   deal: Deal;
-  type: 'location' | 'deal_lead' | 'created_at' | 'source_date' | 'description' | 'last_call_date' | 'total_calls' | 'investment_vehicle' | 'scored_at' | 'ic_review_date' | 'reason_for_passing';
+  type: 'location' | 'sourced_by' | 'created_at' | 'source_date' | 'description' | 'last_call_date' | 'total_calls' | 'investment_vehicle' | 'scored_at' | 'ic_review_date' | 'reason_for_passing';
 }
 
 export function BasicCellContent({ deal, type }: BasicCellContentProps) {
@@ -32,11 +32,11 @@ export function BasicCellContent({ deal, type }: BasicCellContentProps) {
       );
     }
 
-    case 'deal_lead':
-      return deal.deal_lead ? (
+    case 'sourced_by':
+      return deal.sourced_by ? (
         <div className="flex items-center gap-1">
           <User className="h-3 w-3 text-muted-foreground" />
-          <span className="text-foreground text-sm">{deal.deal_lead}</span>
+          <span className="text-foreground text-sm">{deal.sourced_by}</span>
         </div>
       ) : (
         <span className="text-muted-foreground text-sm">-</span>

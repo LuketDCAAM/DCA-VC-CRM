@@ -24,7 +24,7 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
       deal.description?.toLowerCase().includes(searchLower) ||
       deal.sector?.toLowerCase().includes(searchLower) ||
       deal.deal_source?.toLowerCase().includes(searchLower) ||
-      deal.deal_lead?.toLowerCase().includes(searchLower)
+      deal.sourced_by?.toLowerCase().includes(searchLower)
     );
   }
 
@@ -76,11 +76,11 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
             filtered = filtered.filter(deal => deal.deal_source === value);
           }
           break;
-        case 'deal_lead':
+        case 'sourced_by':
           if (Array.isArray(value)) {
-            filtered = filtered.filter(deal => value.length === 0 || value.includes(deal.deal_lead || ''));
+            filtered = filtered.filter(deal => value.length === 0 || value.includes(deal.sourced_by || ''));
           } else {
-            filtered = filtered.filter(deal => deal.deal_lead === value);
+            filtered = filtered.filter(deal => deal.sourced_by === value);
           }
           break;
         case 'round_size':

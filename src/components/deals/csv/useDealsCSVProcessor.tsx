@@ -85,7 +85,7 @@ export function useDealsCSVProcessor() {
           post_money_valuation: parseCurrency(row.post_money_valuation),
           revenue: parseCurrency(row.revenue),
           deal_score: parseInteger(row.deal_score, 0, 100),
-          deal_lead: row.deal_lead ? String(row.deal_lead).trim() : null,
+          sourced_by: row.sourced_by ? String(row.sourced_by).trim() : null,
           deal_source: row.deal_source ? String(row.deal_source).trim() : null,
           source_date: parseDate(row.source_date),
           created_by: user.id,

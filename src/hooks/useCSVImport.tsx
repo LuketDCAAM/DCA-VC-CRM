@@ -58,7 +58,7 @@ export function useCSVImport() {
               post_money_valuation: dealFields.post_money_valuation,
               revenue: dealFields.revenue,
               deal_score: dealFields.deal_score,
-              deal_lead: dealFields.deal_lead,
+              sourced_by: dealFields.sourced_by,
               deal_source: dealFields.deal_source,
               source_date: dealFields.source_date,
               created_by: user.id,

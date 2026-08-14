@@ -36,7 +36,7 @@ export function useDealEditForm({ deal }: UseDealEditFormProps) {
       deal_score: deal.deal_score || undefined,
       source_date: deal.source_date ? deal.source_date.split('T')[0] : '', 
       deal_source: deal.deal_source || '',
-      deal_lead: deal.deal_lead || '',
+      sourced_by: deal.sourced_by || '',
       round_size: formatCurrency(deal.round_size),
       post_money_valuation: formatCurrency(deal.post_money_valuation),
       revenue: formatCurrency(deal.revenue),

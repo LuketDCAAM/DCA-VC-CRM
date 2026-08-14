@@ -163,7 +163,7 @@ export const DEFAULT_COLUMNS: TableColumn[] = [
     dataType: 'string'
   },
   {
-    key: 'deal_lead',
+    key: 'sourced_by',
     label: 'Sourced By',
     icon: User,
     width: 'min-w-[120px]',

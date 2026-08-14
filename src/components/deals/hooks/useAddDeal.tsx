@@ -21,7 +21,7 @@ interface AddDealValues {
   pipeline_stage: string;
   round_stage?: string;
   deal_score?: number;
-  deal_lead?: string;
+  sourced_by?: string;
   deal_source?: string;
   source_date?: string;
   round_size?: string;
@@ -136,7 +136,7 @@ export function useAddDeal() {
           pipeline_stage: values.pipeline_stage as any,
           round_stage: values.round_stage as any || null,
           deal_score: values.deal_score || null,
-          deal_lead: values.deal_lead || null,
+          sourced_by: values.sourced_by || null,
           deal_source: values.deal_source || null,
           source_date: values.source_date || null,
           round_size,

@@ -29,7 +29,7 @@ const addDealFormSchema = z.object({
   round_stage: z.string().nullable().optional(),
   investment_vehicle: z.string().nullable().optional(),
   deal_score: z.number().min(0).max(100).optional(),
-  deal_lead: z.string().optional(),
+  sourced_by: z.string().optional(),
   deal_source: z.string().optional(),
   source_date: z.string().optional(),
   round_size: z.string().optional(),
@@ -58,7 +58,7 @@ interface AddDealValues {
   round_stage?: string;
   investment_vehicle?: string;
   deal_score?: number;
-  deal_lead?: string;
+  sourced_by?: string;
   deal_source?: string;
   source_date?: string;
   round_size?: string;
@@ -109,7 +109,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
       round_stage: '',
       investment_vehicle: '',
       deal_score: undefined,
-      deal_lead: '',
+      sourced_by: '',
       deal_source: '',
       source_date: '',
       round_size: '',
@@ -164,7 +164,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
       round_stage: values.round_stage,
       investment_vehicle: values.investment_vehicle,
       deal_score: values.deal_score,
-      deal_lead: values.deal_lead,
+      sourced_by: values.sourced_by,
       deal_source: values.deal_source,
       source_date: values.source_date,
       round_size: values.round_size,
@@ -469,7 +469,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
               />
               <FormField
                 control={form.control}
-                name="deal_lead"
+                name="sourced_by"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Sourced By</FormLabel>

@@ -53,10 +53,10 @@ export function DealCardContent({ deal }: DealCardContentProps) {
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Calendar className="h-3 w-3" />
         <span>Created {formatDate(deal.created_at)}</span>
-        {deal.deal_lead && (
+        {deal.sourced_by && (
           <>
             <Users className="h-3 w-3 ml-2" />
-            <span>{deal.deal_lead}</span>
+            <span>{deal.sourced_by}</span>
           </>
         )}
       </div>

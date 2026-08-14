@@ -89,7 +89,7 @@ export function DealStatusForm() {
         />
         <FormField
           control={control}
-          name="deal_lead"
+          name="sourced_by"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Sourced By</FormLabel>
