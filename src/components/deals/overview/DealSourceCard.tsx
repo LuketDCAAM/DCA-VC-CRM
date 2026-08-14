@@ -20,7 +20,7 @@ export function DealSourceCard({ deal }: DealSourceCardProps) {
       <CardContent className="space-y-4">
         {deal.deal_lead && (
           <div>
-            <div className="text-sm text-gray-500 mb-1">Deal Lead</div>
+            <div className="text-sm text-gray-500 mb-1">Sourced By</div>
             <div className="font-medium">{deal.deal_lead}</div>
           </div>
         )}

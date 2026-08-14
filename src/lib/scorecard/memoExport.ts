@@ -137,7 +137,7 @@ export function exportMemoPdf(data: MemoData) {
     ["Burn Multiple", fmtNum(data.computed.autocalcs.burn_multiple, 2)],
     ["EV / Revenue", `${fmtNum(data.computed.autocalcs.ev_revenue, 1)}x`],
     ["Dilution", fmtPct(data.computed.autocalcs.implied_dilution)],
-    ["Deal Lead", String(data.inputs.deal_lead ?? "—")],
+    ["Sourced By", String(data.inputs.deal_lead ?? "—")],
   ];
   const colW = contentW / 3;
   const rowH = 28;

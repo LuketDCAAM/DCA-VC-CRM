@@ -88,3 +88,17 @@ export function getUniqueDealSources(deals: Deal[]): { label: string; value: str
   console.log('Unique deal sources found:', uniqueSources);
   return uniqueSources;
 }
+
+export function getUniqueDealLeads(deals: Deal[]): { label: string; value: string }[] {
+  const leadSet = new Set<string>();
+
+  deals.forEach(deal => {
+    if (deal.deal_lead && deal.deal_lead.trim() !== '') {
+      leadSet.add(deal.deal_lead.trim());
+    }
+  });
+
+  return Array.from(leadSet)
+    .sort()
+    .map(lead => ({ label: lead, value: lead }));
+}

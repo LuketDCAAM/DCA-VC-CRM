@@ -100,7 +100,7 @@ export function DealEditStatusSection({ control }: DealEditStatusSectionProps) {
         name="deal_lead"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Deal Lead</FormLabel>
+            <FormLabel>Sourced By</FormLabel>
             <FormControl>
               <Input {...field} />
             </FormControl>

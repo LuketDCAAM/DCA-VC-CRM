@@ -164,7 +164,7 @@ export const DEFAULT_COLUMNS: TableColumn[] = [
   },
   {
     key: 'deal_lead',
-    label: 'Deal Lead',
+    label: 'Sourced By',
     icon: User,
     width: 'min-w-[120px]',
     sortable: true,
