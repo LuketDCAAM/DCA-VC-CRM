@@ -89,9 +89,9 @@ export function generateDealsFilterOptions(deals: Deal[]): FilterOption[] {
       options: getUniqueDealSources(deals)
     },
     {
-      key: 'deal_lead',
+      key: 'sourced_by',
       label: 'Sourced By',
-      value: 'deal_lead',
+      value: 'sourced_by',
       type: 'multiselect',
       options: getUniqueDealLeads(deals)
     },

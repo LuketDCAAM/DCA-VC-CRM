@@ -22,7 +22,7 @@ export function useFilteredDeals(deals: Deal[], searchTerm: string, activeFilter
         (deal.country && deal.country.toLowerCase().includes(searchLower)) ||
         (deal.location && deal.location.toLowerCase().includes(searchLower)) ||
         (deal.description && deal.description.toLowerCase().includes(searchLower)) ||
-        (deal.deal_lead && deal.deal_lead.toLowerCase().includes(searchLower)) ||
+        (deal.sourced_by && deal.sourced_by.toLowerCase().includes(searchLower)) ||
         (deal.deal_source && deal.deal_source.toLowerCase().includes(searchLower));
 
       // Active filters - optimized with early returns

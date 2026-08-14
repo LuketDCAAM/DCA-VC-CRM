@@ -835,7 +835,6 @@ export type Database = {
           created_at: string
           created_by: string
           crunchbase_url: string | null
-          deal_lead: string | null
           deal_score: number | null
           deal_source: string | null
           description: string | null
@@ -866,6 +865,8 @@ export type Database = {
           scored_at: string | null
           sector: string | null
           source_date: string | null
+          sourced_by: string | null
+          sourced_by_id: string | null
           state_province: string | null
           tags: string[] | null
           total_calls: number | null
@@ -884,7 +885,6 @@ export type Database = {
           created_at?: string
           created_by: string
           crunchbase_url?: string | null
-          deal_lead?: string | null
           deal_score?: number | null
           deal_source?: string | null
           description?: string | null
@@ -915,6 +915,8 @@ export type Database = {
           scored_at?: string | null
           sector?: string | null
           source_date?: string | null
+          sourced_by?: string | null
+          sourced_by_id?: string | null
           state_province?: string | null
           tags?: string[] | null
           total_calls?: number | null
@@ -933,7 +935,6 @@ export type Database = {
           created_at?: string
           created_by?: string
           crunchbase_url?: string | null
-          deal_lead?: string | null
           deal_score?: number | null
           deal_source?: string | null
           description?: string | null
@@ -964,6 +965,8 @@ export type Database = {
           scored_at?: string | null
           sector?: string | null
           source_date?: string | null
+          sourced_by?: string | null
+          sourced_by_id?: string | null
           state_province?: string | null
           tags?: string[] | null
           total_calls?: number | null
@@ -971,7 +974,15 @@ export type Database = {
           updated_at?: string
           website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "deals_sourced_by_id_fkey"
+            columns: ["sourced_by_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       external_investors: {
         Row: {
@@ -1559,6 +1570,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          is_active: boolean
           name: string | null
           updated_at: string
         }
@@ -1566,6 +1578,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id: string
+          is_active?: boolean
           name?: string | null
           updated_at?: string
         }
@@ -1573,6 +1586,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          is_active?: boolean
           name?: string | null
           updated_at?: string
         }

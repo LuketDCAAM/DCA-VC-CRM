@@ -68,8 +68,8 @@ const ConfigurableDealsTableRow = memo(({
       case 'deal_source':
         return <StatusCellContent deal={deal} type="deal_source" />;
       
-      case 'deal_lead':
-        return <BasicCellContent deal={deal} type="deal_lead" />;
+      case 'sourced_by':
+        return <BasicCellContent deal={deal} type="sourced_by" />;
       
       case 'sector':
         return <StatusCellContent deal={deal} type="sector" />;

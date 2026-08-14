@@ -93,8 +93,8 @@ export function getUniqueDealLeads(deals: Deal[]): { label: string; value: strin
   const leadSet = new Set<string>();
 
   deals.forEach(deal => {
-    if (deal.deal_lead && deal.deal_lead.trim() !== '') {
-      leadSet.add(deal.deal_lead.trim());
+    if (deal.sourced_by && deal.sourced_by.trim() !== '') {
+      leadSet.add(deal.sourced_by.trim());
     }
   });
 

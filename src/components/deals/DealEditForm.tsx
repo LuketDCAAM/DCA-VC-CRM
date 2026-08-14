@@ -46,7 +46,8 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
       round_stage: values.round_stage || null,
       investment_vehicle: values.investment_vehicle || null,
       deal_score: values.deal_score,
-      deal_lead: values.deal_lead || '',
+      sourced_by: values.sourced_by || '',
+      sourced_by_id: values.sourced_by_id ?? null,
       deal_source: values.deal_source || '',
       source_date: values.source_date || '',
       round_size: values.round_size || '',
@@ -115,7 +116,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <DealEditCompanySection control={form.control} />
           <DealEditContactSection control={form.control} />
-          <DealEditStatusSection control={form.control} />
+          <DealEditStatusSection control={form.control} sourcedById={deal.sourced_by_id} />
           <DealEditFinancialSection control={form.control} />
           <DealEditNextStepsSection control={form.control} />
           <DealEditInvestorSection control={form.control} />

@@ -6,12 +6,14 @@ import { Control } from 'react-hook-form';
 import { Constants } from '@/integrations/supabase/types';
 import { DealFormValues } from './dealEditFormSchema';
 import { PIPELINE_STAGES } from '@/hooks/deals/dealStagesConfig';
+import { SourcedBySelect } from './SourcedBySelect';
 
 interface DealEditStatusSectionProps {
   control: Control<DealFormValues>;
+  sourcedById?: string | null;
 }
 
-export function DealEditStatusSection({ control }: DealEditStatusSectionProps) {
+export function DealEditStatusSection({ control, sourcedById }: DealEditStatusSectionProps) {
   return (
     <div className="space-y-4">
       <h4 className="font-medium">Deal Status</h4>
@@ -95,19 +97,7 @@ export function DealEditStatusSection({ control }: DealEditStatusSectionProps) {
           </FormItem>
         )}
       />
-      <FormField
-        control={control}
-        name="deal_lead"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Sourced By</FormLabel>
-            <FormControl>
-              <Input {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <SourcedBySelect currentSourcedById={sourcedById} />
       <FormField
         control={control}
         name="investment_vehicle"

@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SourcedBySelect } from './SourcedBySelect';
 import { useAddDeal } from '../hooks/useAddDeal';
 import { Paperclip, FileText, Calendar, File, X, Upload } from 'lucide-react';
 import { DuplicateDetectionDialog } from '../duplicates/DuplicateDetectionDialog';
@@ -29,7 +30,8 @@ const addDealFormSchema = z.object({
   round_stage: z.string().nullable().optional(),
   investment_vehicle: z.string().nullable().optional(),
   deal_score: z.number().min(0).max(100).optional(),
-  deal_lead: z.string().optional(),
+  sourced_by: z.string().optional(),
+  sourced_by_id: z.string().nullable().optional(),
   deal_source: z.string().optional(),
   source_date: z.string().optional(),
   round_size: z.string().optional(),
@@ -58,7 +60,8 @@ interface AddDealValues {
   round_stage?: string;
   investment_vehicle?: string;
   deal_score?: number;
-  deal_lead?: string;
+  sourced_by?: string;
+  sourced_by_id?: string | null;
   deal_source?: string;
   source_date?: string;
   round_size?: string;
@@ -109,7 +112,8 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
       round_stage: '',
       investment_vehicle: '',
       deal_score: undefined,
-      deal_lead: '',
+      sourced_by: '',
+      sourced_by_id: null,
       deal_source: '',
       source_date: '',
       round_size: '',
@@ -164,7 +168,8 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
       round_stage: values.round_stage,
       investment_vehicle: values.investment_vehicle,
       deal_score: values.deal_score,
-      deal_lead: values.deal_lead,
+      sourced_by: values.sourced_by,
+      sourced_by_id: values.sourced_by_id ?? null,
       deal_source: values.deal_source,
       source_date: values.source_date,
       round_size: values.round_size,
@@ -467,19 +472,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="deal_lead"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sourced By</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ''} placeholder="Name of the deal lead" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <SourcedBySelect />
               <FormField
                 control={form.control}
                 name="deal_source"

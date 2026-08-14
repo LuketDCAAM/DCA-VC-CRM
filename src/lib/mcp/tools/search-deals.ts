@@ -3,7 +3,7 @@ import { z } from "zod";
 import { supabaseForUser } from "../supabase";
 
 const DEAL_FIELDS =
-  "id, company_name, sector, round_stage, pipeline_stage, location, website, description, round_size, post_money_valuation, revenue, total_funding_raised, deal_score, deal_lead, is_priority_deal, next_steps, last_call_date, updated_at";
+  "id, company_name, sector, round_stage, pipeline_stage, location, website, description, round_size, post_money_valuation, revenue, total_funding_raised, deal_score, sourced_by, is_priority_deal, next_steps, last_call_date, updated_at";
 
 export default defineTool({
   name: "search_deals",
