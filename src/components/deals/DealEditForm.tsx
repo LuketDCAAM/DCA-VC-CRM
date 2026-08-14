@@ -47,6 +47,7 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
       investment_vehicle: values.investment_vehicle || null,
       deal_score: values.deal_score,
       sourced_by: values.sourced_by || '',
+      sourced_by_id: values.sourced_by_id ?? null,
       deal_source: values.deal_source || '',
       source_date: values.source_date || '',
       round_size: values.round_size || '',

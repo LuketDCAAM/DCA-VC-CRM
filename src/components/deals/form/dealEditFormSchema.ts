@@ -19,6 +19,7 @@ export const dealFormSchema = z.object({
   investment_vehicle: z.enum(Constants.public.Enums.investment_vehicle as readonly [string, ...string[]] as [string, ...string[]]).nullable().optional(),
   deal_score: z.number().min(0).max(100).optional(),
   sourced_by: z.string().optional(),
+  sourced_by_id: z.string().nullable().optional(),
   deal_source: z.string().optional(),
   source_date: z.string().optional(),
   round_size: z.string().optional(), 

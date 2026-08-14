@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { SourcedBySelect } from './SourcedBySelect';
 import { useAddDeal } from '../hooks/useAddDeal';
 import { Paperclip, FileText, Calendar, File, X, Upload } from 'lucide-react';
 import { DuplicateDetectionDialog } from '../duplicates/DuplicateDetectionDialog';
@@ -30,6 +31,7 @@ const addDealFormSchema = z.object({
   investment_vehicle: z.string().nullable().optional(),
   deal_score: z.number().min(0).max(100).optional(),
   sourced_by: z.string().optional(),
+  sourced_by_id: z.string().nullable().optional(),
   deal_source: z.string().optional(),
   source_date: z.string().optional(),
   round_size: z.string().optional(),
@@ -59,6 +61,7 @@ interface AddDealValues {
   investment_vehicle?: string;
   deal_score?: number;
   sourced_by?: string;
+  sourced_by_id?: string | null;
   deal_source?: string;
   source_date?: string;
   round_size?: string;
@@ -110,6 +113,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
       investment_vehicle: '',
       deal_score: undefined,
       sourced_by: '',
+      sourced_by_id: null,
       deal_source: '',
       source_date: '',
       round_size: '',
@@ -165,6 +169,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
       investment_vehicle: values.investment_vehicle,
       deal_score: values.deal_score,
       sourced_by: values.sourced_by,
+      sourced_by_id: values.sourced_by_id ?? null,
       deal_source: values.deal_source,
       source_date: values.source_date,
       round_size: values.round_size,
@@ -467,19 +472,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="sourced_by"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Sourced By</FormLabel>
-                    <FormControl>
-                      <Input {...field} value={field.value || ''} placeholder="Name of the deal lead" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <SourcedBySelect />
               <FormField
                 control={form.control}
                 name="deal_source"

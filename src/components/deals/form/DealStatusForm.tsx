@@ -6,6 +6,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAddDeal } from '../hooks/useAddDeal';
+import { SourcedBySelect } from './SourcedBySelect';
 
 export function DealStatusForm() {
   const { control } = useFormContext();
@@ -87,19 +88,7 @@ export function DealStatusForm() {
             </FormItem>
           )}
         />
-        <FormField
-          control={control}
-          name="sourced_by"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Sourced By</FormLabel>
-              <FormControl>
-                <Input {...field} value={field.value || ''} placeholder="Name of the deal lead" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <SourcedBySelect />
         <FormField
           control={control}
           name="deal_source"
