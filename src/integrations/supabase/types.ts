@@ -867,6 +867,7 @@ export type Database = {
           source_date: string | null
           sourced_by: string | null
           sourced_by_id: string | null
+          sourced_by_inferred: boolean
           state_province: string | null
           tags: string[] | null
           total_calls: number | null
@@ -917,6 +918,7 @@ export type Database = {
           source_date?: string | null
           sourced_by?: string | null
           sourced_by_id?: string | null
+          sourced_by_inferred?: boolean
           state_province?: string | null
           tags?: string[] | null
           total_calls?: number | null
@@ -967,6 +969,7 @@ export type Database = {
           source_date?: string | null
           sourced_by?: string | null
           sourced_by_id?: string | null
+          sourced_by_inferred?: boolean
           state_province?: string | null
           tags?: string[] | null
           total_calls?: number | null
@@ -979,10 +982,41 @@ export type Database = {
             foreignKeyName: "deals_sourced_by_id_fkey"
             columns: ["sourced_by_id"]
             isOneToOne: false
+            referencedRelation: "deal_sourcing_summary"
+            referencedColumns: ["profile_id"]
+          },
+          {
+            foreignKeyName: "deals_sourced_by_id_fkey"
+            columns: ["sourced_by_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
+      }
+      deals_sourced_by_backup_20260814: {
+        Row: {
+          created_by: string | null
+          deal_source: string | null
+          id: string | null
+          sourced_by: string | null
+          sourced_by_id: string | null
+        }
+        Insert: {
+          created_by?: string | null
+          deal_source?: string | null
+          id?: string | null
+          sourced_by?: string | null
+          sourced_by_id?: string | null
+        }
+        Update: {
+          created_by?: string | null
+          deal_source?: string | null
+          id?: string | null
+          sourced_by?: string | null
+          sourced_by_id?: string | null
+        }
+        Relationships: []
       }
       external_investors: {
         Row: {
@@ -1457,6 +1491,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_user_id_outlook_sync"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "deal_sourcing_summary"
+            referencedColumns: ["profile_id"]
+          },
           {
             foreignKeyName: "fk_user_id_outlook_sync"
             columns: ["user_id"]
@@ -1980,7 +2021,18 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      deal_sourcing_summary: {
+        Row: {
+          directly_attributed: number | null
+          inferred_from_upload: number | null
+          is_active: boolean | null
+          own_relationship_no_external_source: number | null
+          profile_id: string | null
+          sourced_by: string | null
+          total_deals: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       find_potential_duplicates: {
