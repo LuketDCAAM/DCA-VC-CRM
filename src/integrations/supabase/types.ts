@@ -1018,6 +1018,87 @@ export type Database = {
         }
         Relationships: []
       }
+      deals_sourced_by_backup_20260814_b: {
+        Row: {
+          created_by: string | null
+          deal_source: string | null
+          id: string | null
+          sourced_by: string | null
+          sourced_by_id: string | null
+          sourced_by_inferred: boolean | null
+        }
+        Insert: {
+          created_by?: string | null
+          deal_source?: string | null
+          id?: string | null
+          sourced_by?: string | null
+          sourced_by_id?: string | null
+          sourced_by_inferred?: boolean | null
+        }
+        Update: {
+          created_by?: string | null
+          deal_source?: string | null
+          id?: string | null
+          sourced_by?: string | null
+          sourced_by_id?: string | null
+          sourced_by_inferred?: boolean | null
+        }
+        Relationships: []
+      }
+      deals_sourced_by_backup_20260814_c: {
+        Row: {
+          created_by: string | null
+          deal_source: string | null
+          id: string | null
+          sourced_by: string | null
+          sourced_by_id: string | null
+          sourced_by_inferred: boolean | null
+        }
+        Insert: {
+          created_by?: string | null
+          deal_source?: string | null
+          id?: string | null
+          sourced_by?: string | null
+          sourced_by_id?: string | null
+          sourced_by_inferred?: boolean | null
+        }
+        Update: {
+          created_by?: string | null
+          deal_source?: string | null
+          id?: string | null
+          sourced_by?: string | null
+          sourced_by_id?: string | null
+          sourced_by_inferred?: boolean | null
+        }
+        Relationships: []
+      }
+      deals_sourced_by_backup_20260814_d: {
+        Row: {
+          created_by: string | null
+          deal_source: string | null
+          id: string | null
+          sourced_by: string | null
+          sourced_by_id: string | null
+          sourced_by_inferred: boolean | null
+        }
+        Insert: {
+          created_by?: string | null
+          deal_source?: string | null
+          id?: string | null
+          sourced_by?: string | null
+          sourced_by_id?: string | null
+          sourced_by_inferred?: boolean | null
+        }
+        Update: {
+          created_by?: string | null
+          deal_source?: string | null
+          id?: string | null
+          sourced_by?: string | null
+          sourced_by_id?: string | null
+          sourced_by_inferred?: boolean | null
+        }
+        Relationships: []
+      }
       external_investors: {
         Row: {
           created_at: string
