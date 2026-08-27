@@ -40,11 +40,22 @@ const SPECS: Spec[] = [
   { column: 'nrr_pct', field: 'nrr', kind: 'percent', hint: 'e.g. 118' },
   { column: 'grr_pct', field: 'grr', kind: 'percent', hint: 'e.g. 94' },
   { column: 'monthly_churn_pct', field: 'monthly_churn', kind: 'percent', hint: 'e.g. 1.2' },
+  { column: 'company_valuation', field: 'company_valuation', kind: 'money', hint: 'Valuation mark in dollars (optional)' },
+  { column: 'ownership_pct', field: 'ownership_pct', kind: 'percent', hint: 'Our ownership, e.g. 8.5 (optional)' },
+  { column: 'our_fmv', field: 'our_fmv', kind: 'money', hint: 'Our fair value in dollars (optional)' },
   { column: 'arr_target', field: 'arr', kind: 'money', target: true, hint: 'Plan ARR in dollars (optional)' },
   { column: 'revenue_target', field: 'revenue', kind: 'money', target: true, hint: 'Plan revenue in dollars (optional)' },
 ];
 
-const TEMPLATE_COLUMNS = ['company_name', 'fiscal_year', 'fiscal_quarter', ...SPECS.map((s) => s.column), 'notes'];
+const TEMPLATE_COLUMNS = [
+  'company_name',
+  'fiscal_year',
+  'fiscal_quarter',
+  ...SPECS.map((s) => s.column),
+  'mark_date',
+  'mark_method',
+  'notes',
+];
 
 function parseCsv(text: string): Record<string, string>[] {
   const rows: string[][] = [];
