@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit, Archive, Trash2, RefreshCw, Upload, Plus } from 'lucide-react';
+import { Edit, Archive, Trash2 } from 'lucide-react';
 import { usePortfolioCompanies, PortfolioCompany } from '@/hooks/usePortfolioCompanies';
 import { PortfolioDetailDialog } from '@/components/portfolio/PortfolioDetailDialog';
 import { SearchAndFilter, FilterOption } from '@/components/common/SearchAndFilter';
@@ -9,15 +9,21 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { PortfolioHeader } from '@/components/portfolio/PortfolioHeader';
-import { PortfolioStats } from '@/components/portfolio/PortfolioStats';
 import { PortfolioGrid } from '@/components/portfolio/PortfolioGrid';
 import { useDeletePortfolioCompany } from '@/hooks/useDeletePortfolioCompany';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePortfolioPositions, VEHICLES, POSITION_STATUSES } from '@/hooks/portfolio/usePortfolioPositions';
+import { usePortfolioRollups } from '@/hooks/portfolio/usePortfolioRollups';
+import { PortfolioKpiTiles } from '@/components/portfolio/PortfolioKpiTiles';
+import { RollupTable } from '@/components/portfolio/RollupTable';
+import { PositionsTable } from '@/components/portfolio/PositionsTable';
 
 
 export default function Portfolio() {
   const { companies, loading, refetch } = usePortfolioCompanies();
   const { importPortfolioCompanies } = useCSVImport();
   const { deleteCompanies } = useDeletePortfolioCompany();
+  const { byCompany, loading: positionsLoading } = usePortfolioPositions();
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -26,6 +32,7 @@ export default function Portfolio() {
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+
 
   const handleSyncInvestedDeals = async () => {
     if (!user) {
