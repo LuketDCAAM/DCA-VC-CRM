@@ -45,6 +45,12 @@ export function PortcoQuarterForm({ open, onOpenChange, quarter, definitions, sa
   const [statusOverride, setStatusOverride] = useState(quarter?.status_override ?? 'auto');
   const [statusReason, setStatusReason] = useState(quarter?.status_reason ?? '');
   const [notes, setNotes] = useState(quarter?.notes ?? '');
+  const [markDate, setMarkDate] = useState(quarter?.mark_date ?? '');
+  const [companyValuation, setCompanyValuation] = useState(toEditable(quarter?.company_valuation ?? null, 'money'));
+  const [ownershipPct, setOwnershipPct] = useState(toEditable(quarter?.ownership_pct ?? null, 'percent'));
+  const [ourFmv, setOurFmv] = useState(toEditable(quarter?.our_fmv ?? null, 'money'));
+  const [markMethod, setMarkMethod] = useState(quarter?.mark_method ?? 'none');
+
 
   const heading = useMemo(() => (quarter ? `Edit ${quarter.fiscal_year}Q${quarter.fiscal_quarter}` : 'Add quarter'), [quarter]);
 
