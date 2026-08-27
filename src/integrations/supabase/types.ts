@@ -1651,6 +1651,151 @@ export type Database = {
         }
         Relationships: []
       }
+      portco_kpi_definitions: {
+        Row: {
+          created_at: string
+          created_by: string
+          higher_is_better: boolean
+          id: string
+          key: string
+          label: string
+          portfolio_company_id: string
+          sort_order: number
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          higher_is_better?: boolean
+          id?: string
+          key: string
+          label: string
+          portfolio_company_id: string
+          sort_order?: number
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          higher_is_better?: boolean
+          id?: string
+          key?: string
+          label?: string
+          portfolio_company_id?: string
+          sort_order?: number
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portco_kpi_definitions_portfolio_company_id_fkey"
+            columns: ["portfolio_company_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portco_quarterly_metrics: {
+        Row: {
+          ai_commentary: string | null
+          arr: number | null
+          cash_balance: number | null
+          commentary_updated_at: string | null
+          computed: Json
+          created_at: string
+          created_by: string
+          custom_metrics: Json
+          customer_count: number | null
+          fiscal_quarter: number
+          fiscal_year: number
+          gross_burn: number | null
+          gross_margin: number | null
+          grr: number | null
+          headcount: number | null
+          id: string
+          monthly_churn: number | null
+          net_burn: number | null
+          notes: string | null
+          nrr: number | null
+          performance_status: string | null
+          portfolio_company_id: string
+          revenue: number | null
+          status_override: string | null
+          status_reason: string | null
+          targets: Json
+          updated_at: string
+        }
+        Insert: {
+          ai_commentary?: string | null
+          arr?: number | null
+          cash_balance?: number | null
+          commentary_updated_at?: string | null
+          computed?: Json
+          created_at?: string
+          created_by?: string
+          custom_metrics?: Json
+          customer_count?: number | null
+          fiscal_quarter: number
+          fiscal_year: number
+          gross_burn?: number | null
+          gross_margin?: number | null
+          grr?: number | null
+          headcount?: number | null
+          id?: string
+          monthly_churn?: number | null
+          net_burn?: number | null
+          notes?: string | null
+          nrr?: number | null
+          performance_status?: string | null
+          portfolio_company_id: string
+          revenue?: number | null
+          status_override?: string | null
+          status_reason?: string | null
+          targets?: Json
+          updated_at?: string
+        }
+        Update: {
+          ai_commentary?: string | null
+          arr?: number | null
+          cash_balance?: number | null
+          commentary_updated_at?: string | null
+          computed?: Json
+          created_at?: string
+          created_by?: string
+          custom_metrics?: Json
+          customer_count?: number | null
+          fiscal_quarter?: number
+          fiscal_year?: number
+          gross_burn?: number | null
+          gross_margin?: number | null
+          grr?: number | null
+          headcount?: number | null
+          id?: string
+          monthly_churn?: number | null
+          net_burn?: number | null
+          notes?: string | null
+          nrr?: number | null
+          performance_status?: string | null
+          portfolio_company_id?: string
+          revenue?: number | null
+          status_override?: string | null
+          status_reason?: string | null
+          targets?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portco_quarterly_metrics_portfolio_company_id_fkey"
+            columns: ["portfolio_company_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portfolio_companies: {
         Row: {
           company_name: string
@@ -1686,6 +1831,68 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      portfolio_positions: {
+        Row: {
+          created_at: string
+          created_by: string
+          current_fmv: number | null
+          first_investment_date: string | null
+          id: string
+          last_investment_date: string | null
+          notes: string | null
+          ownership_pct: number | null
+          portfolio_company_id: string
+          position_status: Database["public"]["Enums"]["position_status"]
+          realized_proceeds: number
+          sector: string | null
+          stage: string | null
+          updated_at: string
+          vehicle: Database["public"]["Enums"]["portfolio_vehicle"] | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          current_fmv?: number | null
+          first_investment_date?: string | null
+          id?: string
+          last_investment_date?: string | null
+          notes?: string | null
+          ownership_pct?: number | null
+          portfolio_company_id: string
+          position_status?: Database["public"]["Enums"]["position_status"]
+          realized_proceeds?: number
+          sector?: string | null
+          stage?: string | null
+          updated_at?: string
+          vehicle?: Database["public"]["Enums"]["portfolio_vehicle"] | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          current_fmv?: number | null
+          first_investment_date?: string | null
+          id?: string
+          last_investment_date?: string | null
+          notes?: string | null
+          ownership_pct?: number | null
+          portfolio_company_id?: string
+          position_status?: Database["public"]["Enums"]["position_status"]
+          realized_proceeds?: number
+          sector?: string | null
+          stage?: string | null
+          updated_at?: string
+          vehicle?: Database["public"]["Enums"]["portfolio_vehicle"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_positions_portfolio_company_id_fkey"
+            columns: ["portfolio_company_id"]
+            isOneToOne: true
+            referencedRelation: "portfolio_companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -2237,6 +2444,20 @@ export type Database = {
         | "Legal Review"
         | "Invested"
         | "Passed"
+      portfolio_vehicle:
+        | "Balance Sheet"
+        | "Fund I"
+        | "SPV - DCA Led"
+        | "SPV - Third Party"
+        | "Co-Invest"
+      position_status:
+        | "Active"
+        | "Exited - Strategic"
+        | "Exited - Financial"
+        | "Exited - IPO"
+        | "Written Off"
+        | "Defunct"
+        | "On Hold"
       round_stage:
         | "Pre-Seed"
         | "Seed"
@@ -2413,6 +2634,22 @@ export const Constants = {
         "Legal Review",
         "Invested",
         "Passed",
+      ],
+      portfolio_vehicle: [
+        "Balance Sheet",
+        "Fund I",
+        "SPV - DCA Led",
+        "SPV - Third Party",
+        "Co-Invest",
+      ],
+      position_status: [
+        "Active",
+        "Exited - Strategic",
+        "Exited - Financial",
+        "Exited - IPO",
+        "Written Off",
+        "Defunct",
+        "On Hold",
       ],
       round_stage: [
         "Pre-Seed",
