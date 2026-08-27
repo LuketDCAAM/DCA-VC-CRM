@@ -10,6 +10,10 @@ import { Database } from '@/integrations/supabase/types';
 import { PortfolioEditForm } from './PortfolioEditForm';
 import { InvestmentEditForm } from './InvestmentEditForm';
 import { PerformanceEditForm } from './PerformanceEditForm';
+import { PositionDetailsForm } from './PositionDetailsForm';
+import { PortcoKpiPanel } from './PortcoKpiPanel';
+import { usePortfolioPositions } from '@/hooks/portfolio/usePortfolioPositions';
+
 
 type CompanyStatus = Database['public']['Enums']['company_status'];
 
@@ -76,8 +80,11 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
   const [isEditingInvestments, setIsEditingInvestments] = useState(false);
   const [isEditingPerformance, setIsEditingPerformance] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const { byCompany, saving, savePosition } = usePortfolioPositions();
+  const position = company ? byCompany.get(company.id) ?? null : null;
 
   // Reset edit states when dialog closes
+
   useEffect(() => {
     if (!open) {
       setIsEditingCompany(false);
@@ -142,12 +149,29 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="position">Position</TabsTrigger>
+            <TabsTrigger value="kpis">Quarterly KPIs</TabsTrigger>
             <TabsTrigger value="investments">Investments</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="activity">Activity</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="position" className="space-y-4">
+            <PositionDetailsForm
+              key={position?.id ?? 'new'}
+              companyId={company.id}
+              position={position}
+              saving={saving}
+              onSave={savePosition}
+            />
+          </TabsContent>
+
+          <TabsContent value="kpis" className="space-y-4">
+            <PortcoKpiPanel companyId={company.id} />
+          </TabsContent>
+
 
           <TabsContent value="overview" className="space-y-6">
             {isEditingCompany ? (

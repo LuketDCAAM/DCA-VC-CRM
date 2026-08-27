@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Edit, Archive, Trash2, RefreshCw, Upload, Plus } from 'lucide-react';
+import { Edit, Archive, Trash2 } from 'lucide-react';
 import { usePortfolioCompanies, PortfolioCompany } from '@/hooks/usePortfolioCompanies';
 import { PortfolioDetailDialog } from '@/components/portfolio/PortfolioDetailDialog';
 import { SearchAndFilter, FilterOption } from '@/components/common/SearchAndFilter';
@@ -9,15 +9,21 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { PortfolioHeader } from '@/components/portfolio/PortfolioHeader';
-import { PortfolioStats } from '@/components/portfolio/PortfolioStats';
 import { PortfolioGrid } from '@/components/portfolio/PortfolioGrid';
 import { useDeletePortfolioCompany } from '@/hooks/useDeletePortfolioCompany';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePortfolioPositions, VEHICLES, POSITION_STATUSES } from '@/hooks/portfolio/usePortfolioPositions';
+import { usePortfolioRollups } from '@/hooks/portfolio/usePortfolioRollups';
+import { PortfolioKpiTiles } from '@/components/portfolio/PortfolioKpiTiles';
+import { RollupTable } from '@/components/portfolio/RollupTable';
+import { PositionsTable } from '@/components/portfolio/PositionsTable';
 
 
 export default function Portfolio() {
   const { companies, loading, refetch } = usePortfolioCompanies();
   const { importPortfolioCompanies } = useCSVImport();
   const { deleteCompanies } = useDeletePortfolioCompany();
+  const { byCompany, loading: positionsLoading } = usePortfolioPositions();
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -26,6 +32,7 @@ export default function Portfolio() {
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+
 
   const handleSyncInvestedDeals = async () => {
     if (!user) {
@@ -111,12 +118,27 @@ export default function Portfolio() {
       type: 'range'
     },
     {
+      key: 'vehicle',
+      label: 'Vehicle',
+      value: 'vehicle',
+      type: 'select',
+      options: VEHICLES.map((v) => ({ label: v, value: v })),
+    },
+    {
+      key: 'position_status',
+      label: 'Position Status',
+      value: 'position_status',
+      type: 'select',
+      options: POSITION_STATUSES.map((s) => ({ label: s, value: s })),
+    },
+    {
       key: 'created_at',
       label: 'Date Added',
       value: 'created_at',
       type: 'date'
     }
   ];
+
 
   // Bulk actions for portfolio companies
   const bulkActions: BulkAction[] = [
@@ -174,18 +196,23 @@ export default function Portfolio() {
         const totalInvested = company.investments.reduce((sum, inv) => sum + inv.amount_invested, 0);
         return totalInvested <= parseInt(value) * 100;
       }
-      
+
+      if (key === 'vehicle') {
+        return byCompany.get(company.id)?.vehicle === value;
+      }
+
+      if (key === 'position_status') {
+        return byCompany.get(company.id)?.position_status === value;
+      }
+
       return company[key as keyof typeof company] === value;
     });
 
     return matchesSearch && matchesFilters;
   });
 
-  const totalInvested = companies.reduce((sum, company) => 
-    sum + company.investments.reduce((invSum, inv) => invSum + inv.amount_invested, 0), 0
-  );
+  const rollups = usePortfolioRollups(filteredCompanies, byCompany);
 
-  const activeCompanies = companies.filter(c => c.status === 'Active').length;
 
   const handleViewDetails = (company: PortfolioCompany) => {
     setSelectedCompany(company);
@@ -228,7 +255,7 @@ export default function Portfolio() {
     investment_count: company.investments.length,
   }));
 
-  if (loading) {
+  if (loading || positionsLoading) {
     return (
       <div className="px-6 pt-3 pb-6">
         <div className="text-center">Loading portfolio companies...</div>
@@ -248,11 +275,7 @@ export default function Portfolio() {
         onSuccess={refetch}
       />
 
-      <PortfolioStats
-        totalCompanies={companies.length}
-        activeCompanies={activeCompanies}
-        totalInvested={totalInvested}
-      />
+      <PortfolioKpiTiles totals={rollups.totals} activeCount={rollups.activeCount} />
 
       <SearchAndFilter
         searchTerm={searchTerm}
@@ -266,22 +289,50 @@ export default function Portfolio() {
         onToggleAdvanced={() => setShowAdvancedFilters(!showAdvancedFilters)}
       />
 
-      <BulkActions
-        selectedItems={selectedCompanies}
-        totalItems={filteredCompanies.length}
-        onSelectAll={handleSelectAll}
-        onDeselectAll={handleDeselectAll}
-        actions={bulkActions}
-        onAction={handleBulkAction}
-        isAllSelected={selectedCompanies.length === filteredCompanies.length && filteredCompanies.length > 0}
-      />
+      <Tabs defaultValue="positions" className="mt-4">
+        <TabsList>
+          <TabsTrigger value="positions">Positions</TabsTrigger>
+          <TabsTrigger value="rollups">Roll-ups</TabsTrigger>
+          <TabsTrigger value="cards">Cards</TabsTrigger>
+        </TabsList>
 
-      <PortfolioGrid
-        companies={companies}
-        filteredCompanies={filteredCompanies}
-        onViewDetails={handleViewDetails}
-        onSuccess={refetch}
-      />
+        <TabsContent value="positions" className="mt-4">
+          <PositionsTable rows={rollups.rows} onViewDetails={handleViewDetails} />
+        </TabsContent>
+
+        <TabsContent value="rollups" className="mt-4 space-y-4">
+          <RollupTable
+            title="By vehicle"
+            description="Invested capital, fair value and multiples per investment vehicle"
+            firstColumnLabel="Vehicle"
+            rows={rollups.byVehicle}
+          />
+          <RollupTable
+            title="By vintage"
+            description="Grouped by the year of first investment"
+            firstColumnLabel="Vintage"
+            rows={rollups.byVintage}
+          />
+        </TabsContent>
+
+        <TabsContent value="cards" className="mt-4">
+          <BulkActions
+            selectedItems={selectedCompanies}
+            totalItems={filteredCompanies.length}
+            onSelectAll={handleSelectAll}
+            onDeselectAll={handleDeselectAll}
+            actions={bulkActions}
+            onAction={handleBulkAction}
+            isAllSelected={selectedCompanies.length === filteredCompanies.length && filteredCompanies.length > 0}
+          />
+          <PortfolioGrid
+            companies={companies}
+            filteredCompanies={filteredCompanies}
+            onViewDetails={handleViewDetails}
+            onSuccess={refetch}
+          />
+        </TabsContent>
+      </Tabs>
 
       <PortfolioDetailDialog
         company={selectedCompany}
@@ -291,4 +342,5 @@ export default function Portfolio() {
       />
     </div>
   );
+
 }
