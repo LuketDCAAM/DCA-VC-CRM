@@ -19,6 +19,7 @@ interface Props {
 }
 
 const STATUS_OPTIONS = ['auto', 'On Track', 'Watch', 'At Risk'];
+const MARK_METHODS = ['Last round', 'Revenue multiple', 'ARR multiple', 'Discounted', 'Write-down', 'Write-off', 'Other'];
 
 export function PortcoQuarterForm({ open, onOpenChange, quarter, definitions, saving, onSave }: Props) {
   const initialPeriod = quarter ?? currentQuarter();
