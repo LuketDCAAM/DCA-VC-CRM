@@ -80,8 +80,11 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
   const [isEditingInvestments, setIsEditingInvestments] = useState(false);
   const [isEditingPerformance, setIsEditingPerformance] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const { byCompany, saving, savePosition } = usePortfolioPositions();
+  const position = company ? byCompany.get(company.id) ?? null : null;
 
   // Reset edit states when dialog closes
+
   useEffect(() => {
     if (!open) {
       setIsEditingCompany(false);
