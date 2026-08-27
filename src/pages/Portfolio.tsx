@@ -196,18 +196,23 @@ export default function Portfolio() {
         const totalInvested = company.investments.reduce((sum, inv) => sum + inv.amount_invested, 0);
         return totalInvested <= parseInt(value) * 100;
       }
-      
+
+      if (key === 'vehicle') {
+        return byCompany.get(company.id)?.vehicle === value;
+      }
+
+      if (key === 'position_status') {
+        return byCompany.get(company.id)?.position_status === value;
+      }
+
       return company[key as keyof typeof company] === value;
     });
 
     return matchesSearch && matchesFilters;
   });
 
-  const totalInvested = companies.reduce((sum, company) => 
-    sum + company.investments.reduce((invSum, inv) => invSum + inv.amount_invested, 0), 0
-  );
+  const rollups = usePortfolioRollups(filteredCompanies, byCompany);
 
-  const activeCompanies = companies.filter(c => c.status === 'Active').length;
 
   const handleViewDetails = (company: PortfolioCompany) => {
     setSelectedCompany(company);
