@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowUpDown, Eye } from 'lucide-react';
+import { ArrowUpDown, Eye, Pencil } from 'lucide-react';
 import { formatMoney, formatMultiple, formatPercent } from '@/lib/portfolio/metrics';
 import type { EnrichedPosition } from '@/hooks/portfolio/usePortfolioRollups';
 import type { PortfolioCompany } from '@/hooks/usePortfolioCompanies';
@@ -13,9 +13,11 @@ type SortKey = 'company' | 'invested' | 'fmv' | 'realized' | 'moic' | 'tvpi' | '
 interface Props {
   rows: EnrichedPosition[];
   onViewDetails: (company: PortfolioCompany) => void;
+  onEditPosition?: (row: EnrichedPosition) => void;
 }
 
-export function PositionsTable({ rows, onViewDetails }: Props) {
+export function PositionsTable({ rows, onViewDetails, onEditPosition }: Props) {
+
   const [sortKey, setSortKey] = useState<SortKey>('fmv');
   const [asc, setAsc] = useState(false);
 
