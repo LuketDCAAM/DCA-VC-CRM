@@ -118,12 +118,27 @@ export default function Portfolio() {
       type: 'range'
     },
     {
+      key: 'vehicle',
+      label: 'Vehicle',
+      value: 'vehicle',
+      type: 'select',
+      options: VEHICLES.map((v) => ({ label: v, value: v })),
+    },
+    {
+      key: 'position_status',
+      label: 'Position Status',
+      value: 'position_status',
+      type: 'select',
+      options: POSITION_STATUSES.map((s) => ({ label: s, value: s })),
+    },
+    {
       key: 'created_at',
       label: 'Date Added',
       value: 'created_at',
       type: 'date'
     }
   ];
+
 
   // Bulk actions for portfolio companies
   const bulkActions: BulkAction[] = [
