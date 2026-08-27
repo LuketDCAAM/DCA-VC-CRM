@@ -12,6 +12,8 @@ import { InvestmentEditForm } from './InvestmentEditForm';
 import { PerformanceEditForm } from './PerformanceEditForm';
 import { PositionDetailsForm } from './PositionDetailsForm';
 import { PortcoKpiPanel } from './PortcoKpiPanel';
+import { FundingRoundsPanel } from './FundingRoundsPanel';
+import { PortcoValuationHistory } from './PortcoValuationHistory';
 import { usePortfolioPositions } from '@/hooks/portfolio/usePortfolioPositions';
 
 
