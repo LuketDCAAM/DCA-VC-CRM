@@ -30,7 +30,7 @@ export default function Portfolio() {
   const { companies, loading, refetch } = usePortfolioCompanies();
   const { importPortfolioCompanies } = useCSVImport();
   const { deleteCompanies } = useDeletePortfolioCompany();
-  const { byCompany, loading: positionsLoading } = usePortfolioPositions();
+  const { byCompany, loading: positionsLoading, saving: positionSaving, savePosition } = usePortfolioPositions();
   const { byCompany: quartersByCompany, periods } = useAllPortcoQuarters();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -40,6 +40,9 @@ export default function Portfolio() {
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+  const [editingPosition, setEditingPosition] = useState<EnrichedPosition | null>(null);
+  const [positionDialogOpen, setPositionDialogOpen] = useState(false);
+
 
 
   const handleSyncInvestedDeals = async () => {
