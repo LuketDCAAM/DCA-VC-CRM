@@ -207,6 +207,8 @@ export function QuarterlyImportDialog({ companies, quartersByCompany, onImported
         quarter: Number.isFinite(quarter) ? quarter : null,
         values,
         targets,
+        markDate: raw['mark_date']?.trim() ? raw['mark_date'].trim() : null,
+        markMethod: raw['mark_method']?.trim() ? raw['mark_method'].trim() : null,
         notes: raw['notes']?.trim() ? raw['notes'].trim() : null,
         error,
       };
