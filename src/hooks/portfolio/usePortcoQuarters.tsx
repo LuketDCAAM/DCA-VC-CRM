@@ -202,7 +202,7 @@ export function usePortcoQuarters(companyId: string | null) {
 
       const { error } = await supabase
         .from('portco_quarterly_metrics')
-        .upsert(payload, { onConflict: 'portfolio_company_id,fiscal_year,fiscal_quarter' });
+        .upsert([payload] as never, { onConflict: 'portfolio_company_id,fiscal_year,fiscal_quarter' });
       if (error) throw error;
       await queryClient.invalidateQueries({ queryKey: quartersKey });
       return true;
