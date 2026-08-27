@@ -154,8 +154,13 @@ export function QuarterlyImportDialog({ companies, quartersByCompany, onImported
       '118',
       '94',
       '1.2',
+      '40000000',
+      '8.5',
+      '3400000',
       '2600000',
       '650000',
+      new Date().toISOString().slice(0, 10),
+      'Last round',
       'Optional commentary',
     ];
     const csv = [TEMPLATE_COLUMNS.join(','), example.join(',')].join('\n');
