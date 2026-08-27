@@ -207,10 +207,20 @@ export function usePortcoQuarters(companyId: string | null) {
         status_override: merged.status_override ?? null,
         status_reason: merged.status_reason ?? null,
         notes: merged.notes ?? null,
+        mark_date: merged.mark_date ?? null,
+        company_valuation: merged.company_valuation ?? null,
+        ownership_pct: merged.ownership_pct ?? null,
+        our_fmv:
+          merged.our_fmv ??
+          (merged.company_valuation != null && merged.ownership_pct != null
+            ? Math.round(merged.company_valuation * merged.ownership_pct)
+            : null),
+        mark_method: merged.mark_method ?? null,
         ...(values.ai_commentary !== undefined
           ? { ai_commentary: values.ai_commentary, commentary_updated_at: new Date().toISOString() }
           : {}),
       };
+
 
       const { error } = await supabase
         .from('portco_quarterly_metrics')
