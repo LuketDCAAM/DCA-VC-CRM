@@ -1,58 +1,67 @@
-## Goal
+# Portfolio Management Tool
 
-Let each user paste their own Anthropic API key so every AI call the app makes (agent chat, scorecard fill, analyst run, deal scoring) runs on Claude under **their** account and is billed to **them**, not to the workspace's Lovable AI credits.
+Turn the Portfolio page from a simple company list into a working portfolio-management workspace modeled on your DCA Master Valuation workbook: position-level valuation, quarterly KPIs per portco, and performance status with AI commentary.
 
-Quick terminology note: this isn't actually MCP — MCP is for exposing tools to an AI client like Claude Desktop. What you're describing is "bring your own key" (BYOK) for the app's existing AI agent. The plan below implements BYOK; happy to also add a real MCP server later if you want Claude Desktop to reach into the CRM.
+## What you get
 
-## What we'll build
+### 1. Position detail (Positions tab in the workbook)
+Each portfolio company gains the fields your Positions tab tracks:
+sector, stage, vehicle (Balance Sheet, Fund I, SPV - DCA Led, SPV - Third Party, Co-Invest), lifecycle status (Active, Exited - Strategic, Exited - Financial, Exited - IPO, Written Off, Defunct, On Hold), first/last investment date, total invested, current FMV, realized proceeds, ownership %, and notes.
 
-### 1. Per-user credentials storage
-New table `user_ai_credentials`:
-- `user_id` (PK, FK to auth)
-- `provider` ('anthropic' for now, leaves room for openai/gemini later)
-- `api_key` (encrypted via pgsodium; only accessible to the owning user and service role)
-- `default_model` (e.g. `claude-sonnet-4-5`, `claude-opus-4-5`, `claude-haiku-4-5`)
-- `created_at`, `updated_at`, `last_used_at`, `last_status`
+Derived automatically (never typed in): unrealized value, MOIC, TVPI, DPI, vintage year.
 
-RLS: user can only see/update their own row. Service role (edge functions) reads to make calls.
+### 2. Portfolio dashboard
+Top-of-page KPI tiles: Total Invested, Current FMV, Realized, Unrealized, TVPI, DPI, Net MOIC, # Positions, # Active — matching the workbook Dashboard.
+Below: a By Vehicle roll-up table (#, Invested, FMV, Realized, Unrealized, MOIC, TVPI, DPI, % of NAV) and a By Vintage roll-up, plus a status distribution chart.
 
-### 2. Settings UI
-New section in Profile / Settings:
-- "Connect your Claude account" panel
-- Input for Anthropic API key (masked, with link to console.anthropic.com)
-- Model dropdown (Sonnet / Opus / Haiku)
-- "Test connection" button (calls a small edge function that pings Anthropic with the key)
-- Status badge: Connected / Not connected / Last error
-- Disconnect button
+### 3. Positions table
+A sortable, filterable table view (toggle against the existing card grid) with the same columns as your Positions tab, filters on vehicle / status / sector / stage / vintage, and CSV export.
 
-### 3. Edge function changes
-Add a shared helper `_shared/ai-provider.ts` that, given the caller's user id:
-1. Looks up their `user_ai_credentials`
-2. If a valid Anthropic key exists, returns an `@ai-sdk/anthropic` model bound to that key
-3. Otherwise falls back to the existing Lovable AI gateway (or returns an error, configurable)
+### 4. Quarterly KPIs per portco
+A quarter-by-quarter grid per company (2024Q1 forward), with:
+- Core metrics: revenue, ARR, gross margin, gross burn, net burn, cash balance, runway (auto), headcount, NRR, GRR, monthly churn, customer count
+- Custom KPIs: define your own metric per company (name, unit, direction) and track it quarterly alongside the core set
+- Plan vs actual: optional target per metric per quarter so variance can be computed
+- QoQ / YoY growth computed automatically; a trend sparkline per metric
 
-Wire this helper into:
-- `agent/index.ts` (chat agent — `streamText` / tools)
-- `fill-scorecard-blanks/index.ts`
-- `analyst-run/index.ts`
-- `score-deal/index.ts`
+Entry two ways: a quarterly update form per company, and a CSV/Excel import of a quarterly template covering all portcos at once (template downloadable from the app).
 
-Each function updates `last_used_at` / `last_status` after a call so the settings UI can show health.
+### 5. Performance status (auto + AI commentary)
+Each quarterly record gets a computed RAG status:
+- **On Track** — growth at/above target, runway >= 12 months, no plan miss
+- **Watch** — runway 6-12 months, growth softening, or 10-25% below plan
+- **At Risk** — runway < 6 months, negative growth, or >25% below plan
+Rules are transparent (shown on hover) and you can override the status manually with a reason; the override is preserved.
 
-### 4. UX in chat
-- If the user has no key connected, the agent shows a one-time banner: "Using shared AI credits — connect your Claude account in Settings to use your own."
-- Errors from Anthropic (401, 429, quota) surface as friendly inline messages with a link back to settings.
+An "AI quarterly commentary" button drafts a short summary per portco per quarter from that quarter's KPIs, the prior quarter's trend, and the company's call notes — reusing the same AI provider setup as the scorecard. You review and can edit before it saves.
 
-## Technical details
+### 6. Portco detail
+The company dialog gets tabs: Overview (position + valuation), Quarterly KPIs, Performance (status history + commentary timeline), Investments, Notes, Files.
 
-- Use `npm:@ai-sdk/anthropic` inside Deno edge functions — same AI SDK shape as today, only the model factory changes, so existing tool-calling / streaming code stays intact.
-- Encryption: use pgsodium `pgp_sym_encrypt`/`decrypt` with a key stored in vault; edge functions decrypt via a `SECURITY DEFINER` SQL function scoped to the calling user.
-- No key ever returned to the browser after save — UI only shows "•••• last 4".
-- Audit: a `user_ai_credentials_events` log row on connect / disconnect / test / failure.
-- Models exposed initially: `claude-sonnet-4-5` (default), `claude-opus-4-5`, `claude-haiku-4-5`. Configurable list in one place.
+## Not in this phase
+NAV roll-forward bridge, cash flow ledger, and Fund I economics/waterfall (fees, capital calls, LP commitments, carry). Those are a natural phase two once positions and KPIs are live.
 
-## Out of scope (ask if you want them)
+## Technical notes
+New tables (all RLS-protected, with grants and updated_at triggers):
+- `portfolio_positions` — one row per portfolio company: sector, stage, vehicle, position_status, first/last investment date, current_fmv, realized_proceeds, ownership_pct, notes. New enums `portfolio_vehicle` and `position_status`.
+- `portco_kpi_definitions` — custom KPI definitions per company (label, unit, higher_is_better, sort order).
+- `portco_quarterly_metrics` — one row per company per quarter (`fiscal_year`, `fiscal_quarter`), core metric columns plus `custom_metrics jsonb`, `targets jsonb`, `performance_status`, `status_override`, `status_reason`, `ai_commentary`, `computed jsonb`.
 
-- Real MCP server exposing CRM data to Claude Desktop
-- OpenAI / Gemini BYOK (table is structured to allow it later)
-- Per-call cost tracking dashboard
+Money stays in cents to match the existing `investments` / `current_valuations` convention; percentages stored as decimals.
+
+Frontend:
+- `src/lib/portfolio/metrics.ts` — pure functions for MOIC/TVPI/DPI/unrealized, runway, QoQ/YoY, RAG status. Unit-testable, no DB access.
+- Hooks: `usePortfolioPositions`, `usePortcoQuarters`, `usePortfolioRollups` (vehicle/vintage aggregation), all with realtime invalidation matching the existing pattern.
+- Components under `src/components/portfolio/`: `PortfolioKpiTiles`, `VehicleRollupTable`, `VintageRollupTable`, `PositionsTable`, `QuarterlyKpiGrid`, `QuarterlyUpdateDialog`, `PerformanceStatusBadge`, `QuarterlyImportDialog`.
+- Edge function `portco-quarterly-commentary` for the AI draft, following `fill-scorecard-blanks`.
+
+Existing invested-deal sync, delete, and CSV import keep working; nothing is removed.
+
+## Build order
+1. Migration for the three tables + enums
+2. Metrics library + position fields UI (portco detail Overview)
+3. Positions table + dashboard roll-ups
+4. Quarterly KPI grid + update form + custom KPIs
+5. Status engine + override
+6. Excel/CSV quarterly import
+7. AI commentary edge function + UI
