@@ -299,6 +299,15 @@ export function QuarterlyImportDialog({ companies, quartersByCompany, onImported
             status_override: target.status_override ?? null,
             status_reason: target.status_reason ?? null,
             notes: target.notes ?? null,
+            mark_date: target.mark_date ?? null,
+            mark_method: target.mark_method ?? null,
+            company_valuation: target.company_valuation ?? null,
+            ownership_pct: target.ownership_pct ?? null,
+            our_fmv:
+              target.our_fmv ??
+              (target.company_valuation != null && target.ownership_pct != null
+                ? Math.round(target.company_valuation * target.ownership_pct)
+                : null),
           });
         }
       }
