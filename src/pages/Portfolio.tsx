@@ -19,6 +19,7 @@ import { RollupTable } from '@/components/portfolio/RollupTable';
 import { PositionsTable } from '@/components/portfolio/PositionsTable';
 import { FinancialComparisonTable } from '@/components/portfolio/FinancialComparisonTable';
 import { useAllPortcoQuarters } from '@/hooks/portfolio/useAllPortcoQuarters';
+import { QuarterlyImportDialog } from '@/components/portfolio/QuarterlyImportDialog';
 
 
 export default function Portfolio() {
@@ -304,7 +305,10 @@ export default function Portfolio() {
           <PositionsTable rows={rollups.rows} onViewDetails={handleViewDetails} />
         </TabsContent>
 
-        <TabsContent value="financials" className="mt-4">
+        <TabsContent value="financials" className="mt-4 space-y-3">
+          <div className="flex justify-end">
+            <QuarterlyImportDialog companies={companies} quartersByCompany={quartersByCompany} />
+          </div>
           <FinancialComparisonTable
             positions={rollups.rows}
             quartersByCompany={quartersByCompany}
