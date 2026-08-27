@@ -375,6 +375,17 @@ export default function Portfolio() {
         onOpenChange={setDetailDialogOpen}
         onCompanyUpdated={refetch}
       />
+
+      <PositionEditDialog
+        companyId={editingPosition?.company.id ?? null}
+        companyName={editingPosition?.company.company_name ?? ''}
+        position={editingPosition?.position ?? null}
+        open={positionDialogOpen}
+        onOpenChange={setPositionDialogOpen}
+        saving={positionSaving}
+        onSave={savePosition}
+      />
+
     </div>
   );
 
