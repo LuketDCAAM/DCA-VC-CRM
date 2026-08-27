@@ -20,6 +20,10 @@ import { PositionsTable } from '@/components/portfolio/PositionsTable';
 import { FinancialComparisonTable } from '@/components/portfolio/FinancialComparisonTable';
 import { useAllPortcoQuarters } from '@/hooks/portfolio/useAllPortcoQuarters';
 import { QuarterlyImportDialog } from '@/components/portfolio/QuarterlyImportDialog';
+import { PositionsImportDialog } from '@/components/portfolio/PositionsImportDialog';
+import { PositionEditDialog } from '@/components/portfolio/PositionEditDialog';
+import type { EnrichedPosition } from '@/hooks/portfolio/usePortfolioRollups';
+
 
 
 export default function Portfolio() {
