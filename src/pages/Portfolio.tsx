@@ -308,9 +308,20 @@ export default function Portfolio() {
           <TabsTrigger value="cards">Cards</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="positions" className="mt-4">
-          <PositionsTable rows={rollups.rows} onViewDetails={handleViewDetails} />
+        <TabsContent value="positions" className="mt-4 space-y-3">
+          <div className="flex justify-end">
+            <PositionsImportDialog companies={companies} />
+          </div>
+          <PositionsTable
+            rows={rollups.rows}
+            onViewDetails={handleViewDetails}
+            onEditPosition={(row) => {
+              setEditingPosition(row);
+              setPositionDialogOpen(true);
+            }}
+          />
         </TabsContent>
+
 
         <TabsContent value="financials" className="mt-4 space-y-3">
           <div className="flex justify-end">
