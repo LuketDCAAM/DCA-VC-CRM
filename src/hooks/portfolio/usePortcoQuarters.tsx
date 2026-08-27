@@ -32,6 +32,12 @@ export interface PortcoQuarter {
   commentary_updated_at: string | null;
   notes: string | null;
   updated_at: string;
+  /** Valuation mark for the quarter (money in cents, ownership as a decimal). */
+  mark_date: string | null;
+  company_valuation: number | null;
+  ownership_pct: number | null;
+  our_fmv: number | null;
+  mark_method: string | null;
 }
 
 export interface CustomKpiDefinition {
@@ -45,7 +51,7 @@ export interface CustomKpiDefinition {
 }
 
 const QUARTER_COLUMNS =
-  'id, portfolio_company_id, fiscal_year, fiscal_quarter, revenue, arr, gross_margin, gross_burn, net_burn, cash_balance, headcount, nrr, grr, monthly_churn, customer_count, custom_metrics, targets, computed, performance_status, status_override, status_reason, ai_commentary, commentary_updated_at, notes, updated_at';
+  'id, portfolio_company_id, fiscal_year, fiscal_quarter, revenue, arr, gross_margin, gross_burn, net_burn, cash_balance, headcount, nrr, grr, monthly_churn, customer_count, custom_metrics, targets, computed, performance_status, status_override, status_reason, ai_commentary, commentary_updated_at, notes, updated_at, mark_date, company_valuation, ownership_pct, our_fmv, mark_method';
 
 export type QuarterValues = Partial<
   Pick<
@@ -67,8 +73,14 @@ export type QuarterValues = Partial<
     | 'status_reason'
     | 'notes'
     | 'ai_commentary'
+    | 'mark_date'
+    | 'company_valuation'
+    | 'ownership_pct'
+    | 'our_fmv'
+    | 'mark_method'
   >
 >;
+
 
 /** Recompute derived values + auto status for a quarter given its siblings. */
 export function buildComputed(quarters: PortcoQuarter[], target: PortcoQuarter) {
