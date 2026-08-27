@@ -255,7 +255,7 @@ export default function Portfolio() {
     investment_count: company.investments.length,
   }));
 
-  if (loading) {
+  if (loading || positionsLoading) {
     return (
       <div className="px-6 pt-3 pb-6">
         <div className="text-center">Loading portfolio companies...</div>
@@ -275,11 +275,7 @@ export default function Portfolio() {
         onSuccess={refetch}
       />
 
-      <PortfolioStats
-        totalCompanies={companies.length}
-        activeCompanies={activeCompanies}
-        totalInvested={totalInvested}
-      />
+      <PortfolioKpiTiles totals={rollups.totals} activeCount={rollups.activeCount} />
 
       <SearchAndFilter
         searchTerm={searchTerm}
@@ -293,22 +289,50 @@ export default function Portfolio() {
         onToggleAdvanced={() => setShowAdvancedFilters(!showAdvancedFilters)}
       />
 
-      <BulkActions
-        selectedItems={selectedCompanies}
-        totalItems={filteredCompanies.length}
-        onSelectAll={handleSelectAll}
-        onDeselectAll={handleDeselectAll}
-        actions={bulkActions}
-        onAction={handleBulkAction}
-        isAllSelected={selectedCompanies.length === filteredCompanies.length && filteredCompanies.length > 0}
-      />
+      <Tabs defaultValue="positions" className="mt-4">
+        <TabsList>
+          <TabsTrigger value="positions">Positions</TabsTrigger>
+          <TabsTrigger value="rollups">Roll-ups</TabsTrigger>
+          <TabsTrigger value="cards">Cards</TabsTrigger>
+        </TabsList>
 
-      <PortfolioGrid
-        companies={companies}
-        filteredCompanies={filteredCompanies}
-        onViewDetails={handleViewDetails}
-        onSuccess={refetch}
-      />
+        <TabsContent value="positions" className="mt-4">
+          <PositionsTable rows={rollups.rows} onViewDetails={handleViewDetails} />
+        </TabsContent>
+
+        <TabsContent value="rollups" className="mt-4 space-y-4">
+          <RollupTable
+            title="By vehicle"
+            description="Invested capital, fair value and multiples per investment vehicle"
+            firstColumnLabel="Vehicle"
+            rows={rollups.byVehicle}
+          />
+          <RollupTable
+            title="By vintage"
+            description="Grouped by the year of first investment"
+            firstColumnLabel="Vintage"
+            rows={rollups.byVintage}
+          />
+        </TabsContent>
+
+        <TabsContent value="cards" className="mt-4">
+          <BulkActions
+            selectedItems={selectedCompanies}
+            totalItems={filteredCompanies.length}
+            onSelectAll={handleSelectAll}
+            onDeselectAll={handleDeselectAll}
+            actions={bulkActions}
+            onAction={handleBulkAction}
+            isAllSelected={selectedCompanies.length === filteredCompanies.length && filteredCompanies.length > 0}
+          />
+          <PortfolioGrid
+            companies={companies}
+            filteredCompanies={filteredCompanies}
+            onViewDetails={handleViewDetails}
+            onSuccess={refetch}
+          />
+        </TabsContent>
+      </Tabs>
 
       <PortfolioDetailDialog
         company={selectedCompany}
@@ -318,4 +342,5 @@ export default function Portfolio() {
       />
     </div>
   );
+
 }
