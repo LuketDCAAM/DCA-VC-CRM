@@ -307,9 +307,11 @@ export default function Portfolio() {
         <TabsList>
           <TabsTrigger value="positions">Positions</TabsTrigger>
           <TabsTrigger value="financials">Financials</TabsTrigger>
+          <TabsTrigger value="trends">Trends</TabsTrigger>
           <TabsTrigger value="rollups">Roll-ups</TabsTrigger>
           <TabsTrigger value="cards">Cards</TabsTrigger>
         </TabsList>
+
 
         <TabsContent value="positions" className="mt-4 space-y-3">
           <div className="flex justify-end">
