@@ -10,6 +10,10 @@ import { Database } from '@/integrations/supabase/types';
 import { PortfolioEditForm } from './PortfolioEditForm';
 import { InvestmentEditForm } from './InvestmentEditForm';
 import { PerformanceEditForm } from './PerformanceEditForm';
+import { PositionDetailsForm } from './PositionDetailsForm';
+import { PortcoKpiPanel } from './PortcoKpiPanel';
+import { usePortfolioPositions } from '@/hooks/portfolio/usePortfolioPositions';
+
 
 type CompanyStatus = Database['public']['Enums']['company_status'];
 
