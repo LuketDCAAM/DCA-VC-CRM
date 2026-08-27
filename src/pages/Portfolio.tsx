@@ -17,6 +17,8 @@ import { usePortfolioRollups } from '@/hooks/portfolio/usePortfolioRollups';
 import { PortfolioKpiTiles } from '@/components/portfolio/PortfolioKpiTiles';
 import { RollupTable } from '@/components/portfolio/RollupTable';
 import { PositionsTable } from '@/components/portfolio/PositionsTable';
+import { FinancialComparisonTable } from '@/components/portfolio/FinancialComparisonTable';
+import { useAllPortcoQuarters } from '@/hooks/portfolio/useAllPortcoQuarters';
 
 
 export default function Portfolio() {
@@ -24,6 +26,7 @@ export default function Portfolio() {
   const { importPortfolioCompanies } = useCSVImport();
   const { deleteCompanies } = useDeletePortfolioCompany();
   const { byCompany, loading: positionsLoading } = usePortfolioPositions();
+  const { byCompany: quartersByCompany, periods } = useAllPortcoQuarters();
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -292,12 +295,22 @@ export default function Portfolio() {
       <Tabs defaultValue="positions" className="mt-4">
         <TabsList>
           <TabsTrigger value="positions">Positions</TabsTrigger>
+          <TabsTrigger value="financials">Financials</TabsTrigger>
           <TabsTrigger value="rollups">Roll-ups</TabsTrigger>
           <TabsTrigger value="cards">Cards</TabsTrigger>
         </TabsList>
 
         <TabsContent value="positions" className="mt-4">
           <PositionsTable rows={rollups.rows} onViewDetails={handleViewDetails} />
+        </TabsContent>
+
+        <TabsContent value="financials" className="mt-4">
+          <FinancialComparisonTable
+            positions={rollups.rows}
+            quartersByCompany={quartersByCompany}
+            periods={periods}
+            onViewDetails={handleViewDetails}
+          />
         </TabsContent>
 
         <TabsContent value="rollups" className="mt-4 space-y-4">
