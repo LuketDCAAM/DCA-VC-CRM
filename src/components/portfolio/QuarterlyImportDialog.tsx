@@ -112,6 +112,8 @@ interface ParsedRow {
   quarter: number | null;
   values: Record<string, number | null>;
   targets: Record<string, number | null>;
+  markDate: string | null;
+  markMethod: string | null;
   notes: string | null;
   error: string | null;
 }
