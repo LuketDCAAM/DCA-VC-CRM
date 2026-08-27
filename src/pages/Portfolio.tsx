@@ -34,6 +34,7 @@ export default function Portfolio() {
   const { deleteCompanies } = useDeletePortfolioCompany();
   const { byCompany, loading: positionsLoading, saving: positionSaving, savePosition } = usePortfolioPositions();
   const { byCompany: quartersByCompany, periods } = useAllPortcoQuarters();
+  const { byCompany: roundsByCompany } = useAllPortcoRounds();
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
