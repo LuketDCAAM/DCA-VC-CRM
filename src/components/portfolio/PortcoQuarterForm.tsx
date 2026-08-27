@@ -66,7 +66,13 @@ export function PortcoQuarterForm({ open, onOpenChange, quarter, definitions, sa
       status_override: statusOverride === 'auto' ? null : statusOverride,
       status_reason: statusReason.trim() || null,
       notes: notes.trim() || null,
+      mark_date: markDate || null,
+      company_valuation: toStored(companyValuation, 'money'),
+      ownership_pct: toStored(ownershipPct, 'percent'),
+      our_fmv: toStored(ourFmv, 'money'),
+      mark_method: markMethod === 'none' ? null : markMethod,
     };
+
     CORE_KPI_FIELDS.forEach((f) => {
       (values as Record<string, unknown>)[f.key] = toStored(core[f.key] ?? '', f.unit);
     });
