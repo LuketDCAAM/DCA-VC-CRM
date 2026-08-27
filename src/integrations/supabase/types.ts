@@ -1651,6 +1651,77 @@ export type Database = {
         }
         Relationships: []
       }
+      portco_funding_rounds: {
+        Row: {
+          amount_raised: number | null
+          close_date: string | null
+          created_at: string
+          created_by: string
+          id: string
+          lead_investor: string | null
+          notes: string | null
+          our_amount: number | null
+          our_shares: number | null
+          portfolio_company_id: string
+          post_money_valuation: number | null
+          pre_money_valuation: number | null
+          price_per_share: number | null
+          round_name: string
+          round_type: string | null
+          source: string | null
+          updated_at: string
+          we_participated: boolean
+        }
+        Insert: {
+          amount_raised?: number | null
+          close_date?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          lead_investor?: string | null
+          notes?: string | null
+          our_amount?: number | null
+          our_shares?: number | null
+          portfolio_company_id: string
+          post_money_valuation?: number | null
+          pre_money_valuation?: number | null
+          price_per_share?: number | null
+          round_name: string
+          round_type?: string | null
+          source?: string | null
+          updated_at?: string
+          we_participated?: boolean
+        }
+        Update: {
+          amount_raised?: number | null
+          close_date?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          lead_investor?: string | null
+          notes?: string | null
+          our_amount?: number | null
+          our_shares?: number | null
+          portfolio_company_id?: string
+          post_money_valuation?: number | null
+          pre_money_valuation?: number | null
+          price_per_share?: number | null
+          round_name?: string
+          round_type?: string | null
+          source?: string | null
+          updated_at?: string
+          we_participated?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portco_funding_rounds_portfolio_company_id_fkey"
+            columns: ["portfolio_company_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portco_kpi_definitions: {
         Row: {
           created_at: string
@@ -1704,6 +1775,7 @@ export type Database = {
           arr: number | null
           cash_balance: number | null
           commentary_updated_at: string | null
+          company_valuation: number | null
           computed: Json
           created_at: string
           created_by: string
@@ -1716,10 +1788,14 @@ export type Database = {
           grr: number | null
           headcount: number | null
           id: string
+          mark_date: string | null
+          mark_method: string | null
           monthly_churn: number | null
           net_burn: number | null
           notes: string | null
           nrr: number | null
+          our_fmv: number | null
+          ownership_pct: number | null
           performance_status: string | null
           portfolio_company_id: string
           revenue: number | null
@@ -1733,6 +1809,7 @@ export type Database = {
           arr?: number | null
           cash_balance?: number | null
           commentary_updated_at?: string | null
+          company_valuation?: number | null
           computed?: Json
           created_at?: string
           created_by?: string
@@ -1745,10 +1822,14 @@ export type Database = {
           grr?: number | null
           headcount?: number | null
           id?: string
+          mark_date?: string | null
+          mark_method?: string | null
           monthly_churn?: number | null
           net_burn?: number | null
           notes?: string | null
           nrr?: number | null
+          our_fmv?: number | null
+          ownership_pct?: number | null
           performance_status?: string | null
           portfolio_company_id: string
           revenue?: number | null
@@ -1762,6 +1843,7 @@ export type Database = {
           arr?: number | null
           cash_balance?: number | null
           commentary_updated_at?: string | null
+          company_valuation?: number | null
           computed?: Json
           created_at?: string
           created_by?: string
@@ -1774,10 +1856,14 @@ export type Database = {
           grr?: number | null
           headcount?: number | null
           id?: string
+          mark_date?: string | null
+          mark_method?: string | null
           monthly_churn?: number | null
           net_burn?: number | null
           notes?: string | null
           nrr?: number | null
+          our_fmv?: number | null
+          ownership_pct?: number | null
           performance_status?: string | null
           portfolio_company_id?: string
           revenue?: number | null

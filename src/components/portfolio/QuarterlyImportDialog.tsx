@@ -40,11 +40,22 @@ const SPECS: Spec[] = [
   { column: 'nrr_pct', field: 'nrr', kind: 'percent', hint: 'e.g. 118' },
   { column: 'grr_pct', field: 'grr', kind: 'percent', hint: 'e.g. 94' },
   { column: 'monthly_churn_pct', field: 'monthly_churn', kind: 'percent', hint: 'e.g. 1.2' },
+  { column: 'company_valuation', field: 'company_valuation', kind: 'money', hint: 'Valuation mark in dollars (optional)' },
+  { column: 'ownership_pct', field: 'ownership_pct', kind: 'percent', hint: 'Our ownership, e.g. 8.5 (optional)' },
+  { column: 'our_fmv', field: 'our_fmv', kind: 'money', hint: 'Our fair value in dollars (optional)' },
   { column: 'arr_target', field: 'arr', kind: 'money', target: true, hint: 'Plan ARR in dollars (optional)' },
   { column: 'revenue_target', field: 'revenue', kind: 'money', target: true, hint: 'Plan revenue in dollars (optional)' },
 ];
 
-const TEMPLATE_COLUMNS = ['company_name', 'fiscal_year', 'fiscal_quarter', ...SPECS.map((s) => s.column), 'notes'];
+const TEMPLATE_COLUMNS = [
+  'company_name',
+  'fiscal_year',
+  'fiscal_quarter',
+  ...SPECS.map((s) => s.column),
+  'mark_date',
+  'mark_method',
+  'notes',
+];
 
 function parseCsv(text: string): Record<string, string>[] {
   const rows: string[][] = [];
@@ -101,6 +112,8 @@ interface ParsedRow {
   quarter: number | null;
   values: Record<string, number | null>;
   targets: Record<string, number | null>;
+  markDate: string | null;
+  markMethod: string | null;
   notes: string | null;
   error: string | null;
 }
@@ -141,8 +154,13 @@ export function QuarterlyImportDialog({ companies, quartersByCompany, onImported
       '118',
       '94',
       '1.2',
+      '40000000',
+      '8.5',
+      '3400000',
       '2600000',
       '650000',
+      new Date().toISOString().slice(0, 10),
+      'Last round',
       'Optional commentary',
     ];
     const csv = [TEMPLATE_COLUMNS.join(','), example.join(',')].join('\n');
@@ -189,6 +207,8 @@ export function QuarterlyImportDialog({ companies, quartersByCompany, onImported
         quarter: Number.isFinite(quarter) ? quarter : null,
         values,
         targets,
+        markDate: raw['mark_date']?.trim() ? raw['mark_date'].trim() : null,
+        markMethod: raw['mark_method']?.trim() ? raw['mark_method'].trim() : null,
         notes: raw['notes']?.trim() ? raw['notes'].trim() : null,
         error,
       };
@@ -237,6 +257,8 @@ export function QuarterlyImportDialog({ companies, quartersByCompany, onImported
             ...base,
             ...row.values,
             targets: { ...(base.targets ?? {}), ...row.targets },
+            mark_date: row.markDate ?? base.mark_date ?? null,
+            mark_method: row.markMethod ?? base.mark_method ?? null,
             notes: row.notes ?? base.notes ?? null,
           } as PortcoQuarter;
           if (idx >= 0) merged[idx] = next;
@@ -277,6 +299,15 @@ export function QuarterlyImportDialog({ companies, quartersByCompany, onImported
             status_override: target.status_override ?? null,
             status_reason: target.status_reason ?? null,
             notes: target.notes ?? null,
+            mark_date: target.mark_date ?? null,
+            mark_method: target.mark_method ?? null,
+            company_valuation: target.company_valuation ?? null,
+            ownership_pct: target.ownership_pct ?? null,
+            our_fmv:
+              target.our_fmv ??
+              (target.company_valuation != null && target.ownership_pct != null
+                ? Math.round(target.company_valuation * target.ownership_pct)
+                : null),
           });
         }
       }

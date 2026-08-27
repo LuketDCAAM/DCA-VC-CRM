@@ -12,6 +12,8 @@ import { InvestmentEditForm } from './InvestmentEditForm';
 import { PerformanceEditForm } from './PerformanceEditForm';
 import { PositionDetailsForm } from './PositionDetailsForm';
 import { PortcoKpiPanel } from './PortcoKpiPanel';
+import { FundingRoundsPanel } from './FundingRoundsPanel';
+import { PortcoValuationHistory } from './PortcoValuationHistory';
 import { usePortfolioPositions } from '@/hooks/portfolio/usePortfolioPositions';
 
 
@@ -149,10 +151,11 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="position">Position</TabsTrigger>
             <TabsTrigger value="kpis">Quarterly KPIs</TabsTrigger>
+            <TabsTrigger value="valuation">Valuation</TabsTrigger>
             <TabsTrigger value="investments">Investments</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
             <TabsTrigger value="activity">Activity</TabsTrigger>
@@ -171,6 +174,13 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
           <TabsContent value="kpis" className="space-y-4">
             <PortcoKpiPanel companyId={company.id} />
           </TabsContent>
+
+          <TabsContent value="valuation" className="space-y-4">
+            <FundingRoundsPanel companyId={company.id} />
+            <PortcoValuationHistory companyId={company.id} />
+          </TabsContent>
+
+
 
 
           <TabsContent value="overview" className="space-y-6">

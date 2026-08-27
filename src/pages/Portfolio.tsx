@@ -19,6 +19,8 @@ import { RollupTable } from '@/components/portfolio/RollupTable';
 import { PositionsTable } from '@/components/portfolio/PositionsTable';
 import { FinancialComparisonTable } from '@/components/portfolio/FinancialComparisonTable';
 import { useAllPortcoQuarters } from '@/hooks/portfolio/useAllPortcoQuarters';
+import { useAllPortcoRounds } from '@/hooks/portfolio/usePortcoRounds';
+import { PortfolioTrendsTab } from '@/components/portfolio/PortfolioTrendsTab';
 import { QuarterlyImportDialog } from '@/components/portfolio/QuarterlyImportDialog';
 import { PositionsImportDialog } from '@/components/portfolio/PositionsImportDialog';
 import { PositionEditDialog } from '@/components/portfolio/PositionEditDialog';
@@ -32,6 +34,7 @@ export default function Portfolio() {
   const { deleteCompanies } = useDeletePortfolioCompany();
   const { byCompany, loading: positionsLoading, saving: positionSaving, savePosition } = usePortfolioPositions();
   const { byCompany: quartersByCompany, periods } = useAllPortcoQuarters();
+  const { byCompany: roundsByCompany } = useAllPortcoRounds();
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
@@ -304,9 +307,11 @@ export default function Portfolio() {
         <TabsList>
           <TabsTrigger value="positions">Positions</TabsTrigger>
           <TabsTrigger value="financials">Financials</TabsTrigger>
+          <TabsTrigger value="trends">Trends</TabsTrigger>
           <TabsTrigger value="rollups">Roll-ups</TabsTrigger>
           <TabsTrigger value="cards">Cards</TabsTrigger>
         </TabsList>
+
 
         <TabsContent value="positions" className="mt-4 space-y-3">
           <div className="flex justify-end">
@@ -334,6 +339,15 @@ export default function Portfolio() {
             onViewDetails={handleViewDetails}
           />
         </TabsContent>
+
+        <TabsContent value="trends" className="mt-4">
+          <PortfolioTrendsTab
+            positions={rollups.rows}
+            quartersByCompany={quartersByCompany}
+            roundsByCompany={roundsByCompany}
+          />
+        </TabsContent>
+
 
         <TabsContent value="rollups" className="mt-4 space-y-4">
           <RollupTable

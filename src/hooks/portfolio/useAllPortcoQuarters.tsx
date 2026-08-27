@@ -6,7 +6,7 @@ import { comparePeriods, periodIndex, periodLabel } from '@/lib/portfolio/metric
 import type { PortcoQuarter } from '@/hooks/portfolio/usePortcoQuarters';
 
 const COLUMNS =
-  'id, portfolio_company_id, fiscal_year, fiscal_quarter, revenue, arr, gross_margin, gross_burn, net_burn, cash_balance, headcount, nrr, grr, monthly_churn, customer_count, custom_metrics, targets, computed, performance_status, status_override, status_reason, ai_commentary, commentary_updated_at, notes, updated_at';
+  'id, portfolio_company_id, fiscal_year, fiscal_quarter, revenue, arr, gross_margin, gross_burn, net_burn, cash_balance, headcount, nrr, grr, monthly_churn, customer_count, custom_metrics, targets, computed, performance_status, status_override, status_reason, ai_commentary, commentary_updated_at, notes, updated_at, mark_date, company_valuation, ownership_pct, our_fmv, mark_method';
 
 async function fetchAllQuarters(): Promise<PortcoQuarter[]> {
   const { data, error } = await supabase

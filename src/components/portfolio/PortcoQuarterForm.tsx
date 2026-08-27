@@ -19,6 +19,7 @@ interface Props {
 }
 
 const STATUS_OPTIONS = ['auto', 'On Track', 'Watch', 'At Risk'];
+const MARK_METHODS = ['Last round', 'Revenue multiple', 'ARR multiple', 'Discounted', 'Write-down', 'Write-off', 'Other'];
 
 export function PortcoQuarterForm({ open, onOpenChange, quarter, definitions, saving, onSave }: Props) {
   const initialPeriod = quarter ?? currentQuarter();
@@ -45,6 +46,12 @@ export function PortcoQuarterForm({ open, onOpenChange, quarter, definitions, sa
   const [statusOverride, setStatusOverride] = useState(quarter?.status_override ?? 'auto');
   const [statusReason, setStatusReason] = useState(quarter?.status_reason ?? '');
   const [notes, setNotes] = useState(quarter?.notes ?? '');
+  const [markDate, setMarkDate] = useState(quarter?.mark_date ?? '');
+  const [companyValuation, setCompanyValuation] = useState(toEditable(quarter?.company_valuation ?? null, 'money'));
+  const [ownershipPct, setOwnershipPct] = useState(toEditable(quarter?.ownership_pct ?? null, 'percent'));
+  const [ourFmv, setOurFmv] = useState(toEditable(quarter?.our_fmv ?? null, 'money'));
+  const [markMethod, setMarkMethod] = useState(quarter?.mark_method ?? 'none');
+
 
   const heading = useMemo(() => (quarter ? `Edit ${quarter.fiscal_year}Q${quarter.fiscal_quarter}` : 'Add quarter'), [quarter]);
 
@@ -59,7 +66,13 @@ export function PortcoQuarterForm({ open, onOpenChange, quarter, definitions, sa
       status_override: statusOverride === 'auto' ? null : statusOverride,
       status_reason: statusReason.trim() || null,
       notes: notes.trim() || null,
+      mark_date: markDate || null,
+      company_valuation: toStored(companyValuation, 'money'),
+      ownership_pct: toStored(ownershipPct, 'percent'),
+      our_fmv: toStored(ourFmv, 'money'),
+      mark_method: markMethod === 'none' ? null : markMethod,
     };
+
     CORE_KPI_FIELDS.forEach((f) => {
       (values as Record<string, unknown>)[f.key] = toStored(core[f.key] ?? '', f.unit);
     });
@@ -158,6 +171,53 @@ export function PortcoQuarterForm({ open, onOpenChange, quarter, definitions, sa
               </div>
             </div>
           )}
+
+          <div>
+            <h4 className="text-sm font-semibold mb-2">Valuation mark</h4>
+            <p className="text-xs text-muted-foreground mb-2">
+              Leave our fair value blank to derive it from company valuation × ownership.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <Label className="text-xs">Mark date</Label>
+                <Input type="date" value={markDate} onChange={(e) => setMarkDate(e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-xs">Company valuation ($)</Label>
+                <Input
+                  inputMode="decimal"
+                  value={companyValuation}
+                  onChange={(e) => setCompanyValuation(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Our ownership (%)</Label>
+                <Input inputMode="decimal" value={ownershipPct} onChange={(e) => setOwnershipPct(e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-xs">Our fair value ($)</Label>
+                <Input inputMode="decimal" value={ourFmv} onChange={(e) => setOurFmv(e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-xs">Mark method</Label>
+                <Select value={markMethod} onValueChange={setMarkMethod}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Unspecified</SelectItem>
+                    {MARK_METHODS.map((m) => (
+                      <SelectItem key={m} value={m}>
+                        {m}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
