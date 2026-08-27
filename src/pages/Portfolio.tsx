@@ -340,6 +340,15 @@ export default function Portfolio() {
           />
         </TabsContent>
 
+        <TabsContent value="trends" className="mt-4">
+          <PortfolioTrendsTab
+            positions={rollups.rows}
+            quartersByCompany={quartersByCompany}
+            roundsByCompany={roundsByCompany}
+          />
+        </TabsContent>
+
+
         <TabsContent value="rollups" className="mt-4 space-y-4">
           <RollupTable
             title="By vehicle"
