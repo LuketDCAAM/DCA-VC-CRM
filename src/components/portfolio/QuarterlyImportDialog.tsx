@@ -257,6 +257,8 @@ export function QuarterlyImportDialog({ companies, quartersByCompany, onImported
             ...base,
             ...row.values,
             targets: { ...(base.targets ?? {}), ...row.targets },
+            mark_date: row.markDate ?? base.mark_date ?? null,
+            mark_method: row.markMethod ?? base.mark_method ?? null,
             notes: row.notes ?? base.notes ?? null,
           } as PortcoQuarter;
           if (idx >= 0) merged[idx] = next;
