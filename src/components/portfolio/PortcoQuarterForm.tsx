@@ -172,6 +172,53 @@ export function PortcoQuarterForm({ open, onOpenChange, quarter, definitions, sa
             </div>
           )}
 
+          <div>
+            <h4 className="text-sm font-semibold mb-2">Valuation mark</h4>
+            <p className="text-xs text-muted-foreground mb-2">
+              Leave our fair value blank to derive it from company valuation × ownership.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <Label className="text-xs">Mark date</Label>
+                <Input type="date" value={markDate} onChange={(e) => setMarkDate(e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-xs">Company valuation ($)</Label>
+                <Input
+                  inputMode="decimal"
+                  value={companyValuation}
+                  onChange={(e) => setCompanyValuation(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label className="text-xs">Our ownership (%)</Label>
+                <Input inputMode="decimal" value={ownershipPct} onChange={(e) => setOwnershipPct(e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-xs">Our fair value ($)</Label>
+                <Input inputMode="decimal" value={ourFmv} onChange={(e) => setOurFmv(e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-xs">Mark method</Label>
+                <Select value={markMethod} onValueChange={setMarkMethod}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Unspecified</SelectItem>
+                    {MARK_METHODS.map((m) => (
+                      <SelectItem key={m} value={m}>
+                        {m}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <Label className="text-xs">Status</Label>
