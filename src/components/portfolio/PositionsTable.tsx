@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowUpDown, Eye } from 'lucide-react';
+import { ArrowUpDown, Eye, Pencil } from 'lucide-react';
 import { formatMoney, formatMultiple, formatPercent } from '@/lib/portfolio/metrics';
 import type { EnrichedPosition } from '@/hooks/portfolio/usePortfolioRollups';
 import type { PortfolioCompany } from '@/hooks/usePortfolioCompanies';
@@ -13,9 +13,11 @@ type SortKey = 'company' | 'invested' | 'fmv' | 'realized' | 'moic' | 'tvpi' | '
 interface Props {
   rows: EnrichedPosition[];
   onViewDetails: (company: PortfolioCompany) => void;
+  onEditPosition?: (row: EnrichedPosition) => void;
 }
 
-export function PositionsTable({ rows, onViewDetails }: Props) {
+export function PositionsTable({ rows, onViewDetails, onEditPosition }: Props) {
+
   const [sortKey, setSortKey] = useState<SortKey>('fmv');
   const [asc, setAsc] = useState(false);
 
@@ -94,7 +96,9 @@ export function PositionsTable({ rows, onViewDetails }: Props) {
                 </TableCell>
               </TableRow>
             )}
-            {sorted.map(({ company, position, metrics }) => (
+            {sorted.map((row) => {
+              const { company, position, metrics } = row;
+              return (
               <TableRow key={company.id}>
                 <TableCell className="font-medium whitespace-nowrap">{company.company_name}</TableCell>
                 <TableCell className="whitespace-nowrap text-muted-foreground">
@@ -115,13 +119,25 @@ export function PositionsTable({ rows, onViewDetails }: Props) {
                 <TableCell className="text-right tabular-nums">
                   {formatPercent(position?.ownership_pct ?? company.current_valuation?.current_ownership_percentage)}
                 </TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="sm" onClick={() => onViewDetails(company)}>
+                <TableCell className="text-right whitespace-nowrap">
+                  {onEditPosition && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      title="Edit position"
+                      onClick={() => onEditPosition(row)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button variant="ghost" size="sm" title="View details" onClick={() => onViewDetails(company)}>
                     <Eye className="h-4 w-4" />
                   </Button>
                 </TableCell>
               </TableRow>
-            ))}
+              );
+            })}
+
           </TableBody>
         </Table>
       </CardContent>

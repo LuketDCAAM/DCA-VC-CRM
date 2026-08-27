@@ -20,13 +20,17 @@ import { PositionsTable } from '@/components/portfolio/PositionsTable';
 import { FinancialComparisonTable } from '@/components/portfolio/FinancialComparisonTable';
 import { useAllPortcoQuarters } from '@/hooks/portfolio/useAllPortcoQuarters';
 import { QuarterlyImportDialog } from '@/components/portfolio/QuarterlyImportDialog';
+import { PositionsImportDialog } from '@/components/portfolio/PositionsImportDialog';
+import { PositionEditDialog } from '@/components/portfolio/PositionEditDialog';
+import type { EnrichedPosition } from '@/hooks/portfolio/usePortfolioRollups';
+
 
 
 export default function Portfolio() {
   const { companies, loading, refetch } = usePortfolioCompanies();
   const { importPortfolioCompanies } = useCSVImport();
   const { deleteCompanies } = useDeletePortfolioCompany();
-  const { byCompany, loading: positionsLoading } = usePortfolioPositions();
+  const { byCompany, loading: positionsLoading, saving: positionSaving, savePosition } = usePortfolioPositions();
   const { byCompany: quartersByCompany, periods } = useAllPortcoQuarters();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -36,6 +40,9 @@ export default function Portfolio() {
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
+  const [editingPosition, setEditingPosition] = useState<EnrichedPosition | null>(null);
+  const [positionDialogOpen, setPositionDialogOpen] = useState(false);
+
 
 
   const handleSyncInvestedDeals = async () => {
@@ -301,9 +308,20 @@ export default function Portfolio() {
           <TabsTrigger value="cards">Cards</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="positions" className="mt-4">
-          <PositionsTable rows={rollups.rows} onViewDetails={handleViewDetails} />
+        <TabsContent value="positions" className="mt-4 space-y-3">
+          <div className="flex justify-end">
+            <PositionsImportDialog companies={companies} />
+          </div>
+          <PositionsTable
+            rows={rollups.rows}
+            onViewDetails={handleViewDetails}
+            onEditPosition={(row) => {
+              setEditingPosition(row);
+              setPositionDialogOpen(true);
+            }}
+          />
         </TabsContent>
+
 
         <TabsContent value="financials" className="mt-4 space-y-3">
           <div className="flex justify-end">
@@ -357,6 +375,17 @@ export default function Portfolio() {
         onOpenChange={setDetailDialogOpen}
         onCompanyUpdated={refetch}
       />
+
+      <PositionEditDialog
+        companyId={editingPosition?.company.id ?? null}
+        companyName={editingPosition?.company.company_name ?? ''}
+        position={editingPosition?.position ?? null}
+        open={positionDialogOpen}
+        onOpenChange={setPositionDialogOpen}
+        saving={positionSaving}
+        onSave={savePosition}
+      />
+
     </div>
   );
 
