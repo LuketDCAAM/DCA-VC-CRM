@@ -23,6 +23,8 @@ import { useAllPortcoRounds } from '@/hooks/portfolio/usePortcoRounds';
 import { PortfolioTrendsTab } from '@/components/portfolio/PortfolioTrendsTab';
 import { QuarterlyImportDialog } from '@/components/portfolio/QuarterlyImportDialog';
 import { PositionsImportDialog } from '@/components/portfolio/PositionsImportDialog';
+import { RoundsImportDialog } from '@/components/portfolio/RoundsImportDialog';
+
 import { PositionEditDialog } from '@/components/portfolio/PositionEditDialog';
 import type { EnrichedPosition } from '@/hooks/portfolio/usePortfolioRollups';
 
@@ -314,9 +316,11 @@ export default function Portfolio() {
 
 
         <TabsContent value="positions" className="mt-4 space-y-3">
-          <div className="flex justify-end">
+          <div className="flex flex-wrap justify-end gap-2">
             <PositionsImportDialog companies={companies} />
+            <RoundsImportDialog companies={companies} />
           </div>
+
           <PositionsTable
             rows={rollups.rows}
             onViewDetails={handleViewDetails}
@@ -340,13 +344,18 @@ export default function Portfolio() {
           />
         </TabsContent>
 
-        <TabsContent value="trends" className="mt-4">
+        <TabsContent value="trends" className="mt-4 space-y-3">
+          <div className="flex flex-wrap justify-end gap-2">
+            <RoundsImportDialog companies={companies} />
+            <QuarterlyImportDialog companies={companies} quartersByCompany={quartersByCompany} />
+          </div>
           <PortfolioTrendsTab
             positions={rollups.rows}
             quartersByCompany={quartersByCompany}
             roundsByCompany={roundsByCompany}
           />
         </TabsContent>
+
 
 
         <TabsContent value="rollups" className="mt-4 space-y-4">
