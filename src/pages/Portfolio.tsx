@@ -23,6 +23,8 @@ import { useAllPortcoRounds } from '@/hooks/portfolio/usePortcoRounds';
 import { PortfolioTrendsTab } from '@/components/portfolio/PortfolioTrendsTab';
 import { QuarterlyImportDialog } from '@/components/portfolio/QuarterlyImportDialog';
 import { PositionsImportDialog } from '@/components/portfolio/PositionsImportDialog';
+import { RoundsImportDialog } from '@/components/portfolio/RoundsImportDialog';
+
 import { PositionEditDialog } from '@/components/portfolio/PositionEditDialog';
 import type { EnrichedPosition } from '@/hooks/portfolio/usePortfolioRollups';
 
