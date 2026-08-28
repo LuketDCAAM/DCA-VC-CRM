@@ -314,9 +314,11 @@ export default function Portfolio() {
 
 
         <TabsContent value="positions" className="mt-4 space-y-3">
-          <div className="flex justify-end">
+          <div className="flex flex-wrap justify-end gap-2">
             <PositionsImportDialog companies={companies} />
+            <RoundsImportDialog companies={companies} />
           </div>
+
           <PositionsTable
             rows={rollups.rows}
             onViewDetails={handleViewDetails}
