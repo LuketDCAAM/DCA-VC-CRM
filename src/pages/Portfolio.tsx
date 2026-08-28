@@ -344,13 +344,18 @@ export default function Portfolio() {
           />
         </TabsContent>
 
-        <TabsContent value="trends" className="mt-4">
+        <TabsContent value="trends" className="mt-4 space-y-3">
+          <div className="flex flex-wrap justify-end gap-2">
+            <RoundsImportDialog companies={companies} />
+            <QuarterlyImportDialog companies={companies} quartersByCompany={quartersByCompany} />
+          </div>
           <PortfolioTrendsTab
             positions={rollups.rows}
             quartersByCompany={quartersByCompany}
             roundsByCompany={roundsByCompany}
           />
         </TabsContent>
+
 
 
         <TabsContent value="rollups" className="mt-4 space-y-4">
