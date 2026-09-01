@@ -154,7 +154,7 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
           .insert({
             deal_id: deal.id,
             file_name: 'Pitch Deck Link',
-            file_url: values.pitch_deck_url,
+            file_url: normalizeUrl(values.pitch_deck_url) as string,
             file_type: 'link',
             file_size: 0,
             uploaded_by: user?.id as string
