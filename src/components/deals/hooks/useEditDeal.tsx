@@ -64,8 +64,9 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
         .from('deals')
         .update({
           company_name: values.company_name,
-          website: values.website || null,
-          linkedin_url: values.linkedin_url || null,
+          website: normalizeUrl(values.website),
+          linkedin_url: normalizeUrl(values.linkedin_url),
+
           city: values.city || null,
           state_province: values.state_province || null,
           country: values.country || null,
