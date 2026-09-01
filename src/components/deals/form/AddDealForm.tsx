@@ -38,7 +38,7 @@ const addDealFormSchema = z.object({
   round_size: z.string().optional(),
   post_money_valuation: z.string().optional(),
   revenue: z.string().optional(),
-  pitch_deck_url: z.string().url({ message: "Invalid URL" }).or(z.literal('')).optional(),
+  pitch_deck_url: optionalUrlField,
   next_steps: z.string().optional(),
   last_call_date: z.string().optional(),
 });
