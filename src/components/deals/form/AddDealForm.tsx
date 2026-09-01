@@ -83,8 +83,10 @@ interface AddDealFormProps {
 }
 
 export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
+  const { toast } = useToast();
   const [pitchDeckFile, setPitchDeckFile] = useState<File | null>(null);
   const [additionalFiles, setAdditionalFiles] = useState<File[]>([]);
+
   const { 
     handleAddSubmit, 
     isLoading, 
