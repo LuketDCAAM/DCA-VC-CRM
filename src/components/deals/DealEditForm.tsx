@@ -2,6 +2,8 @@
 import React, { useEffect } from 'react';
 import { Deal } from '@/types/deal'; 
 import { Form } from '@/components/ui/form'; 
+import { useToast } from '@/hooks/use-toast';
+
 import { useEditDeal } from './hooks/useEditDeal';
 import { supabase } from '@/integrations/supabase/client';
 import { useDealEditForm } from './form/useDealEditForm';
