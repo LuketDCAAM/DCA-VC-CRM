@@ -25,8 +25,10 @@ interface DealEditFormProps {
 }
 
 export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
+  const { toast } = useToast();
   const { form, pitchDeckFile, handleFileChange } = useDealEditForm({ deal });
   const { handleEditSubmit, isUpdating } = useEditDeal({ deal, onSave });
+
 
   const onSubmit = async (values: DealFormValues) => {
     console.log('Form submission values:', values);
