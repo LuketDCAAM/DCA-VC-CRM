@@ -10,6 +10,7 @@ import { QuarterFilter } from './shared/QuarterFilter';
 import { useQuarterFilter } from './shared/useQuarterFilter';
 import { getChartColor, CHART_DIMENSIONS } from './shared/chartConfig';
 import { Deal } from '@/types/deal';
+import { countSectorTags } from '@/utils/sectorUtils';
 
 interface SectorChartProps {
   data: Array<{ sector: string; count: number; percentage: number }>;
@@ -20,16 +21,8 @@ export function SectorChart({ data, deals }: SectorChartProps) {
   const { selectedQuarter, setSelectedQuarter, availableQuarters, filteredDeals: quarterFiltered } = useQuarterFilter(deals);
   const { showActiveOnly, setShowActiveOnly, filteredDeals } = usePipelineFilter(quarterFiltered);
   
-  // Recalculate sector data based on filtered deals - exclude unknown/null values
-  const sectorCounts = filteredDeals.reduce((acc, deal) => {
-    const sector = deal.sector;
-    // Skip null, undefined, empty, 'Unknown', 'N/A' values
-    if (!sector || sector.trim() === '' || sector.toLowerCase() === 'unknown' || sector.toLowerCase() === 'n/a') {
-      return acc;
-    }
-    acc[sector] = (acc[sector] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  // Recalculate sector data based on filtered deals - each tag counted separately
+  const sectorCounts = countSectorTags(filteredDeals);
 
   const total = Object.values(sectorCounts).reduce((sum, count) => sum + count, 0);
   const calculatedData = Object.entries(sectorCounts)
@@ -39,11 +32,6 @@ export function SectorChart({ data, deals }: SectorChartProps) {
       percentage: total > 0 ? Math.round((count / total) * 100) : 0
     }))
     .sort((a, b) => b.count - a.count);
-
-  console.log('=== SECTOR CHART REBUILD ===');
-  console.log('Show active only:', showActiveOnly);
-  console.log('Filtered deals count:', filteredDeals.length);
-  console.log('Calculated sector data:', calculatedData);
 
   const validData = calculatedData?.filter(item => 
     item && 
