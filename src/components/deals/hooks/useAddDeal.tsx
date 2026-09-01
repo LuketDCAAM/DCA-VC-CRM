@@ -126,8 +126,9 @@ export function useAddDeal() {
         .from('deals')
         .insert({
           company_name: values.company_name,
-          website: values.website || null,
-          linkedin_url: values.linkedin_url || null,
+          website: normalizeUrl(values.website),
+          linkedin_url: normalizeUrl(values.linkedin_url),
+
           location: values.location || null,
           description: values.description || null,
           sector: values.sector || null,
