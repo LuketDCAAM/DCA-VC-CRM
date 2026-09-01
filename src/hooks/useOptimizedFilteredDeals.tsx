@@ -2,6 +2,7 @@
 import { useMemo } from 'react';
 import { Deal } from '@/types/deal';
 import { normalizeLocationToFilterKey } from '@/utils/locationUtils';
+import { dealMatchesSectors } from '@/utils/sectorUtils';
 
 export interface FilteredDealsConfig {
   searchTerm: string;
@@ -49,9 +50,9 @@ function filterDeals(deals: Deal[], searchTerm: string, activeFilters: Record<st
           break;
         case 'sector':
           if (Array.isArray(value)) {
-            filtered = filtered.filter(deal => value.length === 0 || value.includes(deal.sector || ''));
+            filtered = filtered.filter(deal => dealMatchesSectors(deal, value));
           } else {
-            filtered = filtered.filter(deal => deal.sector === value);
+            filtered = filtered.filter(deal => dealMatchesSectors(deal, [value]));
           }
           break;
         case 'state_province':

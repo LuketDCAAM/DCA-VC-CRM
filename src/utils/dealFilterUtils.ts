@@ -1,26 +1,17 @@
 
 import { Deal } from '@/types/deal';
+import { splitSectors } from '@/utils/sectorUtils';
 
 export function getUniqueSectors(deals: Deal[]): { label: string; value: string }[] {
-  console.log('Extracting unique sectors from deals:', deals.length);
-  
   const sectorSet = new Set<string>();
-  
+
   deals.forEach(deal => {
-    if (deal.sector && deal.sector.trim() !== '') {
-      sectorSet.add(deal.sector.trim());
-    }
+    splitSectors(deal.sector).forEach(tag => sectorSet.add(tag));
   });
-  
-  const uniqueSectors = Array.from(sectorSet)
-    .sort()
-    .map(sector => ({
-      label: sector,
-      value: sector
-    }));
-  
-  console.log('Unique sectors found:', uniqueSectors);
-  return uniqueSectors;
+
+  return Array.from(sectorSet)
+    .sort((a, b) => a.localeCompare(b))
+    .map(sector => ({ label: sector, value: sector }));
 }
 
 export function getUniqueStateProvinces(deals: Deal[]): { label: string; value: string }[] {
