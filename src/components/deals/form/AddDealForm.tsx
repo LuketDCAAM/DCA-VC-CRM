@@ -16,8 +16,9 @@ import { DuplicateDetectionDialog } from '../duplicates/DuplicateDetectionDialog
 
 const addDealFormSchema = z.object({
   company_name: z.string().min(1, 'Company name is required'),
-  website: z.string().url({ message: "Invalid URL" }).or(z.literal('')).optional(),
-  linkedin_url: z.string().url({ message: "Invalid URL" }).or(z.literal('')).optional(),
+  website: optionalUrlField,
+  linkedin_url: optionalUrlField,
+
   city: z.string().optional(),
   state_province: z.string().optional(),
   country: z.string().optional(),
