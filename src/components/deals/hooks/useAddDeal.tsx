@@ -7,6 +7,8 @@ import { Constants } from '@/integrations/supabase/types';
 import { useDuplicateDetection } from '@/hooks/useDuplicateDetection';
 import { PotentialDuplicate } from '@/types/duplicates';
 import { PIPELINE_STAGES } from '@/hooks/deals/dealStagesConfig';
+import { normalizeUrl } from '@/utils/urlUtils';
+
 
 interface AddDealValues {
   company_name: string;
