@@ -13,6 +13,8 @@ import { SourcedBySelect } from './SourcedBySelect';
 import { useAddDeal } from '../hooks/useAddDeal';
 import { Paperclip, FileText, Calendar, File, X, Upload } from 'lucide-react';
 import { DuplicateDetectionDialog } from '../duplicates/DuplicateDetectionDialog';
+import { optionalUrlField } from '@/utils/urlUtils';
+
 
 const addDealFormSchema = z.object({
   company_name: z.string().min(1, 'Company name is required'),
