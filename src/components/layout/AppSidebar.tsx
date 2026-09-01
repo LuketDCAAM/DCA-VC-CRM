@@ -67,8 +67,8 @@ export default function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="border-b">
-        <div className={cn('flex items-center py-2', collapsed ? 'justify-center px-1' : 'gap-2 px-2')}>
+      <SidebarHeader className="h-12 border-b p-0">
+        <div className={cn('flex h-12 items-center', collapsed ? 'justify-center px-1' : 'gap-2 px-2')}>
           <img
             src="/lovable-uploads/c1b92e43-b852-475a-aa30-04db2ade1108.png"
             alt="VC Platform Logo"
