@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Deal } from '@/types/deal';
 import { getPipelineStageColor, getPipelineStageClasses } from '../../pipelineStageColors';
 import { PipelineStageDropdown } from '../PipelineStageDropdown';
+import { splitSectors } from '@/utils/sectorUtils';
 
 interface StatusCellContentProps {
   deal: Deal;
@@ -39,14 +40,20 @@ export function StatusCellContent({ deal, type, onUpdate }: StatusCellContentPro
         <span className="text-muted-foreground text-sm">-</span>
       );
 
-    case 'sector':
-      return deal.sector ? (
-        <Badge variant="outline" className="text-xs font-medium px-2.5 py-1 border-muted-foreground/30">
-          {deal.sector}
-        </Badge>
+    case 'sector': {
+      const sectors = splitSectors(deal.sector);
+      return sectors.length > 0 ? (
+        <div className="flex flex-wrap gap-1">
+          {sectors.map(tag => (
+            <Badge key={tag} variant="outline" className="text-xs font-medium px-2.5 py-1 border-muted-foreground/30">
+              {tag}
+            </Badge>
+          ))}
+        </div>
       ) : (
         <span className="text-muted-foreground text-sm">-</span>
       );
+    }
 
     default:
       return <span className="text-muted-foreground text-sm">-</span>;

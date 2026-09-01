@@ -5,6 +5,7 @@ import { MapPin, Calendar, Users, FileText } from 'lucide-react';
 import { Deal } from '@/types/deal';
 import { formatDate } from '@/lib/utils';
 import { formatLocation } from '@/utils/locationUtils';
+import { splitSectors } from '@/utils/sectorUtils';
 
 interface DealCardContentProps {
   deal: Deal;
@@ -27,11 +28,11 @@ export function DealCardContent({ deal }: DealCardContentProps) {
           </div>
         )}
         
-        {deal.sector && (
-          <Badge variant="outline" className="text-xs">
-            {deal.sector}
+        {splitSectors(deal.sector).map(tag => (
+          <Badge key={tag} variant="outline" className="text-xs">
+            {tag}
           </Badge>
-        )}
+        ))}
         
         {deal.deal_source && (
           <Badge variant="secondary" className="text-xs">

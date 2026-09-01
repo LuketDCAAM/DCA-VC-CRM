@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Building2, Calendar, Tag } from 'lucide-react';
 import { Deal } from '@/types/deal';
+import { splitSectors } from '@/utils/sectorUtils';
 
 interface DealHeaderCardProps {
   deal: Deal;
@@ -42,12 +43,12 @@ export function DealHeaderCard({ deal }: DealHeaderCardProps) {
                   {deal.round_stage}
                 </Badge>
               )}
-              {deal.sector && (
-                <Badge variant="secondary" className="flex items-center gap-1">
+              {splitSectors(deal.sector).map(tag => (
+                <Badge key={tag} variant="secondary" className="flex items-center gap-1">
                   <Tag className="h-3 w-3" />
-                  {deal.sector}
+                  {tag}
                 </Badge>
-              )}
+              ))}
             </div>
           </div>
           <div className="text-right text-sm text-gray-500">

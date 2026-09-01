@@ -10,6 +10,7 @@ import { QuarterFilter } from './shared/QuarterFilter';
 import { useQuarterFilter } from './shared/useQuarterFilter';
 import { getChartColor, CHART_DIMENSIONS } from './shared/chartConfig';
 import { Deal } from '@/types/deal';
+import { countSectorTags } from '@/utils/sectorUtils';
 
 interface SectorChartProps {
   data: Array<{ sector: string; count: number; percentage: number }>;
