@@ -1306,6 +1306,42 @@ export type Database = {
           },
         ]
       }
+      investments_backup_20260828: {
+        Row: {
+          amount_invested: number | null
+          created_at: string | null
+          id: string | null
+          investment_date: string | null
+          ownership_percentage: number | null
+          portfolio_company_id: string | null
+          post_money_valuation: number | null
+          price_per_share: number | null
+          revenue_at_investment: number | null
+        }
+        Insert: {
+          amount_invested?: number | null
+          created_at?: string | null
+          id?: string | null
+          investment_date?: string | null
+          ownership_percentage?: number | null
+          portfolio_company_id?: string | null
+          post_money_valuation?: number | null
+          price_per_share?: number | null
+          revenue_at_investment?: number | null
+        }
+        Update: {
+          amount_invested?: number | null
+          created_at?: string | null
+          id?: string | null
+          investment_date?: string | null
+          ownership_percentage?: number | null
+          portfolio_company_id?: string | null
+          post_money_valuation?: number | null
+          price_per_share?: number | null
+          revenue_at_investment?: number | null
+        }
+        Relationships: []
+      }
       investors: {
         Row: {
           average_check_size: number | null
