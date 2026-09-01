@@ -7,6 +7,8 @@ import { Constants } from '@/integrations/supabase/types';
 import { useDuplicateDetection } from '@/hooks/useDuplicateDetection';
 import { PotentialDuplicate } from '@/types/duplicates';
 import { PIPELINE_STAGES } from '@/hooks/deals/dealStagesConfig';
+import { normalizeUrl } from '@/utils/urlUtils';
+
 
 interface AddDealValues {
   company_name: string;
@@ -126,8 +128,9 @@ export function useAddDeal() {
         .from('deals')
         .insert({
           company_name: values.company_name,
-          website: values.website || null,
-          linkedin_url: values.linkedin_url || null,
+          website: normalizeUrl(values.website),
+          linkedin_url: normalizeUrl(values.linkedin_url),
+
           location: values.location || null,
           description: values.description || null,
           sector: values.sector || null,
@@ -288,12 +291,14 @@ export function useAddDeal() {
       return true;
     } catch (error) {
       console.error('useAddDeal - Error creating deal:', error);
+      const message = error instanceof Error ? error.message : (error as { message?: string })?.message;
       toast({
         title: "Error",
-        description: "Failed to create deal. Please try again.",
+        description: message ? `Failed to create deal: ${message}` : "Failed to create deal. Please try again.",
         variant: "destructive",
       });
       return false;
+
     } finally {
       setIsLoading(false);
     }

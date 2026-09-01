@@ -4,6 +4,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Deal } from '@/types/deal';
 import { useAuth } from '@/hooks/useAuth';
+import { normalizeUrl } from '@/utils/urlUtils';
+
 
 interface EditDealValues {
   company_name: string;
@@ -64,8 +66,9 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
         .from('deals')
         .update({
           company_name: values.company_name,
-          website: values.website || null,
-          linkedin_url: values.linkedin_url || null,
+          website: normalizeUrl(values.website),
+          linkedin_url: normalizeUrl(values.linkedin_url),
+
           city: values.city || null,
           state_province: values.state_province || null,
           country: values.country || null,
@@ -151,7 +154,7 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
           .insert({
             deal_id: deal.id,
             file_name: 'Pitch Deck Link',
-            file_url: values.pitch_deck_url,
+            file_url: normalizeUrl(values.pitch_deck_url) as string,
             file_type: 'link',
             file_size: 0,
             uploaded_by: user?.id as string
@@ -224,11 +227,13 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
       onSave();
     } catch (error) {
       console.error('Error updating deal:', error);
+      const message = error instanceof Error ? error.message : (error as { message?: string })?.message;
       toast({
         title: "Error",
-        description: "Failed to update deal. Please try again.",
+        description: message ? `Failed to update deal: ${message}` : "Failed to update deal. Please try again.",
         variant: "destructive",
       });
+
     } finally {
       setIsUpdating(false);
     }

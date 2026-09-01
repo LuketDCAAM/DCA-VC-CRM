@@ -13,11 +13,16 @@ import { SourcedBySelect } from './SourcedBySelect';
 import { useAddDeal } from '../hooks/useAddDeal';
 import { Paperclip, FileText, Calendar, File, X, Upload } from 'lucide-react';
 import { DuplicateDetectionDialog } from '../duplicates/DuplicateDetectionDialog';
+import { optionalUrlField } from '@/utils/urlUtils';
+import { useToast } from '@/hooks/use-toast';
+
+
 
 const addDealFormSchema = z.object({
   company_name: z.string().min(1, 'Company name is required'),
-  website: z.string().url({ message: "Invalid URL" }).or(z.literal('')).optional(),
-  linkedin_url: z.string().url({ message: "Invalid URL" }).or(z.literal('')).optional(),
+  website: optionalUrlField,
+  linkedin_url: optionalUrlField,
+
   city: z.string().optional(),
   state_province: z.string().optional(),
   country: z.string().optional(),
@@ -37,7 +42,7 @@ const addDealFormSchema = z.object({
   round_size: z.string().optional(),
   post_money_valuation: z.string().optional(),
   revenue: z.string().optional(),
-  pitch_deck_url: z.string().url({ message: "Invalid URL" }).or(z.literal('')).optional(),
+  pitch_deck_url: optionalUrlField,
   next_steps: z.string().optional(),
   last_call_date: z.string().optional(),
 });
@@ -80,8 +85,10 @@ interface AddDealFormProps {
 }
 
 export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
+  const { toast } = useToast();
   const [pitchDeckFile, setPitchDeckFile] = useState<File | null>(null);
   const [additionalFiles, setAdditionalFiles] = useState<File[]>([]);
+
   const { 
     handleAddSubmit, 
     isLoading, 
@@ -191,7 +198,20 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
   return (
     <div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          onSubmit={form.handleSubmit(onSubmit, (errors) => {
+            const first = Object.entries(errors)[0];
+            toast({
+              title: 'Please fix a field before saving',
+              description: first
+                ? `${first[0].replace(/_/g, ' ')}: ${(first[1] as { message?: string })?.message ?? 'invalid value'}`
+                : 'Some fields are invalid.',
+              variant: 'destructive',
+            });
+          })}
+          className="space-y-6"
+        >
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Company Information */}
           <Card>
@@ -220,7 +240,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
                   <FormItem>
                     <FormLabel>Website</FormLabel>
                     <FormControl>
-                      <Input type="url" {...field} />
+                      <Input type="text" inputMode="url" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -233,7 +253,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
                   <FormItem>
                     <FormLabel>LinkedIn URL</FormLabel>
                     <FormControl>
-                      <Input type="url" {...field} placeholder="https://www.linkedin.com/company/..." />
+                      <Input type="text" inputMode="url" {...field} placeholder="https://www.linkedin.com/company/..." />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -595,7 +615,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
                   <FormItem>
                     <FormLabel>Pitch Deck URL</FormLabel>
                     <FormControl>
-                      <Input type="url" {...field} placeholder="Enter URL" />
+                      <Input type="text" inputMode="url" {...field} placeholder="Enter URL" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

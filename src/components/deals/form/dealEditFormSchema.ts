@@ -1,11 +1,13 @@
 
 import * as z from 'zod';
 import { Constants } from '@/integrations/supabase/types';
+import { optionalUrlField } from '@/utils/urlUtils';
 
 export const dealFormSchema = z.object({
   company_name: z.string().min(1, 'Company name is required.'),
-  website: z.string().url({ message: "Invalid URL." }).or(z.literal('')).optional(),
-  linkedin_url: z.string().url({ message: "Invalid URL." }).or(z.literal('')).optional(),
+  website: optionalUrlField,
+  linkedin_url: optionalUrlField,
+
   city: z.string().optional(),
   state_province: z.string().optional(),
   country: z.string().optional(),
@@ -25,7 +27,7 @@ export const dealFormSchema = z.object({
   round_size: z.string().optional(), 
   post_money_valuation: z.string().optional(),
   revenue: z.string().optional(),
-  pitch_deck_url: z.string().url({ message: "Invalid URL." }).or(z.literal('')).optional(),
+  pitch_deck_url: optionalUrlField,
   lead_investor: z.string().optional(),
   other_investors: z.string().optional(),
   next_steps: z.string().optional(),
