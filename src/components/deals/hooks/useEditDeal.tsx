@@ -4,6 +4,8 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Deal } from '@/types/deal';
 import { useAuth } from '@/hooks/useAuth';
+import { normalizeUrl } from '@/utils/urlUtils';
+
 
 interface EditDealValues {
   company_name: string;
