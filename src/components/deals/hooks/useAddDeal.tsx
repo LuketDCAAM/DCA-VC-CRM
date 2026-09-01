@@ -291,12 +291,14 @@ export function useAddDeal() {
       return true;
     } catch (error) {
       console.error('useAddDeal - Error creating deal:', error);
+      const message = error instanceof Error ? error.message : (error as { message?: string })?.message;
       toast({
         title: "Error",
-        description: "Failed to create deal. Please try again.",
+        description: message ? `Failed to create deal: ${message}` : "Failed to create deal. Please try again.",
         variant: "destructive",
       });
       return false;
+
     } finally {
       setIsLoading(false);
     }
