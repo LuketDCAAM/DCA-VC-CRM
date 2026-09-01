@@ -194,7 +194,20 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
   return (
     <div>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form
+          onSubmit={form.handleSubmit(onSubmit, (errors) => {
+            const first = Object.entries(errors)[0];
+            toast({
+              title: 'Please fix a field before saving',
+              description: first
+                ? `${first[0].replace(/_/g, ' ')}: ${(first[1] as { message?: string })?.message ?? 'invalid value'}`
+                : 'Some fields are invalid.',
+              variant: 'destructive',
+            });
+          })}
+          className="space-y-6"
+        >
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Company Information */}
           <Card>
