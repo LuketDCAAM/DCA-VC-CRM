@@ -27,7 +27,7 @@ export const dealFormSchema = z.object({
   round_size: z.string().optional(), 
   post_money_valuation: z.string().optional(),
   revenue: z.string().optional(),
-  pitch_deck_url: z.string().url({ message: "Invalid URL." }).or(z.literal('')).optional(),
+  pitch_deck_url: optionalUrlField,
   lead_investor: z.string().optional(),
   other_investors: z.string().optional(),
   next_steps: z.string().optional(),
