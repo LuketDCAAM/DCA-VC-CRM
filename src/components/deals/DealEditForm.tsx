@@ -108,9 +108,19 @@ export function DealEditForm({ deal, onSave, onCancel }: DealEditFormProps) {
     }
   }, [deal.id, form]);
 
+  const onInvalid = (errors: Record<string, { message?: string }>) => {
+    const first = Object.entries(errors)[0];
+    toast({
+      title: 'Please fix a field before saving',
+      description: first ? `${first[0].replace(/_/g, ' ')}: ${first[1]?.message ?? 'invalid value'}` : 'Some fields are invalid.',
+      variant: 'destructive',
+    });
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit, onInvalid as never)} className="space-y-6">
+
         <DealEditFormHeader isUpdating={isUpdating} onCancel={onCancel} />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
