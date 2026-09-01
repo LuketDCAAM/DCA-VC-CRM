@@ -14,6 +14,8 @@ import { useAddDeal } from '../hooks/useAddDeal';
 import { Paperclip, FileText, Calendar, File, X, Upload } from 'lucide-react';
 import { DuplicateDetectionDialog } from '../duplicates/DuplicateDetectionDialog';
 import { optionalUrlField } from '@/utils/urlUtils';
+import { useToast } from '@/hooks/use-toast';
+
 
 
 const addDealFormSchema = z.object({
