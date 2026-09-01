@@ -240,7 +240,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
                   <FormItem>
                     <FormLabel>Website</FormLabel>
                     <FormControl>
-                      <Input type="url" {...field} />
+                      <Input type="text" inputMode="url" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -253,7 +253,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
                   <FormItem>
                     <FormLabel>LinkedIn URL</FormLabel>
                     <FormControl>
-                      <Input type="url" {...field} placeholder="https://www.linkedin.com/company/..." />
+                      <Input type="text" inputMode="url" {...field} placeholder="https://www.linkedin.com/company/..." />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -615,7 +615,7 @@ export function AddDealForm({ onSuccess, onCancel }: AddDealFormProps) {
                   <FormItem>
                     <FormLabel>Pitch Deck URL</FormLabel>
                     <FormControl>
-                      <Input type="url" {...field} placeholder="Enter URL" />
+                      <Input type="text" inputMode="url" {...field} placeholder="Enter URL" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

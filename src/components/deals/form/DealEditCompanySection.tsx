@@ -34,7 +34,7 @@ export function DealEditCompanySection({ control }: DealEditCompanySectionProps)
           <FormItem>
             <FormLabel>Website</FormLabel>
             <FormControl>
-              <Input type="url" placeholder="https://example.com" {...field} />
+              <Input type="text" inputMode="url" placeholder="https://example.com" {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -47,7 +47,7 @@ export function DealEditCompanySection({ control }: DealEditCompanySectionProps)
           <FormItem>
             <FormLabel>LinkedIn URL</FormLabel>
             <FormControl>
-              <Input type="url" placeholder="https://www.linkedin.com/company/..." {...field} />
+              <Input type="text" inputMode="url" placeholder="https://www.linkedin.com/company/..." {...field} />
             </FormControl>
             <FormMessage />
           </FormItem>

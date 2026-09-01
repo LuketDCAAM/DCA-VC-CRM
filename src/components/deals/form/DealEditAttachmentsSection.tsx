@@ -207,7 +207,7 @@ export function DealEditAttachmentsSection({
                 <Link className="h-4 w-4" /> Pitch Deck Link
               </FormLabel>
               <FormControl>
-                <Input type="url" placeholder="https://docs.google.com/presentation/..." {...field} />
+                <Input type="text" inputMode="url" placeholder="https://docs.google.com/presentation/..." {...field} />
               </FormControl>
               {isDocSendUrl(field.value) && (
                 <Button
