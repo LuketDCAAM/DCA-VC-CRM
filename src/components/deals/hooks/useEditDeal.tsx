@@ -227,11 +227,13 @@ export function useEditDeal({ deal, onSave }: UseEditDealProps) {
       onSave();
     } catch (error) {
       console.error('Error updating deal:', error);
+      const message = error instanceof Error ? error.message : (error as { message?: string })?.message;
       toast({
         title: "Error",
-        description: "Failed to update deal. Please try again.",
+        description: message ? `Failed to update deal: ${message}` : "Failed to update deal. Please try again.",
         variant: "destructive",
       });
+
     } finally {
       setIsUpdating(false);
     }
