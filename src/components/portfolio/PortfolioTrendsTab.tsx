@@ -3,6 +3,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Legend,
   Line,
   LineChart,
@@ -29,6 +30,7 @@ import {
 import type { PortcoQuarter } from '@/hooks/portfolio/usePortcoQuarters';
 import type { PortcoRound } from '@/hooks/portfolio/usePortcoRounds';
 import type { EnrichedPosition } from '@/hooks/portfolio/usePortfolioRollups';
+import { buildCompanyColorMap, companyColor } from '@/lib/portfolio/colors';
 
 const SERIES_COLORS = [
   'hsl(var(--chart-1))',
