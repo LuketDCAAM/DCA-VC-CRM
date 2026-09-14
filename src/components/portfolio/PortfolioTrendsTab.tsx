@@ -3,6 +3,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Legend,
   Line,
   LineChart,
@@ -29,6 +30,7 @@ import {
 import type { PortcoQuarter } from '@/hooks/portfolio/usePortcoQuarters';
 import type { PortcoRound } from '@/hooks/portfolio/usePortcoRounds';
 import type { EnrichedPosition } from '@/hooks/portfolio/usePortfolioRollups';
+import { buildCompanyColorMap, companyColor } from '@/lib/portfolio/colors';
 
 const SERIES_COLORS = [
   'hsl(var(--chart-1))',
@@ -53,6 +55,14 @@ export function PortfolioTrendsTab({ positions, quartersByCompany, roundsByCompa
     [positions],
   );
 
+  const colorMap = useMemo(
+    () =>
+      buildCompanyColorMap(
+        [...companies].sort((a, b) => a.company_name.localeCompare(b.company_name)).map((c) => c.id),
+      ),
+    [companies],
+  );
+
   const spec = TREND_METRICS.find((m) => m.key === metric)!;
 
   const { data: seriesData, keys } = useMemo(
@@ -69,6 +79,8 @@ export function PortfolioTrendsTab({ positions, quartersByCompany, roundsByCompa
         .sort((a, b) => (a.round.close_date ?? '').localeCompare(b.round.close_date ?? ''))
         .map((r) => ({
           label: `${r.companyName} ${r.round.round_name}`,
+          companyId: r.companyId,
+          companyName: r.companyName,
           stepUp: Number((r.stepUp as number).toFixed(2)),
         })),
     [stepUpRows],
@@ -155,19 +167,22 @@ export function PortfolioTrendsTab({ positions, quartersByCompany, roundsByCompa
                   formatter={(value: number, name: string) => [formatValue(value), name]}
                 />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
-                {keys.map((k, i) => (
-                  <Line
-                    key={k.id}
-                    type="monotone"
-                    dataKey={k.id}
-                    name={k.name}
-                    stroke={SERIES_COLORS[i % SERIES_COLORS.length]}
-                    strokeWidth={2}
-                    dot={{ r: 3, strokeWidth: 0, fill: SERIES_COLORS[i % SERIES_COLORS.length] }}
-                    activeDot={{ r: 5 }}
-                    connectNulls
-                  />
-                ))}
+                {keys.map((k) => {
+                  const color = companyColor(colorMap, k.id);
+                  return (
+                    <Line
+                      key={k.id}
+                      type="monotone"
+                      dataKey={k.id}
+                      name={k.name}
+                      stroke={color}
+                      strokeWidth={2}
+                      dot={{ r: 3, strokeWidth: 0, fill: color }}
+                      activeDot={{ r: 5 }}
+                      connectNulls
+                    />
+                  );
+                })}
               </LineChart>
             </ResponsiveContainer>
           )}
@@ -262,7 +277,11 @@ export function PortfolioTrendsTab({ positions, quartersByCompany, roundsByCompa
                   }}
                   formatter={(value: number) => [`${value}x`, 'Step-up']}
                 />
-                <Bar dataKey="stepUp" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="stepUp" radius={[4, 4, 0, 0]}>
+                  {stepUpChartData.map((d) => (
+                    <Cell key={d.label} fill={companyColor(colorMap, d.companyId)} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -288,7 +307,15 @@ export function PortfolioTrendsTab({ positions, quartersByCompany, roundsByCompa
                 <TableBody>
                   {stepUpRows.map((r) => (
                     <TableRow key={r.round.id}>
-                      <TableCell className="whitespace-nowrap font-medium">{r.companyName}</TableCell>
+                      <TableCell className="whitespace-nowrap font-medium">
+                        <span className="flex items-center gap-2">
+                          <span
+                            className="h-2.5 w-2.5 shrink-0 rounded-full"
+                            style={{ backgroundColor: companyColor(colorMap, r.companyId) }}
+                          />
+                          {r.companyName}
+                        </span>
+                      </TableCell>
                       <TableCell className="whitespace-nowrap">
                         {r.round.round_name}
                         {!r.round.we_participated && (
