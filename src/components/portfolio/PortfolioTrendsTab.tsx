@@ -167,19 +167,22 @@ export function PortfolioTrendsTab({ positions, quartersByCompany, roundsByCompa
                   formatter={(value: number, name: string) => [formatValue(value), name]}
                 />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
-                {keys.map((k, i) => (
-                  <Line
-                    key={k.id}
-                    type="monotone"
-                    dataKey={k.id}
-                    name={k.name}
-                    stroke={SERIES_COLORS[i % SERIES_COLORS.length]}
-                    strokeWidth={2}
-                    dot={{ r: 3, strokeWidth: 0, fill: SERIES_COLORS[i % SERIES_COLORS.length] }}
-                    activeDot={{ r: 5 }}
-                    connectNulls
-                  />
-                ))}
+                {keys.map((k) => {
+                  const color = companyColor(colorMap, k.id);
+                  return (
+                    <Line
+                      key={k.id}
+                      type="monotone"
+                      dataKey={k.id}
+                      name={k.name}
+                      stroke={color}
+                      strokeWidth={2}
+                      dot={{ r: 3, strokeWidth: 0, fill: color }}
+                      activeDot={{ r: 5 }}
+                      connectNulls
+                    />
+                  );
+                })}
               </LineChart>
             </ResponsiveContainer>
           )}
