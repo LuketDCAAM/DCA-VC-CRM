@@ -277,7 +277,11 @@ export function PortfolioTrendsTab({ positions, quartersByCompany, roundsByCompa
                   }}
                   formatter={(value: number) => [`${value}x`, 'Step-up']}
                 />
-                <Bar dataKey="stepUp" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="stepUp" radius={[4, 4, 0, 0]}>
+                  {stepUpChartData.map((d) => (
+                    <Cell key={d.label} fill={companyColor(colorMap, d.companyId)} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           )}
