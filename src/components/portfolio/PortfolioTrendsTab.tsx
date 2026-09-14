@@ -307,7 +307,15 @@ export function PortfolioTrendsTab({ positions, quartersByCompany, roundsByCompa
                 <TableBody>
                   {stepUpRows.map((r) => (
                     <TableRow key={r.round.id}>
-                      <TableCell className="whitespace-nowrap font-medium">{r.companyName}</TableCell>
+                      <TableCell className="whitespace-nowrap font-medium">
+                        <span className="flex items-center gap-2">
+                          <span
+                            className="h-2.5 w-2.5 shrink-0 rounded-full"
+                            style={{ backgroundColor: companyColor(colorMap, r.companyId) }}
+                          />
+                          {r.companyName}
+                        </span>
+                      </TableCell>
                       <TableCell className="whitespace-nowrap">
                         {r.round.round_name}
                         {!r.round.we_participated && (
