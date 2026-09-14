@@ -163,7 +163,8 @@ export function PortfolioTrendsTab({ positions, quartersByCompany, roundsByCompa
                     name={k.name}
                     stroke={SERIES_COLORS[i % SERIES_COLORS.length]}
                     strokeWidth={2}
-                    dot={false}
+                    dot={{ r: 3, strokeWidth: 0, fill: SERIES_COLORS[i % SERIES_COLORS.length] }}
+                    activeDot={{ r: 5 }}
                     connectNulls
                   />
                 ))}
@@ -210,16 +211,26 @@ export function PortfolioTrendsTab({ positions, quartersByCompany, roundsByCompa
                   name="Invested"
                   stroke={SERIES_COLORS[1]}
                   strokeWidth={2}
-                  dot={false}
+                  dot={{ r: 3, strokeWidth: 0, fill: SERIES_COLORS[1] }}
+                  activeDot={{ r: 5 }}
                 />
-                <Line type="monotone" dataKey="fmv" name="Fair value" stroke={SERIES_COLORS[0]} strokeWidth={2} dot={false} />
+                <Line
+                  type="monotone"
+                  dataKey="fmv"
+                  name="Fair value"
+                  stroke={SERIES_COLORS[0]}
+                  strokeWidth={2}
+                  dot={{ r: 3, strokeWidth: 0, fill: SERIES_COLORS[0] }}
+                  activeDot={{ r: 5 }}
+                />
                 <Line
                   type="monotone"
                   dataKey="realized"
                   name="Realized"
                   stroke={SERIES_COLORS[3]}
                   strokeWidth={2}
-                  dot={false}
+                  dot={{ r: 3, strokeWidth: 0, fill: SERIES_COLORS[3] }}
+                  activeDot={{ r: 5 }}
                 />
               </LineChart>
             </ResponsiveContainer>
