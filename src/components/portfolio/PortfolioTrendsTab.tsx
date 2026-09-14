@@ -55,6 +55,14 @@ export function PortfolioTrendsTab({ positions, quartersByCompany, roundsByCompa
     [positions],
   );
 
+  const colorMap = useMemo(
+    () =>
+      buildCompanyColorMap(
+        [...companies].sort((a, b) => a.company_name.localeCompare(b.company_name)).map((c) => c.id),
+      ),
+    [companies],
+  );
+
   const spec = TREND_METRICS.find((m) => m.key === metric)!;
 
   const { data: seriesData, keys } = useMemo(
@@ -71,6 +79,8 @@ export function PortfolioTrendsTab({ positions, quartersByCompany, roundsByCompa
         .sort((a, b) => (a.round.close_date ?? '').localeCompare(b.round.close_date ?? ''))
         .map((r) => ({
           label: `${r.companyName} ${r.round.round_name}`,
+          companyId: r.companyId,
+          companyName: r.companyName,
           stepUp: Number((r.stepUp as number).toFixed(2)),
         })),
     [stepUpRows],
