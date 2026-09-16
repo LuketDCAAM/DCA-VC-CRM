@@ -30,6 +30,7 @@ import {
   BookOpen,
   Sliders,
   Plug,
+  Send,
 } from 'lucide-react';
 
 const navigation = [
