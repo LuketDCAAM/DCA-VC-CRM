@@ -1342,6 +1342,65 @@ export type Database = {
         }
         Relationships: []
       }
+      investor_cadences: {
+        Row: {
+          anchor_day: number
+          anchor_rule: string
+          created_at: string
+          created_by: string
+          id: string
+          interval_key: string
+          investor_id: string
+          last_contacted_at: string | null
+          next_due_at: string | null
+          notes: string | null
+          owner_id: string | null
+          paused: boolean
+          resume_on: string | null
+          updated_at: string
+        }
+        Insert: {
+          anchor_day?: number
+          anchor_rule?: string
+          created_at?: string
+          created_by: string
+          id?: string
+          interval_key?: string
+          investor_id: string
+          last_contacted_at?: string | null
+          next_due_at?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          paused?: boolean
+          resume_on?: string | null
+          updated_at?: string
+        }
+        Update: {
+          anchor_day?: number
+          anchor_rule?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          interval_key?: string
+          investor_id?: string
+          last_contacted_at?: string | null
+          next_due_at?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          paused?: boolean
+          resume_on?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investor_cadences_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: true
+            referencedRelation: "investors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investors: {
         Row: {
           average_check_size: number | null
@@ -1684,6 +1743,255 @@ export type Database = {
           status?: string
           sync_type?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      outreach_batch_items: {
+        Row: {
+          batch_id: string
+          body: string | null
+          created_at: string
+          created_by: string
+          deal_ids: string[]
+          drafted_at: string | null
+          id: string
+          investor_id: string
+          match_rationale: Json
+          outlook_draft_id: string | null
+          outlook_web_link: string | null
+          owner_id: string
+          regenerate_note: string | null
+          sent_at: string | null
+          status: string
+          subject: string | null
+          sync_error: string | null
+          sync_status: string
+          updated_at: string
+        }
+        Insert: {
+          batch_id: string
+          body?: string | null
+          created_at?: string
+          created_by: string
+          deal_ids?: string[]
+          drafted_at?: string | null
+          id?: string
+          investor_id: string
+          match_rationale?: Json
+          outlook_draft_id?: string | null
+          outlook_web_link?: string | null
+          owner_id: string
+          regenerate_note?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          sync_error?: string | null
+          sync_status?: string
+          updated_at?: string
+        }
+        Update: {
+          batch_id?: string
+          body?: string | null
+          created_at?: string
+          created_by?: string
+          deal_ids?: string[]
+          drafted_at?: string | null
+          id?: string
+          investor_id?: string
+          match_rationale?: Json
+          outlook_draft_id?: string | null
+          outlook_web_link?: string | null
+          owner_id?: string
+          regenerate_note?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          sync_error?: string | null
+          sync_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outreach_batch_items_batch_id_fkey"
+            columns: ["batch_id"]
+            isOneToOne: false
+            referencedRelation: "outreach_batches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outreach_batch_items_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outreach_batches: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          intro_note: string | null
+          period_month: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          intro_note?: string | null
+          period_month: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          intro_note?: string | null
+          period_month?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      outreach_follow_ups: {
+        Row: {
+          body: string | null
+          contact_email: string | null
+          contact_name: string | null
+          context: string | null
+          created_at: string
+          created_by: string
+          deal_id: string | null
+          drafted_at: string | null
+          due_date: string
+          id: string
+          investor_id: string | null
+          outlook_draft_id: string | null
+          outlook_web_link: string | null
+          owner_id: string
+          purpose: string
+          regenerate_note: string | null
+          sent_at: string | null
+          snooze_until: string | null
+          status: string
+          subject: string | null
+          sync_error: string | null
+          sync_status: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          context?: string | null
+          created_at?: string
+          created_by: string
+          deal_id?: string | null
+          drafted_at?: string | null
+          due_date: string
+          id?: string
+          investor_id?: string | null
+          outlook_draft_id?: string | null
+          outlook_web_link?: string | null
+          owner_id: string
+          purpose?: string
+          regenerate_note?: string | null
+          sent_at?: string | null
+          snooze_until?: string | null
+          status?: string
+          subject?: string | null
+          sync_error?: string | null
+          sync_status?: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          contact_email?: string | null
+          contact_name?: string | null
+          context?: string | null
+          created_at?: string
+          created_by?: string
+          deal_id?: string | null
+          drafted_at?: string | null
+          due_date?: string
+          id?: string
+          investor_id?: string | null
+          outlook_draft_id?: string | null
+          outlook_web_link?: string | null
+          owner_id?: string
+          purpose?: string
+          regenerate_note?: string | null
+          sent_at?: string | null
+          snooze_until?: string | null
+          status?: string
+          subject?: string | null
+          sync_error?: string | null
+          sync_status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outreach_follow_ups_deal_id_fkey"
+            columns: ["deal_id"]
+            isOneToOne: false
+            referencedRelation: "deals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outreach_follow_ups_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outreach_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          instructions: string
+          is_active: boolean
+          label: string
+          purpose: string
+          sort_order: number
+          tone: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          instructions?: string
+          is_active?: boolean
+          label: string
+          purpose: string
+          sort_order?: number
+          tone?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          instructions?: string
+          is_active?: boolean
+          label?: string
+          purpose?: string
+          sort_order?: number
+          tone?: string
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
