@@ -8,10 +8,15 @@ import {
 import { Investor } from '@/types/investor';
 import { Separator } from '@/components/ui/separator';
 import { EntityCallNotesManager } from '@/components/common/EntityCallNotesManager';
-import { Mail, Phone, Building2, MapPin, TrendingUp, DollarSign, Tag, Pencil } from 'lucide-react';
+import { Mail, Phone, Building2, MapPin, TrendingUp, DollarSign, Tag, Pencil, CalendarClock, CalendarPlus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AddInvestorDialog } from './AddInvestorDialog';
+import { FollowUpDialog } from '@/components/outreach/FollowUpDialog';
+import { CadenceSettingsDialog } from '@/components/outreach/CadenceSettingsDialog';
+import { useFollowUps } from '@/hooks/outreach/useFollowUps';
+import { useInvestorCadences } from '@/hooks/outreach/useInvestorCadences';
+import { intervalLabel } from '@/lib/outreach/constants';
 
 interface InvestorDetailDialogProps {
   investor: Investor | null;
@@ -22,6 +27,12 @@ interface InvestorDetailDialogProps {
 
 export function InvestorDetailDialog({ investor, open, onOpenChange, onInvestorUpdated }: InvestorDetailDialogProps) {
   const [editOpen, setEditOpen] = useState(false);
+  const [followUpOpen, setFollowUpOpen] = useState(false);
+  const [cadenceOpen, setCadenceOpen] = useState(false);
+  const { createFollowUp } = useFollowUps();
+  const { byInvestor, saveCadence, clearCadence } = useInvestorCadences();
+
+  const cadenceView = investor ? byInvestor.get(investor.id) : undefined;
 
   if (!investor) return null;
 
@@ -36,10 +47,25 @@ export function InvestorDetailDialog({ investor, open, onOpenChange, onInvestorU
           <DialogHeader>
             <div className="flex items-center justify-between">
               <DialogTitle className="text-2xl">{investor.contact_name}</DialogTitle>
-              <Button variant="outline" size="sm" onClick={() => setEditOpen(true)} className="mr-6">
-                <Pencil className="h-4 w-4 mr-1" /> Edit
-              </Button>
+              <div className="flex items-center gap-2 mr-6">
+                <Button variant="outline" size="sm" onClick={() => setCadenceOpen(true)}>
+                  <CalendarClock className="h-4 w-4 mr-1" /> Rhythm
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setFollowUpOpen(true)}>
+                  <CalendarPlus className="h-4 w-4 mr-1" /> Follow-up
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+                  <Pencil className="h-4 w-4 mr-1" /> Edit
+                </Button>
+              </div>
             </div>
+            {cadenceView && (
+              <p className="text-xs text-muted-foreground">
+                {intervalLabel(cadenceView.interval_key)}
+                {cadenceView.next_due ? ` · next touch ${cadenceView.next_due}` : ''}
+                {cadenceView.bucket === 'overdue' ? ' · overdue' : ''}
+              </p>
+            )}
           </DialogHeader>
 
           <div className="space-y-6">
@@ -150,6 +176,26 @@ export function InvestorDetailDialog({ investor, open, onOpenChange, onInvestorU
         open={editOpen}
         onOpenChange={setEditOpen}
         onSuccess={handleEditSuccess}
+      />
+
+      <FollowUpDialog
+        open={followUpOpen}
+        onOpenChange={setFollowUpOpen}
+        onCreate={createFollowUp}
+        investorId={investor.id}
+        defaultContactName={investor.contact_name}
+        defaultContactEmail={investor.contact_email}
+        entityLabel={investor.firm_name || investor.contact_name}
+      />
+
+      <CadenceSettingsDialog
+        open={cadenceOpen}
+        onOpenChange={setCadenceOpen}
+        investorId={investor.id}
+        investorName={investor.contact_name}
+        cadence={cadenceView ?? null}
+        onSave={saveCadence}
+        onClear={clearCadence}
       />
     </>
   );

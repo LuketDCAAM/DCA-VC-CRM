@@ -136,6 +136,112 @@ Deno.serve(async (req) => {
         });
       }
 
+      // Push a saved outreach draft into the owner's Outlook Drafts folder.
+      case 'create_outreach_draft': {
+        const { target, id } = body;
+        if (!id || (target !== 'follow_up' && target !== 'batch_item')) {
+          return new Response(JSON.stringify({ error: "Provide target ('follow_up' or 'batch_item') and id" }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        const table = target === 'follow_up' ? 'outreach_follow_ups' : 'outreach_batch_items';
+        const { data: row, error: rowError } = await serviceClient
+          .from(table)
+          .select('*')
+          .eq('id', id)
+          .maybeSingle();
+        if (rowError || !row) {
+          return new Response(JSON.stringify({ error: rowError?.message || 'Draft not found' }), {
+            status: rowError ? 500 : 404,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        if (row.owner_id !== user.id && row.created_by !== user.id) {
+          return new Response(JSON.stringify({ error: 'Not your draft' }), {
+            status: 403,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        if (!row.subject || !row.body) {
+          return new Response(JSON.stringify({ error: 'Write the draft before sending it to Outlook' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Resolve the recipient address.
+        let recipient: string | null = row.contact_email ?? null;
+        if (!recipient && row.investor_id) {
+          const { data: inv } = await serviceClient
+            .from('investors')
+            .select('contact_email')
+            .eq('id', row.investor_id)
+            .maybeSingle();
+          recipient = inv?.contact_email ?? null;
+        }
+        if (!recipient && row.deal_id) {
+          const { data: deal } = await serviceClient
+            .from('deals')
+            .select('contact_email')
+            .eq('id', row.deal_id)
+            .maybeSingle();
+          recipient = deal?.contact_email ?? null;
+        }
+
+        const key = await getConnectionKey(serviceClient, user.id);
+        if (!key) {
+          await serviceClient
+            .from(table)
+            .update({ sync_status: 'not_connected', sync_error: 'Outlook is not connected yet' })
+            .eq('id', id);
+          return new Response(JSON.stringify({ error: 'Outlook is not connected yet', sync_status: 'not_connected' }), {
+            status: 409,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        const message: Record<string, unknown> = {
+          subject: row.subject,
+          body: { contentType: 'Text', content: row.body },
+          isDraft: true,
+        };
+        if (recipient) {
+          message.toRecipients = [{ emailAddress: { address: recipient } }];
+        }
+
+        const response = await gatewayProxy(key, '/me/messages', { method: 'POST', body: message });
+        const text = await response.text();
+        if (!response.ok) {
+          console.error(`Outlook draft creation failed [${response.status}]: ${text}`);
+          await serviceClient
+            .from(table)
+            .update({ sync_status: 'error', sync_error: text.slice(0, 500) })
+            .eq('id', id);
+          return new Response(JSON.stringify({ error: 'Outlook rejected the draft', status: response.status, details: text }), {
+            status: response.status,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        const created = JSON.parse(text || '{}');
+        await serviceClient
+          .from(table)
+          .update({
+            outlook_draft_id: created.id ?? null,
+            outlook_web_link: created.webLink ?? null,
+            sync_status: 'synced',
+            sync_error: null,
+          })
+          .eq('id', id);
+
+        return new Response(JSON.stringify({ success: true, draft_id: created.id, web_link: created.webLink }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       default:
         return new Response(JSON.stringify({ error: 'Unknown action' }), {
           status: 400,
