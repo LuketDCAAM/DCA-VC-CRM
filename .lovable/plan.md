@@ -22,6 +22,18 @@ Sourcing/screening ("find deals we aren't seeing") stays out of scope for now.
 - It then writes one email per investor: short intro, then a paragraph per deal framed for that investor's thesis. Each is editable, and you can regenerate individually.
 - The batch view shows every investor's status (proposed / approved / drafted / sent) so nothing gets missed.
 
+## Investor follow-up cadence
+
+So you're never overwhelmed, each investor carries their own contact rhythm:
+
+- On an investor record, set a cadence: monthly, every two months, quarterly, twice a year, yearly, or none — plus the day it should land (e.g. the 1st, or "first Monday").
+- Only investors actually due in the chosen month are pulled into that month's digest; everyone else is skipped automatically. You can still add someone manually.
+- A cadence overview on the Investors page shows who's due this month, who's coming up, and who's overdue, with a warning when someone hasn't been contacted in over a cadence period.
+- A pause switch (with an optional "resume on" date) keeps an investor out of rotation without losing their settings.
+- Last-contacted is taken from their most recent sent outreach or logged call, so the schedule reflects real contact, not just the calendar.
+
+
+
 ## Getting drafts into Outlook
 
 Every draft lands in your Outlook **Drafts** folder, ready to review and hit send from your own mailbox. Because your Microsoft email connection is still waiting on IT approval, the app is built Outlook-ready:
@@ -41,6 +53,8 @@ Every draft lands in your Outlook **Drafts** folder, ready to review and hit sen
 - New `outreach_follow_ups`: deal/investor link, purpose, due date, owner, status (`scheduled` / `drafting` / `drafted` / `sent` / `snoozed` / `done`), snooze date, generated subject/body, outlook draft id, sync status. RLS scoped to owner or creator, mirroring `reminders`. GRANTs for `authenticated` + `service_role`.
 - New `outreach_batches` + `outreach_batch_items` for the monthly investor digests (batch = month + status; item = investor, selected deal ids, match rationale, draft subject/body, outlook draft id, status).
 - New `outreach_templates`: per-purpose house-style prompt/tone, editable in settings, seeded with sensible defaults.
+- New `investor_cadences`: investor id, interval (`monthly` / `bimonthly` / `quarterly` / `semiannual` / `annual` / `none`), anchor day rule, paused flag, resume date, last_contacted_at (maintained from sent outreach and `call_notes`), next_due_at. RLS on owner/creator; GRANTs for `authenticated` + `service_role`.
+
 
 **Generation**
 - New edge function `outreach-draft`: given a follow-up id or batch item id, gathers deal/investor context (`deals`, `call_notes`, `deal_scorecards`, `contacts`, `investors`, `file_attachments` metadata), builds the prompt from `outreach_templates`, calls the shared `_shared/ai-provider.ts` (BYOK key first, workspace Anthropic key as fallback), and writes the draft back.
@@ -55,6 +69,7 @@ Every draft lands in your Outlook **Drafts** folder, ready to review and hit sen
 - New `src/components/outreach/` — `FollowUpDialog`, `FollowUpCard`, `DraftEditor` (subject/body + regenerate + copy + push-to-Outlook), `DigestBuilderDialog` (investor picker, per-investor deal suggestions with swap), `DigestBatchView`.
 - New hooks `useFollowUps`, `useOutreachBatches`, `useOutreachDraft` following existing patterns; realtime subscriptions use the stable-channel-name convention from `useDealsSubscription`.
 - Deal detail dialog and investor detail dialog each get a "Schedule follow-up" entry point.
+- `CadenceSettingsDialog` on the investor record plus a `CadenceOverviewPanel` (due / upcoming / overdue) on the Investors page; `useInvestorCadences` computes `next_due_at` and pre-selects due investors in the digest builder.
 
 ## Build order
 
@@ -62,5 +77,6 @@ Every draft lands in your Outlook **Drafts** folder, ready to review and hit sen
 2. Follow-up scheduling + Outreach queue page (no AI yet).
 3. `outreach-draft` function + draft editor.
 4. Outlook draft push, with the disconnected fallback and queued-push-on-connect.
-5. Investor matching + monthly digest batch flow.
+5. Investor cadence settings + overview, then matching and the monthly digest batch flow.
 6. Assignment, notifications, and template settings.
+
