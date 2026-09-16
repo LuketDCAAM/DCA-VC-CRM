@@ -177,6 +177,26 @@ export function InvestorDetailDialog({ investor, open, onOpenChange, onInvestorU
         onOpenChange={setEditOpen}
         onSuccess={handleEditSuccess}
       />
+
+      <FollowUpDialog
+        open={followUpOpen}
+        onOpenChange={setFollowUpOpen}
+        onCreate={createFollowUp}
+        investorId={investor.id}
+        defaultContactName={investor.contact_name}
+        defaultContactEmail={investor.contact_email}
+        entityLabel={investor.firm_name || investor.contact_name}
+      />
+
+      <CadenceSettingsDialog
+        open={cadenceOpen}
+        onOpenChange={setCadenceOpen}
+        investorId={investor.id}
+        investorName={investor.contact_name}
+        cadence={cadenceView ?? null}
+        onSave={saveCadence}
+        onClear={clearCadence}
+      />
     </>
   );
 }
