@@ -22,6 +22,18 @@ Sourcing/screening ("find deals we aren't seeing") stays out of scope for now.
 - It then writes one email per investor: short intro, then a paragraph per deal framed for that investor's thesis. Each is editable, and you can regenerate individually.
 - The batch view shows every investor's status (proposed / approved / drafted / sent) so nothing gets missed.
 
+## Investor follow-up cadence
+
+So you're never overwhelmed, each investor carries their own contact rhythm:
+
+- On an investor record, set a cadence: monthly, every two months, quarterly, twice a year, yearly, or none — plus the day it should land (e.g. the 1st, or "first Monday").
+- Only investors actually due in the chosen month are pulled into that month's digest; everyone else is skipped automatically. You can still add someone manually.
+- A cadence overview on the Investors page shows who's due this month, who's coming up, and who's overdue, with a warning when someone hasn't been contacted in over a cadence period.
+- A pause switch (with an optional "resume on" date) keeps an investor out of rotation without losing their settings.
+- Last-contacted is taken from their most recent sent outreach or logged call, so the schedule reflects real contact, not just the calendar.
+
+
+
 ## Getting drafts into Outlook
 
 Every draft lands in your Outlook **Drafts** folder, ready to review and hit send from your own mailbox. Because your Microsoft email connection is still waiting on IT approval, the app is built Outlook-ready:
