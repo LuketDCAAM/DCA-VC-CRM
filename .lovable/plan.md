@@ -53,6 +53,8 @@ Every draft lands in your Outlook **Drafts** folder, ready to review and hit sen
 - New `outreach_follow_ups`: deal/investor link, purpose, due date, owner, status (`scheduled` / `drafting` / `drafted` / `sent` / `snoozed` / `done`), snooze date, generated subject/body, outlook draft id, sync status. RLS scoped to owner or creator, mirroring `reminders`. GRANTs for `authenticated` + `service_role`.
 - New `outreach_batches` + `outreach_batch_items` for the monthly investor digests (batch = month + status; item = investor, selected deal ids, match rationale, draft subject/body, outlook draft id, status).
 - New `outreach_templates`: per-purpose house-style prompt/tone, editable in settings, seeded with sensible defaults.
+- New `investor_cadences`: investor id, interval (`monthly` / `bimonthly` / `quarterly` / `semiannual` / `annual` / `none`), anchor day rule, paused flag, resume date, last_contacted_at (maintained from sent outreach and `call_notes`), next_due_at. RLS on owner/creator; GRANTs for `authenticated` + `service_role`.
+
 
 **Generation**
 - New edge function `outreach-draft`: given a follow-up id or batch item id, gathers deal/investor context (`deals`, `call_notes`, `deal_scorecards`, `contacts`, `investors`, `file_attachments` metadata), builds the prompt from `outreach_templates`, calls the shared `_shared/ai-provider.ts` (BYOK key first, workspace Anthropic key as fallback), and writes the draft back.
@@ -67,6 +69,7 @@ Every draft lands in your Outlook **Drafts** folder, ready to review and hit sen
 - New `src/components/outreach/` — `FollowUpDialog`, `FollowUpCard`, `DraftEditor` (subject/body + regenerate + copy + push-to-Outlook), `DigestBuilderDialog` (investor picker, per-investor deal suggestions with swap), `DigestBatchView`.
 - New hooks `useFollowUps`, `useOutreachBatches`, `useOutreachDraft` following existing patterns; realtime subscriptions use the stable-channel-name convention from `useDealsSubscription`.
 - Deal detail dialog and investor detail dialog each get a "Schedule follow-up" entry point.
+- `CadenceSettingsDialog` on the investor record plus a `CadenceOverviewPanel` (due / upcoming / overdue) on the Investors page; `useInvestorCadences` computes `next_due_at` and pre-selects due investors in the digest builder.
 
 ## Build order
 
@@ -74,5 +77,6 @@ Every draft lands in your Outlook **Drafts** folder, ready to review and hit sen
 2. Follow-up scheduling + Outreach queue page (no AI yet).
 3. `outreach-draft` function + draft editor.
 4. Outlook draft push, with the disconnected fallback and queued-push-on-connect.
-5. Investor matching + monthly digest batch flow.
+5. Investor cadence settings + overview, then matching and the monthly digest batch flow.
 6. Assignment, notifications, and template settings.
+
