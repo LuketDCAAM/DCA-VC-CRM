@@ -86,14 +86,19 @@ export default function AppSidebar() {
               {items.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href);
-                const showBadge = item.name === 'Tasks' && openTaskCount > 1;
+                const badgeCount =
+                  item.name === 'Tasks' && openTaskCount > 1
+                    ? openTaskCount
+                    : item.name === 'Outreach' && dueFollowUpCount > 0
+                      ? dueFollowUpCount
+                      : 0;
                 return (
                   <SidebarMenuItem key={item.name}>
                     <SidebarMenuButton asChild isActive={active} tooltip={item.name}>
                       <NavLink to={item.href} className="flex items-center gap-2 relative">
                         <Icon className="h-4 w-4 shrink-0" />
                         <span>{item.name}</span>
-                        {showBadge && (
+                        {badgeCount > 0 && (
                           <span
                             className={
                               collapsed
@@ -101,7 +106,7 @@ export default function AppSidebar() {
                                 : 'ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground'
                             }
                           >
-                            {openTaskCount > 99 ? '99+' : openTaskCount}
+                            {badgeCount > 99 ? '99+' : badgeCount}
                           </span>
                         )}
                       </NavLink>
