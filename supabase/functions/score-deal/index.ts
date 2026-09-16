@@ -1,6 +1,6 @@
 // Score deal: generates an AI-drafted scorecard from deal context + uploaded sources.
 // Returns a partial scorecard patch (narrative + qualitative ratings) for human review.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { callSingleTool } from "../_shared/ai-provider.ts";
 
 const corsHeaders = {

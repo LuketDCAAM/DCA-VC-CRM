@@ -1,6 +1,6 @@
 // Fill scorecard blanks: ask AI to extract values from call notes + attachments
 // for ONLY the fields that are currently empty on the scorecard.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { callSingleTool } from "../_shared/ai-provider.ts";
 
 const corsHeaders = {

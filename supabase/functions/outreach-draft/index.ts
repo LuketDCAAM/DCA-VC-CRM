@@ -1,6 +1,6 @@
 // Writes a personalized outreach email draft for a follow-up or an investor digest item.
 // Context comes from the CRM (deal, notes, scorecard, investor focus) and the house-style template.
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.50.0";
+import { createClient } from "npm:@supabase/supabase-js@2";
 import { corsHeaders } from "../_shared/cors.ts";
 import { callSingleTool } from "../_shared/ai-provider.ts";
 
