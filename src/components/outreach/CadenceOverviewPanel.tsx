@@ -26,7 +26,7 @@ export function CadenceOverviewPanel({ investors }: CadenceOverviewPanelProps) {
   }, [views, investors]);
 
   const overdue = rows.filter((r) => r.view.bucket === 'overdue');
-  const dueSoon = rows.filter((r) => r.view.bucket === 'due_soon');
+  const dueSoon = rows.filter((r) => r.view.bucket === 'due' || r.view.bucket === 'upcoming');
   const withoutCadence = investors.filter((i) => !byInvestor.has(i.id));
 
   return (
@@ -57,7 +57,7 @@ export function CadenceOverviewPanel({ investors }: CadenceOverviewPanelProps) {
               <div className="flex items-center gap-2 shrink-0">
                 <Badge
                   variant={
-                    view.bucket === 'overdue' ? 'destructive' : view.bucket === 'due_soon' ? 'secondary' : 'outline'
+                    view.bucket === 'overdue' ? 'destructive' : view.bucket === 'due' ? 'secondary' : 'outline'
                   }
                 >
                   {CADENCE_BUCKET_LABELS[view.bucket]}

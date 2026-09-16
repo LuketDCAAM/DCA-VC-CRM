@@ -13,6 +13,7 @@ import InvestorsSimple from "./pages/InvestorsSimple";
 import Contacts from "./pages/Contacts";
 import Reminders from "./pages/Reminders";
 import Outreach from "./pages/Outreach";
+import OutreachTemplates from "./pages/OutreachTemplates";
 import LPEngagements from "./pages/LPEngagements";
 import Tasks from "./pages/Tasks";
 import ExternalDataDashboard from "./pages/ExternalDataDashboard";
@@ -108,6 +109,7 @@ function App() {
                       <Route path="/assistant/:threadId" element={<Assistant />} />
                       <Route path="/settings/thesis" element={<ThesisSettings />} />
                       <Route path="/settings/benchmarks" element={<BenchmarksSettings />} />
+                      <Route path="/settings/outreach-templates" element={<OutreachTemplates />} />
                       <Route path="/settings/agent-instructions" element={<AgentInstructions />} />
                       <Route path="/settings/integrations" element={<IntegrationsSettings />} />
                       <Route path="*" element={<NotFound />} />

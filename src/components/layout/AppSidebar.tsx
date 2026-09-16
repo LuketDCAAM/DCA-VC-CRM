@@ -17,6 +17,7 @@ import ThemeToggle from '@/components/theme/ThemeToggle';
 import { UserManagementDialog } from '@/components/admin/UserManagementDialog';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { useOpenTaskCount } from '@/hooks/useOpenTaskCount';
+import { useDueFollowUpCount } from '@/hooks/outreach/useDueFollowUpCount';
 import {
   BarChart3,
   DollarSign,
@@ -31,6 +32,7 @@ import {
   Sliders,
   Plug,
   Send,
+  Mail,
 } from 'lucide-react';
 
 const navigation = [
@@ -53,6 +55,7 @@ export default function AppSidebar() {
   const { pathname } = useLocation();
   const { isViewer, isAdmin } = useUserRoles();
   const { count: openTaskCount } = useOpenTaskCount();
+  const { count: dueFollowUpCount } = useDueFollowUpCount();
 
   const items = isViewer
     ? navigation.filter((i) => i.name === 'Dashboard')
@@ -61,6 +64,7 @@ export default function AppSidebar() {
           ...navigation,
           { name: 'Benchmarks', href: '/settings/benchmarks', icon: Sliders },
           { name: 'Agent Rules', href: '/settings/agent-instructions', icon: BookOpen },
+          { name: 'Email Styles', href: '/settings/outreach-templates', icon: Mail },
         ]
       : navigation;
 
@@ -86,14 +90,19 @@ export default function AppSidebar() {
               {items.map((item) => {
                 const Icon = item.icon;
                 const active = isActive(item.href);
-                const showBadge = item.name === 'Tasks' && openTaskCount > 1;
+                const badgeCount =
+                  item.name === 'Tasks' && openTaskCount > 1
+                    ? openTaskCount
+                    : item.name === 'Outreach' && dueFollowUpCount > 0
+                      ? dueFollowUpCount
+                      : 0;
                 return (
                   <SidebarMenuItem key={item.name}>
                     <SidebarMenuButton asChild isActive={active} tooltip={item.name}>
                       <NavLink to={item.href} className="flex items-center gap-2 relative">
                         <Icon className="h-4 w-4 shrink-0" />
                         <span>{item.name}</span>
-                        {showBadge && (
+                        {badgeCount > 0 && (
                           <span
                             className={
                               collapsed
@@ -101,7 +110,7 @@ export default function AppSidebar() {
                                 : 'ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground'
                             }
                           >
-                            {openTaskCount > 99 ? '99+' : openTaskCount}
+                            {badgeCount > 99 ? '99+' : badgeCount}
                           </span>
                         )}
                       </NavLink>
