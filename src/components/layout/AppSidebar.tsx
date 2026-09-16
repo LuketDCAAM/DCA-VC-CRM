@@ -63,6 +63,7 @@ export default function AppSidebar() {
           ...navigation,
           { name: 'Benchmarks', href: '/settings/benchmarks', icon: Sliders },
           { name: 'Agent Rules', href: '/settings/agent-instructions', icon: BookOpen },
+          { name: 'Email Styles', href: '/settings/outreach-templates', icon: Mail },
         ]
       : navigation;
 
