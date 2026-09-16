@@ -17,6 +17,7 @@ import ThemeToggle from '@/components/theme/ThemeToggle';
 import { UserManagementDialog } from '@/components/admin/UserManagementDialog';
 import { useUserRoles } from '@/hooks/useUserRoles';
 import { useOpenTaskCount } from '@/hooks/useOpenTaskCount';
+import { useDueFollowUpCount } from '@/hooks/outreach/useDueFollowUpCount';
 import {
   BarChart3,
   DollarSign,
@@ -53,6 +54,7 @@ export default function AppSidebar() {
   const { pathname } = useLocation();
   const { isViewer, isAdmin } = useUserRoles();
   const { count: openTaskCount } = useOpenTaskCount();
+  const { count: dueFollowUpCount } = useDueFollowUpCount();
 
   const items = isViewer
     ? navigation.filter((i) => i.name === 'Dashboard')
