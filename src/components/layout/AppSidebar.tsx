@@ -32,6 +32,7 @@ import {
   Sliders,
   Plug,
   Send,
+  Mail,
 } from 'lucide-react';
 
 const navigation = [
