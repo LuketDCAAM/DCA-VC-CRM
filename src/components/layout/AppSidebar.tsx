@@ -40,6 +40,7 @@ const navigation = [
   { name: 'LP Engagements', href: '/lp-engagements', icon: HandCoins },
   { name: 'Contacts', href: '/contacts', icon: Contact },
   { name: 'Tasks', href: '/tasks', icon: ClipboardList },
+  { name: 'Outreach', href: '/outreach', icon: Send },
   { name: 'Assistant', href: '/assistant', icon: Sparkles },
   { name: 'Thesis', href: '/settings/thesis', icon: Target },
   { name: 'Integrations', href: '/settings/integrations', icon: Plug },
