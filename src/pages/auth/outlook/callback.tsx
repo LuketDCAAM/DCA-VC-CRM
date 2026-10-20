@@ -48,6 +48,22 @@ export default function OutlookCallback() {
           return;
         }
 
+        const code = searchParams.get('code');
+        if (!finalKey && code) {
+          const ok = await storeConnection({ code });
+          if (ok) {
+            setStatus('success');
+            toast({ title: 'Outlook connected', description: 'Your Microsoft account is now linked.' });
+            const redirectTo = localStorage.getItem('outlook-auth-redirect') || '/settings/integrations';
+            localStorage.removeItem('outlook-auth-redirect');
+            setTimeout(() => navigate(redirectTo), 1500);
+          } else {
+            setStatus('error');
+            setErrorMsg('Could not finish the Outlook connection.');
+          }
+          return;
+        }
+
         if (!finalKey) {
           setStatus('error');
           setErrorMsg('No connection key received');
