@@ -15,6 +15,10 @@ import { PortcoKpiPanel } from './PortcoKpiPanel';
 import { FundingRoundsPanel } from './FundingRoundsPanel';
 import { PortcoValuationHistory } from './PortcoValuationHistory';
 import { usePortfolioPositions } from '@/hooks/portfolio/usePortfolioPositions';
+import { usePortcoCadences } from '@/hooks/outreach/usePortcoCadences';
+import { CadenceSettingsDialog } from '@/components/outreach/CadenceSettingsDialog';
+import { intervalLabel } from '@/lib/outreach/constants';
+import { CalendarClock } from 'lucide-react';
 
 
 type CompanyStatus = Database['public']['Enums']['company_status'];
@@ -143,10 +147,16 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
                 ))}
               </div>
             </div>
-            <Button onClick={() => setIsEditingCompany(true)} size="sm">
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Company
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setCadenceOpen(true)}>
+                <CalendarClock className="h-4 w-4 mr-2" />
+                {portcoCadence ? `Check-ins: ${intervalLabel(portcoCadence.interval_key)}` : 'Set check-in rhythm'}
+              </Button>
+              <Button onClick={() => setIsEditingCompany(true)} size="sm">
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Company
+              </Button>
+            </div>
           </div>
         </DialogHeader>
 
