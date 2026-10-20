@@ -1,0 +1,2 @@
+- Portfolio check-in rhythms live in `portco_cadences` and reuse the investor cadence math in `lib/outreach/constants.ts`; check-ins are `outreach_follow_ups` rows with `portfolio_company_id`, so drafting, Outlook push and badges work unchanged.
+- Unit tests use `bun test` (`*.test.ts`, excluded from the app typecheck).
