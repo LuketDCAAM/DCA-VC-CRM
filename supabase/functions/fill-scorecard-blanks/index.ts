@@ -80,7 +80,7 @@ Deno.serve(async (req) => {
     const userClient = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
-    const { data: { user } } = await userClient.auth.getUser();
+    const { data: { user } } = await userClient.auth.getUser(authHeader.replace(/^Bearer\s+/i, ""));
     if (!user) return json({ error: "Unauthorized" }, 401);
 
     const body = (await req.json()) as Body;
