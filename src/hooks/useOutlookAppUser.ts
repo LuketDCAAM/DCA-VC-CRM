@@ -74,10 +74,12 @@ export function useOutlookAppUser() {
     }
   }, [user, toast]);
 
-  const storeConnection = useCallback(async (connectionKey: string) => {
+  const storeConnection = useCallback(async (connectionKey: string | { code: string }) => {
     try {
       const { error } = await supabase.functions.invoke('outlook-app-user', {
-        body: { action: 'store', connection_key: connectionKey },
+        body: typeof connectionKey === 'string'
+          ? { action: 'store', connection_key: connectionKey }
+          : { action: 'store', code: connectionKey.code },
       });
 
       if (error) throw error;
