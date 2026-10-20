@@ -53,9 +53,36 @@ Deno.serve(async (req) => {
       }
 
       case 'store': {
-        const { connection_key } = body;
-        if (!connection_key || typeof connection_key !== 'string') {
-          return new Response(JSON.stringify({ error: 'Missing connection_key' }), {
+        let connection_key: string | null = typeof body.connection_key === 'string' ? body.connection_key : null;
+        // The gateway returns a one-time code; swap it for the per-user connection key.
+        if (!connection_key && typeof body.code === 'string' && body.code) {
+          const exRes = await fetch(`https://connector-gateway.lovable.dev/api/v1/app-users/oauth2/exchange`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ code: body.code }),
+          });
+          const exText = await exRes.text();
+          if (!exRes.ok) {
+            console.error('Outlook code exchange failed:', exRes.status, exText);
+            return new Response(JSON.stringify({ error: `Could not finish Outlook connection (${exRes.status})`, details: exText }), {
+              status: 502,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+          const ex = JSON.parse(exText || '{}');
+          if (ex.connector_id && ex.connector_id !== CONNECTOR_ID) {
+            return new Response(JSON.stringify({ error: 'Wrong connector returned' }), {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+          connection_key = ex.api_key ?? null;
+        }
+        if (!connection_key) {
+          return new Response(JSON.stringify({ error: 'Missing connection_key or code' }), {
             status: 400,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
