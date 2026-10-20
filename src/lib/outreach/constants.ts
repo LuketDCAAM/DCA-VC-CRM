@@ -5,7 +5,8 @@ export type FollowUpPurpose =
   | 'post_call_recap'
   | 're_engage'
   | 'pass_note'
-  | 'investor_digest';
+  | 'investor_digest'
+  | 'portco_check_in';
 
 export const FOLLOW_UP_PURPOSES: { value: FollowUpPurpose; label: string; hint: string }[] = [
   { value: 'check_in', label: 'Metrics check-in', hint: 'Ask for an update on progress and key numbers' },
@@ -13,6 +14,7 @@ export const FOLLOW_UP_PURPOSES: { value: FollowUpPurpose; label: string; hint: 
   { value: 're_engage', label: 'Re-engage', hint: 'Restart a conversation that went quiet' },
   { value: 'pass_note', label: 'Pass note', hint: 'Politely decline, keep the door open' },
   { value: 'investor_digest', label: 'Investor note', hint: 'Share deals with a co-investor' },
+  { value: 'portco_check_in', label: 'Portfolio check-in', hint: 'Check key numbers and offer help' },
 ];
 
 export function purposeLabel(purpose: string | null | undefined) {
