@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CadenceSettingsDialog } from './CadenceSettingsDialog';
 import type { usePortcoCadences } from '@/hooks/outreach/usePortcoCadences';
+import { useDealContactsByCompany } from '@/hooks/portfolio/useDealContactsByCompany';
 import { useAllPortcoQuarters } from '@/hooks/portfolio/useAllPortcoQuarters';
 import type { PortfolioCompany } from '@/hooks/usePortfolioCompanies';
 import { CADENCE_BUCKET_LABELS, intervalLabel } from '@/lib/outreach/constants';
@@ -28,6 +29,7 @@ const BUCKET_ORDER = { overdue: 0, due: 1, upcoming: 2, paused: 3, none: 4 } as 
 export function PortcoCadencePanel({ companies, cadences, onDraftCheckIn }: PortcoCadencePanelProps) {
   const { byCompany, saveCadence, clearCadence } = cadences;
   const { byCompany: quartersByCompany } = useAllPortcoQuarters();
+  const { lookup: lookupDealContact } = useDealContactsByCompany();
   const [editing, setEditing] = useState<PortfolioCompany | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -38,6 +40,11 @@ export function PortcoCadencePanel({ companies, cadences, onDraftCheckIn }: Port
         .map((c) => ({
           company: c,
           view: byCompany.get(c.id) ?? null,
+          contact: (() => {
+            const v = byCompany.get(c.id);
+            const d = lookupDealContact(c.company_name);
+            return { name: v?.contact_name || d?.name || null, email: v?.contact_email || d?.email || null };
+          })(),
           signals: assistSignals(quartersByCompany.get(c.id) ?? []),
         }))
         .sort((a, b) => {
@@ -47,7 +54,7 @@ export function PortcoCadencePanel({ companies, cadences, onDraftCheckIn }: Port
           return (a.view?.next_due ?? '9999').localeCompare(b.view?.next_due ?? '9999') ||
             a.company.company_name.localeCompare(b.company.company_name);
         }),
-    [companies, byCompany, quartersByCompany],
+    [companies, byCompany, quartersByCompany, lookupDealContact],
   );
 
   const overdue = rows.filter((r) => r.view?.bucket === 'overdue').length;
@@ -68,7 +75,7 @@ export function PortcoCadencePanel({ companies, cadences, onDraftCheckIn }: Port
           </p>
         </CardHeader>
         <CardContent className="space-y-2">
-          {rows.map(({ company, view, signals }) => (
+          {rows.map(({ company, view, contact, signals }) => (
             <div key={company.id} className="rounded-md border p-3 space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="min-w-0">
@@ -76,7 +83,7 @@ export function PortcoCadencePanel({ companies, cadences, onDraftCheckIn }: Port
                   <p className="text-xs text-muted-foreground">
                     {view
                       ? `${intervalLabel(view.interval_key)}${view.next_due ? ` · next ${view.next_due}` : ''}${
-                          view.contact_name ? ` · ${view.contact_name}` : ''
+                          contact.name ? ` · ${contact.name}` : ''
                         }`
                       : 'No rhythm set'}
                   </p>
@@ -98,8 +105,8 @@ export function PortcoCadencePanel({ companies, cadences, onDraftCheckIn }: Port
                       try {
                         await onDraftCheckIn({
                           companyId: company.id,
-                          contactName: view?.contact_name ?? null,
-                          contactEmail: view?.contact_email ?? null,
+                          contactName: contact.name,
+                          contactEmail: contact.email,
                           signals,
                         });
                       } finally {
@@ -148,6 +155,8 @@ export function PortcoCadencePanel({ companies, cadences, onDraftCheckIn }: Port
           title="Check-in rhythm"
           description={`How often should we check in with ${editing.company_name}?`}
           showContact
+          defaultContactName={lookupDealContact(editing.company_name)?.name}
+          defaultContactEmail={lookupDealContact(editing.company_name)?.email}
           cadence={byCompany.get(editing.id) ?? null}
           onSave={saveCadence}
           onClear={clearCadence}
