@@ -118,7 +118,7 @@ export function DigestBatchView({
                     syncError={item.sync_error}
                     webLink={item.outlook_web_link}
                     outlookConnected={outlookConnected}
-                    busy={busyId === item.id}
+                    busy={busyId === item.id || busyId === 'bulk-outlook'}
                     onGenerate={(note) => onGenerate(item.id, note)}
                     onSave={(subject, body) => onUpdateItem(item.id, { subject, body })}
                     onPushToOutlook={() => onPushToOutlook(item.id)}

@@ -1,6 +1,7 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { pushReadyDrafts, type OutlookDraftTarget } from '@/lib/outreach/readyDrafts';
 
 export type DraftTarget = 'follow_up' | 'batch_item';
 
@@ -12,6 +13,8 @@ interface DraftResult {
 /** Generates outreach email drafts and pushes them into the owner's Outlook Drafts folder. */
 export function useOutreachDraft() {
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [bulkProgress, setBulkProgress] = useState<{ completed: number; total: number } | null>(null);
+  const bulkRunning = useRef(false);
   const { toast } = useToast();
 
   const generate = useCallback(
@@ -66,5 +69,28 @@ export function useOutreachDraft() {
     [toast],
   );
 
-  return { generate, pushToOutlook, busyId };
+  const pushAllToOutlook = useCallback(async (drafts: OutlookDraftTarget[]) => {
+    if (bulkRunning.current || !drafts.length) return;
+    bulkRunning.current = true;
+    setBulkProgress({ completed: 0, total: drafts.length });
+    try {
+      const result = await pushReadyDrafts(
+        drafts,
+        ({ target, id }) => pushToOutlook(target, id, { silent: true }),
+        (completed) => setBulkProgress({ completed, total: drafts.length }),
+      );
+      toast({
+        title: result.failed ? 'Some drafts could not be added' : 'Drafts added to Outlook',
+        description: `${result.added} added to your Drafts folder. Nothing was sent.${result.failed ? ` ${result.failed} failed; retry the remaining drafts.` : ''}`,
+        variant: result.failed ? 'destructive' : 'default',
+      });
+      return result;
+    } finally {
+      bulkRunning.current = false;
+      setBulkProgress(null);
+      setBusyId(null);
+    }
+  }, [pushToOutlook, toast]);
+
+  return { generate, pushToOutlook, pushAllToOutlook, busyId, bulkProgress };
 }
