@@ -1,5 +1,9 @@
 # Roadmap
 
+## Draft creation error
+- [x] Restore missing Supabase service binding and redeploy draft/Outlook functions.
+- [ ] Verify investor draft generation while signed in — blocked on the user's retry because external Supabase authenticated testing is unavailable.
+
 ## Interactive Outreach (in progress)
 - [x] Tables: outreach_follow_ups, outreach_templates, outreach_batches, outreach_batch_items, investor_cadences (+ seeded templates)
 - [x] Follow-up scheduling + Outreach queue page
