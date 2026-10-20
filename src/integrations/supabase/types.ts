@@ -10,10 +10,64 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "12.2.3"
   }
   public: {
     Tables: {
+      _c85_stage: {
+        Row: {
+          city: string | null
+          co: string | null
+          d: string | null
+          dk: Json | null
+          em: string | null
+          hq: string | null
+          iv: string | null
+          li: string | null
+          n: string | null
+          nx: string | null
+          rs: number | null
+          sec: string | null
+          st: string | null
+          v: number | null
+          w: string | null
+        }
+        Insert: {
+          city?: string | null
+          co?: string | null
+          d?: string | null
+          dk?: Json | null
+          em?: string | null
+          hq?: string | null
+          iv?: string | null
+          li?: string | null
+          n?: string | null
+          nx?: string | null
+          rs?: number | null
+          sec?: string | null
+          st?: string | null
+          v?: number | null
+          w?: string | null
+        }
+        Update: {
+          city?: string | null
+          co?: string | null
+          d?: string | null
+          dk?: Json | null
+          em?: string | null
+          hq?: string | null
+          iv?: string | null
+          li?: string | null
+          n?: string | null
+          nx?: string | null
+          rs?: number | null
+          sec?: string | null
+          st?: string | null
+          v?: number | null
+          w?: string | null
+        }
+        Relationships: []
+      }
       agent_actions: {
         Row: {
           action_type: string
@@ -993,6 +1047,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      deals_sector_backup_20261014: {
+        Row: {
+          company_name: string | null
+          id: string | null
+          sector: string | null
+        }
+        Insert: {
+          company_name?: string | null
+          id?: string | null
+          sector?: string | null
+        }
+        Update: {
+          company_name?: string | null
+          id?: string | null
+          sector?: string | null
+        }
+        Relationships: []
       }
       deals_sourced_by_backup_20260814: {
         Row: {
