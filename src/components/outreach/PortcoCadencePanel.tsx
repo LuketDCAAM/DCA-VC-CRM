@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CadenceSettingsDialog } from './CadenceSettingsDialog';
-import { usePortcoCadences } from '@/hooks/outreach/usePortcoCadences';
+import type { usePortcoCadences } from '@/hooks/outreach/usePortcoCadences';
 import { useAllPortcoQuarters } from '@/hooks/portfolio/useAllPortcoQuarters';
 import type { PortfolioCompany } from '@/hooks/usePortfolioCompanies';
 import { CADENCE_BUCKET_LABELS, intervalLabel } from '@/lib/outreach/constants';
@@ -12,6 +12,7 @@ import { Building2, Loader2, PenLine, Settings2 } from 'lucide-react';
 
 interface PortcoCadencePanelProps {
   companies: PortfolioCompany[];
+  cadences: ReturnType<typeof usePortcoCadences>;
   /** Create a check-in follow-up and draft it. */
   onDraftCheckIn: (args: {
     companyId: string;
@@ -24,8 +25,8 @@ interface PortcoCadencePanelProps {
 const BUCKET_ORDER = { overdue: 0, due: 1, upcoming: 2, paused: 3, none: 4 } as const;
 
 /** Check-in rhythm for portfolio companies, with "where we can help" flags from their numbers. */
-export function PortcoCadencePanel({ companies, onDraftCheckIn }: PortcoCadencePanelProps) {
-  const { byCompany, saveCadence, clearCadence } = usePortcoCadences();
+export function PortcoCadencePanel({ companies, cadences, onDraftCheckIn }: PortcoCadencePanelProps) {
+  const { byCompany, saveCadence, clearCadence } = cadences;
   const { byCompany: quartersByCompany } = useAllPortcoQuarters();
   const [editing, setEditing] = useState<PortfolioCompany | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
