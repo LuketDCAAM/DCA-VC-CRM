@@ -1,8 +1,9 @@
 # Roadmap
 
 ## Bulk Outlook drafts
-- [ ] Add one action for all ready, unsynced drafts owned by the signed-in user, with progress and partial-failure feedback.
-- [ ] Test eligibility and bulk processing; verify the available preview flow.
+- [x] Add one action for all ready, unsynced drafts owned by the signed-in user, with progress and partial-failure feedback.
+- [x] Test eligibility and bulk processing (6 passing tests; preview build OK).
+- [ ] Verify bulk creation in the user's Outlook Drafts folder — external unmanaged Supabase prevents authenticated testing here.
 
 ## Draft creation error
 - [x] Restore missing Supabase service binding and redeploy draft/Outlook functions.
