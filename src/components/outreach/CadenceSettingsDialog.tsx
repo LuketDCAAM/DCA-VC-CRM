@@ -39,6 +39,9 @@ interface CadenceSettingsDialogProps {
   description?: string;
   /** Show who to email (used for portfolio companies). */
   showContact?: boolean;
+  /** Fallback contact (e.g. from the Deals table) when none is saved. */
+  defaultContactName?: string | null;
+  defaultContactEmail?: string | null;
 }
 
 export function CadenceSettingsDialog({
@@ -52,6 +55,8 @@ export function CadenceSettingsDialog({
   title = 'Follow-up rhythm',
   description,
   showContact = false,
+  defaultContactName,
+  defaultContactEmail,
 }: CadenceSettingsDialogProps) {
   const [intervalKey, setIntervalKey] = useState(cadence?.interval_key ?? 'quarterly');
   const [anchorRule, setAnchorRule] = useState(cadence?.anchor_rule ?? 'day_of_month');
@@ -60,8 +65,8 @@ export function CadenceSettingsDialog({
   const [resumeOn, setResumeOn] = useState(cadence?.resume_on ?? '');
   const [lastContacted, setLastContacted] = useState(cadence?.last_contacted_at ?? '');
   const [notes, setNotes] = useState(cadence?.notes ?? '');
-  const [contactName, setContactName] = useState(cadence?.contact_name ?? '');
-  const [contactEmail, setContactEmail] = useState(cadence?.contact_email ?? '');
+  const [contactName, setContactName] = useState(cadence?.contact_name || defaultContactName || '');
+  const [contactEmail, setContactEmail] = useState(cadence?.contact_email || defaultContactEmail || '');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -73,9 +78,9 @@ export function CadenceSettingsDialog({
     setResumeOn(cadence?.resume_on ?? '');
     setLastContacted(cadence?.last_contacted_at ?? '');
     setNotes(cadence?.notes ?? '');
-    setContactName(cadence?.contact_name ?? '');
-    setContactEmail(cadence?.contact_email ?? '');
-  }, [open, cadence]);
+    setContactName(cadence?.contact_name || defaultContactName || '');
+    setContactEmail(cadence?.contact_email || defaultContactEmail || '');
+  }, [open, cadence, defaultContactName, defaultContactEmail]);
 
   const preview = computeNextDue({
     interval_key: intervalKey,
