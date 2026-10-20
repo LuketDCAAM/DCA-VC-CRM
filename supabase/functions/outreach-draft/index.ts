@@ -207,7 +207,7 @@ Deno.serve(async (req) => {
     } else {
       const { data: row, error } = await admin
         .from("outreach_batch_items")
-        .select("*, outreach_batches(period_month, title, intro_note)")
+        .select("*, outreach_batches(period_month, title, intro_note, kind)")
         .eq("id", id)
         .maybeSingle();
       if (error) return json({ error: error.message }, 500);
@@ -240,7 +240,12 @@ Deno.serve(async (req) => {
       }
       // deno-lint-ignore no-explicit-any
       const batch = (row as any).outreach_batches;
-      if (batch?.intro_note) contextBlocks.push(`Sender's note for this month: ${batch.intro_note}`);
+      if (batch?.kind === "deal_match") {
+        contextBlocks.unshift(
+          "This is a targeted intro, not a monthly roundup: we are sharing specific live deal(s) we think fit this investor. Open with why we thought of them, give a short pitch for each deal, say plainly why it fits their focus, and ask if they'd like the deck or an intro to the founder.",
+        );
+        if (batch?.intro_note) contextBlocks.push(`Sender's note: ${batch.intro_note}`);
+      } else if (batch?.intro_note) contextBlocks.push(`Sender's note for this month: ${batch.intro_note}`);
       if (regenerateNote) contextBlocks.push(`Revision request: ${regenerateNote}`);
       await admin.from("outreach_batch_items").update({ status: "drafting" }).eq("id", id);
     }

@@ -1,0 +1,1 @@
+ALTER TABLE public.outreach_batches ADD COLUMN IF NOT EXISTS kind text NOT NULL DEFAULT 'digest';

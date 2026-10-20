@@ -79,3 +79,49 @@ export function suggestDealsForInvestor(deals: Deal[], investor: Investor, count
     .sort((a, b) => b.score - a.score)
     .slice(0, count);
 }
+
+// ---------- Deal-first matching: rank investors for a set of deals ----------
+
+export interface InvestorMatch {
+  investor: Investor;
+  /** Best fit score across the selected deals. */
+  score: number;
+  /** Deals that fit this investor, best first (capped). */
+  deals: { deal: Deal; score: number; reasons: string[]; rationale: string }[];
+  /** True when every selected deal was already sent to / linked with this investor. */
+  alreadySent: boolean;
+}
+
+/** Fit of an investor for one deal (deal quality bonuses excluded so ranking is about fit). */
+export function scoreInvestorForDeal(deal: Deal, investor: Investor) {
+  const m = scoreDealForInvestor({ ...deal, deal_score: null, is_priority_deal: false } as Deal, investor);
+  return { deal, score: Math.round(m.score), reasons: m.reasons, rationale: m.rationale };
+}
+
+/**
+ * Rank investors for the selected deals.
+ * `sentPairs` holds `${dealId}:${investorId}` keys for deals already sent or linked.
+ */
+export function matchInvestorsForDeals(
+  deals: Deal[],
+  investors: Investor[],
+  opts: { sentPairs?: Set<string>; minScore?: number; maxDealsPerInvestor?: number; includeSent?: boolean } = {},
+): InvestorMatch[] {
+  const { sentPairs = new Set(), minScore = 1, maxDealsPerInvestor = 4, includeSent = false } = opts;
+  const out: InvestorMatch[] = [];
+  for (const investor of investors) {
+    const all = deals.map((d) => ({ ...scoreInvestorForDeal(d, investor), sent: sentPairs.has(`${d.id}:${investor.id}`) }));
+    const fits = all
+      .filter((m) => m.score >= minScore && (includeSent || !m.sent))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, maxDealsPerInvestor);
+    if (!fits.length) continue;
+    out.push({
+      investor,
+      score: fits[0].score,
+      deals: fits.map(({ sent: _s, ...m }) => m),
+      alreadySent: all.every((m) => m.sent),
+    });
+  }
+  return out.sort((a, b) => b.score - a.score || b.deals.length - a.deals.length);
+}

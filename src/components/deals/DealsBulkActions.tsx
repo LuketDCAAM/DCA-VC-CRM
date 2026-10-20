@@ -1,6 +1,7 @@
 
 import React from 'react';
-import { Edit, Archive, Trash2 } from 'lucide-react';
+import { Edit, Archive, Trash2, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { BulkActions, BulkAction } from '@/components/common/BulkActions';
 
 interface DealsBulkActionsProps {
@@ -20,7 +21,14 @@ export function DealsBulkActions({
   onBulkAction,
   isAllSelected,
 }: DealsBulkActionsProps) {
+  const navigate = useNavigate();
   const bulkActions: BulkAction[] = [
+    {
+      id: 'find-investors',
+      label: 'Find investors',
+      icon: Users,
+      variant: 'default'
+    },
     {
       id: 'move-to-stage',
       label: 'Move to Stage',
@@ -49,7 +57,13 @@ export function DealsBulkActions({
       onSelectAll={onSelectAll}
       onDeselectAll={onDeselectAll}
       actions={bulkActions}
-      onAction={onBulkAction}
+      onAction={async (id, ids) => {
+        if (id === 'find-investors') {
+          navigate(`/outreach/match?deals=${ids.join(',')}`);
+          return;
+        }
+        await onBulkAction(id, ids);
+      }}
       isAllSelected={isAllSelected}
     />
   );
