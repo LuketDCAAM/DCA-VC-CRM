@@ -110,7 +110,7 @@ export function DigestBuilderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-3xl h-[90vh] max-h-[90vh] overflow-hidden grid grid-rows-[auto_auto_auto_minmax(0,1fr)_auto]">
         <DialogHeader>
           <DialogTitle>Build this month's investor note</DialogTitle>
           <DialogDescription>
@@ -134,7 +134,7 @@ export function DigestBuilderDialog({
           <Textarea value={introNote} onChange={(e) => setIntroNote(e.target.value)} rows={2} />
         </div>
 
-        <ScrollArea className="flex-1 min-h-[240px] border rounded-md">
+        <ScrollArea className="h-full min-h-0 border rounded-md">
           <div className="divide-y">
             {investors.map((inv) => {
               const isOn = !!selected[inv.id];
