@@ -20,10 +20,16 @@ describe('ready Outlook drafts', () => {
     expect(isReadyForOutlook({ ...draft, body: ' ' }, 'me')).toBe(false);
     expect(isReadyForOutlook({ ...draft, subject: null }, 'me')).toBe(false);
   });
-  test('skips sent, completed and snoozed drafts', () => {
-    for (const status of ['sent', 'done', 'snoozed']) {
+  test('skips sent and completed drafts', () => {
+    for (const status of ['sent', 'done']) {
       expect(isReadyForOutlook({ ...draft, status }, 'me')).toBe(false);
     }
+  });
+  test('skips active snoozes but includes expired snoozes', () => {
+    const snoozed = { ...draft, status: 'snoozed' };
+    expect(isReadyForOutlook({ ...snoozed, snooze_until: '2026-10-21' }, 'me', '2026-10-20')).toBe(false);
+    expect(isReadyForOutlook({ ...snoozed, snooze_until: '2026-10-20' }, 'me', '2026-10-20')).toBe(true);
+    expect(isReadyForOutlook({ ...snoozed, snooze_until: '2026-10-19' }, 'me', '2026-10-20')).toBe(true);
   });
   test('pushes every draft once and continues after failures', async () => {
     const calls: string[] = [];

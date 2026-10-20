@@ -1,3 +1,5 @@
+import { formatDateOnly } from './constants';
+
 export interface OutlookDraftCandidate {
   id: string;
   owner_id: string;
@@ -5,6 +7,7 @@ export interface OutlookDraftCandidate {
   body: string | null;
   status: string;
   sync_status: string | null;
+  snooze_until?: string | null;
 }
 
 export interface OutlookDraftTarget {
@@ -12,9 +15,10 @@ export interface OutlookDraftTarget {
   id: string;
 }
 
-export function isReadyForOutlook(draft: OutlookDraftCandidate, userId: string): boolean {
+export function isReadyForOutlook(draft: OutlookDraftCandidate, userId: string, today = formatDateOnly(new Date())): boolean {
+  const snoozed = draft.status === 'snoozed' && Boolean(draft.snooze_until && draft.snooze_until > today);
   return draft.owner_id === userId && Boolean(draft.subject?.trim() && draft.body?.trim()) &&
-    !['sent', 'done', 'snoozed'].includes(draft.status) && draft.sync_status !== 'synced';
+    !['sent', 'done'].includes(draft.status) && !snoozed && draft.sync_status !== 'synced';
 }
 
 export async function pushReadyDrafts(
