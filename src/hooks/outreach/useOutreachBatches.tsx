@@ -49,12 +49,18 @@ export function useOutreachBatches() {
     fetchAll();
   }, [fetchAll]);
 
-  const createBatch = async (periodMonth: string, title: string, newItems: NewBatchItem[], introNote?: string) => {
+  const createBatch = async (
+    periodMonth: string,
+    title: string,
+    newItems: NewBatchItem[],
+    introNote?: string,
+    kind: 'digest' | 'deal_match' = 'digest',
+  ) => {
     if (!user) return null;
     try {
       const { data: batch, error } = await supabase
         .from('outreach_batches')
-        .insert({ period_month: periodMonth, title, intro_note: introNote || null, created_by: user.id })
+        .insert({ period_month: periodMonth, title, intro_note: introNote || null, created_by: user.id, kind })
         .select()
         .single();
       if (error) throw error;
@@ -86,6 +92,27 @@ export function useOutreachBatches() {
     }
   };
 
+  /** Link the deals to the investor and bump their last-contacted date. */
+  const recordSent = async (item: OutreachBatchItem) => {
+    try {
+      const dealIds = item.deal_ids || [];
+      if (dealIds.length) {
+        const { data: existing } = await supabase
+          .from('deal_investors')
+          .select('deal_id')
+          .eq('investor_id', item.investor_id)
+          .in('deal_id', dealIds);
+        const have = new Set((existing || []).map((r) => r.deal_id));
+        const rows = dealIds.filter((d) => !have.has(d)).map((d) => ({ deal_id: d, investor_id: item.investor_id }));
+        if (rows.length) await supabase.from('deal_investors').insert(rows);
+      }
+      const today = new Date().toISOString().slice(0, 10);
+      await supabase.from('investor_cadences').update({ last_contacted_at: today }).eq('investor_id', item.investor_id);
+    } catch (e) {
+      console.warn('Could not record sent outreach', e);
+    }
+  };
+
   const updateItem = async (id: string, updates: Partial<OutreachBatchItem>, silent = false) => {
     try {
       const { data, error } = await supabase
@@ -96,6 +123,7 @@ export function useOutreachBatches() {
         .single();
       if (error) throw error;
       setItems((prev) => prev.map((i) => (i.id === id ? data : i)));
+      if (updates.status === 'sent') await recordSent(data);
       if (!silent) toast({ title: 'Updated' });
       return data;
     } catch (error: any) {

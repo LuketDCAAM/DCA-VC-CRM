@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { CalendarPlus } from 'lucide-react';
+import { CalendarPlus, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { DealDetailHeader } from './detail/DealDetailHeader';
 import { DealDetailContent } from './detail/DealDetailContent';
 import { DealDetailSections } from './detail/DealDetailSections';
@@ -20,6 +21,7 @@ interface DealDetailDialogProps {
 export function DealDetailDialog({ deal, open, onOpenChange, onDealUpdated }: DealDetailDialogProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [followUpOpen, setFollowUpOpen] = useState(false);
+  const navigate = useNavigate();
   const { createFollowUp } = useFollowUps();
 
   useEffect(() => {
@@ -50,7 +52,10 @@ export function DealDetailDialog({ deal, open, onOpenChange, onDealUpdated }: De
             onEditClick={handleEditClick} 
           />
 
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate(`/outreach/match?deals=${deal.id}`)}>
+              <Users className="h-4 w-4 mr-1" /> Find investors
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setFollowUpOpen(true)}>
               <CalendarPlus className="h-4 w-4 mr-1" /> Schedule follow-up
             </Button>

@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,7 +21,7 @@ import { useInvestorsSimple } from '@/hooks/useInvestorsSimple';
 import { useOptimizedDeals } from '@/hooks/useOptimizedDeals';
 import { useOutlookAppUser } from '@/hooks/useOutlookAppUser';
 import { formatDateOnly } from '@/lib/outreach/constants';
-import { Loader2, Mail, Plus, Send } from 'lucide-react';
+import { Loader2, Mail, Plus, Send, Users } from 'lucide-react';
 
 export default function Outreach() {
   const { followUps, loading, createFollowUp, updateFollowUp, deleteFollowUp, refetch } = useFollowUps();
@@ -34,6 +35,8 @@ export default function Outreach() {
   const portcoCadences = usePortcoCadences();
   const { user } = useAuth();
 
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [followUpOpen, setFollowUpOpen] = useState(false);
   const [digestOpen, setDigestOpen] = useState(false);
 
@@ -153,6 +156,10 @@ export default function Outreach() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={() => navigate('/outreach/match')}>
+            <Users className="h-4 w-4 mr-2" />
+            Match deals to investors
+          </Button>
           <Button variant="outline" onClick={() => setDigestOpen(true)}>
             <Send className="h-4 w-4 mr-2" />
             New investor note
@@ -174,7 +181,7 @@ export default function Outreach() {
         </Alert>
       )}
 
-      <Tabs defaultValue="due">
+      <Tabs defaultValue={searchParams.get('tab') || 'due'}>
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="due">Due now ({groups.dueNow.length})</TabsTrigger>
           <TabsTrigger value="drafted">Drafts ready ({groups.drafted.length})</TabsTrigger>

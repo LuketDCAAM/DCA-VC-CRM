@@ -12,6 +12,7 @@ import Portfolio from "./pages/Portfolio";
 import InvestorsSimple from "./pages/InvestorsSimple";
 import Contacts from "./pages/Contacts";
 import Reminders from "./pages/Reminders";
+import OutreachMatch from './pages/OutreachMatch';
 import Outreach from "./pages/Outreach";
 import OutreachTemplates from "./pages/OutreachTemplates";
 import LPEngagements from "./pages/LPEngagements";
@@ -102,6 +103,7 @@ function App() {
                       <Route path="/contacts" element={<Contacts />} />
                       <Route path="/reminders" element={<Reminders />} />
                       <Route path="/outreach" element={<Outreach />} />
+                      <Route path="/outreach/match" element={<OutreachMatch />} />
                       <Route path="/lp-engagements" element={<LPEngagements />} />
                       <Route path="/tasks" element={<Tasks />} />
                       <Route path="/external-data" element={<ExternalDataDashboard />} />
