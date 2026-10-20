@@ -90,7 +90,7 @@ export function FollowUpDialog({
             <Select value={purpose} onValueChange={setPurpose}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {FOLLOW_UP_PURPOSES.map((p) => (
+                {FOLLOW_UP_PURPOSES.filter((p) => p.value !== 'portco_check_in' && p.value !== 'investor_digest').map((p) => (
                   <SelectItem key={p.value} value={p.value}>{p.label}</SelectItem>
                 ))}
               </SelectContent>
