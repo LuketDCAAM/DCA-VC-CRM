@@ -100,7 +100,10 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } },
     );
     const { data: { user }, error: userError } = await userClient.auth.getUser(authHeader.replace(/^Bearer\s+/i, ""));
-    if (userError || !user) return json({ error: "Unauthorized" }, 401);
+    if (userError || !user) {
+      console.error("outreach-draft auth failed:", userError?.message);
+      return json({ error: "Your session could not be verified. Please sign out and back in." }, 401);
+    }
 
     const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
