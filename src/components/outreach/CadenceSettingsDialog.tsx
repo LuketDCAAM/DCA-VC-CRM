@@ -13,16 +13,32 @@ import {
   formatDateOnly,
   intervalMonths,
 } from '@/lib/outreach/constants';
-import type { InvestorCadence } from '@/hooks/outreach/useInvestorCadences';
+
+interface CadenceValue {
+  interval_key: string;
+  anchor_rule: string;
+  anchor_day: number;
+  paused: boolean;
+  resume_on: string | null;
+  last_contacted_at: string | null;
+  notes: string | null;
+  contact_name?: string | null;
+  contact_email?: string | null;
+}
 
 interface CadenceSettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   investorId: string;
   investorName: string;
-  cadence?: InvestorCadence | null;
-  onSave: (investorId: string, updates: Partial<InvestorCadence>) => Promise<unknown>;
+  cadence?: CadenceValue | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSave: (investorId: string, updates: any) => Promise<unknown>;
   onClear?: (investorId: string) => Promise<unknown>;
+  title?: string;
+  description?: string;
+  /** Show who to email (used for portfolio companies). */
+  showContact?: boolean;
 }
 
 export function CadenceSettingsDialog({
@@ -33,6 +49,9 @@ export function CadenceSettingsDialog({
   cadence,
   onSave,
   onClear,
+  title = 'Follow-up rhythm',
+  description,
+  showContact = false,
 }: CadenceSettingsDialogProps) {
   const [intervalKey, setIntervalKey] = useState(cadence?.interval_key ?? 'quarterly');
   const [anchorRule, setAnchorRule] = useState(cadence?.anchor_rule ?? 'day_of_month');
@@ -41,6 +60,8 @@ export function CadenceSettingsDialog({
   const [resumeOn, setResumeOn] = useState(cadence?.resume_on ?? '');
   const [lastContacted, setLastContacted] = useState(cadence?.last_contacted_at ?? '');
   const [notes, setNotes] = useState(cadence?.notes ?? '');
+  const [contactName, setContactName] = useState(cadence?.contact_name ?? '');
+  const [contactEmail, setContactEmail] = useState(cadence?.contact_email ?? '');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -52,6 +73,8 @@ export function CadenceSettingsDialog({
     setResumeOn(cadence?.resume_on ?? '');
     setLastContacted(cadence?.last_contacted_at ?? '');
     setNotes(cadence?.notes ?? '');
+    setContactName(cadence?.contact_name ?? '');
+    setContactEmail(cadence?.contact_email ?? '');
   }, [open, cadence]);
 
   const preview = computeNextDue({
@@ -75,20 +98,33 @@ export function CadenceSettingsDialog({
       last_contacted_at: lastContacted || null,
       notes: notes || null,
       next_due_at: nextDue,
-    } as Partial<InvestorCadence>);
+      ...(showContact ? { contact_name: contactName || null, contact_email: contactEmail || null } : {}),
+    });
     setSaving(false);
     onOpenChange(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Follow-up rhythm</DialogTitle>
-          <DialogDescription>How often should {investorName} hear from us?</DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description ?? `How often should ${investorName} hear from us?`}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
+          {showContact && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Contact name</Label>
+                <Input value={contactName} onChange={(e) => setContactName(e.target.value)} placeholder="Founder" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Contact email</Label>
+                <Input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} />
+              </div>
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label>How often</Label>
             <Select value={intervalKey} onValueChange={setIntervalKey}>
