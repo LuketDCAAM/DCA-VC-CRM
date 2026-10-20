@@ -1,5 +1,8 @@
 # Roadmap
 
+## Draft creation error
+- [ ] Resolve Unauthorized when writing investor drafts and verify the result.
+
 ## Interactive Outreach (in progress)
 - [x] Tables: outreach_follow_ups, outreach_templates, outreach_batches, outreach_batch_items, investor_cadences (+ seeded templates)
 - [x] Follow-up scheduling + Outreach queue page
