@@ -19,3 +19,4 @@
 
 ## Back burner
 - Sourcing/screening: find deals we are not seeing, auto-screen and auto-delegate.
+- [x] Portfolio company check-in rhythm (Outreach → Portcos)
