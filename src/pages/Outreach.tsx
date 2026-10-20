@@ -21,12 +21,13 @@ import { useInvestorsSimple } from '@/hooks/useInvestorsSimple';
 import { useOptimizedDeals } from '@/hooks/useOptimizedDeals';
 import { useOutlookAppUser } from '@/hooks/useOutlookAppUser';
 import { formatDateOnly } from '@/lib/outreach/constants';
+import { isReadyForOutlook, type OutlookDraftTarget } from '@/lib/outreach/readyDrafts';
 import { Loader2, Mail, Plus, Send, Users } from 'lucide-react';
 
 export default function Outreach() {
   const { followUps, loading, createFollowUp, updateFollowUp, deleteFollowUp, refetch } = useFollowUps();
   const { batches, items, createBatch, updateItem, deleteItem, deleteBatch, refetch: refetchBatches } = useOutreachBatches();
-  const { generate, pushToOutlook, busyId } = useOutreachDraft();
+  const { generate, pushToOutlook, pushAllToOutlook, busyId, bulkProgress } = useOutreachDraft();
   const { dueInMonth } = useInvestorCadences();
   const { investors } = useInvestorsSimple();
   const { deals } = useOptimizedDeals();
@@ -39,6 +40,21 @@ export default function Outreach() {
   const navigate = useNavigate();
   const [followUpOpen, setFollowUpOpen] = useState(false);
   const [digestOpen, setDigestOpen] = useState(false);
+
+  const readyDrafts = useMemo<OutlookDraftTarget[]>(() => {
+    if (!user) return [];
+    return [
+      ...followUps.filter((draft) => isReadyForOutlook(draft, user.id))
+        .map((draft) => ({ target: 'follow_up' as const, id: draft.id })),
+      ...items.filter((draft) => isReadyForOutlook(draft, user.id))
+        .map((draft) => ({ target: 'batch_item' as const, id: draft.id })),
+    ];
+  }, [followUps, items, user]);
+
+  const addAllToOutlook = async () => {
+    await pushAllToOutlook(readyDrafts);
+    await Promise.all([refetch(), refetchBatches()]);
+  };
 
   const today = formatDateOnly(new Date());
   const dealById = useMemo(() => new Map(deals.map((d) => [d.id, d])), [deals]);
@@ -85,7 +101,7 @@ export default function Outreach() {
               subtitle={subtitle}
               recipientEmail={email}
               outlookConnected={outlookConnected}
-              busy={busyId === f.id}
+              busy={busyId === f.id || !!bulkProgress}
               onGenerate={async (note) => {
                 await generate('follow_up', f.id, note);
                 refetch();
@@ -155,7 +171,7 @@ export default function Outreach() {
             Follow-ups with founders and monthly notes to investors, drafted for you.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" onClick={() => navigate('/outreach/match')}>
             <Users className="h-4 w-4 mr-2" />
             Match deals to investors
@@ -169,6 +185,19 @@ export default function Outreach() {
             Schedule follow-up
           </Button>
         </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-3">
+        <Button
+          variant="secondary"
+          onClick={addAllToOutlook}
+          disabled={!outlookConnected || !readyDrafts.length || !!busyId || !!bulkProgress || loading}
+        >
+          {bulkProgress ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
+          {bulkProgress
+            ? `Adding ${bulkProgress.completed} of ${bulkProgress.total}…`
+            : `Add all ready drafts to Outlook (${readyDrafts.length})`}
+        </Button>
       </div>
 
       {!outlookConnected && (
@@ -222,7 +251,7 @@ export default function Outreach() {
                   investors={investors}
                   deals={deals}
                   outlookConnected={outlookConnected}
-                  busyId={busyId}
+                  busyId={bulkProgress ? 'bulk-outlook' : busyId}
                   onGenerate={async (itemId, note) => {
                     await generate('batch_item', itemId, note);
                     refetchBatches();
