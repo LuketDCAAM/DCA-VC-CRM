@@ -1948,6 +1948,7 @@ export type Database = {
           outlook_draft_id: string | null
           outlook_web_link: string | null
           owner_id: string
+          portfolio_company_id: string | null
           purpose: string
           regenerate_note: string | null
           sent_at: string | null
@@ -1973,6 +1974,7 @@ export type Database = {
           outlook_draft_id?: string | null
           outlook_web_link?: string | null
           owner_id: string
+          portfolio_company_id?: string | null
           purpose?: string
           regenerate_note?: string | null
           sent_at?: string | null
@@ -1998,6 +2000,7 @@ export type Database = {
           outlook_draft_id?: string | null
           outlook_web_link?: string | null
           owner_id?: string
+          portfolio_company_id?: string | null
           purpose?: string
           regenerate_note?: string | null
           sent_at?: string | null
@@ -2021,6 +2024,13 @@ export type Database = {
             columns: ["investor_id"]
             isOneToOne: false
             referencedRelation: "investors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outreach_follow_ups_portfolio_company_id_fkey"
+            columns: ["portfolio_company_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_companies"
             referencedColumns: ["id"]
           },
         ]
@@ -2066,6 +2076,71 @@ export type Database = {
           updated_by?: string | null
         }
         Relationships: []
+      }
+      portco_cadences: {
+        Row: {
+          anchor_day: number
+          anchor_rule: string
+          contact_email: string | null
+          contact_name: string | null
+          created_at: string
+          created_by: string
+          id: string
+          interval_key: string
+          last_contacted_at: string | null
+          next_due_at: string | null
+          notes: string | null
+          owner_id: string | null
+          paused: boolean
+          portfolio_company_id: string
+          resume_on: string | null
+          updated_at: string
+        }
+        Insert: {
+          anchor_day?: number
+          anchor_rule?: string
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          interval_key?: string
+          last_contacted_at?: string | null
+          next_due_at?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          paused?: boolean
+          portfolio_company_id: string
+          resume_on?: string | null
+          updated_at?: string
+        }
+        Update: {
+          anchor_day?: number
+          anchor_rule?: string
+          contact_email?: string | null
+          contact_name?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          interval_key?: string
+          last_contacted_at?: string | null
+          next_due_at?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          paused?: boolean
+          portfolio_company_id?: string
+          resume_on?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portco_cadences_portfolio_company_id_fkey"
+            columns: ["portfolio_company_id"]
+            isOneToOne: true
+            referencedRelation: "portfolio_companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       portco_funding_rounds: {
         Row: {

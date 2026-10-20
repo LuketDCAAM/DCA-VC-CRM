@@ -31,6 +31,57 @@ function money(cents: number | null | undefined) {
   return `$${Math.round(n).toLocaleString("en-US")}`;
 }
 
+function pct(v: number | null | undefined) {
+  return v == null ? null : `${(Number(v) * 100).toFixed(1)}%`;
+}
+
+// deno-lint-ignore no-explicit-any
+async function portcoContext(admin: any, companyId: string) {
+  const { data: co } = await admin.from("portfolio_companies").select("company_name, description, status").eq("id", companyId).maybeSingle();
+  if (!co) return "";
+  const { data: qs } = await admin
+    .from("portco_quarterly_metrics")
+    .select("fiscal_year, fiscal_quarter, arr, revenue, gross_margin, net_burn, cash_balance, headcount, nrr, monthly_churn, customer_count, targets, performance_status, status_override, status_reason, notes")
+    .eq("portfolio_company_id", companyId)
+    .order("fiscal_year", { ascending: false })
+    .order("fiscal_quarter", { ascending: false })
+    .limit(2);
+  const { data: notes } = await admin
+    .from("call_notes").select("title, content, call_date").eq("portfolio_company_id", companyId)
+    .order("call_date", { ascending: false }).limit(2);
+  // Stored money values are cents.
+  const m = (c: number | null | undefined) => (c == null ? null : money(Number(c) / 100));
+  const lines: string[] = [
+    `Portfolio company (we are an investor): ${co.company_name}`,
+    co.description ? `About: ${co.description}` : "",
+  ].filter(Boolean);
+  // deno-lint-ignore no-explicit-any
+  (qs ?? []).forEach((q: any, i: number) => {
+    const runway = q.cash_balance != null && q.net_burn > 0 ? `${(q.cash_balance / q.net_burn).toFixed(1)} months` : null;
+    lines.push(`--- ${i === 0 ? "Latest" : "Prior"} quarter: Q${q.fiscal_quarter} ${q.fiscal_year} ---`);
+    const parts = [
+      q.arr != null ? `ARR ${m(q.arr)}` : "",
+      q.targets?.arr ? `ARR plan ${m(q.targets.arr)}` : "",
+      q.revenue != null ? `Quarter revenue ${m(q.revenue)}` : "",
+      q.gross_margin != null ? `Gross margin ${pct(q.gross_margin)}` : "",
+      q.net_burn != null ? `Monthly net burn ${m(q.net_burn)}` : "",
+      q.cash_balance != null ? `Cash ${m(q.cash_balance)}` : "",
+      runway ? `Runway ${runway}` : "",
+      q.headcount != null ? `Headcount ${q.headcount}` : "",
+      q.customer_count != null ? `Customers ${q.customer_count}` : "",
+      q.nrr != null ? `NRR ${pct(q.nrr)}` : "",
+      q.monthly_churn != null ? `Monthly churn ${pct(q.monthly_churn)}` : "",
+      (q.status_override || q.performance_status) ? `Our status: ${q.status_override || q.performance_status}` : "",
+    ].filter(Boolean);
+    lines.push(parts.join("; ") || "No metrics recorded.");
+    if (q.status_reason) lines.push(`Status reason: ${q.status_reason}`);
+  });
+  if (!qs?.length) lines.push("We have no quarterly numbers on file yet — ask for ARR, burn, cash and headcount.");
+  // deno-lint-ignore no-explicit-any
+  (notes ?? []).forEach((n: any) => lines.push(`[${n.call_date}] ${n.title ?? "Note"}: ${String(n.content ?? "").slice(0, 1500)}`));
+  return lines.join("\n");
+}
+
 // deno-lint-ignore no-explicit-any
 async function dealContext(admin: any, dealId: string) {
   const { data: deal } = await admin.from("deals").select("*").eq("id", dealId).maybeSingle();
@@ -135,6 +186,7 @@ Deno.serve(async (req) => {
       recipientLabel = row.contact_name || "the founder";
 
       if (row.deal_id) contextBlocks.push(await dealContext(admin, row.deal_id));
+      if (row.portfolio_company_id) contextBlocks.push(await portcoContext(admin, row.portfolio_company_id));
       if (row.investor_id) {
         const { data: inv } = await admin.from("investors").select("*").eq("id", row.investor_id).maybeSingle();
         if (inv) {

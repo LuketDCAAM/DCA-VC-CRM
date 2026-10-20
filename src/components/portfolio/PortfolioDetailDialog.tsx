@@ -15,6 +15,10 @@ import { PortcoKpiPanel } from './PortcoKpiPanel';
 import { FundingRoundsPanel } from './FundingRoundsPanel';
 import { PortcoValuationHistory } from './PortcoValuationHistory';
 import { usePortfolioPositions } from '@/hooks/portfolio/usePortfolioPositions';
+import { usePortcoCadences } from '@/hooks/outreach/usePortcoCadences';
+import { CadenceSettingsDialog } from '@/components/outreach/CadenceSettingsDialog';
+import { intervalLabel } from '@/lib/outreach/constants';
+import { CalendarClock } from 'lucide-react';
 
 
 type CompanyStatus = Database['public']['Enums']['company_status'];
@@ -84,6 +88,9 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
   const [activeTab, setActiveTab] = useState("overview");
   const { byCompany, saving, savePosition } = usePortfolioPositions();
   const position = company ? byCompany.get(company.id) ?? null : null;
+  const [cadenceOpen, setCadenceOpen] = useState(false);
+  const { byCompany: cadenceByCompany, saveCadence: savePortcoCadence, clearCadence: clearPortcoCadence } = usePortcoCadences();
+  const portcoCadence = company ? cadenceByCompany.get(company.id) ?? null : null;
 
   // Reset edit states when dialog closes
 
@@ -143,10 +150,16 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
                 ))}
               </div>
             </div>
-            <Button onClick={() => setIsEditingCompany(true)} size="sm">
-              <Edit className="h-4 w-4 mr-2" />
-              Edit Company
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setCadenceOpen(true)}>
+                <CalendarClock className="h-4 w-4 mr-2" />
+                {portcoCadence ? `Check-ins: ${intervalLabel(portcoCadence.interval_key)}` : 'Set check-in rhythm'}
+              </Button>
+              <Button onClick={() => setIsEditingCompany(true)} size="sm">
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Company
+              </Button>
+            </div>
           </div>
         </DialogHeader>
 
@@ -453,6 +466,18 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
           </TabsContent>
         </Tabs>
       </DialogContent>
+      <CadenceSettingsDialog
+        open={cadenceOpen}
+        onOpenChange={setCadenceOpen}
+        investorId={company.id}
+        investorName={company.company_name}
+        title="Check-in rhythm"
+        description={`How often should we check in with ${company.company_name}?`}
+        showContact
+        cadence={portcoCadence}
+        onSave={savePortcoCadence}
+        onClear={clearPortcoCadence}
+      />
     </Dialog>
   );
 }

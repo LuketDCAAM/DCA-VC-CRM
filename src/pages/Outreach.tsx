@@ -8,6 +8,10 @@ import { FollowUpDialog } from '@/components/outreach/FollowUpDialog';
 import { DigestBuilderDialog } from '@/components/outreach/DigestBuilderDialog';
 import { DigestBatchView } from '@/components/outreach/DigestBatchView';
 import { CadenceOverviewPanel } from '@/components/outreach/CadenceOverviewPanel';
+import { PortcoCadencePanel } from '@/components/outreach/PortcoCadencePanel';
+import { usePortcoCadences } from '@/hooks/outreach/usePortcoCadences';
+import { usePortfolioCompanies } from '@/hooks/usePortfolioCompanies';
+import { useAuth } from '@/hooks/useAuth';
 import { useFollowUps, type FollowUp } from '@/hooks/outreach/useFollowUps';
 import { useOutreachBatches } from '@/hooks/outreach/useOutreachBatches';
 import { useOutreachDraft } from '@/hooks/outreach/useOutreachDraft';
@@ -26,6 +30,9 @@ export default function Outreach() {
   const { investors } = useInvestorsSimple();
   const { deals } = useOptimizedDeals();
   const { connected: outlookConnected } = useOutlookAppUser();
+  const { companies } = usePortfolioCompanies();
+  const portcoCadences = usePortcoCadences();
+  const { user } = useAuth();
 
   const [followUpOpen, setFollowUpOpen] = useState(false);
   const [digestOpen, setDigestOpen] = useState(false);
@@ -33,6 +40,7 @@ export default function Outreach() {
   const today = formatDateOnly(new Date());
   const dealById = useMemo(() => new Map(deals.map((d) => [d.id, d])), [deals]);
   const investorById = useMemo(() => new Map(investors.map((i) => [i.id, i])), [investors]);
+  const companyById = useMemo(() => new Map(companies.map((c) => [c.id, c])), [companies]);
 
   const groups = useMemo(() => {
     const dueNow: FollowUp[] = [];
@@ -53,7 +61,8 @@ export default function Outreach() {
   const describe = (f: FollowUp) => {
     const deal = f.deal_id ? dealById.get(f.deal_id) : null;
     const investor = f.investor_id ? investorById.get(f.investor_id) : null;
-    const title = deal?.company_name || investor?.contact_name || f.contact_name || 'Follow-up';
+    const company = f.portfolio_company_id ? companyById.get(f.portfolio_company_id) : null;
+    const title = company?.company_name || deal?.company_name || investor?.contact_name || f.contact_name || 'Follow-up';
     const subtitle = investor?.firm_name || deal?.sector || null;
     const email = f.contact_email || deal?.contact_email || investor?.contact_email || null;
     return { title, subtitle, email };
@@ -78,7 +87,13 @@ export default function Outreach() {
                 await generate('follow_up', f.id, note);
                 refetch();
               }}
-              onUpdate={(updates, silent) => updateFollowUp(f.id, updates, silent)}
+              onUpdate={async (updates, silent) => {
+                const res = await updateFollowUp(f.id, updates, silent);
+                if (res && f.portfolio_company_id && (updates.status === 'sent' || updates.status === 'done')) {
+                  await portcoCadences.markContacted(f.portfolio_company_id);
+                }
+                return res;
+              }}
               onPushToOutlook={async () => {
                 await pushToOutlook('follow_up', f.id);
                 refetch();
@@ -92,6 +107,34 @@ export default function Outreach() {
   };
 
   const dueInvestorIds = useMemo(() => dueInMonth(new Date()), [dueInMonth]);
+
+  const draftCheckIn = async ({
+    companyId,
+    contactName,
+    contactEmail,
+    signals,
+  }: {
+    companyId: string;
+    contactName: string | null;
+    contactEmail: string | null;
+    signals: { label: string; offer: string }[];
+  }) => {
+    if (!user) return;
+    const created = await createFollowUp({
+      portfolio_company_id: companyId,
+      contact_name: contactName,
+      contact_email: contactEmail,
+      purpose: 'portco_check_in',
+      due_date: today,
+      owner_id: user.id,
+      context: signals.length
+        ? `Where we could help: ${signals.map((s) => `${s.label} (${s.offer})`).join('; ')}`
+        : null,
+    });
+    if (!created) return;
+    await generate('follow_up', created.id);
+    refetch();
+  };
 
   const generateAll = async (itemIds: string[]) => {
     for (const id of itemIds) {
@@ -138,6 +181,7 @@ export default function Outreach() {
           <TabsTrigger value="upcoming">Upcoming ({groups.upcoming.length})</TabsTrigger>
           <TabsTrigger value="digests">Investor notes ({batches.length})</TabsTrigger>
           <TabsTrigger value="cadence">Rhythm</TabsTrigger>
+          <TabsTrigger value="portcos">Portcos</TabsTrigger>
           <TabsTrigger value="done">Sent ({groups.sent.length})</TabsTrigger>
         </TabsList>
 
@@ -199,6 +243,9 @@ export default function Outreach() {
             </TabsContent>
             <TabsContent value="cadence" className="mt-4">
               <CadenceOverviewPanel investors={investors} />
+            </TabsContent>
+            <TabsContent value="portcos" className="mt-4">
+              <PortcoCadencePanel companies={companies} cadences={portcoCadences} onDraftCheckIn={draftCheckIn} />
             </TabsContent>
             <TabsContent value="done" className="mt-4">
               {renderList(groups.sent, 'Nothing sent yet.')}

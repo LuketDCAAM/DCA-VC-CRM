@@ -10,6 +10,7 @@ export type FollowUpInsert = Database['public']['Tables']['outreach_follow_ups']
 export interface NewFollowUp {
   deal_id?: string | null;
   investor_id?: string | null;
+  portfolio_company_id?: string | null;
   contact_name?: string | null;
   contact_email?: string | null;
   purpose: string;
@@ -72,6 +73,7 @@ export function useFollowUps() {
           ...input,
           deal_id: input.deal_id || null,
           investor_id: input.investor_id || null,
+          portfolio_company_id: input.portfolio_company_id || null,
           contact_name: input.contact_name || null,
           contact_email: input.contact_email || null,
           context: input.context || null,
