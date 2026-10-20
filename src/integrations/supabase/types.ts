@@ -1905,6 +1905,7 @@ export type Database = {
           created_by: string
           id: string
           intro_note: string | null
+          kind: string
           period_month: string
           status: string
           title: string
@@ -1915,6 +1916,7 @@ export type Database = {
           created_by: string
           id?: string
           intro_note?: string | null
+          kind?: string
           period_month: string
           status?: string
           title: string
@@ -1925,6 +1927,7 @@ export type Database = {
           created_by?: string
           id?: string
           intro_note?: string | null
+          kind?: string
           period_month?: string
           status?: string
           title?: string
