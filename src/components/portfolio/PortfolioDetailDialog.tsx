@@ -88,6 +88,9 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
   const [activeTab, setActiveTab] = useState("overview");
   const { byCompany, saving, savePosition } = usePortfolioPositions();
   const position = company ? byCompany.get(company.id) ?? null : null;
+  const [cadenceOpen, setCadenceOpen] = useState(false);
+  const { byCompany: cadenceByCompany, saveCadence: savePortcoCadence, clearCadence: clearPortcoCadence } = usePortcoCadences();
+  const portcoCadence = company ? cadenceByCompany.get(company.id) ?? null : null;
 
   // Reset edit states when dialog closes
 
@@ -463,6 +466,18 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
           </TabsContent>
         </Tabs>
       </DialogContent>
+      <CadenceSettingsDialog
+        open={cadenceOpen}
+        onOpenChange={setCadenceOpen}
+        investorId={company.id}
+        investorName={company.company_name}
+        title="Check-in rhythm"
+        description={`How often should we check in with ${company.company_name}?`}
+        showContact
+        cadence={portcoCadence}
+        onSave={savePortcoCadence}
+        onClear={clearPortcoCadence}
+      />
     </Dialog>
   );
 }
