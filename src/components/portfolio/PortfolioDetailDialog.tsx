@@ -17,6 +17,7 @@ import { PortcoValuationHistory } from './PortcoValuationHistory';
 import { usePortfolioPositions } from '@/hooks/portfolio/usePortfolioPositions';
 import { usePortcoCadences } from '@/hooks/outreach/usePortcoCadences';
 import { CadenceSettingsDialog } from '@/components/outreach/CadenceSettingsDialog';
+import { useDealContactsByCompany } from '@/hooks/portfolio/useDealContactsByCompany';
 import { intervalLabel } from '@/lib/outreach/constants';
 import { CalendarClock } from 'lucide-react';
 
@@ -91,6 +92,8 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
   const [cadenceOpen, setCadenceOpen] = useState(false);
   const { byCompany: cadenceByCompany, saveCadence: savePortcoCadence, clearCadence: clearPortcoCadence } = usePortcoCadences();
   const portcoCadence = company ? cadenceByCompany.get(company.id) ?? null : null;
+  const { lookup: lookupDealContact } = useDealContactsByCompany();
+  const dealContact = lookupDealContact(company?.company_name);
 
   // Reset edit states when dialog closes
 
@@ -474,6 +477,8 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
         title="Check-in rhythm"
         description={`How often should we check in with ${company.company_name}?`}
         showContact
+        defaultContactName={dealContact?.name}
+        defaultContactEmail={dealContact?.email}
         cadence={portcoCadence}
         onSave={savePortcoCadence}
         onClear={clearPortcoCadence}
