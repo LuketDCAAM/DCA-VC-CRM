@@ -2,6 +2,7 @@
 
 ## Draft creation error
 - [x] Restore missing Supabase service binding and redeploy draft/Outlook functions.
+- [x] Fix sign-in check in draft, Outlook, scoring and fill-blanks functions (token passed explicitly).
 - [ ] Verify investor draft generation while signed in — blocked on the user's retry because external Supabase authenticated testing is unavailable.
 
 ## Interactive Outreach (in progress)
