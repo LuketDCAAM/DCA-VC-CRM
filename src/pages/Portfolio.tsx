@@ -40,7 +40,8 @@ export default function Portfolio() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCompany, setSelectedCompany] = useState<PortfolioCompany | null>(null);
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const selectedCompany = companies.find(company => company.id === selectedCompanyId) ?? null;
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
@@ -242,7 +243,7 @@ export default function Portfolio() {
 
 
   const handleViewDetails = (company: PortfolioCompany) => {
-    setSelectedCompany(company);
+    setSelectedCompanyId(company.id);
     setDetailDialogOpen(true);
   };
 

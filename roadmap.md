@@ -1,5 +1,10 @@
 # Roadmap
 
+## Investment saves
+- [x] Refresh the open company details after investment saves and verify affected-row results.
+- [x] Run investment refresh regression tests (3 passed; preview build OK).
+- [ ] Verify saving and reopening investments while signed in — external unmanaged Supabase prevents authenticated testing here.
+
 ## Bulk Outlook drafts
 - [x] Add one action for all ready, unsynced drafts owned by the signed-in user, with progress and partial-failure feedback.
 - [x] Test eligibility and bulk processing (6 passing tests; preview build OK).
