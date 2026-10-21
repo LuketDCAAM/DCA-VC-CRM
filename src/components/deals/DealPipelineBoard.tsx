@@ -249,8 +249,8 @@ export const DealPipelineBoard = memo(function DealPipelineBoard({
                       </div>
                     )}
                   </Droppable>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           );
         })}
