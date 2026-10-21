@@ -7,7 +7,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
+import { savePerformance } from './savePerformance';
 import { useToast } from '@/hooks/use-toast';
 import { Save, X } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -40,9 +40,9 @@ export function PerformanceEditForm({ companyId, currentValuation, onSave, onCan
   const form = useForm<PerformanceFormValues>({
     resolver: zodResolver(performanceSchema),
     defaultValues: {
-      last_round_post_money_valuation: currentValuation?.last_round_post_money_valuation ? currentValuation.last_round_post_money_valuation / 100 : null,
-      last_round_price_per_share: currentValuation?.last_round_price_per_share ? currentValuation.last_round_price_per_share / 100 : null,
-      current_ownership_percentage: currentValuation?.current_ownership_percentage || null,
+      last_round_post_money_valuation: currentValuation?.last_round_post_money_valuation == null ? null : currentValuation.last_round_post_money_valuation / 100,
+      last_round_price_per_share: currentValuation?.last_round_price_per_share == null ? null : currentValuation.last_round_price_per_share / 100,
+      current_ownership_percentage: currentValuation?.current_ownership_percentage ?? null,
     },
   });
 
@@ -50,30 +50,15 @@ export function PerformanceEditForm({ companyId, currentValuation, onSave, onCan
 
   const onSubmit = async (values: PerformanceFormValues) => {
     try {
-      const valuationData = {
-        portfolio_company_id: companyId,
-        last_round_post_money_valuation: values.last_round_post_money_valuation ? values.last_round_post_money_valuation * 100 : null,
-        last_round_price_per_share: values.last_round_price_per_share ? values.last_round_price_per_share * 100 : null,
-        current_ownership_percentage: values.current_ownership_percentage,
-        updated_at: new Date().toISOString(),
-      };
-
-      // Upsert current valuation
-      const { error } = await supabase
-        .from('current_valuations')
-        .upsert(valuationData, { 
-          onConflict: 'portfolio_company_id',
-          ignoreDuplicates: false 
-        });
-
-      if (error) throw error;
+      await savePerformance(companyId, values, () =>
+        queryClient.invalidateQueries({ queryKey: ['portfolioCompanies'] })
+      );
 
       toast({
         title: "Performance data updated",
         description: "Current valuation and performance metrics have been successfully updated.",
       });
 
-      queryClient.invalidateQueries({ queryKey: ['portfolioCompanies'] });
       onSave();
     } catch (error: any) {
       toast({
@@ -119,7 +104,7 @@ export function PerformanceEditForm({ companyId, currentValuation, onSave, onCan
                           {...field}
                           type="number"
                           placeholder="Enter valuation amount"
-                          value={field.value || ''}
+                          value={field.value ?? ''}
                           onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
                         />
                       </FormControl>
@@ -140,7 +125,7 @@ export function PerformanceEditForm({ companyId, currentValuation, onSave, onCan
                           type="number"
                           step="0.01"
                           placeholder="Enter price per share"
-                          value={field.value || ''}
+                          value={field.value ?? ''}
                           onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
                         />
                       </FormControl>
@@ -162,7 +147,7 @@ export function PerformanceEditForm({ companyId, currentValuation, onSave, onCan
                           step="0.01"
                           max="100"
                           placeholder="Enter ownership percentage"
-                          value={field.value ? (field.value * 100).toFixed(2) : ''}
+                          value={field.value == null ? '' : field.value * 100}
                           onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) / 100 : null)}
                         />
                       </FormControl>

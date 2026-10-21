@@ -20,6 +20,7 @@ import { CadenceSettingsDialog } from '@/components/outreach/CadenceSettingsDial
 import { useDealContactsByCompany } from '@/hooks/portfolio/useDealContactsByCompany';
 import { intervalLabel } from '@/lib/outreach/constants';
 import { CalendarClock } from 'lucide-react';
+import { computeCurrentPerformance } from '@/lib/portfolio/currentPerformance';
 
 
 type CompanyStatus = Database['public']['Enums']['company_status'];
@@ -58,8 +59,8 @@ interface PortfolioDetailDialogProps {
   onCompanyUpdated?: () => void;
 }
 
-const formatCurrency = (amount: number | null) => {
-  if (!amount) return 'N/A';
+const formatCurrency = (amount: number | null | undefined) => {
+  if (amount == null) return 'N/A';
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
@@ -68,8 +69,8 @@ const formatCurrency = (amount: number | null) => {
   }).format(amount / 100);
 };
 
-const formatPercentage = (percentage: number | null) => {
-  if (!percentage) return 'N/A';
+const formatPercentage = (percentage: number | null | undefined) => {
+  if (percentage == null) return 'N/A';
   return `${(percentage * 100).toFixed(2)}%`;
 };
 
@@ -128,9 +129,11 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
     new Date(b.investment_date).getTime() - new Date(a.investment_date).getTime()
   )[0];
 
-  const currentValue = company.current_valuation?.last_round_post_money_valuation;
-  const originalValue = company.investments.find(inv => inv.post_money_valuation)?.post_money_valuation;
-  const valueMultiple = currentValue && originalValue ? currentValue / originalValue : null;
+  const { currentValue, valueMultiple } = computeCurrentPerformance(
+    totalInvested,
+    company.current_valuation?.last_round_post_money_valuation,
+    company.current_valuation?.current_ownership_percentage,
+  );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -392,16 +395,13 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
                   <div>
                     <label className="text-sm font-medium text-gray-500">Value Multiple</label>
                     <p className="text-xl font-bold">
-                      {valueMultiple ? `${valueMultiple.toFixed(2)}x` : 'N/A'}
+                      {valueMultiple == null ? 'N/A' : `${valueMultiple.toFixed(2)}x`}
                     </p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-500">Current Value</label>
                     <p className="text-lg font-semibold">
-                      {company.current_valuation?.current_ownership_percentage && company.current_valuation?.last_round_post_money_valuation
-                        ? formatCurrency(company.current_valuation.current_ownership_percentage * company.current_valuation.last_round_post_money_valuation)
-                        : 'N/A'
-                      }
+                      {formatCurrency(currentValue)}
                     </p>
                   </div>
                 </CardContent>
