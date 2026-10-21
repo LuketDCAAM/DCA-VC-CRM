@@ -7,6 +7,14 @@ import type { Database } from '@/integrations/supabase/types';
 
 export type PortfolioVehicle = Database['public']['Enums']['portfolio_vehicle'];
 export type PositionStatus = Database['public']['Enums']['position_status'];
+export type InstrumentType = Database['public']['Enums']['instrument_type'];
+
+export const INSTRUMENT_TYPES: InstrumentType[] = [
+  'SAFE Note',
+  'Convertible Note',
+  'Preferred Equity',
+  'Common Equity',
+];
 
 export const VEHICLES: PortfolioVehicle[] = [
   'Balance Sheet',
@@ -32,6 +40,7 @@ export interface PortfolioPosition {
   sector: string | null;
   stage: string | null;
   vehicle: PortfolioVehicle | null;
+  instrument_type: InstrumentType | null;
   position_status: PositionStatus;
   first_investment_date: string | null;
   last_investment_date: string | null;
@@ -46,7 +55,7 @@ async function fetchPositions(): Promise<PortfolioPosition[]> {
   const { data, error } = await supabase
     .from('portfolio_positions')
     .select(
-      'id, portfolio_company_id, sector, stage, vehicle, position_status, first_investment_date, last_investment_date, current_fmv, realized_proceeds, ownership_pct, notes, updated_at',
+      'id, portfolio_company_id, sector, stage, vehicle, instrument_type, position_status, first_investment_date, last_investment_date, current_fmv, realized_proceeds, ownership_pct, notes, updated_at',
     );
   if (error) throw new Error(error.message);
   return (data ?? []) as PortfolioPosition[];
