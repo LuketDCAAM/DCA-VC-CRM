@@ -123,6 +123,7 @@ export function PositionsImportDialog({ companies, onImported }: Props) {
       'Fintech',
       'Seed',
       'Balance Sheet',
+      'Preferred Equity',
       'Active',
       '2024-03-15',
       '2025-06-01',
@@ -151,6 +152,9 @@ export function PositionsImportDialog({ companies, onImported }: Props) {
 
       const vehicleRaw = (raw['vehicle'] ?? '').trim();
       const vehicle = VEHICLES.find((v) => v.toLowerCase() === vehicleRaw.toLowerCase()) ?? null;
+      const instrumentRaw = (raw['instrument_type'] ?? '').trim();
+      const instrument =
+        INSTRUMENT_TYPES.find((t) => t.toLowerCase() === instrumentRaw.toLowerCase()) ?? null;
       const statusRaw = (raw['position_status'] ?? '').trim();
       const status = POSITION_STATUSES.find((s) => s.toLowerCase() === statusRaw.toLowerCase()) ?? null;
 
@@ -162,6 +166,7 @@ export function PositionsImportDialog({ companies, onImported }: Props) {
         sector: raw['sector']?.trim() || null,
         stage: raw['stage']?.trim() || null,
         vehicle: vehicle as PortfolioVehicle | null,
+        instrument_type: instrument as InstrumentType | null,
         position_status: (status ?? 'Active') as PositionStatus,
         first_investment_date: toDate(raw['first_investment_date'] ?? ''),
         last_investment_date: toDate(raw['last_investment_date'] ?? ''),
@@ -175,6 +180,7 @@ export function PositionsImportDialog({ companies, onImported }: Props) {
       if (!companyName) error = 'Missing company_name';
       else if (!company) error = `No portfolio company named "${companyName}"`;
       else if (vehicleRaw && !vehicle) error = `Unknown vehicle "${vehicleRaw}"`;
+      else if (instrumentRaw && !instrument) error = `Unknown instrument_type "${instrumentRaw}"`;
       else if (statusRaw && !status) error = `Unknown position_status "${statusRaw}"`;
 
       return { companyName, companyId: company?.id ?? null, payload, error };
@@ -257,6 +263,7 @@ export function PositionsImportDialog({ companies, onImported }: Props) {
           <p className="font-medium text-foreground">Columns</p>
           <p>{TEMPLATE_COLUMNS.join(', ')}</p>
           <p>Vehicle: {VEHICLES.join(' · ')}</p>
+          <p>Instrument type: {INSTRUMENT_TYPES.join(' · ')}</p>
           <p>Position status: {POSITION_STATUSES.join(' · ')}</p>
         </div>
 
