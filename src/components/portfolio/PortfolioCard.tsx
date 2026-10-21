@@ -17,6 +17,7 @@ import {
 import { Database } from '@/integrations/supabase/types';
 import { PortfolioCompany } from '@/hooks/usePortfolioCompanies';
 import { useDeletePortfolioCompany } from '@/hooks/useDeletePortfolioCompany';
+import { computeCurrentPerformance } from '@/lib/portfolio/currentPerformance';
 
 type CompanyStatus = Database['public']['Enums']['company_status'];
 
@@ -64,6 +65,11 @@ const getStatusColor = (status: CompanyStatus) => {
 export function PortfolioCard({ company, onViewDetails, onDeleted }: PortfolioCardProps) {
   const { deleteCompany, isDeleting } = useDeletePortfolioCompany();
   const totalInvested = company.investments.reduce((sum, inv) => sum + inv.amount_invested, 0);
+  const performance = computeCurrentPerformance(
+    totalInvested,
+    company.current_valuation?.last_round_post_money_valuation,
+    company.current_valuation?.current_ownership_percentage,
+  );
   const latestInvestment = company.investments.sort((a, b) => 
     new Date(b.investment_date).getTime() - new Date(a.investment_date).getTime()
   )[0];
@@ -160,6 +166,21 @@ export function PortfolioCard({ company, onViewDetails, onDeleted }: PortfolioCa
             <span className="font-medium">
               {formatCurrency(company.current_valuation.last_round_post_money_valuation)}
             </span>
+          </div>
+        )}
+
+        {performance.currentValue != null && (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Current Value</p>
+              <p className="text-sm font-medium">{formatCurrency(performance.currentValue)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Multiple</p>
+              <p className="text-sm font-medium">
+                {performance.valueMultiple != null ? `${performance.valueMultiple.toFixed(2)}x` : 'N/A'}
+              </p>
+            </div>
           </div>
         )}
 

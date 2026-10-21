@@ -87,10 +87,14 @@ async function fetchCompanies(userId: string): Promise<PortfolioCompany[]> {
     throw new Error(error.message);
   }
 
-  const companies = data?.map(company => ({
-    ...company,
-    current_valuation: company.current_valuations?.[0] || null
-  })) || [];
+  // current_valuations is one-to-one (unique company id), so it may come back as an object, not an array
+  const companies = data?.map(company => {
+    const cv: any = (company as any).current_valuations;
+    return {
+      ...company,
+      current_valuation: (Array.isArray(cv) ? cv[0] : cv) || null,
+    };
+  }) || [];
   
   console.log('📊 PORTFOLIO COMPANIES FETCHED:', companies.length);
   console.log('=== END FETCH PORTFOLIO COMPANIES DEBUG ===');
