@@ -35,3 +35,6 @@
 ## Back burner
 - Sourcing/screening: find deals we are not seeing, auto-screen and auto-delegate.
 - [x] Portfolio company check-in rhythm (Outreach → Portcos)
+
+## Deals tab redesign
+- [ ] List view + pipeline board redesign (header, stats, view toggle, board cards)

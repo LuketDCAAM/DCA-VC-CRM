@@ -196,19 +196,22 @@ export const DealPipelineBoard = memo(function DealPipelineBoard({
           const limit = visibleCount[stage] ?? COLUMN_PAGE_SIZE;
           const visible = stageDeals.slice(0, limit);
           const hiddenCount = stageDeals.length - visible.length;
+          const stageTotal = stageDeals.reduce((s, d) => s + (d.round_size ?? 0), 0);
 
           return (
-            <div key={stage} className="flex-shrink-0 w-64">
-              <Card className={`h-full ${getPipelineStageBackground(stage)} ${getPipelineStageBorder(stage)} shadow-sm border`}>
-                <CardHeader className="pb-2 px-3 pt-3">
-                  <CardTitle className="text-sm font-semibold flex items-center justify-between text-slate-950">
-                    <span className="truncate">{stage}</span>
-                    <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                      {stageDeals.length}
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 pb-3">
+            <div key={stage} className="flex-shrink-0 w-72">
+              <div className="h-full overflow-hidden rounded-xl border bg-muted/40">
+                <div className="h-1 bg-gradient-to-r from-chart-1 to-chart-5" />
+                <div className="px-3 pb-2 pt-3">
+                  <div className="flex items-center justify-between">
+                    <span className="truncate text-sm font-semibold">{stage}</span>
+                    <Badge variant="secondary" className="px-2 py-0.5 text-xs">{stageDeals.length}</Badge>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {stageTotal ? `${compactMoney.format(stageTotal / 100)} total round size` : 'No round sizes'}
+                  </div>
+                </div>
+                <div className="px-2 pb-2">
                   <Droppable droppableId={stage}>
                     {(provided, snapshot) => (
                       <div
