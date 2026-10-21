@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toEditable, toStored } from '@/lib/portfolio/kpiFields';
+import { priceToStoredCents, storedCentsToPrice } from '@/lib/portfolio/pricePerShare';
 import { ROUND_TYPES, type PortcoRound, type RoundValues } from '@/hooks/portfolio/usePortcoRounds';
 
 interface Props {
@@ -20,7 +21,7 @@ interface Props {
 /** Price per share is stored in cents but usually a small dollar figure, so allow decimals. */
 function ppsToEditable(value: number | null | undefined): string {
   if (value == null) return '';
-  return String(value / 100);
+  return storedCentsToPrice(value);
 }
 
 export function RoundFormDialog({ open, onOpenChange, round, saving, onSave }: Props) {
@@ -46,7 +47,7 @@ export function RoundFormDialog({ open, onOpenChange, round, saving, onSave }: P
       close_date: closeDate || null,
       pre_money_valuation: toStored(pre, 'money'),
       post_money_valuation: toStored(post, 'money'),
-      price_per_share: toStored(pps, 'money'),
+      price_per_share: priceToStoredCents(pps),
       amount_raised: toStored(raised, 'money'),
       lead_investor: lead.trim() || null,
       we_participated: participated,

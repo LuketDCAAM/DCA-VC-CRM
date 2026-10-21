@@ -21,6 +21,7 @@ import { useDealContactsByCompany } from '@/hooks/portfolio/useDealContactsByCom
 import { intervalLabel } from '@/lib/outreach/constants';
 import { CalendarClock } from 'lucide-react';
 import { computeCurrentPerformance } from '@/lib/portfolio/currentPerformance';
+import { formatPricePerShare } from '@/lib/portfolio/pricePerShare';
 
 
 type CompanyStatus = Database['public']['Enums']['company_status'];
@@ -343,7 +344,7 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
                         </div>
                         <div>
                           <label className="font-medium text-gray-500">Price per Share</label>
-                          <p>{formatCurrency(investment.price_per_share)}</p>
+                          <p>{formatPricePerShare(investment.price_per_share, 'N/A')}</p>
                         </div>
                         <div>
                           <label className="font-medium text-gray-500">Ownership</label>
