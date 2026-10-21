@@ -12,7 +12,7 @@ import { PortfolioHeader } from '@/components/portfolio/PortfolioHeader';
 import { PortfolioGrid } from '@/components/portfolio/PortfolioGrid';
 import { useDeletePortfolioCompany } from '@/hooks/useDeletePortfolioCompany';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { usePortfolioPositions, VEHICLES, POSITION_STATUSES } from '@/hooks/portfolio/usePortfolioPositions';
+import { usePortfolioPositions, VEHICLES, POSITION_STATUSES, INSTRUMENT_TYPES } from '@/hooks/portfolio/usePortfolioPositions';
 import { usePortfolioRollups } from '@/hooks/portfolio/usePortfolioRollups';
 import { PortfolioKpiTiles } from '@/components/portfolio/PortfolioKpiTiles';
 import { RollupTable } from '@/components/portfolio/RollupTable';
@@ -141,6 +141,13 @@ export default function Portfolio() {
       options: VEHICLES.map((v) => ({ label: v, value: v })),
     },
     {
+      key: 'instrument_type',
+      label: 'Instrument Type',
+      value: 'instrument_type',
+      type: 'select',
+      options: INSTRUMENT_TYPES.map((t) => ({ label: t, value: t })),
+    },
+    {
       key: 'position_status',
       label: 'Position Status',
       value: 'position_status',
@@ -215,6 +222,10 @@ export default function Portfolio() {
 
       if (key === 'vehicle') {
         return byCompany.get(company.id)?.vehicle === value;
+      }
+
+      if (key === 'instrument_type') {
+        return byCompany.get(company.id)?.instrument_type === value;
       }
 
       if (key === 'position_status') {
