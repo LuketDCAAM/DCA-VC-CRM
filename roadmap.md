@@ -37,4 +37,4 @@
 - [x] Portfolio company check-in rhythm (Outreach → Portcos)
 
 ## Deals tab redesign
-- [ ] List view + pipeline board redesign (header, stats, view toggle, board cards)
+- [x] List view + pipeline board redesign (header, stats, view toggle, board cards)
