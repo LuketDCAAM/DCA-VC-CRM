@@ -82,21 +82,26 @@ export function useInvestmentOperations(companyId: string, onSave: () => void) {
           
           if (error) throw error;
         } else {
-          const { error } = await supabase
+          const { data, error } = await supabase
             .from('investments')
             .update(investmentData)
-            .eq('id', investment.id);
+            .eq('id', investment.id)
+            .eq('portfolio_company_id', companyId)
+            .select('id')
+            .single();
           
           if (error) throw error;
+          if (!data) throw new Error('This investment could not be updated. Refresh the company and try again.');
         }
       }
+
+      await queryClient.invalidateQueries({ queryKey: ['portfolioCompanies'] });
 
       toast({
         title: "Investments updated",
         description: "Investment data has been successfully updated.",
       });
 
-      queryClient.invalidateQueries({ queryKey: ['portfolioCompanies'] });
       onSave();
     } catch (error: any) {
       toast({

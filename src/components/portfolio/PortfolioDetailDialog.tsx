@@ -124,7 +124,7 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
   };
 
   const totalInvested = company.investments.reduce((sum, inv) => sum + inv.amount_invested, 0);
-  const latestInvestment = company.investments.sort((a, b) => 
+  const latestInvestment = [...company.investments].sort((a, b) => 
     new Date(b.investment_date).getTime() - new Date(a.investment_date).getTime()
   )[0];
 
@@ -317,7 +317,7 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
                 </div>
             
             {company.investments.length > 0 ? (
-              company.investments
+              [...company.investments]
                 .sort((a, b) => new Date(b.investment_date).getTime() - new Date(a.investment_date).getTime())
                 .map((investment) => (
                   <Card key={investment.id}>
