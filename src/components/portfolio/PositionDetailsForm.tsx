@@ -6,8 +6,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
+  INSTRUMENT_TYPES,
   POSITION_STATUSES,
   VEHICLES,
+  type InstrumentType,
   type PortfolioPosition,
   type PortfolioVehicle,
   type PositionStatus,
@@ -29,6 +31,7 @@ export function PositionDetailsForm({ companyId, position, saving, onSave }: Pro
   const [sector, setSector] = useState(position?.sector ?? '');
   const [stage, setStage] = useState(position?.stage ?? '');
   const [vehicle, setVehicle] = useState<string>(position?.vehicle ?? NONE);
+  const [instrument, setInstrument] = useState<string>(position?.instrument_type ?? NONE);
   const [status, setStatus] = useState<PositionStatus>(position?.position_status ?? 'Active');
   const [firstDate, setFirstDate] = useState(position?.first_investment_date ?? '');
   const [lastDate, setLastDate] = useState(position?.last_investment_date ?? '');
@@ -51,6 +54,7 @@ export function PositionDetailsForm({ companyId, position, saving, onSave }: Pro
       sector: sector.trim() || null,
       stage: stage.trim() || null,
       vehicle: vehicle === NONE ? null : (vehicle as PortfolioVehicle),
+      instrument_type: instrument === NONE ? null : (instrument as InstrumentType),
       position_status: status,
       first_investment_date: firstDate || null,
       last_investment_date: lastDate || null,
@@ -86,6 +90,22 @@ export function PositionDetailsForm({ companyId, position, saving, onSave }: Pro
                 {VEHICLES.map((v) => (
                   <SelectItem key={v} value={v}>
                     {v}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-xs">Instrument type</Label>
+            <Select value={instrument} onValueChange={setInstrument}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select instrument" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={NONE}>Unassigned</SelectItem>
+                {INSTRUMENT_TYPES.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {t}
                   </SelectItem>
                 ))}
               </SelectContent>
