@@ -1,28 +1,43 @@
 import React, { useState, useMemo, useCallback, memo } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, DollarSign, Eye, Calendar, Star, FileText } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { Deal } from '@/types/deal';
 import { PIPELINE_STAGES, PipelineStage } from '@/hooks/deals/dealStagesConfig';
-import { getPipelineStageBackground, getPipelineStageBorder } from './pipelineStageColors';
+import { getDealSectors } from '@/utils/sectorUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 const COLUMN_PAGE_SIZE = 50;
 
-const currencyFormatter = new Intl.NumberFormat('en-US', {
+const compactMoney = new Intl.NumberFormat('en-US', {
   style: 'currency',
   currency: 'USD',
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
+  notation: 'compact',
+  maximumFractionDigits: 1,
 });
 
-const formatCurrency = (amount: number | null) => {
-  if (!amount) return 'N/A';
-  return currencyFormatter.format(amount / 100);
+const formatCompact = (amount: number | null) => (amount ? compactMoney.format(amount / 100) : null);
+
+const scoreClass = (score: number) =>
+  score >= 80
+    ? 'border-chart-1 text-chart-1'
+    : score >= 60
+    ? 'border-chart-3 text-chart-3'
+    : 'border-muted-foreground/40 text-muted-foreground';
+
+const relativeDays = (date: string) => {
+  const days = Math.floor((Date.now() - new Date(date).getTime()) / 86400000);
+  if (days <= 0) return 'today';
+  if (days < 7) return `${days}d ago`;
+  if (days < 60) return `${Math.floor(days / 7)}w ago`;
+  return `${Math.floor(days / 30)}mo ago`;
 };
+
+const initials = (name: string) =>
+  name.split(/\s+/).filter(Boolean).slice(0, 2).map((p) => p[0]?.toUpperCase()).join('');
 
 interface DealCardMiniProps {
   deal: Deal;
@@ -31,12 +46,12 @@ interface DealCardMiniProps {
   onViewDetails?: (deal: Deal) => void;
 }
 
-const DealCardMini = memo(function DealCardMini({
-  deal,
-  index,
-  isUpdating,
-  onViewDetails,
-}: DealCardMiniProps) {
+const DealCardMini = memo(function DealCardMini({ deal, index, isUpdating, onViewDetails }: DealCardMiniProps) {
+  const sectors = getDealSectors(deal).slice(0, 2);
+  const size = formatCompact(deal.round_size);
+  const owner = (deal as any).sourced_by as string | null;
+  const score = typeof deal.deal_score === 'number' && deal.deal_score > 0 ? deal.deal_score : null;
+
   return (
     <Draggable draggableId={deal.id} index={index}>
       {(provided, snapshot) => (
@@ -44,72 +59,71 @@ const DealCardMini = memo(function DealCardMini({
           ref={provided.innerRef}
           {...provided.draggableProps}
           {...provided.dragHandleProps}
-          className={`mb-2 ${snapshot.isDragging ? 'rotate-2 scale-105' : ''} transition-transform`}
+          onDoubleClick={() => onViewDetails?.(deal)}
+          className={cn(
+            'group mb-2 rounded-lg border bg-card p-3 text-card-foreground shadow-sm transition-shadow hover:shadow-md cursor-grab active:cursor-grabbing',
+            snapshot.isDragging && 'shadow-lg ring-2 ring-primary/40',
+            isUpdating && 'opacity-50 pointer-events-none'
+          )}
         >
-          <Card
-            className={`hover:shadow-md transition-shadow cursor-grab active:cursor-grabbing bg-card border border-border
-              ${snapshot.isDragging ? 'shadow-lg ring-2 ring-primary ring-opacity-50' : ''}
-              ${isUpdating ? 'opacity-50 pointer-events-none' : ''}`}
-          >
-            <CardHeader className="pb-1 px-3 pt-2">
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-xs font-semibold flex items-center gap-1 text-card-foreground">
-                  <Building2 className="h-3 w-3" />
-                  <span className="truncate">{deal.company_name}</span>
-                </CardTitle>
-                {onViewDetails && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-auto p-0.5 opacity-60 hover:opacity-100"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onViewDetails(deal);
-                    }}
-                  >
-                    <Eye className="h-3 w-3" />
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="px-3 pb-2 space-y-1">
-              <div className="flex items-center justify-between">
-                {deal.round_stage && (
-                  <Badge variant="outline" className="text-xs px-1 py-0">
-                    {deal.round_stage}
-                  </Badge>
-                )}
-                {typeof deal.deal_score === 'number' && (
-                  <div className="flex items-center gap-0.5 text-xs text-muted-foreground font-medium">
-                    <Star className="h-2.5 w-2.5 text-yellow-400 fill-yellow-400" />
-                    <span className="text-xs">{deal.deal_score}</span>
-                  </div>
-                )}
-              </div>
-
-              {deal.round_size && (
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <DollarSign className="h-2.5 w-2.5 text-green-600" />
-                  <span className="font-medium">{formatCurrency(deal.round_size)}</span>
-                </div>
+          <div className="flex items-start gap-2">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-chart-1 to-chart-5 text-xs font-semibold text-primary-foreground">
+              {initials(deal.company_name || '?')}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-semibold leading-tight">{deal.company_name}</div>
+              {deal.description && (
+                <div className="truncate text-xs text-muted-foreground">{deal.description}</div>
               )}
+            </div>
+            {onViewDetails && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 opacity-0 group-hover:opacity-100"
+                aria-label={`Open ${deal.company_name}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onViewDetails(deal);
+                }}
+              >
+                <Eye className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
 
-              {deal.next_steps && (
-                <div className="flex items-start gap-1 p-1.5 bg-accent rounded text-xs">
-                  <FileText className="h-2.5 w-2.5 text-primary mt-0.5 flex-shrink-0" />
-                  <div className="min-w-0">
-                    <p className="text-accent-foreground font-medium text-xs">Next Steps</p>
-                    <p className="text-accent-foreground text-xs line-clamp-2 break-words">{deal.next_steps}</p>
-                  </div>
-                </div>
+          {sectors.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {sectors.map((s) => (
+                <Badge key={s} variant="secondary" className="px-1.5 py-0 text-[10px] font-medium">
+                  {s}
+                </Badge>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-2 flex items-center justify-between">
+            <span className="text-sm font-medium">
+              {[size, deal.round_stage].filter(Boolean).join(' ') || <span className="text-muted-foreground">No round info</span>}
+            </span>
+            {score != null && (
+              <span className={cn('flex h-7 w-7 items-center justify-center rounded-full border-2 text-[11px] font-semibold', scoreClass(score))}>
+                {score}
+              </span>
+            )}
+          </div>
+
+          <div className="mt-2 flex items-center justify-between border-t pt-2 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1.5 truncate">
+              {owner && (
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[9px] font-semibold text-foreground">
+                  {initials(owner)}
+                </span>
               )}
-
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Calendar className="h-2.5 w-2.5" />
-                <span>{new Date(deal.updated_at).toLocaleDateString()}</span>
-              </div>
-            </CardContent>
-          </Card>
+              <span className="truncate">{owner || 'Unassigned'}</span>
+            </span>
+            <span className="flex-shrink-0">{relativeDays(deal.updated_at)}</span>
+          </div>
         </div>
       )}
     </Draggable>
@@ -182,19 +196,22 @@ export const DealPipelineBoard = memo(function DealPipelineBoard({
           const limit = visibleCount[stage] ?? COLUMN_PAGE_SIZE;
           const visible = stageDeals.slice(0, limit);
           const hiddenCount = stageDeals.length - visible.length;
+          const stageTotal = stageDeals.reduce((s, d) => s + (d.round_size ?? 0), 0);
 
           return (
-            <div key={stage} className="flex-shrink-0 w-64">
-              <Card className={`h-full ${getPipelineStageBackground(stage)} ${getPipelineStageBorder(stage)} shadow-sm border`}>
-                <CardHeader className="pb-2 px-3 pt-3">
-                  <CardTitle className="text-sm font-semibold flex items-center justify-between text-slate-950">
-                    <span className="truncate">{stage}</span>
-                    <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                      {stageDeals.length}
-                    </Badge>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="px-3 pb-3">
+            <div key={stage} className="flex-shrink-0 w-72">
+              <div className="h-full overflow-hidden rounded-xl border bg-muted/40">
+                <div className="h-1 bg-gradient-to-r from-chart-1 to-chart-5" />
+                <div className="px-3 pb-2 pt-3">
+                  <div className="flex items-center justify-between">
+                    <span className="truncate text-sm font-semibold">{stage}</span>
+                    <Badge variant="secondary" className="px-2 py-0.5 text-xs">{stageDeals.length}</Badge>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {stageTotal ? `${compactMoney.format(stageTotal / 100)} total round size` : 'No round sizes'}
+                  </div>
+                </div>
+                <div className="px-2 pb-2">
                   <Droppable droppableId={stage}>
                     {(provided, snapshot) => (
                       <div
@@ -232,8 +249,8 @@ export const DealPipelineBoard = memo(function DealPipelineBoard({
                       </div>
                     )}
                   </Droppable>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
           );
         })}

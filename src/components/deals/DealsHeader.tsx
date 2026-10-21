@@ -45,22 +45,20 @@ export function DealsHeader({
 
   return (
     <div className="space-y-3">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-wrap justify-between items-end gap-3">
         <div>
-          <h1 className="text-3xl font-bold">Deals</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Deals</h1>
+          <p className="text-sm text-muted-foreground">Track and move your pipeline from sourcing to close.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <OutlookCalendarSyncButton 
-            variant="outline" 
-            size="default" 
+            variant="ghost" 
+            size="sm" 
             showLabel={true} 
           />
-          <Button
-            variant="outline"
-            onClick={() => setShowDuplicateSearch(true)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => setShowDuplicateSearch(true)}>
             <Search className="h-4 w-4 mr-2" />
-            Search Duplicates
+            Duplicates
           </Button>
           <CSVImport
             title="Import Deals"
@@ -68,7 +66,7 @@ export function DealsHeader({
             onImport={onCSVImport}
             templateColumns={csvTemplateColumns}
           >
-            <Button variant="outline">
+            <Button variant="ghost" size="sm">
               Import
             </Button>
           </CSVImport>
@@ -80,7 +78,7 @@ export function DealsHeader({
             selectedIds={selectedDeals}
           />
           <AddDealDialog onDealAdded={onDealAdded}>
-            <Button>
+            <Button size="sm" className="bg-gradient-to-r from-chart-1 to-chart-5 text-primary-foreground hover:opacity-90">
               <Plus className="h-4 w-4 mr-2" />
               Add Deal
             </Button>

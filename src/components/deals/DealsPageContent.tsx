@@ -118,6 +118,7 @@ export function DealsPageContent({
         viewMode={viewMode} 
         onViewModeChange={onViewModeChange}
         dealCount={filteredDeals.length}
+        deals={filteredDeals}
       />
 
       {selectedDeals.length > 0 && (
