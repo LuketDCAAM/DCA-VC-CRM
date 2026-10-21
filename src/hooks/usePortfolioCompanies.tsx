@@ -135,13 +135,13 @@ export function usePortfolioCompanies() {
     const companiesChannel = supabase.channel(`portfolio_${user.id}_${Date.now()}`);
     channelRef.current = companiesChannel;
 
-    companiesChannel
-      .on(
+    for (const table of ['portfolio_companies', 'investments', 'current_valuations']) {
+      companiesChannel.on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'portfolio_companies',
+          table,
         },
         () => {
           try {
@@ -150,8 +150,9 @@ export function usePortfolioCompanies() {
             // Silently handle invalidation errors
           }
         }
-      )
-      .subscribe();
+      );
+    }
+    companiesChannel.subscribe();
 
     return () => {
       if (channelRef.current) {
