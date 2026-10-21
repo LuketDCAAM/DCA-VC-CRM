@@ -1,8 +1,8 @@
 # Roadmap
 
 ## Current ownership performance
-- [ ] Verify performance saves, refresh before closing, and calculate the holding's value multiple from current ownership.
-- [ ] Run ownership/save regression tests.
+- [x] Verify performance saves, refresh before closing, and calculate the holding's value multiple from current ownership.
+- [x] Run ownership/save regression tests (8 passed; investment regressions also passed).
 - [ ] Verify signed-in performance editing — external unmanaged Supabase prevents authenticated testing here.
 
 ## Investment saves
