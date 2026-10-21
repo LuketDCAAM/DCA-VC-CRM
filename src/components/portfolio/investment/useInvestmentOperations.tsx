@@ -3,6 +3,7 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { priceToStoredCents } from '@/lib/portfolio/pricePerShare';
 
 interface Investment {
   id: string;
@@ -70,7 +71,7 @@ export function useInvestmentOperations(companyId: string, onSave: () => void) {
           investment_date: investment.investment_date,
           amount_invested: Math.round(investment.amount_invested * 100),
           post_money_valuation: investment.post_money_valuation ? Math.round(investment.post_money_valuation * 100) : null,
-          price_per_share: investment.price_per_share ? Math.round(investment.price_per_share * 100) : null,
+          price_per_share: priceToStoredCents(investment.price_per_share),
           revenue_at_investment: investment.revenue_at_investment ? Math.round(investment.revenue_at_investment * 100) : null,
           ownership_percentage: investment.ownership_percentage,
         };

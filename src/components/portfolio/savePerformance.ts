@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { priceToStoredCents } from '@/lib/portfolio/pricePerShare';
 
 export interface PerformanceValues {
   last_round_post_money_valuation?: number | null;
@@ -10,7 +11,7 @@ export async function savePerformance(companyId: string, values: PerformanceValu
   const { data, error } = await supabase.from('current_valuations').upsert({
     portfolio_company_id: companyId,
     last_round_post_money_valuation: values.last_round_post_money_valuation == null ? null : Math.round(values.last_round_post_money_valuation * 100),
-    last_round_price_per_share: values.last_round_price_per_share == null ? null : Math.round(values.last_round_price_per_share * 100),
+    last_round_price_per_share: priceToStoredCents(values.last_round_price_per_share),
     current_ownership_percentage: values.current_ownership_percentage ?? null,
     updated_at: new Date().toISOString(),
   }, { onConflict: 'portfolio_company_id', ignoreDuplicates: false }).select('id').single();

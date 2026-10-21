@@ -18,6 +18,7 @@ import { Pencil, Plus, Trash2, TrendingUp } from 'lucide-react';
 import { usePortcoRounds, type PortcoRound } from '@/hooks/portfolio/usePortcoRounds';
 import { buildRoundChain } from '@/lib/portfolio/timeseries';
 import { formatMoney, formatMultiple, formatNumber } from '@/lib/portfolio/metrics';
+import { formatPricePerShare } from '@/lib/portfolio/pricePerShare';
 import { RoundFormDialog } from './RoundFormDialog';
 
 interface Props {
@@ -25,9 +26,7 @@ interface Props {
 }
 
 function ppsLabel(cents: number | null) {
-  if (cents == null) return '—';
-  const dollars = cents / 100;
-  return `$${dollars.toLocaleString('en-US', { maximumFractionDigits: 4 })}`;
+  return formatPricePerShare(cents);
 }
 
 export function FundingRoundsPanel({ companyId }: Props) {

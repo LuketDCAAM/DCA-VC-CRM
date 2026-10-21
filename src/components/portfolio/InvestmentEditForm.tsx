@@ -3,6 +3,7 @@ import React from 'react';
 import { InvestmentActions } from './investment/InvestmentActions';
 import { InvestmentCard } from './investment/InvestmentCard';
 import { useInvestmentOperations } from './investment/useInvestmentOperations';
+import { storedCentsToPriceNumber } from '@/lib/portfolio/pricePerShare';
 
 interface Investment {
   id: string;
@@ -29,7 +30,7 @@ export function InvestmentEditForm({ companyId, investments, onSave, onCancel }:
       // Convert from cents to dollars for display
       amount_invested: inv.amount_invested / 100,
       post_money_valuation: inv.post_money_valuation ? inv.post_money_valuation / 100 : null,
-      price_per_share: inv.price_per_share ? inv.price_per_share / 100 : null,
+      price_per_share: storedCentsToPriceNumber(inv.price_per_share),
       revenue_at_investment: inv.revenue_at_investment ? inv.revenue_at_investment / 100 : null,
     }))
   );
@@ -42,7 +43,7 @@ export function InvestmentEditForm({ companyId, investments, onSave, onCancel }:
       // Convert from cents to dollars for display
       amount_invested: inv.amount_invested / 100,
       post_money_valuation: inv.post_money_valuation ? inv.post_money_valuation / 100 : null,
-      price_per_share: inv.price_per_share ? inv.price_per_share / 100 : null,
+      price_per_share: storedCentsToPriceNumber(inv.price_per_share),
       revenue_at_investment: inv.revenue_at_investment ? inv.revenue_at_investment / 100 : null,
     })));
   }, [investments]);

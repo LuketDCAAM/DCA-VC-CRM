@@ -51,7 +51,7 @@ export function InvestmentFormFields({ investment, index, onUpdate }: Investment
         <label className="text-sm font-medium">Price per Share</label>
         <Input
           type="number"
-          step="0.01"
+          step="0.0001"
           placeholder="0.00"
           value={investment.price_per_share || ''}
           onChange={(e) => onUpdate(index, 'price_per_share', e.target.value ? parseFloat(e.target.value) : null)}
