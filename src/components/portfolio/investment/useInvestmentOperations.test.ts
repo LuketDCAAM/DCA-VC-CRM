@@ -44,6 +44,11 @@ test('investment edits refresh company data before leaving the editor', async ()
   expect(query.eq).toHaveBeenCalledWith('portfolio_company_id', 'company-1');
 });
 
+test('a four decimal share price survives an investment save', async () => {
+  await useInvestmentOperations('company-1', onSave).saveInvestments([{ ...investment, price_per_share: 0.1234 }]);
+  expect(savedPayload.price_per_share).toBe(12.34);
+});
+
 test('a zero-row investment update does not report success or close the editor', async () => {
   updateResult = { data: null, error: null };
   await useInvestmentOperations('company-1', onSave).saveInvestments([investment]);

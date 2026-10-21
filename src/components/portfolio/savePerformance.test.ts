@@ -20,6 +20,11 @@ test('ownership saves persist fractional ownership and refresh after a verified 
   expect(refresh).toHaveBeenCalledTimes(1);
 });
 
+test('a four decimal share price survives the performance save', async () => {
+  await savePerformance('company-1', { last_round_price_per_share: 0.1234 }, refresh);
+  expect(payload.last_round_price_per_share).toBe(12.34);
+});
+
 test('performance save waits until refreshed values are available', async () => {
   let release: (() => void) | undefined;
   let completed = false;

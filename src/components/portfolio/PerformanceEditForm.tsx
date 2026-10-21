@@ -124,7 +124,7 @@ export function PerformanceEditForm({ companyId, currentValuation, onSave, onCan
                         <Input 
                           {...field}
                           type="number"
-                          step="0.01"
+                          step="0.0001"
                           placeholder="Enter price per share"
                           value={field.value ?? ''}
                           onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
