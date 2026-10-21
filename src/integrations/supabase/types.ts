@@ -2419,6 +2419,7 @@ export type Database = {
           current_fmv: number | null
           first_investment_date: string | null
           id: string
+          instrument_type: Database["public"]["Enums"]["instrument_type"] | null
           last_investment_date: string | null
           notes: string | null
           ownership_pct: number | null
@@ -2436,6 +2437,9 @@ export type Database = {
           current_fmv?: number | null
           first_investment_date?: string | null
           id?: string
+          instrument_type?:
+            | Database["public"]["Enums"]["instrument_type"]
+            | null
           last_investment_date?: string | null
           notes?: string | null
           ownership_pct?: number | null
@@ -2453,6 +2457,9 @@ export type Database = {
           current_fmv?: number | null
           first_investment_date?: string | null
           id?: string
+          instrument_type?:
+            | Database["public"]["Enums"]["instrument_type"]
+            | null
           last_investment_date?: string | null
           notes?: string | null
           ownership_pct?: number | null
@@ -2998,6 +3005,11 @@ export type Database = {
         | "Active"
         | "Inactive"
         | "Declined"
+      instrument_type:
+        | "SAFE Note"
+        | "Convertible Note"
+        | "Preferred Equity"
+        | "Common Equity"
       investment_stage:
         | "Pre-Seed"
         | "Seed"
@@ -3185,6 +3197,12 @@ export const Constants = {
         "Active",
         "Inactive",
         "Declined",
+      ],
+      instrument_type: [
+        "SAFE Note",
+        "Convertible Note",
+        "Preferred Equity",
+        "Common Equity",
       ],
       investment_stage: [
         "Pre-Seed",
