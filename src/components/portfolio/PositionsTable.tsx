@@ -76,6 +76,7 @@ export function PositionsTable({ rows, onViewDetails, onEditPosition }: Props) {
             <TableRow>
               {header('company', 'Company', 'left')}
               <TableHead>Vehicle</TableHead>
+              <TableHead>Instrument</TableHead>
               <TableHead>Sector</TableHead>
               <TableHead>Status</TableHead>
               {header('vintage', 'Vintage')}
@@ -91,7 +92,7 @@ export function PositionsTable({ rows, onViewDetails, onEditPosition }: Props) {
           <TableBody>
             {sorted.length === 0 && (
               <TableRow>
-                <TableCell colSpan={12} className="text-center text-muted-foreground">
+                <TableCell colSpan={13} className="text-center text-muted-foreground">
                   No positions match the current filters.
                 </TableCell>
               </TableRow>
@@ -103,6 +104,9 @@ export function PositionsTable({ rows, onViewDetails, onEditPosition }: Props) {
                 <TableCell className="font-medium whitespace-nowrap">{company.company_name}</TableCell>
                 <TableCell className="whitespace-nowrap text-muted-foreground">
                   {position?.vehicle ?? '—'}
+                </TableCell>
+                <TableCell className="whitespace-nowrap text-muted-foreground">
+                  {position?.instrument_type ?? '—'}
                 </TableCell>
                 <TableCell className="whitespace-nowrap text-muted-foreground">{position?.sector ?? '—'}</TableCell>
                 <TableCell className="whitespace-nowrap">

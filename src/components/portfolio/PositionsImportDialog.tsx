@@ -15,8 +15,10 @@ import { AlertTriangle, Download, FileUp, Loader2, Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import {
+  INSTRUMENT_TYPES,
   POSITION_STATUSES,
   VEHICLES,
+  type InstrumentType,
   type PortfolioVehicle,
   type PositionStatus,
 } from '@/hooks/portfolio/usePortfolioPositions';
@@ -27,6 +29,7 @@ const TEMPLATE_COLUMNS = [
   'sector',
   'stage',
   'vehicle',
+  'instrument_type',
   'position_status',
   'first_investment_date',
   'last_investment_date',
