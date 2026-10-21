@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { savePerformance } from './savePerformance';
+import { storedCentsToPriceNumber } from '@/lib/portfolio/pricePerShare';
 import { useToast } from '@/hooks/use-toast';
 import { Save, X } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -41,7 +42,7 @@ export function PerformanceEditForm({ companyId, currentValuation, onSave, onCan
     resolver: zodResolver(performanceSchema),
     defaultValues: {
       last_round_post_money_valuation: currentValuation?.last_round_post_money_valuation == null ? null : currentValuation.last_round_post_money_valuation / 100,
-      last_round_price_per_share: currentValuation?.last_round_price_per_share == null ? null : currentValuation.last_round_price_per_share / 100,
+      last_round_price_per_share: storedCentsToPriceNumber(currentValuation?.last_round_price_per_share),
       current_ownership_percentage: currentValuation?.current_ownership_percentage ?? null,
     },
   });

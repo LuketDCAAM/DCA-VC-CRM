@@ -16,6 +16,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { ROUND_TYPES } from '@/hooks/portfolio/usePortcoRounds';
+import { priceToStoredCents } from '@/lib/portfolio/pricePerShare';
 import type { PortfolioCompany } from '@/hooks/usePortfolioCompanies';
 
 const TEMPLATE_COLUMNS = [
@@ -169,7 +170,7 @@ export function RoundsImportDialog({ companies, onImported }: Props) {
         round_name: roundName,
         round_type: roundType,
         close_date: toDate(raw['close_date'] ?? ''),
-        price_per_share: toCents(raw['price_per_share'] ?? ''),
+        price_per_share: priceToStoredCents(raw['price_per_share'] ?? ''),
         pre_money_valuation: toCents(raw['pre_money_valuation'] ?? ''),
         post_money_valuation: toCents(raw['post_money_valuation'] ?? ''),
         amount_raised: toCents(raw['amount_raised'] ?? ''),
