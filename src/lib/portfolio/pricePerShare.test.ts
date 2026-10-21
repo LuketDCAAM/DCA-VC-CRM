@@ -30,7 +30,7 @@ test('stored cents round trip back to the entered share price', () => {
 
 test('displayed share prices show up to four decimals', () => {
   expect(formatPricePerShare(12.34)).toBe('$0.1234');
-  expect(formatPricePerShare(125)).toBe('$1.23');
+  expect(formatPricePerShare(125)).toBe('$1.25');
   expect(formatPricePerShare(125000)).toBe('$1,250.00');
   expect(formatPricePerShare(null)).toBe('—');
 });
