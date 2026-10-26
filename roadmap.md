@@ -1,5 +1,9 @@
 # Roadmap
 
+## Deals loading speed
+- [ ] Remove redundant work and optimize the measured loading bottlenecks without changing filters or views.
+- [ ] Run targeted checks; signed-in verification depends on external Supabase access.
+
 ## Current ownership performance
 - [x] Verify performance saves, refresh before closing, and calculate the holding's value multiple from current ownership.
 - [x] Run ownership/save regression tests (8 passed; investment regressions also passed).
