@@ -22,7 +22,7 @@ export const ExternalDataSyncButton: React.FC<ExternalDataSyncButtonProps> = ({
   compact = false,
 }) => {
 
-  const { apiConfigs, syncDealData, isSyncing } = useExternalDataSync();
+  const { apiConfigs, syncDealData, isSyncing } = useExternalDataSync({ includeLogs: false });
   const [showConfig, setShowConfig] = useState(false);
 
   const availableProviders: APIProvider[] = ['crunchbase', 'linkedin', 'apollo', 'clearbit'];
@@ -132,10 +132,10 @@ export const ExternalDataSyncButton: React.FC<ExternalDataSyncButtonProps> = ({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <APIConfigurationDialog
+      {showConfig && <APIConfigurationDialog
         open={showConfig}
         onOpenChange={setShowConfig}
-      />
+      />}
     </>
   );
 };
