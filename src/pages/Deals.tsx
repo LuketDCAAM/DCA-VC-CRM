@@ -1,13 +1,14 @@
 
-import React from 'react';
+import React, { lazy, Suspense, useMemo } from 'react';
 import { useOptimizedDeals } from '@/hooks/useOptimizedDeals';
-import { DealDetailDialog } from '@/components/deals/DealDetailDialog';
 import { useCSVImport } from '@/hooks/useCSVImport';
 import { useOptimizedFilteredDeals } from '@/hooks/useOptimizedFilteredDeals';
 import { DealsPageContent } from '@/components/deals/DealsPageContent';
 import { useDealsPageState } from '@/hooks/useDealsPageState';
 import { useDealsCSVConfig } from '@/components/deals/DealsCSVConfig';
 import { useDebouncedSearch } from '@/hooks/useDebounce';
+
+const DealDetailDialog = lazy(() => import('@/components/deals/DealDetailDialog').then(module => ({ default: module.DealDetailDialog })));
 
 export default function Deals() {
   const { deals, loading, refetch, dealStats } = useOptimizedDeals();
@@ -66,6 +67,7 @@ export default function Deals() {
   const filteredDeals = useOptimizedFilteredDeals(deals, debouncedSearchTerm, activeFilters);
 
   const isAllSelected = selectedDeals.length === filteredDeals.length && filteredDeals.length > 0;
+  const selectAllFiltered = useMemo(() => handleSelectAll(filteredDeals), [handleSelectAll, filteredDeals]);
 
   if (loading) {
     return (
@@ -89,7 +91,7 @@ export default function Deals() {
         showAdvancedFilters={showAdvancedFilters}
         onToggleAdvanced={() => setShowAdvancedFilters(!showAdvancedFilters)}
         selectedDeals={selectedDeals}
-        onSelectAll={handleSelectAll(filteredDeals)}
+        onSelectAll={selectAllFiltered}
         onDeselectAll={handleDeselectAll}
         onBulkAction={handleBulkAction}
         isAllSelected={isAllSelected}
@@ -106,6 +108,7 @@ export default function Deals() {
       />
 
       {selectedDeal && (
+        <Suspense fallback={null}>
         <DealDetailDialog
           deal={selectedDeal}
           open={showDetailDialog}
@@ -119,6 +122,7 @@ export default function Deals() {
             refetch();
           }}
         />
+        </Suspense>
       )}
     </div>
   );
