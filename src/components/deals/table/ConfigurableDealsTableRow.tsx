@@ -124,7 +124,7 @@ const ConfigurableDealsTableRow = memo(({
     >
       {/* Selection checkbox */}
       <TableCell className={`w-12 sticky left-0 z-10 border-r border-border/30 ${rowBg}`}>
-        <div className="flex items-center justify-center h-8 w-12">
+        <div className="flex items-center justify-center h-6 w-12">
           <Checkbox
             checked={isSelected}
             onCheckedChange={handleCheckboxChange}
@@ -152,17 +152,18 @@ const ConfigurableDealsTableRow = memo(({
       <TableCell className="text-right min-w-[120px] py-1.5 px-3">
 
         <div className="flex items-center gap-1">
-          <ExternalDataSyncButton deal={deal} size="sm" />
+          <ExternalDataSyncButton deal={deal} size="sm" compact />
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={handleViewClick}
-                className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 opacity-70 group-hover:opacity-100"
+                className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 opacity-70 group-hover:opacity-100"
               >
-                <Eye className="h-3.5 w-3.5" />
+                <Eye className="h-3 w-3" />
               </Button>
+
             </TooltipTrigger>
             <TooltipContent>
               <p>View deal details</p>
