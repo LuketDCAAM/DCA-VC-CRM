@@ -9,6 +9,8 @@ import { getDealSectors } from '@/utils/sectorUtils';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 const COLUMN_PAGE_SIZE = 50;
 
@@ -71,10 +73,25 @@ const DealCardMini = memo(function DealCardMini({ deal, index, isUpdating, onVie
               {initials(deal.company_name || '?')}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-semibold leading-tight">{deal.company_name}</div>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="truncate text-sm font-semibold leading-tight">{deal.company_name}</div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" align="start" className="max-w-[300px]">
+                  <p className="whitespace-normal">{deal.company_name}</p>
+                </TooltipContent>
+              </Tooltip>
               {deal.description && (
-                <div className="truncate text-xs text-muted-foreground">{deal.description}</div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="truncate text-xs text-muted-foreground">{deal.description}</div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" align="start" className="max-w-[300px]">
+                    <p className="whitespace-normal">{deal.description}</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
+
             </div>
             {onViewDetails && (
               <Button
