@@ -4,11 +4,26 @@ import { MapPin, User, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Deal } from '@/types/deal';
 import { formatLocation, formatLocationString } from '@/utils/locationUtils';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface BasicCellContentProps {
   deal: Deal;
   type: 'location' | 'sourced_by' | 'created_at' | 'source_date' | 'description' | 'last_call_date' | 'total_calls' | 'investment_vehicle' | 'scored_at' | 'ic_review_date' | 'reason_for_passing';
 }
+
+const LongText = ({ icon, value }: { icon: React.ReactNode; value: string }) => (
+  <Tooltip>
+    <TooltipTrigger asChild>
+      <div className="flex min-w-0 max-w-[220px] cursor-help items-center gap-1">
+        <span className="flex-shrink-0 text-muted-foreground">{icon}</span>
+        <span className="min-w-0 truncate text-sm text-foreground">{value}</span>
+      </div>
+    </TooltipTrigger>
+    <TooltipContent side="bottom" align="start" className="max-w-[320px]">
+      <p className="whitespace-normal">{value}</p>
+    </TooltipContent>
+  </Tooltip>
+);
 
 export function BasicCellContent({ deal, type }: BasicCellContentProps) {
   const formatDate = (dateString: string | null) => {
@@ -23,10 +38,7 @@ export function BasicCellContent({ deal, type }: BasicCellContentProps) {
         ? formatLocation(deal.city, deal.state_province, deal.country)
         : (deal.location ? formatLocationString(deal.location) : '');
       return display ? (
-        <div className="flex items-center gap-1">
-          <MapPin className="h-3 w-3 text-muted-foreground" />
-          <span className="text-foreground text-sm">{display}</span>
-        </div>
+        <LongText icon={<MapPin className="h-3 w-3" />} value={display} />
       ) : (
         <span className="text-muted-foreground text-sm">-</span>
       );
@@ -34,24 +46,21 @@ export function BasicCellContent({ deal, type }: BasicCellContentProps) {
 
     case 'sourced_by':
       return deal.sourced_by ? (
-        <div className="flex items-center gap-1">
-          <User className="h-3 w-3 text-muted-foreground" />
-          <span className="text-foreground text-sm">{deal.sourced_by}</span>
-        </div>
+        <LongText icon={<User className="h-3 w-3" />} value={deal.sourced_by} />
       ) : (
         <span className="text-muted-foreground text-sm">-</span>
       );
 
     case 'created_at':
       return (
-        <div className="text-sm text-muted-foreground">
+        <div className="whitespace-nowrap text-sm text-muted-foreground">
           {formatDate(deal.created_at)}
         </div>
       );
 
     case 'source_date':
       return deal.source_date ? (
-        <div className="text-sm text-muted-foreground">
+        <div className="whitespace-nowrap text-sm text-muted-foreground">
           {formatDate(deal.source_date)}
         </div>
       ) : (
@@ -60,7 +69,7 @@ export function BasicCellContent({ deal, type }: BasicCellContentProps) {
 
     case 'last_call_date':
       return deal.last_call_date ? (
-        <div className="text-sm text-foreground">
+        <div className="whitespace-nowrap text-sm text-foreground">
           {formatDate(deal.last_call_date)}
         </div>
       ) : (
@@ -69,35 +78,37 @@ export function BasicCellContent({ deal, type }: BasicCellContentProps) {
 
     case 'total_calls':
       return (
-        <div className="text-sm font-medium text-foreground">
+        <div className="whitespace-nowrap text-sm font-medium text-foreground">
           {deal.total_calls || 0}
         </div>
       );
 
     case 'description':
       return deal.description ? (
-        <div className="flex items-start gap-1">
-          <FileText className="h-3 w-3 text-muted-foreground mt-0.5" />
-          <span className="text-foreground text-sm line-clamp-2 max-w-[180px]">
-            {deal.description}
-          </span>
-        </div>
+        <LongText icon={<FileText className="h-3 w-3" />} value={deal.description} />
       ) : (
         <span className="text-muted-foreground text-sm">-</span>
       );
 
     case 'investment_vehicle':
       return deal.investment_vehicle ? (
-        <Badge variant="secondary" className="text-xs">
-          {deal.investment_vehicle}
-        </Badge>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="secondary" className="max-w-full truncate px-1.5 py-0 text-[11px]">
+              {deal.investment_vehicle}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" align="start">
+            <p className="whitespace-normal">{deal.investment_vehicle}</p>
+          </TooltipContent>
+        </Tooltip>
       ) : (
         <span className="text-muted-foreground text-sm">-</span>
       );
 
     case 'scored_at':
       return deal.scored_at ? (
-        <div className="text-sm text-muted-foreground">
+        <div className="whitespace-nowrap text-sm text-muted-foreground">
           {formatDate(deal.scored_at)}
         </div>
       ) : (
@@ -106,7 +117,7 @@ export function BasicCellContent({ deal, type }: BasicCellContentProps) {
 
     case 'ic_review_date':
       return deal.ic_review_date ? (
-        <div className="text-sm text-muted-foreground">
+        <div className="whitespace-nowrap text-sm text-muted-foreground">
           {formatDate(deal.ic_review_date)}
         </div>
       ) : (
@@ -115,12 +126,7 @@ export function BasicCellContent({ deal, type }: BasicCellContentProps) {
 
     case 'reason_for_passing':
       return deal.reason_for_passing ? (
-        <div className="flex items-start gap-1">
-          <FileText className="h-3 w-3 text-muted-foreground mt-0.5" />
-          <span className="text-foreground text-sm line-clamp-2 max-w-[180px]">
-            {deal.reason_for_passing}
-          </span>
-        </div>
+        <LongText icon={<FileText className="h-3 w-3" />} value={deal.reason_for_passing} />
       ) : (
         <span className="text-muted-foreground text-sm">-</span>
       );

@@ -41,8 +41,9 @@ export function PipelineStageDropdown({ deal, onUpdate }: PipelineStageDropdownP
       <SelectTrigger className="h-auto p-0 border-0 bg-transparent shadow-none hover:bg-transparent focus:ring-0">
         <Badge 
           variant="outline" 
-          className={`${getPipelineStageClasses(deal.pipeline_stage)} cursor-pointer hover:opacity-80 transition-opacity border font-medium text-xs px-2.5 py-1 flex items-center gap-1`}
+          className={`${getPipelineStageClasses(deal.pipeline_stage)} cursor-pointer hover:opacity-80 transition-opacity border font-medium text-[11px] px-1.5 py-0 flex items-center gap-1`}
         >
+
           {deal.pipeline_stage}
           <ChevronDown className="h-2.5 w-2.5 opacity-60" />
         </Badge>

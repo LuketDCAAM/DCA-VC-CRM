@@ -109,19 +109,22 @@ const ConfigurableDealsTableRow = memo(({
     }
   };
 
+  const tint = index % 2 === 0 ? 'bg-background' : 'bg-muted/30';
+  const rowBg = isSelected ? 'bg-primary/8' : tint;
+
   return (
     <TableRow 
       data-state={isSelected ? 'selected' : undefined}
       className={`
         group transition-all duration-200 border-b border-border/40
-        ${index % 2 === 0 ? 'bg-background' : 'bg-muted/30'}
-        ${isSelected ? 'bg-primary/8 border-primary/30 shadow-sm' : 'hover:bg-muted/50'}
+        ${rowBg}
+        ${isSelected ? 'border-primary/30 shadow-sm' : 'hover:bg-muted/50'}
         hover:shadow-sm
       `}
     >
       {/* Selection checkbox */}
-      <TableCell className="w-12 sticky left-0 z-10 bg-background border-r border-border/30">
-        <div className="flex items-center justify-center h-12 w-12">
+      <TableCell className={`w-12 sticky left-0 z-10 border-r border-border/30 ${rowBg}`}>
+        <div className="flex items-center justify-center h-8 w-12">
           <Checkbox
             checked={isSelected}
             onCheckedChange={handleCheckboxChange}
@@ -130,14 +133,15 @@ const ConfigurableDealsTableRow = memo(({
           />
         </div>
       </TableCell>
+
       
       {/* Dynamic columns */}
       {visibleColumns.map((column) => (
         <TableCell 
           key={column.key}
           className={`
-            ${column.width} py-3 px-4 align-top
-            ${column.key === 'company_name' ? 'sticky left-12 z-10 bg-background border-r border-border/30' : ''}
+            ${column.width} py-1.5 px-3
+            ${column.key === 'company_name' ? 'sticky left-12 z-10 border-r border-border/30 ' + rowBg : ''}
           `}
         >
           {renderCellContent(column.key)}
@@ -145,7 +149,8 @@ const ConfigurableDealsTableRow = memo(({
       ))}
       
       {/* Actions */}
-      <TableCell className="text-right min-w-[120px] py-3 px-4">
+      <TableCell className="text-right min-w-[120px] py-1.5 px-3">
+
         <div className="flex items-center gap-1">
           <ExternalDataSyncButton deal={deal} size="sm" />
           <Tooltip>
