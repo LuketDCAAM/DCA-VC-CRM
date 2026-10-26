@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, memo } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Eye } from 'lucide-react';
+import { Eye, FileText } from 'lucide-react';
 import { Deal } from '@/types/deal';
 import { PIPELINE_STAGES, PipelineStage } from '@/hooks/deals/dealStagesConfig';
 import { getDealSectors } from '@/utils/sectorUtils';
@@ -108,6 +108,20 @@ const DealCardMini = memo(function DealCardMini({ deal, index, isUpdating, onVie
               </Button>
             )}
           </div>
+
+          {deal.next_steps && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="mt-2 flex items-start gap-1.5 rounded-md bg-primary/5 border-l-2 border-primary/40 px-2 py-1">
+                  <FileText className="mt-0.5 h-3 w-3 flex-shrink-0 text-primary" />
+                  <p className="line-clamp-2 text-[11px] leading-snug text-muted-foreground">{deal.next_steps}</p>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" align="start" className="max-w-[300px]">
+                <p className="whitespace-normal">{deal.next_steps}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
 
           {sectors.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1">
