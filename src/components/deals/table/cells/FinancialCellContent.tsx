@@ -10,47 +10,39 @@ interface FinancialCellContentProps {
   type: 'round_size' | 'post_money_valuation' | 'revenue' | 'deal_score' | 'revenue_multiple';
 }
 
+const MoneyLine = ({ value }: { value: number | null | undefined }) => (
+  <div className="flex items-center gap-1 whitespace-nowrap text-sm font-semibold text-foreground">
+    <DollarSign className="h-3 w-3 text-muted-foreground" />
+    {formatCurrency(value)}
+  </div>
+);
+
+
 export function FinancialCellContent({ deal, type }: FinancialCellContentProps) {
   switch (type) {
-    case 'round_size':
+    case 'round_size': {
+      const line = <MoneyLine value={deal.round_size} />;
+      if (!deal.post_money_valuation) return line;
       return (
-        <div className="space-y-0.5">
-          <div className="font-semibold text-sm text-foreground flex items-center gap-1">
-            <DollarSign className="h-3 w-3 text-muted-foreground" />
-            {formatCurrency(deal.round_size)}
-          </div>
-          {deal.post_money_valuation && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="text-xs text-muted-foreground cursor-help">
-                  Val: {formatCurrency(deal.post_money_valuation)}
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Post-money valuation</p>
-              </TooltipContent>
-            </Tooltip>
-          )}
-        </div>
+        <Tooltip>
+          <TooltipTrigger asChild>{line}</TooltipTrigger>
+          <TooltipContent side="bottom" align="start">
+            <p>Round size: {formatCurrency(deal.round_size)}</p>
+            <p>Post-money valuation: {formatCurrency(deal.post_money_valuation)}</p>
+          </TooltipContent>
+        </Tooltip>
       );
+    }
 
     case 'post_money_valuation':
     case 'revenue':
-      const value = type === 'post_money_valuation' ? deal.post_money_valuation : deal.revenue;
-      return (
-        <div className="font-semibold text-sm text-foreground flex items-center gap-1">
-          <DollarSign className="h-3 w-3 text-muted-foreground" />
-          {formatCurrency(value)}
-        </div>
-      );
+      return <MoneyLine value={type === 'post_money_valuation' ? deal.post_money_valuation : deal.revenue} />;
 
     case 'deal_score':
       return deal.deal_score ? (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 whitespace-nowrap">
           <Star className="h-3 w-3 text-yellow-500 fill-yellow-500" />
-          <span className={`font-bold text-base ${getDealScoreColor(deal.deal_score)}`}>
-            {deal.deal_score}
-          </span>
+          <span className={`text-sm font-bold ${getDealScoreColor(deal.deal_score)}`}>{deal.deal_score}</span>
           <span className="text-xs text-muted-foreground">/100</span>
         </div>
       ) : (
@@ -60,11 +52,7 @@ export function FinancialCellContent({ deal, type }: FinancialCellContentProps) 
     case 'revenue_multiple':
       if (deal.post_money_valuation && deal.revenue && Number(deal.revenue) > 0) {
         const multiple = Number(deal.post_money_valuation) / Number(deal.revenue);
-        return (
-          <div className="font-semibold text-sm text-foreground">
-            {multiple.toFixed(1)}x
-          </div>
-        );
+        return <div className="whitespace-nowrap text-sm font-semibold text-foreground">{multiple.toFixed(1)}x</div>;
       }
       return <span className="text-muted-foreground text-sm">-</span>;
 

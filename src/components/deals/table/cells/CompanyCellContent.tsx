@@ -8,64 +8,68 @@ interface CompanyCellContentProps {
   deal: Deal;
 }
 
-export function CompanyCellContent({ deal }: CompanyCellContentProps) {
-  const formatUrl = (url: string) => {
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      return `https://${url}`;
-    }
-    return url;
-  };
+const toHref = (url: string) =>
+  url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
 
+export function CompanyCellContent({ deal }: CompanyCellContentProps) {
   return (
-    <div className="space-y-1 py-1">
-      <div className="font-semibold text-sm text-foreground leading-tight">{deal.company_name}</div>
+    <div className="flex min-w-0 max-w-[260px] items-center gap-1.5">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span className="min-w-0 cursor-help truncate text-sm font-semibold leading-none text-foreground">
+            {deal.company_name}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" align="start" className="max-w-[320px]">
+          <p className="font-semibold">{deal.company_name}</p>
+          {deal.description && (
+            <p className="mt-1 whitespace-normal text-xs text-muted-foreground">{deal.description}</p>
+          )}
+          {deal.website && (
+            <p className="mt-1 whitespace-normal break-all text-xs">{deal.website}</p>
+          )}
+          {deal.linkedin_url && (
+            <p className="whitespace-normal break-all text-xs">{deal.linkedin_url}</p>
+          )}
+        </TooltipContent>
+      </Tooltip>
+
       {deal.website && (
         <Tooltip>
           <TooltipTrigger asChild>
             <a
-              href={formatUrl(deal.website)}
+              href={toHref(deal.website)}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary cursor-pointer transition-colors"
               onClick={(e) => e.stopPropagation()}
+              className="flex-shrink-0 text-muted-foreground transition-colors hover:text-primary"
+              aria-label={`Open ${deal.company_name} website`}
             >
-              <Globe className="h-3 w-3 flex-shrink-0" />
-              <span className="truncate max-w-[180px]">{deal.website}</span>
+              <Globe className="h-3.5 w-3.5" />
             </a>
           </TooltipTrigger>
-          <TooltipContent side="bottom" align="start">
-            <p>{deal.website}</p>
+          <TooltipContent side="bottom" align="start" className="max-w-[320px]">
+            <p className="whitespace-normal break-all">{deal.website}</p>
           </TooltipContent>
         </Tooltip>
       )}
+
       {deal.linkedin_url && (
         <Tooltip>
           <TooltipTrigger asChild>
             <a
-              href={formatUrl(deal.linkedin_url)}
+              href={toHref(deal.linkedin_url)}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary cursor-pointer transition-colors"
               onClick={(e) => e.stopPropagation()}
+              className="flex-shrink-0 text-muted-foreground transition-colors hover:text-primary"
+              aria-label={`Open ${deal.company_name} on LinkedIn`}
             >
-              <Linkedin className="h-3 w-3 flex-shrink-0" />
-              <span className="truncate max-w-[180px]">{deal.linkedin_url}</span>
+              <Linkedin className="h-3.5 w-3.5" />
             </a>
           </TooltipTrigger>
-          <TooltipContent side="bottom" align="start">
-            <p>{deal.linkedin_url}</p>
-          </TooltipContent>
-        </Tooltip>
-      )}
-      {deal.description && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <p className="text-xs text-muted-foreground line-clamp-1 max-w-[220px] cursor-help">
-              {deal.description}
-            </p>
-          </TooltipTrigger>
-          <TooltipContent side="bottom" align="start" className="max-w-[300px]">
-            <p className="whitespace-normal">{deal.description}</p>
+          <TooltipContent side="bottom" align="start" className="max-w-[320px]">
+            <p className="whitespace-normal break-all">{deal.linkedin_url}</p>
           </TooltipContent>
         </Tooltip>
       )}

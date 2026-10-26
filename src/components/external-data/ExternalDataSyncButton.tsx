@@ -12,12 +12,16 @@ import type { Deal } from '@/types/deal';
 interface ExternalDataSyncButtonProps {
   deal: Deal;
   size?: 'sm' | 'default';
+  /** Icon-only rendering for dense tables. */
+  compact?: boolean;
 }
 
 export const ExternalDataSyncButton: React.FC<ExternalDataSyncButtonProps> = ({
   deal,
   size = 'default',
+  compact = false,
 }) => {
+
   const { apiConfigs, syncDealData, isSyncing } = useExternalDataSync();
   const [showConfig, setShowConfig] = useState(false);
 
@@ -50,7 +54,7 @@ export const ExternalDataSyncButton: React.FC<ExternalDataSyncButtonProps> = ({
     } as const;
     
     return (
-      <Badge variant={variants[status as keyof typeof variants] || 'secondary'} className="text-xs">
+      <Badge variant={variants[status as keyof typeof variants] || 'secondary'} className={compact ? 'h-3.5 px-1 py-0 text-[9px] font-medium' : 'text-xs'}>
         {status}
       </Badge>
     );
@@ -60,21 +64,39 @@ export const ExternalDataSyncButton: React.FC<ExternalDataSyncButtonProps> = ({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size={size}
-            disabled={isSyncing}
-            className="gap-2"
-          >
-            {isSyncing ? (
-              <RefreshCw className="h-4 w-4 animate-spin" />
-            ) : (
-              <ExternalLink className="h-4 w-4" />
-            )}
-            Sync Data
-            {getSyncStatus() !== 'pending' && getStatusBadge()}
-          </Button>
+          {compact ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={isSyncing}
+              title="Sync data"
+              className="h-6 gap-1 px-1.5 text-muted-foreground hover:text-foreground"
+            >
+              {isSyncing ? (
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <ExternalLink className="h-3.5 w-3.5" />
+              )}
+              {getSyncStatus() !== 'pending' && getStatusBadge()}
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size={size}
+              disabled={isSyncing}
+              className="gap-2"
+            >
+              {isSyncing ? (
+                <RefreshCw className="h-4 w-4 animate-spin" />
+              ) : (
+                <ExternalLink className="h-4 w-4" />
+              )}
+              Sync Data
+              {getSyncStatus() !== 'pending' && getStatusBadge()}
+            </Button>
+          )}
         </DropdownMenuTrigger>
+
         <DropdownMenuContent align="end" className="w-56">
           {configuredProviders.length > 0 && (
             <>
