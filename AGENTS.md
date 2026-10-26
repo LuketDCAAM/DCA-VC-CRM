@@ -1,5 +1,6 @@
 - Portfolio check-in rhythms live in `portco_cadences` and reuse the investor cadence math in `lib/outreach/constants.ts`; check-ins are `outreach_follow_ups` rows with `portfolio_company_id`, so drafting, Outlook push and badges work unchanged.
 - Unit tests use `bun test` (`*.test.ts`, excluded from the app typecheck).
+- Deals filters derive options from the loaded deals; secondary views and the detail dialog load on demand to avoid duplicate requests and unnecessary initial loading.
 - Portfolio detail selection stores the company ID and resolves current query data; investment updates verify the affected row and await cache refresh so saved values appear immediately.
 - Current performance uses holding value divided by invested capital; valuation saves verify the written row and await company refresh so ownership edits appear immediately. Explicit position FMV and historical quarterly marks remain independent.
 - Bulk Outlook outreach uses the existing per-draft push sequentially and shares eligibility logic in the outreach library, so partial failures can be retried without re-pushing synced drafts.
