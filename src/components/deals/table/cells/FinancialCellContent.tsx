@@ -10,12 +10,13 @@ interface FinancialCellContentProps {
   type: 'round_size' | 'post_money_valuation' | 'revenue' | 'deal_score' | 'revenue_multiple';
 }
 
-const MoneyLine = ({ value }: { value: number | string | null | undefined }) => (
+const MoneyLine = ({ value }: { value: number | null | undefined }) => (
   <div className="flex items-center gap-1 whitespace-nowrap text-sm font-semibold text-foreground">
     <DollarSign className="h-3 w-3 text-muted-foreground" />
     {formatCurrency(value)}
   </div>
 );
+
 
 export function FinancialCellContent({ deal, type }: FinancialCellContentProps) {
   switch (type) {
