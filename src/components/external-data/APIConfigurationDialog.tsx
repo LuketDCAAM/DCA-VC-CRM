@@ -19,7 +19,7 @@ export const APIConfigurationDialog: React.FC<APIConfigurationDialogProps> = ({
   open,
   onOpenChange,
 }) => {
-  const { apiConfigs, saveAPIConfig, isSavingConfig } = useExternalDataSync();
+  const { apiConfigs, saveAPIConfig, isSavingConfig } = useExternalDataSync({ includeLogs: false });
   const [selectedProvider, setSelectedProvider] = useState<APIProvider>('crunchbase');
   const [apiKey, setApiKey] = useState('');
   const [baseUrl, setBaseUrl] = useState('');

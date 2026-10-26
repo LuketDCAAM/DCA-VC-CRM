@@ -6,7 +6,6 @@ import { SearchAndFilter } from '@/components/common/SearchAndFilter';
 import { DealsViewTabs } from './DealsViewTabs';
 import { DealsViewRenderer, ViewMode } from './views/DealsViewRenderer';
 import { generateDealsFilterOptions } from './filters/DealsFilterConfig';
-import { useSourcedByValues } from '@/hooks/deals/useSourcedByValues';
 import { DealStats } from '@/hooks/deals/dealStatsCalculator';
 import { ColumnSelector } from './table/ColumnSelector';
 import { DealsBulkActions } from './DealsBulkActions';
@@ -66,18 +65,8 @@ export function DealsPageContent({
   onCSVImport,
   allDeals,
 }: DealsPageContentProps) {
-  // Sourced By options come straight from the deals.sourced_by column in the DB
-  const sourcedByOptions = useSourcedByValues();
-
-  // Generate dynamic filter options based on actual deals data
-  const dynamicFilterOptions = useMemo(() => {
-    const options = generateDealsFilterOptions(allDeals);
-    return options.map(option =>
-      option.key === 'sourced_by' && sourcedByOptions.length > 0
-        ? { ...option, options: sourcedByOptions }
-        : option
-    );
-  }, [allDeals, sourcedByOptions]);
+  // Reuse the loaded deals, including sourced_by, rather than fetching them twice.
+  const dynamicFilterOptions = useMemo(() => generateDealsFilterOptions(allDeals), [allDeals]);
 
   return (
     <div className="space-y-4">

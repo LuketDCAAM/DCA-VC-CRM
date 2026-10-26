@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { lazy, memo, Suspense } from 'react';
 import { Deal } from '@/types/deal';
 import { ConfigurableDealsTable } from '../ConfigurableDealsTable';
-import { HighPerformanceDealsTableView } from '../HighPerformanceDealsTableView';
-import { DealsGrid } from '../DealsGrid';
-import { DealPipelineBoard } from '../DealPipelineBoard';
+
+const HighPerformanceDealsTableView = lazy(() => import('../HighPerformanceDealsTableView').then(module => ({ default: module.HighPerformanceDealsTableView })));
+const DealsGrid = lazy(() => import('../DealsGrid').then(module => ({ default: module.DealsGrid })));
+const DealPipelineBoard = lazy(() => import('../DealPipelineBoard').then(module => ({ default: module.DealPipelineBoard })));
 
 export type ViewMode = 'configurable' | 'high-performance' | 'virtualized' | 'kanban';
 
@@ -20,7 +21,7 @@ interface DealsViewRendererProps {
   onDealUpdated?: () => void;
 }
 
-export function DealsViewRenderer({
+const DealsViewContent = memo(function DealsViewContent({
   viewMode,
   filteredDeals,
   onViewDetails,
@@ -85,4 +86,12 @@ export function DealsViewRenderer({
     default:
       return null;
   }
+});
+
+export function DealsViewRenderer(props: DealsViewRendererProps) {
+  return (
+    <Suspense fallback={<div className="py-6 text-sm text-muted-foreground">Loading deals view...</div>}>
+      <DealsViewContent {...props} />
+    </Suspense>
+  );
 }

@@ -1,5 +1,10 @@
 # Roadmap
 
+## Deals loading speed
+- [x] Remove the extra sourced-by request, unused Outlook check, per-row sync-log fetching, and closed dialog mounts; load secondary views on demand.
+- [x] Check preview compilation and run deal-matching regressions (7 passed).
+- [ ] Measure signed-in Deals loading end-to-end — external unmanaged Supabase prevents authenticated testing here.
+
 ## Current ownership performance
 - [x] Verify performance saves, refresh before closing, and calculate the holding's value multiple from current ownership.
 - [x] Run ownership/save regression tests (8 passed; investment regressions also passed).

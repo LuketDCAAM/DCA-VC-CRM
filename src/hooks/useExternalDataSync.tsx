@@ -33,13 +33,14 @@ type APISyncLog = {
   created_by: string;
 };
 
-export const useExternalDataSync = () => {
+export const useExternalDataSync = ({ includeLogs = true }: { includeLogs?: boolean } = {}) => {
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch API configurations
   const { data: apiConfigs, isLoading: configsLoading } = useQuery({
     queryKey: ['api-configurations'],
+    staleTime: 300000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('api_configurations')
@@ -90,6 +91,8 @@ export const useExternalDataSync = () => {
   // Save API configuration
   const saveAPIConfig = useMutation({
     mutationFn: async (config: APIConfigurationInput) => {
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) throw new Error('Please sign in before saving API configuration');
       const { data, error } = await supabase
         .from('api_configurations')
         .upsert({
@@ -98,7 +101,7 @@ export const useExternalDataSync = () => {
           base_url: config.base_url,
           rate_limit_per_minute: config.rate_limit_per_minute || 60,
           is_active: config.is_active ?? true,
-          created_by: (await supabase.auth.getUser()).data.user?.id!,
+          created_by: user.id,
         })
         .select()
         .single();
@@ -119,6 +122,8 @@ export const useExternalDataSync = () => {
   // Fetch sync logs
   const { data: syncLogs, isLoading: logsLoading } = useQuery({
     queryKey: ['sync-logs'],
+    enabled: includeLogs,
+    staleTime: 60000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from('api_sync_logs')

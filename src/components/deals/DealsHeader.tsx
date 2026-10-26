@@ -1,14 +1,14 @@
 
-import React, { useState } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Search } from 'lucide-react';
 import { AddDealDialog } from './AddDealDialog';
 import { OutlookCalendarSyncButton } from '@/components/outlook/OutlookCalendarSyncButton';
-import { useMicrosoftAuth } from '@/hooks/useMicrosoftAuth';
 import { CSVImport } from '@/components/common/CSVImport';
 import { ExportData } from '@/components/common/ExportData';
-import { BulkDuplicateSearchDialog } from './duplicates/BulkDuplicateSearchDialog';
 import { Deal } from '@/types/deal';
+
+const BulkDuplicateSearchDialog = lazy(() => import('./duplicates/BulkDuplicateSearchDialog').then(module => ({ default: module.BulkDuplicateSearchDialog })));
 
 interface DealsHeaderProps {
   filteredDeals: any[];
@@ -33,7 +33,6 @@ export function DealsHeader({
   selectedDeals,
   onBulkAction
 }: DealsHeaderProps) {
-  const { isAuthenticated, loading: authLoading } = useMicrosoftAuth();
   const [showDuplicateSearch, setShowDuplicateSearch] = useState(false);
 
   
@@ -86,12 +85,12 @@ export function DealsHeader({
         </div>
       </div>
 
-      <BulkDuplicateSearchDialog
+      {showDuplicateSearch && <Suspense fallback={null}><BulkDuplicateSearchDialog
         open={showDuplicateSearch}
         onOpenChange={setShowDuplicateSearch}
         deals={allDeals}
         onDealsDeleted={handleDealsDeleted}
-      />
+      /></Suspense>}
     </div>
   );
 }
