@@ -28,6 +28,12 @@
     --input: oklch(0.9329 0.0124 301.2783);
     --ring: oklch(0.6104 0.0767 299.7335);
 
+    /* Opaque row tints so sticky columns stay readable while scrolling. */
+    --row-alt: oklch(0.9516 0.0070 300.9);
+    --row-selected: oklch(0.9483 0.0099 300.3);
+    --row-hover: oklch(0.9342 0.0090 300.6);
+
+
     --chart-1: oklch(0.6104 0.0767 299.7335);
     --chart-2: oklch(0.7889 0.0802 359.9375);
     --chart-3: oklch(0.7321 0.0749 169.8670);
@@ -77,6 +83,10 @@
     --accent-foreground: oklch(0.8391 0.0692 2.6681);
     --destructive: oklch(0.6875 0.1420 21.4566);
     --destructive-foreground: oklch(0.2166 0.0215 292.8474);
+    --row-alt: oklch(0.2284 0.0247 293.6);
+    --row-selected: oklch(0.2557 0.0260 295.1);
+    --row-hover: oklch(0.2363 0.0268 293.8);
+
     --border: oklch(0.3063 0.0359 293.3367);
     --input: oklch(0.2847 0.0346 291.2726);
     --ring: oklch(0.7058 0.0777 302.0489);

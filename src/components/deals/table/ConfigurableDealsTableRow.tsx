@@ -109,8 +109,11 @@ const ConfigurableDealsTableRow = memo(({
     }
   };
 
-  const tint = index % 2 === 0 ? 'bg-background' : 'bg-muted/30';
-  const rowBg = isSelected ? 'bg-primary/8' : tint;
+  const tint = index % 2 === 0 ? 'bg-background' : 'bg-row-alt';
+  const rowBg = isSelected ? 'bg-row-selected' : tint;
+  // Sticky cells need an opaque background so scrolled columns can't show through.
+  const stickyBg = isSelected ? 'bg-row-selected' : `${tint} group-hover:bg-row-hover`;
+
 
   return (
     <TableRow 
@@ -118,12 +121,12 @@ const ConfigurableDealsTableRow = memo(({
       className={`
         group transition-all duration-200 border-b border-border/40
         ${rowBg}
-        ${isSelected ? 'border-primary/30 shadow-sm' : 'hover:bg-muted/50'}
+        ${isSelected ? 'border-primary/30 shadow-sm' : 'hover:bg-row-hover'}
         hover:shadow-sm
       `}
     >
       {/* Selection checkbox */}
-      <TableCell className={`w-12 sticky left-0 z-10 border-r border-border/30 ${rowBg}`}>
+      <TableCell className={`w-12 sticky left-0 z-10 border-r border-border/30 ${stickyBg}`}>
         <div className="flex items-center justify-center h-6 w-12">
           <Checkbox
             checked={isSelected}
@@ -141,7 +144,7 @@ const ConfigurableDealsTableRow = memo(({
           key={column.key}
           className={`
             ${column.width} py-1.5 px-3
-            ${column.key === 'company_name' ? 'sticky left-12 z-10 border-r border-border/30 ' + rowBg : ''}
+            ${column.key === 'company_name' ? 'sticky left-12 z-10 border-r border-border/30 ' + stickyBg : ''}
           `}
         >
           {renderCellContent(column.key)}
