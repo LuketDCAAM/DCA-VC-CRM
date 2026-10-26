@@ -8,9 +8,8 @@ import Layout from "./components/layout/Layout";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Deals from "./pages/Deals";
-
-
 import Portfolio from "./pages/Portfolio";
+
 import InvestorsSimple from "./pages/InvestorsSimple";
 import Contacts from "./pages/Contacts";
 import Reminders from "./pages/Reminders";
@@ -89,9 +88,8 @@ function App() {
             <RecoveryRedirect />
             <Routes>
               <Route path="/" element={<Index />} />
-
-
               <Route path="/auth/microsoft/callback" element={<MicrosoftAuthCallback />} />
+
               <Route path="/auth/outlook/callback" element={<OutlookCallback />} />
               <Route path="/auth/reset" element={<ResetPassword />} />
               <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
