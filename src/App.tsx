@@ -8,7 +8,6 @@ import Layout from "./components/layout/Layout";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Deals from "./pages/Deals";
-import PreviewRows from "./pages/__PreviewRows";
 
 
 import Portfolio from "./pages/Portfolio";
@@ -90,7 +89,6 @@ function App() {
             <RecoveryRedirect />
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/__preview-rows" element={<PreviewRows />} />
 
 
               <Route path="/auth/microsoft/callback" element={<MicrosoftAuthCallback />} />
