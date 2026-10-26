@@ -22,6 +22,10 @@ export default {
 				border: 'var(--border)',
 				input: 'var(--input)',
 				ring: 'var(--ring)',
+				'row-alt': 'var(--row-alt)',
+				'row-selected': 'var(--row-selected)',
+				'row-hover': 'var(--row-hover)',
+
 				background: 'var(--background)',
 				foreground: 'var(--foreground)',
 				primary: {
