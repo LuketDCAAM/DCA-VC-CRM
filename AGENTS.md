@@ -1,5 +1,6 @@
 - Portfolio check-in rhythms live in `portco_cadences` and reuse the investor cadence math in `lib/outreach/constants.ts`; check-ins are `outreach_follow_ups` rows with `portfolio_company_id`, so drafting, Outlook push and badges work unchanged.
 - Unit tests use `bun test` (`*.test.ts`, excluded from the app typecheck).
+- Record-name detail controls use the shared NameDetailsButton and existing detail handlers so keyboard access, compact rows and independent actions stay consistent.
 - Assistant stream errors use a safe error mapper in the function directory so billing failures remain actionable without exposing upstream payloads.
 - Deals filters derive options from the loaded deals; secondary views and the detail dialog load on demand to avoid duplicate requests and unnecessary initial loading.
 - Portfolio detail selection stores the company ID and resolves current query data; investment updates verify the affected row and await cache refresh so saved values appear immediately.

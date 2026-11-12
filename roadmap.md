@@ -1,5 +1,9 @@
 # Roadmap
 
+## Click names to open details
+- [ ] Make company and contact names open details across record lists/cards and remove eye controls.
+- [ ] Check preview compilation and click/keyboard interactions; authenticated checks depend on external Supabase access.
+
 ## AI assistant recovery
 - [x] Redeploy the assistant with the configured Lovable AI fallback and expose actionable stream errors.
 - [x] Run error-handling regressions (3 passed) and verify the configured AI responds (HTTP 200, OK).
