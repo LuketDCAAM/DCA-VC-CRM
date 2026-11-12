@@ -13,6 +13,7 @@ import { researchTools } from "../_shared/research-tools.ts";
 import { normalizeDomain as normalizeDomainShared } from "../_shared/action-schemas.ts";
 import { resolveUserModel, markCredentialUsed } from "../_shared/ai-provider.ts";
 import { loadPrompt } from "./prompt-loader.ts";
+import { assistantStreamError } from "./stream-error.ts";
 
 const HISTORY_LIMIT = 20; // last N messages sent to the model
 const TOOL_PART_DETAIL_TURNS = 2; // keep full tool output for the last N turns
@@ -967,6 +968,7 @@ Deno.serve(async (req) => {
 
     return result.toUIMessageStreamResponse({
       headers: corsHeaders,
+      onError: assistantStreamError,
       originalMessages: messages,
       onFinish: async ({ responseMessage }) => {
         if (!threadId) return;

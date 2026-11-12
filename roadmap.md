@@ -1,5 +1,10 @@
 # Roadmap
 
+## AI assistant recovery
+- [ ] Redeploy the assistant with the configured Lovable AI fallback and expose actionable stream errors.
+- [ ] Run error-handling regressions and verify the configured AI responds.
+- [ ] Verify signed-in assistant conversation — external unmanaged Supabase prevents authenticated testing here.
+
 ## Deals loading speed
 - [x] Remove the extra sourced-by request, unused Outlook check, per-row sync-log fetching, and closed dialog mounts; load secondary views on demand.
 - [x] Check preview compilation and run deal-matching regressions (7 passed).
