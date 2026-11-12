@@ -31,6 +31,7 @@ export function DealCard({
           <div className="flex-1">
             <DealCardHeader
               deal={deal}
+              onViewDetails={onViewDetails}
               showSelection={showSelection}
               isSelected={isSelected}
               onToggleSelection={onToggleSelection}
@@ -38,7 +39,6 @@ export function DealCard({
           </div>
           <DealCardActions
             deal={deal}
-            onViewDetails={onViewDetails}
             onDealDeleted={onDealDeleted}
           />
         </div>

@@ -353,6 +353,7 @@ export default function Investors() {
                 <CardContent>
                     <InvestorListView 
                         investors={filteredInvestors}
+                        onViewDetails={handleViewDetails}
                         onEdit={handleViewDetails}
                         onDelete={handleDelete}
                         selectedInvestors={selectedInvestors}

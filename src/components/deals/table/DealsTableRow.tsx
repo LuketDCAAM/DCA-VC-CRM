@@ -1,7 +1,7 @@
 import React from 'react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Eye, MapPin, Calendar, Trash2 } from 'lucide-react';
+import { MapPin, Calendar, Trash2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Deal } from '@/types/deal';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -64,9 +64,10 @@ export function DealsTableRow({
         deal={deal}
         isSelected={isSelected}
         onToggleSelection={onToggleSelection}
+        onViewDetails={onViewDetails}
       />
       
-      <ContactCell deal={deal} />
+      <ContactCell deal={deal} onViewDetails={onViewDetails} />
       
       <TableCell>
         <PipelineStageDropdown 
@@ -132,21 +133,6 @@ export function DealsTableRow({
       <TableCell className="text-right">
         <div className="flex items-center gap-1">
           <ExternalDataSyncButton deal={deal} size="sm" />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => onViewDetails(deal)}
-                className="h-7 w-7 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
-              >
-                <Eye className="h-3 w-3" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>View deal details</p>
-            </TooltipContent>
-          </Tooltip>
           
           <AlertDialog>
             <AlertDialogTrigger asChild>

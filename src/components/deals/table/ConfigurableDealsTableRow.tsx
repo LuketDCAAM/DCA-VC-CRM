@@ -1,12 +1,9 @@
 
 import React, { memo } from 'react';
 import { TableRow, TableCell } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Eye } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Deal } from '@/types/deal';
 import type { TableColumn } from '@/hooks/deals/tableColumnDefinitions';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ExternalDataSyncButton } from '@/components/external-data/ExternalDataSyncButton';
 import { CompanyCellContent } from './cells/CompanyCellContent';
 import { ContactCellContent } from './cells/ContactCellContent';
@@ -34,15 +31,14 @@ const ConfigurableDealsTableRow = memo(({
   onDealUpdated
 }: ConfigurableDealsTableRowProps) => {
   const handleCheckboxChange = () => onToggleSelection(deal.id);
-  const handleViewClick = () => onViewDetails(deal);
 
   const renderCellContent = (columnKey: string) => {
     switch (columnKey) {
       case 'company_name':
-        return <CompanyCellContent deal={deal} />;
+        return <CompanyCellContent deal={deal} onViewDetails={onViewDetails} />;
       
       case 'contact_name':
-        return <ContactCellContent deal={deal} />;
+        return <ContactCellContent deal={deal} onViewDetails={onViewDetails} />;
       
       case 'pipeline_stage':
         return <StatusCellContent deal={deal} type="pipeline_stage" onUpdate={onDealUpdated} />;
@@ -156,22 +152,6 @@ const ConfigurableDealsTableRow = memo(({
 
         <div className="flex items-center gap-1">
           <ExternalDataSyncButton deal={deal} size="sm" compact />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={handleViewClick}
-                className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary transition-all duration-200 opacity-70 group-hover:opacity-100"
-              >
-                <Eye className="h-3 w-3" />
-              </Button>
-
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>View deal details</p>
-            </TooltipContent>
-          </Tooltip>
         </div>
       </TableCell>
     </TableRow>

@@ -1,3 +1,4 @@
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
 
 import React from 'react';
 import { Globe, Linkedin } from 'lucide-react';
@@ -6,19 +7,18 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 interface CompanyCellContentProps {
   deal: Deal;
+  onViewDetails?: (deal: Deal) => void;
 }
 
 const toHref = (url: string) =>
   url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
 
-export function CompanyCellContent({ deal }: CompanyCellContentProps) {
+export function CompanyCellContent({ deal, onViewDetails }: CompanyCellContentProps) {
   return (
     <div className="flex min-w-0 max-w-[260px] items-center gap-1.5">
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="min-w-0 cursor-help truncate text-sm font-semibold leading-none text-foreground">
-            {deal.company_name}
-          </span>
+          <NameDetailsButton onClick={() => onViewDetails?.(deal)} className="min-w-0 truncate text-sm font-semibold leading-none text-foreground"><span className="truncate">{deal.company_name}</span></NameDetailsButton>
         </TooltipTrigger>
         <TooltipContent side="bottom" align="start" className="max-w-[320px]">
           <p className="font-semibold">{deal.company_name}</p>

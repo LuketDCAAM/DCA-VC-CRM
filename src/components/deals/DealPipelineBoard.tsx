@@ -1,8 +1,9 @@
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
 import React, { useState, useMemo, useCallback, memo } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Eye, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import { Deal } from '@/types/deal';
 import { PIPELINE_STAGES, PipelineStage } from '@/hooks/deals/dealStagesConfig';
 import { getDealSectors } from '@/utils/sectorUtils';
@@ -75,7 +76,7 @@ const DealCardMini = memo(function DealCardMini({ deal, index, isUpdating, onVie
             <div className="min-w-0 flex-1">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="truncate text-sm font-semibold leading-tight">{deal.company_name}</div>
+                  <NameDetailsButton onClick={() => onViewDetails?.(deal)} className="w-full text-sm font-semibold leading-tight"><span className="truncate">{deal.company_name}</span></NameDetailsButton>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" align="start" className="max-w-[300px]">
                   <p className="whitespace-normal">{deal.company_name}</p>
@@ -93,20 +94,7 @@ const DealCardMini = memo(function DealCardMini({ deal, index, isUpdating, onVie
               )}
 
             </div>
-            {onViewDetails && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 opacity-0 group-hover:opacity-100"
-                aria-label={`Open ${deal.company_name}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onViewDetails(deal);
-                }}
-              >
-                <Eye className="h-3.5 w-3.5" />
-              </Button>
-            )}
+
           </div>
 
           {deal.next_steps && (

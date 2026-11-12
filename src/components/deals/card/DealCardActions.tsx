@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { MoreVertical, Eye, Edit, Trash2 } from 'lucide-react';
+import { MoreVertical, Edit, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useDeleteDeal } from '@/hooks/useDeleteDeal';
 import {
@@ -19,14 +19,12 @@ import type { Deal } from '@/types/deal';
 
 interface DealCardActionsProps {
   deal: Deal;
-  onViewDetails?: (deal: Deal) => void;
   onEdit?: (deal: Deal) => void;
   onDealDeleted?: () => void;
 }
 
 export const DealCardActions: React.FC<DealCardActionsProps> = ({
   deal,
-  onViewDetails,
   onEdit,
   onDealDeleted,
 }) => {
@@ -47,12 +45,6 @@ export const DealCardActions: React.FC<DealCardActionsProps> = ({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {onViewDetails && (
-            <DropdownMenuItem onClick={() => onViewDetails(deal)}>
-              <Eye className="h-4 w-4 mr-2" />
-              View Details
-            </DropdownMenuItem>
-          )}
           {onEdit && (
             <DropdownMenuItem onClick={() => onEdit(deal)}>
               <Edit className="h-4 w-4 mr-2" />

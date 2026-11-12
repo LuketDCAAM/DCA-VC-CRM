@@ -1,3 +1,4 @@
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
 
 import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -30,11 +31,11 @@ export function InvestorCard({ investor, onViewDetails, onAddContact }: Investor
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="font-semibold text-lg">{investor.contact_name}</h3>
+            <h3><NameDetailsButton onClick={() => onViewDetails?.(investor)} className="whitespace-normal break-words text-lg font-semibold">{investor.contact_name}</NameDetailsButton></h3>
             {investor.firm_name && (
               <div className="flex items-center gap-1 text-sm text-gray-600 mt-1">
                 <Building2 className="h-3 w-3" />
-                {investor.firm_name}
+                <NameDetailsButton onClick={() => onViewDetails?.(investor)} className="whitespace-normal break-words text-sm">{investor.firm_name}</NameDetailsButton>
               </div>
             )}
             <div className="flex items-center gap-2 mt-1">

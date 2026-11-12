@@ -1,9 +1,10 @@
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowUpDown, Eye, Pencil } from 'lucide-react';
+import { ArrowUpDown, Pencil } from 'lucide-react';
 import { formatMoney, formatMultiple, formatPercent } from '@/lib/portfolio/metrics';
 import type { EnrichedPosition } from '@/hooks/portfolio/usePortfolioRollups';
 import type { PortfolioCompany } from '@/hooks/usePortfolioCompanies';
@@ -101,7 +102,7 @@ export function PositionsTable({ rows, onViewDetails, onEditPosition }: Props) {
               const { company, position, metrics } = row;
               return (
               <TableRow key={company.id}>
-                <TableCell className="font-medium whitespace-nowrap">{company.company_name}</TableCell>
+                <TableCell className="font-medium whitespace-nowrap"><NameDetailsButton onClick={() => onViewDetails(company)}>{company.company_name}</NameDetailsButton></TableCell>
                 <TableCell className="whitespace-nowrap text-muted-foreground">
                   {position?.vehicle ?? '—'}
                 </TableCell>
@@ -134,9 +135,6 @@ export function PositionsTable({ rows, onViewDetails, onEditPosition }: Props) {
                       <Pencil className="h-4 w-4" />
                     </Button>
                   )}
-                  <Button variant="ghost" size="sm" title="View details" onClick={() => onViewDetails(company)}>
-                    <Eye className="h-4 w-4" />
-                  </Button>
                 </TableCell>
               </TableRow>
               );
