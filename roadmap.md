@@ -1,8 +1,9 @@
 # Roadmap
 
 ## Click names to open details
-- [ ] Make company and contact names open details across record lists/cards and remove eye controls.
-- [ ] Check preview compilation and click/keyboard interactions; authenticated checks depend on external Supabase access.
+- [x] Make company and contact names open details across record lists/cards and remove eye controls.
+- [x] Check preview compilation, sample-record click/keyboard interactions and existing regressions (17 passed).
+- [ ] Verify details with live signed-in records — external unmanaged Supabase prevents authenticated testing here.
 
 ## AI assistant recovery
 - [x] Redeploy the assistant with the configured Lovable AI fallback and expose actionable stream errors.
