@@ -1,8 +1,9 @@
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Building2, DollarSign, TrendingUp, Calendar, Eye, Trash2 } from 'lucide-react';
+import { Building2, DollarSign, TrendingUp, Calendar, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -86,7 +87,7 @@ export function PortfolioCard({ company, onViewDetails, onDeleted }: PortfolioCa
           <div>
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
               <Building2 className="h-5 w-5" />
-              {company.company_name}
+              <NameDetailsButton onClick={() => onViewDetails?.(company)} className="whitespace-normal break-words text-lg font-semibold">{company.company_name}</NameDetailsButton>
             </CardTitle>
             <div className="flex gap-2 mt-2">
               <Badge className={getStatusColor(company.status)}>
@@ -100,12 +101,6 @@ export function PortfolioCard({ company, onViewDetails, onDeleted }: PortfolioCa
             </div>
           </div>
           <div className="flex items-center gap-1">
-            {onViewDetails && (
-              <Button variant="ghost" size="sm" onClick={() => onViewDetails(company)}>
-                <Eye className="h-4 w-4 mr-2" />
-                View
-              </Button>
-            )}
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button

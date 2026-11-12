@@ -1,8 +1,9 @@
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
 
 import React, { memo } from 'react';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Eye, MapPin, Mail, Phone, Globe, Star, DollarSign } from 'lucide-react';
+import { MapPin, Mail, Phone, Globe, Star, DollarSign } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Deal } from '@/types/deal';
@@ -26,7 +27,6 @@ const OptimizedDealsTableRow = memo(({
   onViewDetails 
 }: OptimizedDealsTableRowProps) => {
   const handleCheckboxChange = () => onToggleSelection(deal.id);
-  const handleViewClick = () => onViewDetails(deal);
 
   return (
     <TableRow 
@@ -49,7 +49,7 @@ const OptimizedDealsTableRow = memo(({
       {/* Company info */}
       <TableCell className="min-w-[280px] py-2">
         <div className="space-y-0.5">
-          <div className="font-medium text-sm text-foreground">{deal.company_name}</div>
+          <NameDetailsButton onClick={() => onViewDetails(deal)}>{deal.company_name}</NameDetailsButton>
           {deal.website && (
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <Globe className="h-2.5 w-2.5" />
@@ -68,7 +68,7 @@ const OptimizedDealsTableRow = memo(({
       <TableCell className="min-w-[200px] py-2">
         {deal.contact_name && (
           <div className="space-y-0.5">
-            <div className="font-medium text-sm text-foreground">{deal.contact_name}</div>
+            <NameDetailsButton onClick={() => onViewDetails(deal)}>{deal.contact_name}</NameDetailsButton>
             {deal.contact_email && (
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Mail className="h-2.5 w-2.5" />
@@ -187,14 +187,6 @@ const OptimizedDealsTableRow = memo(({
       <TableCell className="text-right min-w-[120px] py-2">
         <div className="flex items-center gap-1">
           <ExternalDataSyncButton deal={deal} size="sm" />
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={handleViewClick}
-            className="h-6 w-6 p-0 hover:bg-primary/10 hover:text-primary transition-colors"
-          >
-            <Eye className="h-3 w-3" />
-          </Button>
         </div>
       </TableCell>
     </TableRow>

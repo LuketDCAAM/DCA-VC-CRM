@@ -1,3 +1,4 @@
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
 
 import React from 'react';
 import {
@@ -17,6 +18,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 interface InvestorListViewProps {
   investors: Investor[];
   onEdit: (investor: Investor) => void;
+  onViewDetails: (investor: Investor) => void;
   onDelete: (investorId: string) => void;
   selectedInvestors?: string[];
   onToggleInvestorSelection: (investorId: string) => void;
@@ -28,6 +30,7 @@ interface InvestorListViewProps {
 export function InvestorListView({
   investors,
   onEdit,
+  onViewDetails,
   onDelete,
   selectedInvestors = [],
   onToggleInvestorSelection,
@@ -80,10 +83,10 @@ export function InvestorListView({
               />
             </TableCell>
             <TableCell>
-              <div className="font-medium">{investor.contact_name}</div>
+              <NameDetailsButton onClick={() => onViewDetails(investor)}>{investor.contact_name}</NameDetailsButton>
               <div className="text-sm text-muted-foreground">{investor.contact_email}</div>
             </TableCell>
-            <TableCell>{investor.firm_name || '-'}</TableCell>
+            <TableCell>{investor.firm_name ? <NameDetailsButton onClick={() => onViewDetails(investor)}>{investor.firm_name}</NameDetailsButton> : '-'}</TableCell>
             <TableCell>{investor.preferred_investment_stage || '-'}</TableCell>
             <TableCell>
               {investor.average_check_size

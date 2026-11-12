@@ -1,3 +1,4 @@
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
 
 import React from 'react';
 import { Mail, Phone } from 'lucide-react';
@@ -6,18 +7,17 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 
 interface ContactCellContentProps {
   deal: Deal;
+  onViewDetails?: (deal: Deal) => void;
 }
 
-export function ContactCellContent({ deal }: ContactCellContentProps) {
+export function ContactCellContent({ deal, onViewDetails }: ContactCellContentProps) {
   if (!deal.contact_name) {
     return <span className="text-muted-foreground text-sm">-</span>;
   }
 
   return (
     <div className="flex min-w-0 max-w-[220px] items-center gap-1.5">
-      <span className="min-w-0 truncate text-sm font-medium leading-none text-foreground">
-        {deal.contact_name}
-      </span>
+      <NameDetailsButton onClick={() => onViewDetails?.(deal)} className="min-w-0 truncate text-sm font-medium leading-none text-foreground"><span className="truncate">{deal.contact_name}</span></NameDetailsButton>
 
       {deal.contact_email && (
         <Tooltip>

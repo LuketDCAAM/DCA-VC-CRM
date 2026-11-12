@@ -1,3 +1,4 @@
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,7 +49,7 @@ export function ContactCard({ contact, onEdit, onDelete }: ContactCardProps) {
           <div className="flex-1">
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
               <User className="h-5 w-5" />
-              {contact.name}
+              <NameDetailsButton onClick={() => onEdit?.(contact)} className="whitespace-normal break-words text-lg font-semibold">{contact.name}</NameDetailsButton>
             </CardTitle>
             {contact.title && (
               <p className="text-sm text-gray-600 mt-1">{contact.title}</p>

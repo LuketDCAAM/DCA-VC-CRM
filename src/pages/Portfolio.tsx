@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Edit, Archive, Trash2 } from 'lucide-react';
 import { usePortfolioCompanies, PortfolioCompany } from '@/hooks/usePortfolioCompanies';
 import { PortfolioDetailDialog } from '@/components/portfolio/PortfolioDetailDialog';
@@ -31,6 +32,8 @@ import type { EnrichedPosition } from '@/hooks/portfolio/usePortfolioRollups';
 
 
 export default function Portfolio() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { companies, loading, refetch } = usePortfolioCompanies();
   const { importPortfolioCompanies } = useCSVImport();
   const { deleteCompanies } = useDeletePortfolioCompany();
@@ -48,6 +51,16 @@ export default function Portfolio() {
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
   const [editingPosition, setEditingPosition] = useState<EnrichedPosition | null>(null);
   const [positionDialogOpen, setPositionDialogOpen] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const companyId = params.get('company');
+    if (!companies.some(company => company.id === companyId)) return;
+    setSelectedCompanyId(companyId);
+    setDetailDialogOpen(true);
+    params.delete('company');
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+  }, [companies, location.search, location.pathname, navigate]);
 
 
 
@@ -365,6 +378,7 @@ export default function Portfolio() {
             positions={rollups.rows}
             quartersByCompany={quartersByCompany}
             roundsByCompany={roundsByCompany}
+            onViewDetails={handleViewDetails}
           />
         </TabsContent>
 

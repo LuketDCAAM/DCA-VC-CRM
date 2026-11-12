@@ -1,9 +1,10 @@
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, TrendingUp } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserRoles } from '@/hooks/useUserRoles';
 
@@ -58,7 +59,6 @@ export function RecentDealsCard({ deals }: RecentDealsCardProps) {
         </div>
         {!isViewer && (
           <Button variant="outline" size="sm" onClick={() => navigate('/deals')}>
-            <Eye className="h-4 w-4 mr-2" />
             View All
           </Button>
         )}
@@ -69,7 +69,7 @@ export function RecentDealsCard({ deals }: RecentDealsCardProps) {
             {deals.map((deal) => (
               <div key={deal.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
                 <div className="space-y-1 flex-1">
-                  <h4 className="font-medium text-sm">{deal.company_name}</h4>
+                  <h4><NameDetailsButton onClick={() => navigate(`/deals?deal=${deal.id}`)}>{deal.company_name}</NameDetailsButton></h4>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary" className={`text-xs ${getStageColor(deal.pipeline_stage)}`}>
                       {deal.pipeline_stage}

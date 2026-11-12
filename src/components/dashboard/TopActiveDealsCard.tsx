@@ -1,8 +1,9 @@
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Settings, Star } from 'lucide-react';
+import { Settings, Star } from 'lucide-react';
 import { Deal } from '@/types/deal';
 import { usePriorityDeals } from '@/hooks/usePriorityDeals';
 import { useUserRoles } from '@/hooks/useUserRoles';
@@ -98,7 +99,7 @@ export function TopActiveDealsCard({ onViewDetails }: TopActiveDealsCardProps) {
                       <span className="text-xs font-medium text-muted-foreground">
                         #{index + 1}
                       </span>
-                      <h4 className="font-medium truncate">{deal.company_name}</h4>
+                      <h4 className="min-w-0"><NameDetailsButton onClick={() => onViewDetails?.(deal)}><span className="truncate">{deal.company_name}</span></NameDetailsButton></h4>
                       {deal.deal_score && (
                         <Badge variant="secondary" className="text-xs">
                           Score: {deal.deal_score}
@@ -122,14 +123,6 @@ export function TopActiveDealsCard({ onViewDetails }: TopActiveDealsCardProps) {
                       Updated {format(new Date(deal.updated_at), 'MMM d, yyyy')}
                     </p>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onViewDetails?.(deal)}
-                    className="shrink-0"
-                  >
-                    <Eye className="h-4 w-4" />
-                  </Button>
                 </div>
               ))}
             </div>

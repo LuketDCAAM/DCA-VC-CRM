@@ -1,3 +1,4 @@
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
 
 import React from 'react';
 import { TableCell } from '@/components/ui/table';
@@ -7,14 +8,15 @@ import { Deal } from '@/types/deal';
 
 interface ContactCellProps {
   deal: Deal;
+  onViewDetails?: (deal: Deal) => void;
 }
 
-export function ContactCell({ deal }: ContactCellProps) {
+export function ContactCell({ deal, onViewDetails }: ContactCellProps) {
   return (
     <TableCell>
       {deal.contact_name ? (
         <div className="space-y-1">
-          <div className="font-medium text-foreground">{deal.contact_name}</div>
+          <NameDetailsButton onClick={() => onViewDetails?.(deal)}>{deal.contact_name}</NameDetailsButton>
           {deal.contact_email && (
             <Tooltip>
               <TooltipTrigger asChild>

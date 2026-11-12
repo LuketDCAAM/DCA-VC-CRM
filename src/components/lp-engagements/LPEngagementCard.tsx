@@ -1,9 +1,10 @@
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
 
 import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Edit, Eye, MapPin, Mail, Phone, Calendar, DollarSign, ExternalLink, Linkedin } from 'lucide-react';
+import { Edit, MapPin, Mail, Phone, Calendar, DollarSign, ExternalLink, Linkedin } from 'lucide-react';
 import { LPEngagement } from '@/types/lpEngagement';
 
 interface LPEngagementCardProps {
@@ -58,19 +59,12 @@ export function LPEngagementCard({ engagement, onView, onEdit }: LPEngagementCar
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="font-semibold text-lg">{engagement.lp_name}</h3>
+            <h3><NameDetailsButton onClick={() => onView(engagement)} className="whitespace-normal break-words text-lg font-semibold">{engagement.lp_name}</NameDetailsButton></h3>
             {engagement.lp_type && (
               <p className="text-sm text-muted-foreground">{engagement.lp_type}</p>
             )}
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onView(engagement)}
-            >
-              <Eye className="h-4 w-4" />
-            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -97,7 +91,7 @@ export function LPEngagementCard({ engagement, onView, onEdit }: LPEngagementCar
 
         {engagement.contact_name && (
           <div className="space-y-2">
-            <p className="font-medium text-sm">{engagement.contact_name}</p>
+            <p><NameDetailsButton onClick={() => onView(engagement)}>{engagement.contact_name}</NameDetailsButton></p>
             <div className="flex flex-col gap-1">
               {engagement.contact_email && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">

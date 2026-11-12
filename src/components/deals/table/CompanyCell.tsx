@@ -1,3 +1,4 @@
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
 
 import React from 'react';
 import { TableCell } from '@/components/ui/table';
@@ -8,12 +9,13 @@ import { Deal } from '@/types/deal';
 
 interface CompanyCellProps {
   deal: Deal;
+  onViewDetails?: (deal: Deal) => void;
   isSelected: boolean;
   onToggleSelection: (dealId: string) => void;
   isSticky?: boolean;
 }
 
-export function CompanyCell({ deal, isSelected, onToggleSelection, isSticky }: CompanyCellProps) {
+export function CompanyCell({ deal, onViewDetails, isSelected, onToggleSelection, isSticky }: CompanyCellProps) {
   const formatUrl = (url: string) => {
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
       return `https://${url}`;
@@ -32,7 +34,7 @@ export function CompanyCell({ deal, isSelected, onToggleSelection, isSticky }: C
       </TableCell>
       <TableCell className="sticky left-12 z-10 bg-inherit border-r">
         <div className="space-y-1">
-          <div className="font-semibold text-foreground">{deal.company_name}</div>
+          <NameDetailsButton onClick={() => onViewDetails?.(deal)} className="font-semibold">{deal.company_name}</NameDetailsButton>
           {deal.website && (
             <Tooltip>
               <TooltipTrigger asChild>

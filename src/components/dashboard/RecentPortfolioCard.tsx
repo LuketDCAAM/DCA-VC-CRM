@@ -1,9 +1,10 @@
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Eye, Building2 } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useUserRoles } from '@/hooks/useUserRoles';
 
@@ -46,7 +47,6 @@ export function RecentPortfolioCard({ companies, onViewDetails }: RecentPortfoli
         </div>
         {!isViewer && (
           <Button variant="outline" size="sm" onClick={() => navigate('/portfolio')}>
-            <Eye className="h-4 w-4 mr-2" />
             View All
           </Button>
         )}
@@ -61,7 +61,7 @@ export function RecentPortfolioCard({ companies, onViewDetails }: RecentPortfoli
                 onClick={() => onViewDetails(company)}
               >
                 <div className="space-y-1 flex-1">
-                  <h4 className="font-medium text-sm">{company.company_name}</h4>
+                  <h4><NameDetailsButton onClick={() => onViewDetails(company)}>{company.company_name}</NameDetailsButton></h4>
                   <div className="flex items-center gap-2">
                     <Badge variant="secondary" className={`text-xs ${getStatusColor(company.status)}`}>
                       {company.status}

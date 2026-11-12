@@ -1,3 +1,4 @@
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
 import React, { useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -201,12 +202,11 @@ export function FinancialComparisonTable({ positions, quartersByCompany, periods
               return (
                 <TableRow key={r.companyId}>
                   <TableCell className="font-medium whitespace-nowrap sticky left-0 bg-card">
-                    <button
-                      className="hover:underline text-left"
+                    <NameDetailsButton
                       onClick={() => company && onViewDetails(company)}
                     >
                       {r.companyName}
-                    </button>
+                    </NameDetailsButton>
                   </TableCell>
                   <TableCell className="text-muted-foreground whitespace-nowrap">{r.periodLabel ?? '—'}</TableCell>
                   {COLUMNS.map((c) => (
