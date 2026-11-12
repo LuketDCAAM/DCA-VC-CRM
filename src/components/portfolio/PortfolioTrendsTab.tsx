@@ -1,4 +1,6 @@
 import React, { useMemo, useState } from 'react';
+import { NameDetailsButton } from '@/components/common/NameDetailsButton';
+import type { PortfolioCompany } from '@/hooks/usePortfolioCompanies';
 import {
   Bar,
   BarChart,
@@ -44,9 +46,10 @@ interface Props {
   positions: EnrichedPosition[];
   quartersByCompany: Map<string, PortcoQuarter[]>;
   roundsByCompany: Map<string, PortcoRound[]>;
+  onViewDetails: (company: PortfolioCompany) => void;
 }
 
-export function PortfolioTrendsTab({ positions, quartersByCompany, roundsByCompany }: Props) {
+export function PortfolioTrendsTab({ positions, quartersByCompany, roundsByCompany, onViewDetails }: Props) {
   const [metric, setMetric] = useState<TrendMetric>('arr');
   const [indexed, setIndexed] = useState(false);
 
@@ -313,7 +316,10 @@ export function PortfolioTrendsTab({ positions, quartersByCompany, roundsByCompa
                             className="h-2.5 w-2.5 shrink-0 rounded-full"
                             style={{ backgroundColor: companyColor(colorMap, r.companyId) }}
                           />
-                          {r.companyName}
+                          <NameDetailsButton onClick={() => {
+                            const company = positions.find(position => position.company.id === r.companyId)?.company;
+                            if (company) onViewDetails(company);
+                          }}>{r.companyName}</NameDetailsButton>
                         </span>
                       </TableCell>
                       <TableCell className="whitespace-nowrap">

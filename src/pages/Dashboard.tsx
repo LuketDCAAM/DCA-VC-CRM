@@ -103,7 +103,7 @@ export default function Dashboard() {
           <div className="space-y-4 sm:space-y-6">
             <RecentPortfolioCard 
               companies={portfolioCompanies?.slice(0, 5) || []} 
-              onViewDetails={() => {}} 
+              onViewDetails={(company) => navigate(`/portfolio?company=${company.id}`)}
             />
             <DashboardQuickActions />
           </div>

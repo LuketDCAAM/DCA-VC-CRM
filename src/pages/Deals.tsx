@@ -1,5 +1,6 @@
 
-import React, { lazy, Suspense, useMemo } from 'react';
+import React, { lazy, Suspense, useMemo, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useOptimizedDeals } from '@/hooks/useOptimizedDeals';
 import { useCSVImport } from '@/hooks/useCSVImport';
 import { useOptimizedFilteredDeals } from '@/hooks/useOptimizedFilteredDeals';
@@ -11,6 +12,8 @@ import { useDebouncedSearch } from '@/hooks/useDebounce';
 const DealDetailDialog = lazy(() => import('@/components/deals/DealDetailDialog').then(module => ({ default: module.DealDetailDialog })));
 
 export default function Deals() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { deals, loading, refetch, dealStats } = useOptimizedDeals();
   const { importDeals } = useCSVImport();
   const { csvTemplateColumns, exportColumns, handleCSVImport } = useDealsCSVConfig();
@@ -36,6 +39,16 @@ export default function Deals() {
     handleDeselectAll,
     handleBulkAction,
   } = useDealsPageState();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const dealId = params.get('deal');
+    const deal = deals.find(item => item.id === dealId);
+    if (!deal) return;
+    handleViewDetails(deal);
+    params.delete('deal');
+    navigate({ pathname: location.pathname, search: params.toString() }, { replace: true });
+  }, [deals, location.search, location.pathname, handleViewDetails, navigate]);
 
 
   const handleCSVImportWrapper = async (data: any[]) => {
