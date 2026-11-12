@@ -1,8 +1,8 @@
 # Roadmap
 
 ## AI assistant recovery
-- [ ] Redeploy the assistant with the configured Lovable AI fallback and expose actionable stream errors.
-- [ ] Run error-handling regressions and verify the configured AI responds.
+- [x] Redeploy the assistant with the configured Lovable AI fallback and expose actionable stream errors.
+- [x] Run error-handling regressions (3 passed) and verify the configured AI responds (HTTP 200, OK).
 - [ ] Verify signed-in assistant conversation — external unmanaged Supabase prevents authenticated testing here.
 
 ## Deals loading speed
