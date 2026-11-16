@@ -431,8 +431,12 @@ export default function Portfolio() {
       <PortfolioDetailDialog
         company={selectedCompany}
         open={detailDialogOpen}
-        onOpenChange={setDetailDialogOpen}
+        onOpenChange={(o) => {
+          setDetailDialogOpen(o);
+          if (!o) setDetailTab(undefined);
+        }}
         onCompanyUpdated={refetch}
+        initialTab={detailTab}
       />
 
       <PositionEditDialog
