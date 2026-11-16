@@ -2376,6 +2376,56 @@ export type Database = {
           },
         ]
       }
+      portfolio_cash_flows: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string | null
+          date_is_estimated: boolean
+          description: string | null
+          flow_date: string
+          flow_type: string
+          id: string
+          is_cash: boolean
+          portfolio_company_id: string
+          source: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string | null
+          date_is_estimated?: boolean
+          description?: string | null
+          flow_date: string
+          flow_type: string
+          id?: string
+          is_cash?: boolean
+          portfolio_company_id: string
+          source?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string | null
+          date_is_estimated?: boolean
+          description?: string | null
+          flow_date?: string
+          flow_type?: string
+          id?: string
+          is_cash?: boolean
+          portfolio_company_id?: string
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_cash_flows_portfolio_company_id_fkey"
+            columns: ["portfolio_company_id"]
+            isOneToOne: false
+            referencedRelation: "portfolio_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portfolio_companies: {
         Row: {
           company_name: string
@@ -2908,6 +2958,52 @@ export type Database = {
         }
         Relationships: []
       }
+      portfolio_irr_by_company: {
+        Row: {
+          as_of: string | null
+          cash_invested: number | null
+          company_name: string | null
+          current_fmv: number | null
+          dpi_cash: number | null
+          first_investment_date: string | null
+          has_estimated_dates: boolean | null
+          instrument_type: Database["public"]["Enums"]["instrument_type"] | null
+          irr_cash: number | null
+          irr_cost_basis: number | null
+          moic_cash: number | null
+          moic_cost_basis: number | null
+          non_cash_basis: number | null
+          portfolio_company_id: string | null
+          position_status: Database["public"]["Enums"]["position_status"] | null
+          realized: number | null
+          sector: string | null
+          total_value: number | null
+          vehicle: Database["public"]["Enums"]["portfolio_vehicle"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_positions_portfolio_company_id_fkey"
+            columns: ["portfolio_company_id"]
+            isOneToOne: true
+            referencedRelation: "portfolio_companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portfolio_irr_summary: {
+        Row: {
+          as_of: string | null
+          cash_invested: number | null
+          current_fmv: number | null
+          dpi_cash: number | null
+          irr_cash: number | null
+          irr_cost_basis: number | null
+          non_cash_basis: number | null
+          realized: number | null
+          tvpi_cash: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       find_potential_duplicates: {
@@ -2992,6 +3088,10 @@ export type Database = {
       }
       show_limit: { Args: never; Returns: number }
       show_trgm: { Args: { "": string }; Returns: string[] }
+      xirr: {
+        Args: { p_amounts: number[]; p_dates: string[] }
+        Returns: number
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "viewer"
