@@ -74,7 +74,7 @@ describe('irr', () => {
     const beta = b.rows.find((r) => r.companyId === 'b')!;
     expect(beta.source).toBe('investments');
     expect(beta.baseFlows).toEqual([{ date: '2020-01-01', amount: -100 }]);
-    expect(beta.irr).toBeNull();
+    expect(beta.irr!).toBeCloseTo(0.1, 2);
   });
 
   test('ledger lists dated movements, marks the marked value, and totals the net position', () => {
@@ -110,6 +110,6 @@ describe('irr', () => {
 
     const later = buildCashFlowLedger(p, undefined, '2025-01-01');
     expect(later.find((e) => e.date === '2024-01-01')!.included).toBe(true);
-    expect(later.find((e) => e.kind === 'terminal')!.running).toBe(-125);
+    expect(later.find((e) => e.kind === 'terminal')!.running).toBe(-75);
   });
 });
