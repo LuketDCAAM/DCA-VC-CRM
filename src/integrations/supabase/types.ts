@@ -3144,6 +3144,7 @@ export type Database = {
         | "Co-Invest"
       position_status:
         | "Active"
+        | "Partial Exit"
         | "Exited - Strategic"
         | "Exited - Financial"
         | "Exited - IPO"
@@ -3342,6 +3343,7 @@ export const Constants = {
       ],
       position_status: [
         "Active",
+        "Partial Exit",
         "Exited - Strategic",
         "Exited - Financial",
         "Exited - IPO",
