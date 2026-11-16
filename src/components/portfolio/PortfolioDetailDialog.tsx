@@ -475,7 +475,7 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="end">
-                  <Calendar
+                  <DateCalendar
                     mode="single"
                     selected={cashAsOf}
                     onSelect={(d) => d && setCashAsOf(d)}
