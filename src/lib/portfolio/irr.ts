@@ -134,6 +134,7 @@ export interface CompanyIrrRow {
   fmv: number;
   realized: number;
   irr: number | null;
+  baseFlows: DatedFlow[];
   flows: DatedFlow[];
   source: 'cash_flows' | 'investments';
   countedInRealized: boolean;
@@ -178,6 +179,7 @@ export function computeIrrBreakdown(
       fmv: p.currentFmv,
       realized: p.realized,
       irr: xirr(withTerminal),
+      baseFlows: flows,
       flows: withTerminal,
       source: hasDatedFlows ? 'cash_flows' : 'investments',
       countedInRealized: exited && flows.length > 0,
