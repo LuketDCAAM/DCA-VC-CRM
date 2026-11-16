@@ -92,11 +92,13 @@ const getStatusColor = (status: CompanyStatus) => {
   return colors[status] || 'bg-gray-100 text-gray-800';
 };
 
-export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUpdated }: PortfolioDetailDialogProps) {
+export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUpdated, initialTab }: PortfolioDetailDialogProps) {
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [isEditingInvestments, setIsEditingInvestments] = useState(false);
   const [isEditingPerformance, setIsEditingPerformance] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [cashAsOf, setCashAsOf] = useState<Date>(new Date());
+  const { data: cashFlowsByCompany } = usePortfolioCashFlows();
   const { byCompany, saving, savePosition } = usePortfolioPositions();
   const position = company ? byCompany.get(company.id) ?? null : null;
   const [cadenceOpen, setCadenceOpen] = useState(false);
@@ -113,8 +115,10 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
       setIsEditingInvestments(false);
       setIsEditingPerformance(false);
       setActiveTab("overview");
+    } else if (initialTab) {
+      setActiveTab(initialTab);
     }
-  }, [open]);
+  }, [open, initialTab]);
 
   if (!company) return null;
 
