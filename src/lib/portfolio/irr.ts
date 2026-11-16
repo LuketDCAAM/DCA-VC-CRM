@@ -1,6 +1,6 @@
 // Portfolio IRR (XIRR) as of a chosen date.
 // Realized = exited positions only, using their dated cash flows up to the date.
-// Total = every position's cash flows up to the date (incl. exits/distributions) plus open positions' current FMV as a terminal value.
+// Gross = every position's cash flows up to the date (incl. exits/distributions) plus open positions' current FMV as a terminal value.
 
 export interface DatedFlow { date: string; amount: number }
 

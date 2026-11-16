@@ -5,7 +5,7 @@ describe('irr', () => {
   test('doubling in one year is ~100%', () => {
     expect(xirr([{ date: '2024-01-01', amount: -100 }, { date: '2025-01-01', amount: 200 }])!).toBeCloseTo(1.0, 2);
   });
-  test('realized uses exited only; total combines exited flows with open FMV on as-of date', () => {
+  test('realized uses exited only; gross combines exited flows with open FMV on as-of date', () => {
     const flows = new Map([
       ['a', [{ date: '2020-01-01', amount: -100 }, { date: '2021-01-01', amount: 150 }]],
       ['b', [{ date: '2020-01-01', amount: -100 }]],
