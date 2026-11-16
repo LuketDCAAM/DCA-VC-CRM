@@ -47,6 +47,7 @@ export default function Portfolio() {
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const selectedCompany = companies.find(company => company.id === selectedCompanyId) ?? null;
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [detailTab, setDetailTab] = useState<string | undefined>(undefined);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
@@ -258,6 +259,13 @@ export default function Portfolio() {
 
   const handleViewDetails = (company: PortfolioCompany) => {
     setSelectedCompanyId(company.id);
+    setDetailDialogOpen(true);
+  };
+
+  const handleOpenCompanyFromIrr = (companyId: string) => {
+    if (!companies.some((c) => c.id === companyId)) return;
+    setDetailTab('cashflows');
+    setSelectedCompanyId(companyId);
     setDetailDialogOpen(true);
   };
 
