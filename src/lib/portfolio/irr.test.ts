@@ -102,7 +102,7 @@ describe('irr', () => {
       ],
     };
     const entries = buildCashFlowLedger(p, undefined, '2022-01-01');
-    expect(entries.map((e) => e.label)).toEqual(['Investment', 'Current value (not received)']);
+    expect(entries.map((e) => e.label)).toEqual(['Investment', 'Current value (not received)', 'Investment']);
     expect(entries[0].included).toBe(true);
     expect(entries[0].running).toBe(-100);
     expect(entries[1].included).toBe(true);

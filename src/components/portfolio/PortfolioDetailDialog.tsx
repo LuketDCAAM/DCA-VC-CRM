@@ -20,7 +20,7 @@ import { buildCashFlowLedger } from '@/lib/portfolio/irr';
 import { PortfolioCashFlowLedger } from './PortfolioCashFlowLedger';
 import { format } from 'date-fns';
 import { Calendar as CalendarIcon } from 'lucide-react';
-import { Calendar } from '@/components/ui/calendar';
+import { Calendar as DateCalendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { usePortcoCadences } from '@/hooks/outreach/usePortcoCadences';
 import { CadenceSettingsDialog } from '@/components/outreach/CadenceSettingsDialog';
