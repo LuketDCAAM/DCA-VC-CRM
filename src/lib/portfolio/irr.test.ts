@@ -113,3 +113,16 @@ describe('irr', () => {
     expect(later.find((e) => e.kind === 'terminal')!.running).toBe(-75);
   });
 });
+
+import { computeIrrBreakdown as _cb } from './irr';
+test('partial exit counts in realized with cash only, and keeps FMV in gross', () => {
+  const flows = new Map([['p', [
+    { date: '2020-01-01', amount: -100 },
+    { date: '2022-01-01', amount: 150 },
+  ]]]);
+  const r = _cb([{ companyId: 'p', companyName: 'P', status: 'Partial Exit', currentFmv: 1000, investments: [], invested: 100, realized: 150 }], flows, '2024-01-01');
+  expect(r.rows[0].countedInRealized).toBe(true);
+  // realized: -100 -> +150 over 2 years ≈ 22.5%
+  expect(r.realized!).toBeCloseTo(0.2247, 3);
+  expect(r.total!).toBeGreaterThan(r.realized!);
+});

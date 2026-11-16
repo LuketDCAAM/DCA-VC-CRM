@@ -42,7 +42,7 @@ export function PortfolioIrrTiles({
   }, [rows, cashFlows, asOfStr]);
 
   const tiles = [
-    { mode: 'realized' as const, label: 'Realized IRR', hint: 'Exited positions', value: breakdown?.realized ?? null },
+    { mode: 'realized' as const, label: 'Realized IRR', hint: 'Exited + partial exits (cash only)', value: breakdown?.realized ?? null },
     {
       mode: 'gross' as const,
       label: 'Gross IRR',

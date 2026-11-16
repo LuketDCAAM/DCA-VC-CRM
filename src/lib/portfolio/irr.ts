@@ -1,5 +1,5 @@
 // Portfolio IRR (XIRR) as of a chosen date.
-// Realized = exited positions only, using their dated cash flows up to the date.
+// Realized = exited and partially exited positions, cash only (dated flows up to the date, no marked value).
 // Gross = every position's cash flows up to the date (incl. exits/distributions) plus open positions' current FMV as a terminal value.
 
 export interface DatedFlow {
@@ -44,6 +44,9 @@ export function xirr(flows: DatedFlow[]): number | null {
 }
 
 export const isExitedStatus = (s: string | null | undefined) => !!s && s.startsWith('Exited');
+export const isPartialExitStatus = (s: string | null | undefined) => s === 'Partial Exit';
+/** Counted in Realized IRR: full exits, plus partial exits using only cash actually received. */
+export const countsInRealized = (s: string | null | undefined) => isExitedStatus(s) || isPartialExitStatus(s);
 
 export function flowsForCompany(
   p: IrrPositionInput,
@@ -167,7 +170,7 @@ export function computeIrrBreakdown(
 
     if (flows.length) {
       gross.push(...withTerminal);
-      if (exited) realized.push(...flows);
+      if (countsInRealized(p.status)) realized.push(...flows);
     }
 
     rows.push({
@@ -182,7 +185,7 @@ export function computeIrrBreakdown(
       baseFlows: flows,
       flows: withTerminal,
       source: hasDatedFlows ? 'cash_flows' : 'investments',
-      countedInRealized: exited && flows.length > 0,
+      countedInRealized: countsInRealized(p.status) && flows.length > 0,
       countedInGross: flows.length > 0,
     });
   }

@@ -26,6 +26,7 @@ export const VEHICLES: PortfolioVehicle[] = [
 
 export const POSITION_STATUSES: PositionStatus[] = [
   'Active',
+  'Partial Exit' as PositionStatus,
   'Exited - Strategic',
   'Exited - Financial',
   'Exited - IPO',
