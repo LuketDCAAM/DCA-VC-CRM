@@ -17,7 +17,7 @@ export function PortfolioIrrTiles({ rows }: { rows: EnrichedPosition[] }) {
   const asOfStr = format(asOf, 'yyyy-MM-dd');
 
   const irr = useMemo(() => {
-    if (!cashFlows) return { realized: null, unrealized: null };
+    if (!cashFlows) return { realized: null, total: null };
     return computePortfolioIrr(
       rows.map((r) => ({
         companyId: r.company.id,
@@ -34,7 +34,7 @@ export function PortfolioIrrTiles({ rows }: { rows: EnrichedPosition[] }) {
     <div className="flex flex-wrap items-stretch gap-2 sm:gap-3 -mt-3 mb-6">
       {[
         { label: 'Realized IRR', hint: 'Exited positions', value: irr.realized },
-        { label: 'Unrealized IRR', hint: 'Open positions at current FMV', value: irr.unrealized },
+        { label: 'Total Portfolio IRR', hint: 'All positions: every cash flow plus open positions at current FMV', value: irr.total },
       ].map((t) => (
         <div key={t.label} className="rounded-lg border bg-card px-4 py-3 text-center min-w-[150px]" title={t.hint}>
           <p className="text-base sm:text-xl font-bold text-primary tabular-nums">{isLoading ? '…' : fmtPct(t.value)}</p>
