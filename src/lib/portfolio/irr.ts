@@ -1,6 +1,6 @@
 // Portfolio IRR (XIRR) as of a chosen date.
 // Realized = exited positions only, using their dated cash flows up to the date.
-// Unrealized = non-exited positions, cash flows up to the date plus current FMV as a terminal value on the date.
+// Total = every position's cash flows up to the date (incl. exits/distributions) plus open positions' current FMV as a terminal value.
 
 export interface DatedFlow { date: string; amount: number }
 
@@ -50,18 +50,18 @@ export function computePortfolioIrr(
   positions: IrrPositionInput[],
   cashFlowsByCompany: Map<string, DatedFlow[]>,
   asOf: string,
-): { realized: number | null; unrealized: number | null } {
+): { realized: number | null; total: number | null } {
   const realized: DatedFlow[] = [];
-  const unrealized: DatedFlow[] = [];
+  const total: DatedFlow[] = [];
   for (const p of positions) {
     const flows = flowsForCompany(p, cashFlowsByCompany.get(p.companyId), asOf);
     if (!flows.length) continue;
+    total.push(...flows);
     if (isExitedStatus(p.status)) {
       realized.push(...flows);
-    } else {
-      unrealized.push(...flows);
-      if (p.currentFmv > 0) unrealized.push({ date: asOf, amount: p.currentFmv });
+    } else if (p.currentFmv > 0) {
+      total.push({ date: asOf, amount: p.currentFmv });
     }
   }
-  return { realized: xirr(realized), unrealized: xirr(unrealized) };
+  return { realized: xirr(realized), total: xirr(total) };
 }
