@@ -459,6 +459,48 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
             )}
           </TabsContent>
 
+          <TabsContent value="cashflows" className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold">Cash flows behind the IRR</h3>
+                <p className="text-sm text-muted-foreground">
+                  Every dated money movement for {company.company_name}, and the marked value used for open positions.
+                </p>
+              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    As of {format(cashAsOf, 'MMM d, yyyy')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={cashAsOf}
+                    onSelect={(d) => d && setCashAsOf(d)}
+                    disabled={(d) => d > new Date()}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <Card>
+              <CardContent className="pt-6">
+                <PortfolioCashFlowLedger entries={ledgerEntries} asOf={cashAsOfStr} />
+              </CardContent>
+            </Card>
+
+            {position?.realized_proceeds && !cashFlowsByCompany?.get(company.id)?.length ? (
+              <p className="text-xs text-muted-foreground">
+                {formatCurrency(position.realized_proceeds)} of realized proceeds are recorded on the position but have
+                no dated cash-flow row, so they are not in the IRR. Add a dated distribution to include them.
+              </p>
+            ) : null}
+          </TabsContent>
+
           <TabsContent value="activity" className="space-y-4">
             <Card>
               <CardHeader>

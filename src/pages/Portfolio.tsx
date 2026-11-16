@@ -318,7 +318,7 @@ export default function Portfolio() {
       />
 
       <PortfolioKpiTiles totals={rollups.totals} activeCount={rollups.activeCount} />
-      <PortfolioIrrTiles rows={rollups.rows} />
+      <PortfolioIrrTiles rows={rollups.rows} onOpenCompany={handleOpenCompanyFromIrr} />
 
       <SearchAndFilter
         searchTerm={searchTerm}
