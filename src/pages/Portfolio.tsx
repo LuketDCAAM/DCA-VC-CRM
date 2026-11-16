@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { usePortfolioPositions, VEHICLES, POSITION_STATUSES, INSTRUMENT_TYPES } from '@/hooks/portfolio/usePortfolioPositions';
 import { usePortfolioRollups } from '@/hooks/portfolio/usePortfolioRollups';
 import { PortfolioKpiTiles } from '@/components/portfolio/PortfolioKpiTiles';
+import { PortfolioIrrTiles } from '@/components/portfolio/PortfolioIrrTiles';
 import { RollupTable } from '@/components/portfolio/RollupTable';
 import { PositionsTable } from '@/components/portfolio/PositionsTable';
 import { FinancialComparisonTable } from '@/components/portfolio/FinancialComparisonTable';
@@ -317,6 +318,7 @@ export default function Portfolio() {
       />
 
       <PortfolioKpiTiles totals={rollups.totals} activeCount={rollups.activeCount} />
+      <PortfolioIrrTiles rows={rollups.rows} />
 
       <SearchAndFilter
         searchTerm={searchTerm}
