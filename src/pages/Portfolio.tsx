@@ -47,6 +47,7 @@ export default function Portfolio() {
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
   const selectedCompany = companies.find(company => company.id === selectedCompanyId) ?? null;
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [detailTab, setDetailTab] = useState<string | undefined>(undefined);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [activeFilters, setActiveFilters] = useState<Record<string, any>>({});
@@ -261,6 +262,13 @@ export default function Portfolio() {
     setDetailDialogOpen(true);
   };
 
+  const handleOpenCompanyFromIrr = (companyId: string) => {
+    if (!companies.some((c) => c.id === companyId)) return;
+    setDetailTab('cashflows');
+    setSelectedCompanyId(companyId);
+    setDetailDialogOpen(true);
+  };
+
   const handleFilterChange = (key: string, value: any) => {
     setActiveFilters(prev => ({
       ...prev,
@@ -318,7 +326,7 @@ export default function Portfolio() {
       />
 
       <PortfolioKpiTiles totals={rollups.totals} activeCount={rollups.activeCount} />
-      <PortfolioIrrTiles rows={rollups.rows} />
+      <PortfolioIrrTiles rows={rollups.rows} onOpenCompany={handleOpenCompanyFromIrr} />
 
       <SearchAndFilter
         searchTerm={searchTerm}
@@ -423,8 +431,12 @@ export default function Portfolio() {
       <PortfolioDetailDialog
         company={selectedCompany}
         open={detailDialogOpen}
-        onOpenChange={setDetailDialogOpen}
+        onOpenChange={(o) => {
+          setDetailDialogOpen(o);
+          if (!o) setDetailTab(undefined);
+        }}
         onCompanyUpdated={refetch}
+        initialTab={detailTab}
       />
 
       <PositionEditDialog

@@ -15,6 +15,13 @@ import { PortcoKpiPanel } from './PortcoKpiPanel';
 import { FundingRoundsPanel } from './FundingRoundsPanel';
 import { PortcoValuationHistory } from './PortcoValuationHistory';
 import { usePortfolioPositions } from '@/hooks/portfolio/usePortfolioPositions';
+import { usePortfolioCashFlows } from '@/hooks/portfolio/usePortfolioCashFlows';
+import { buildCashFlowLedger } from '@/lib/portfolio/irr';
+import { PortfolioCashFlowLedger } from './PortfolioCashFlowLedger';
+import { format } from 'date-fns';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar as DateCalendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { usePortcoCadences } from '@/hooks/outreach/usePortcoCadences';
 import { CadenceSettingsDialog } from '@/components/outreach/CadenceSettingsDialog';
 import { useDealContactsByCompany } from '@/hooks/portfolio/useDealContactsByCompany';
@@ -58,6 +65,7 @@ interface PortfolioDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCompanyUpdated?: () => void;
+  initialTab?: string;
 }
 
 const formatCurrency = (amount: number | null | undefined) => {
@@ -84,11 +92,13 @@ const getStatusColor = (status: CompanyStatus) => {
   return colors[status] || 'bg-gray-100 text-gray-800';
 };
 
-export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUpdated }: PortfolioDetailDialogProps) {
+export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUpdated, initialTab }: PortfolioDetailDialogProps) {
   const [isEditingCompany, setIsEditingCompany] = useState(false);
   const [isEditingInvestments, setIsEditingInvestments] = useState(false);
   const [isEditingPerformance, setIsEditingPerformance] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [cashAsOf, setCashAsOf] = useState<Date>(new Date());
+  const { data: cashFlowsByCompany } = usePortfolioCashFlows();
   const { byCompany, saving, savePosition } = usePortfolioPositions();
   const position = company ? byCompany.get(company.id) ?? null : null;
   const [cadenceOpen, setCadenceOpen] = useState(false);
@@ -105,8 +115,10 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
       setIsEditingInvestments(false);
       setIsEditingPerformance(false);
       setActiveTab("overview");
+    } else if (initialTab) {
+      setActiveTab(initialTab);
     }
-  }, [open]);
+  }, [open, initialTab]);
 
   if (!company) return null;
 
@@ -134,6 +146,19 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
     totalInvested,
     company.current_valuation?.last_round_post_money_valuation,
     company.current_valuation?.current_ownership_percentage,
+  );
+
+  const fmvForIrr = position?.current_fmv ?? currentValue ?? 0;
+  const cashAsOfStr = format(cashAsOf, 'yyyy-MM-dd');
+  const ledgerEntries = buildCashFlowLedger(
+    {
+      companyId: company.id,
+      status: position?.position_status ?? company.status,
+      currentFmv: fmvForIrr,
+      investments: company.investments,
+    },
+    cashFlowsByCompany?.get(company.id),
+    cashAsOfStr,
   );
 
   return (
@@ -171,13 +196,14 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="position">Position</TabsTrigger>
             <TabsTrigger value="kpis">Quarterly KPIs</TabsTrigger>
             <TabsTrigger value="valuation">Valuation</TabsTrigger>
             <TabsTrigger value="investments">Investments</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
+            <TabsTrigger value="cashflows">Cash Flows</TabsTrigger>
             <TabsTrigger value="activity">Activity</TabsTrigger>
           </TabsList>
 
@@ -431,6 +457,48 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
                 </div>
               </>
             )}
+          </TabsContent>
+
+          <TabsContent value="cashflows" className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-semibold">Cash flows behind the IRR</h3>
+                <p className="text-sm text-muted-foreground">
+                  Every dated money movement for {company.company_name}, and the marked value used for open positions.
+                </p>
+              </div>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    As of {format(cashAsOf, 'MMM d, yyyy')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <DateCalendar
+                    mode="single"
+                    selected={cashAsOf}
+                    onSelect={(d) => d && setCashAsOf(d)}
+                    disabled={(d) => d > new Date()}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <Card>
+              <CardContent className="pt-6">
+                <PortfolioCashFlowLedger entries={ledgerEntries} asOf={cashAsOfStr} />
+              </CardContent>
+            </Card>
+
+            {position?.realized_proceeds && !cashFlowsByCompany?.get(company.id)?.length ? (
+              <p className="text-xs text-muted-foreground">
+                {formatCurrency(position.realized_proceeds)} of realized proceeds are recorded on the position but have
+                no dated cash-flow row, so they are not in the IRR. Add a dated distribution to include them.
+              </p>
+            ) : null}
           </TabsContent>
 
           <TabsContent value="activity" className="space-y-4">
