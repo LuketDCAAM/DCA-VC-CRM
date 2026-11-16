@@ -53,3 +53,8 @@
 
 ## Deals tab redesign
 - [x] List view + pipeline board redesign (header, stats, view toggle, board cards)
+
+## Gross IRR drilldown
+- [x] Rename the combined tile to Gross IRR and add a per-company breakdown with a dated cash-flow ledger.
+- [x] Run IRR regressions (7 passed; full suite 47 passed) and confirm the preview build.
+- [ ] Click through the breakdown and ledger with live signed-in records — external unmanaged Supabase prevents authenticated testing here.
