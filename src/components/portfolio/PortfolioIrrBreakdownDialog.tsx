@@ -92,7 +92,7 @@ export function PortfolioIrrBreakdownDialog({ open, onOpenChange, breakdown, asO
                                 currentFmv: r.fmv,
                                 investments: [],
                               },
-                              r.flows.map((f) => ({ ...f })),
+                              r.baseFlows,
                               asOf,
                             )}
                           />
