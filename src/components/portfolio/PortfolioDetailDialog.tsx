@@ -148,6 +148,19 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
     company.current_valuation?.current_ownership_percentage,
   );
 
+  const fmvForIrr = position?.current_fmv ?? currentValue ?? 0;
+  const cashAsOfStr = format(cashAsOf, 'yyyy-MM-dd');
+  const ledgerEntries = buildCashFlowLedger(
+    {
+      companyId: company.id,
+      status: position?.position_status ?? company.status,
+      currentFmv: fmvForIrr,
+      investments: company.investments,
+    },
+    cashFlowsByCompany?.get(company.id),
+    cashAsOfStr,
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
@@ -183,13 +196,14 @@ export function PortfolioDetailDialog({ company, open, onOpenChange, onCompanyUp
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="position">Position</TabsTrigger>
             <TabsTrigger value="kpis">Quarterly KPIs</TabsTrigger>
             <TabsTrigger value="valuation">Valuation</TabsTrigger>
             <TabsTrigger value="investments">Investments</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
+            <TabsTrigger value="cashflows">Cash Flows</TabsTrigger>
             <TabsTrigger value="activity">Activity</TabsTrigger>
           </TabsList>
 
