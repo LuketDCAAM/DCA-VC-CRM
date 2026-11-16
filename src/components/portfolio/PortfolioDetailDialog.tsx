@@ -15,6 +15,13 @@ import { PortcoKpiPanel } from './PortcoKpiPanel';
 import { FundingRoundsPanel } from './FundingRoundsPanel';
 import { PortcoValuationHistory } from './PortcoValuationHistory';
 import { usePortfolioPositions } from '@/hooks/portfolio/usePortfolioPositions';
+import { usePortfolioCashFlows } from '@/hooks/portfolio/usePortfolioCashFlows';
+import { buildCashFlowLedger } from '@/lib/portfolio/irr';
+import { PortfolioCashFlowLedger } from './PortfolioCashFlowLedger';
+import { format } from 'date-fns';
+import { Calendar as CalendarIcon } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { usePortcoCadences } from '@/hooks/outreach/usePortcoCadences';
 import { CadenceSettingsDialog } from '@/components/outreach/CadenceSettingsDialog';
 import { useDealContactsByCompany } from '@/hooks/portfolio/useDealContactsByCompany';
@@ -58,6 +65,7 @@ interface PortfolioDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onCompanyUpdated?: () => void;
+  initialTab?: string;
 }
 
 const formatCurrency = (amount: number | null | undefined) => {
