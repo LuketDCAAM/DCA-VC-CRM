@@ -1,5 +1,38 @@
 import { describe, expect, test } from 'bun:test';
-import { computePortfolioIrr, xirr } from './irr';
+import {
+  buildCashFlowLedger,
+  computeIrrBreakdown,
+  computePortfolioIrr,
+  xirr,
+  type DatedFlow,
+  type IrrCompanyInput,
+} from './irr';
+
+const companies: IrrCompanyInput[] = [
+  {
+    companyId: 'a',
+    companyName: 'Acme',
+    status: 'Exited - Strategic',
+    currentFmv: 0,
+    invested: 100,
+    realized: 150,
+    investments: [{ investment_date: '2020-01-01', amount_invested: 100 }],
+  },
+  {
+    companyId: 'b',
+    companyName: 'Beta',
+    status: 'Active',
+    currentFmv: 121,
+    invested: 100,
+    realized: 0,
+    investments: [{ investment_date: '2020-01-01', amount_invested: 100 }],
+  },
+];
+
+const flows = new Map<string, DatedFlow[]>([
+  ['a', [{ date: '2020-01-01', amount: -100 }, { date: '2021-01-01', amount: 150 }]],
+  ['b', [{ date: '2020-01-01', amount: -100 }]],
+]);
 
 describe('irr', () => {
   test('doubling in one year is ~100%', () => {
